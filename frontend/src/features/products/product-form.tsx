@@ -40,6 +40,14 @@ export function ProductForm({ product, mode }: ProductFormProps) {
   const [isTaxable, setIsTaxable] = useState(product?.is_taxable ?? true);
   const [tags, setTags] = useState<string[]>(product?.tags || []);
   const [tagInput, setTagInput] = useState("");
+  const [formError, setFormError] = useState("");
+
+  // Auto-select first store on load
+  useEffect(() => {
+    if (stores?.length && !storeId && !product) {
+      setStoreId(stores[0].id);
+    }
+  }, [stores, storeId, product]);
 
   useEffect(() => {
     if (!product && title && !slug) {
@@ -49,7 +57,16 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !price || !storeId) return;
+    setFormError("");
+
+    if (!title || !price) {
+      setFormError("Title and price are required.");
+      return;
+    }
+    if (!storeId) {
+      setFormError("Please select a store.");
+      return;
+    }
 
     const payload = {
       store: storeId,
@@ -75,11 +92,20 @@ export function ProductForm({ product, mode }: ProductFormProps) {
       tags,
     };
 
-    if (mode === "create") {
-      const created = await createProduct.mutateAsync(payload);
-      router.push(`/dashboard/products/${created.id}`);
-    } else if (product) {
-      await updateProduct.mutateAsync({ id: product.id, ...payload });
+    try {
+      if (mode === "create") {
+        const created = await createProduct.mutateAsync(payload);
+        router.push(`/dashboard/products/${created.id}`);
+      } else if (product) {
+        await updateProduct.mutateAsync({ id: product.id, ...payload });
+        router.push(`/dashboard/products/${product.id}`);
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.error?.message
+        || err?.response?.data?.detail
+        || err?.message
+        || "An error occurred. Please try again.";
+      setFormError(typeof msg === "string" ? msg : JSON.stringify(msg));
     }
   };
 
@@ -108,6 +134,10 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {formError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{formError}</div>
+      )}
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => router.back()} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100">
@@ -193,9 +223,14 @@ export function ProductForm({ product, mode }: ProductFormProps) {
             <CardHeader><CardTitle>Status</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               {!stores?.length ? (
-                <Input label="Store ID" value={storeId} onChange={(e) => setStoreId(e.target.value)} required />
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                  You need to create a store first before adding products.
+                  <Button type="button" variant="link" className="ml-1 p-0" onClick={() => router.push("/dashboard/stores")}>
+                    Create Store
+                  </Button>
+                </div>
               ) : (
-                <Select label="Store" options={stores.map((s) => ({ value: s.id, label: s.name }))} value={storeId} onChange={(e) => setStoreId(e.target.value)} required />
+                <Select label="Store" options={stores.map((s) => ({ value: s.id, label: s.name }))} value={storeId} onChange={(e) => setStoreId(e.target.value)} placeholder="Select a store..." required />
               )}
               <Select label="Product Type" options={productTypes} value={productType} onChange={(e) => setProductType(e.target.value as "physical" | "digital" | "service")} />
               <Select label="Status" options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as "draft" | "active" | "archived")} />

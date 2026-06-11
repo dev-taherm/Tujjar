@@ -14,7 +14,7 @@ from .views import (
 router = DefaultRouter()
 router.register("categories", CategoryViewSet, basename="category")
 router.register("collections", CollectionViewSet, basename="collection")
-router.register("products", ProductViewSet, basename="product")
+router.register("", ProductViewSet, basename="product")
 
 urlpatterns = [
     path("", include(router.urls)),

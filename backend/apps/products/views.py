@@ -84,7 +84,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     """Product CRUD with filtering, search, and inventory management."""
 
     def get_serializer_class(self):
-        if self.action in ("retrieve", "update", "partial_update"):
+        if self.action in ("create", "retrieve", "update", "partial_update"):
             return ProductDetailSerializer
         return ProductListSerializer
 
