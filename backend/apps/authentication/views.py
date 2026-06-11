@@ -1,0 +1,147 @@
+from __future__ import annotations
+
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import User
+from .serializers import (
+    ChangePasswordSerializer,
+    ResetPasswordSerializer,
+    RequestPasswordResetSerializer,
+    TwoFactorSetupSerializer,
+    TwoFactorVerifySerializer,
+    UserCreateSerializer,
+    UserSerializer,
+    VerifyEmailSerializer,
+)
+
+
+class RegisterView(APIView):
+    """Register a new user."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = UserCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        tokens = RefreshToken.for_user(user)
+        return Response(
+            {
+                "user": UserSerializer(user).data,
+                "tokens": {
+                    "access": str(tokens.access_token),
+                    "refresh": str(tokens),
+                },
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class VerifyEmailView(APIView):
+    """Verify email with token."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Email verified successfully"})
+
+
+class RequestPasswordResetView(APIView):
+    """Request password reset email."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = RequestPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "If the email exists, a reset link has been sent"})
+
+
+class ResetPasswordView(APIView):
+    """Reset password with token."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Password reset successfully"})
+
+
+class TwoFactorSetupView(APIView):
+    """Set up 2FA."""
+
+    def post(self, request):
+        serializer = TwoFactorSetupSerializer(data={}, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        return Response(result)
+
+
+class TwoFactorVerifyView(APIView):
+    """Verify 2FA code and enable it."""
+
+    def post(self, request):
+        serializer = TwoFactorVerifySerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "2FA enabled successfully"})
+
+
+class TwoFactorDisableView(APIView):
+    """Disable 2FA."""
+
+    def post(self, request):
+        user = request.user
+        user.two_factor_enabled = False
+        user.two_factor_secret = ""
+        user.save(update_fields=["two_factor_enabled", "two_factor_secret"])
+        return Response({"message": "2FA disabled successfully"})
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """User profile management."""
+
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)
+
+    @action(detail=False, methods=["get", "patch"])
+    def me(self, request):
+        if request.method == "GET":
+            return Response(UserSerializer(request.user).data)
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"])
+    def change_password(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Password changed successfully"})
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def logout_view(request):
+    """Blacklist refresh token."""
+    try:
+        refresh_token = request.data.get("refresh")
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+    except Exception:
+        pass
+    return Response({"message": "Logged out successfully"})

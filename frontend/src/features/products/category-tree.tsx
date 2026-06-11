@@ -1,0 +1,114 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button, Input, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { useCategories, useCreateCategory, useDeleteCategory } from "@/api/queries";
+import { Plus, ChevronRight, ChevronDown, FolderTree, Trash2, Edit } from "lucide-react";
+
+interface CategoryNodeProps {
+  category: any;
+  depth?: number;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodeProps) {
+  const [expanded, setExpanded] = useState(true);
+  const hasChildren = category.children && category.children.length > 0;
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-50" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
+        {hasChildren ? (
+          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 hover:text-gray-600">
+            {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </button>
+        ) : (
+          <div className="w-4" />
+        )}
+        <FolderTree className="h-4 w-4 text-amber-500" />
+        <span className="flex-1 text-sm font-medium text-gray-700">{category.name}</span>
+        <span className="text-xs text-gray-400">{category.product_count} products</span>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+          <button onClick={() => onEdit(category.id)} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
+          <button onClick={() => onDelete(category.id)} className="rounded p-1 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
+        </div>
+      </div>
+      {expanded && hasChildren && (
+        <div>
+          {category.children.map((child: any) => (
+            <CategoryNode key={child.id} category={child} depth={depth + 1} onEdit={onEdit} onDelete={onDelete} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function CategoryTree() {
+  const router = useRouter();
+  const { data: categories, isLoading } = useCategories();
+  const createCategory = useCreateCategory();
+  const deleteCategory = useDeleteCategory();
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newSlug, setNewSlug] = useState("");
+
+  const handleCreate = async () => {
+    if (!newName || !newSlug) return;
+    await createCategory.mutateAsync({ name: newName, slug: newSlug } as any);
+    setShowCreate(false);
+    setNewName("");
+    setNewSlug("");
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Delete this category? Products will be unlinked.")) {
+      await deleteCategory.mutateAsync(id);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="h-64 animate-pulse rounded-xl bg-gray-200" />;
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Categories</CardTitle>
+        <Button size="sm" onClick={() => setShowCreate(true)}>
+          <Plus className="mr-1 h-4 w-4" /> Add
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {!categories?.length ? (
+          <div className="py-8 text-center text-sm text-gray-500">No categories yet.</div>
+        ) : (
+          <div className="space-y-0.5">
+            {categories.map((cat) => (
+              <div key={cat.id} className="group">
+                <CategoryNode
+                  category={cat}
+                  onEdit={(id) => router.push(`/dashboard/products/categories/${id}`)}
+                  onDelete={handleDelete}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showCreate && (
+          <div className="mt-4 space-y-3 rounded-lg border border-gray-200 p-4">
+            <Input label="Name" value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} />
+            <Input label="Slug" value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowCreate(false)}>Cancel</Button>
+              <Button size="sm" onClick={handleCreate} isLoading={createCategory.isPending}>Create</Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

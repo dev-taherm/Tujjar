@@ -1,0 +1,60 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { User, AuthTokens, Organization } from "@/shared/types";
+
+interface AuthStore {
+  user: User | null;
+  tokens: AuthTokens | null;
+  organization: Organization | null;
+  isAuthenticated: boolean;
+  setUser: (user: User | null) => void;
+  setTokens: (tokens: AuthTokens | null) => void;
+  setOrganization: (org: Organization | null) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      tokens: null,
+      organization: null,
+      isAuthenticated: false,
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setTokens: (tokens) => set({ tokens }),
+      setOrganization: (organization) => set({ organization }),
+      logout: () =>
+        set({
+          user: null,
+          tokens: null,
+          organization: null,
+          isAuthenticated: false,
+        }),
+    }),
+    {
+      name: "tujjar-auth",
+      partialize: (state) => ({
+        tokens: state.tokens,
+        user: state.user,
+        organization: state.organization,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
+  )
+);
+
+interface UIStore {
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
+  setSidebarOpen: (open: boolean) => void;
+  theme: "light" | "dark" | "system";
+  setTheme: (theme: "light" | "dark" | "system") => void;
+}
+
+export const useUIStore = create<UIStore>()((set) => ({
+  sidebarOpen: true,
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  theme: "system",
+  setTheme: (theme) => set({ theme }),
+}));

@@ -1,0 +1,243 @@
+# ==================================================
+# ROOT
+# ==================================================
+
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.cache/
+
+# ==================================================
+# ENVIRONMENT VARIABLES
+# ==================================================
+
+.env
+.env.*
+!.env.example
+
+# ==================================================
+# PYTHON / DJANGO BACKEND
+# ==================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Django
+*.log
+local_settings.py
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# Media uploads
+media/
+
+# Static build files
+staticfiles/
+static_collected/
+
+# Migrations cache
+**/__pycache__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# Pyre
+.pyre/
+
+# Pylint
+.pylint.d/
+
+# Sphinx
+docs/_build/
+
+# Build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ==================================================
+# DJANGO COMPRESSOR
+# ==================================================
+
+CACHE/
+compressed/
+
+# ==================================================
+# DJANGO COLLECTSTATIC
+# ==================================================
+
+staticfiles/
+
+# ==================================================
+# DJANGO DEBUG TOOLBAR
+# ==================================================
+
+debug.log
+
+# ==================================================
+# NODE / NEXT.JS FRONTEND
+# ==================================================
+
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# If frontend is at root:
+node_modules/
+.next/
+out/
+.turbo/
+
+# Next.js build cache
+.next/cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Package managers
+.pnpm-store/
+.npm/
+
+# ==================================================
+# TYPESCRIPT
+# ==================================================
+
+*.tsbuildinfo
+
+# ==================================================
+# TESTING
+# ==================================================
+
+coverage/
+coverage.xml
+
+jest-stare/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+
+# Playwright
+playwright-report/
+test-results/
+
+# ==================================================
+# IDES
+# ==================================================
+
+.vscode/
+.idea/
+
+*.iml
+
+# ==================================================
+# JUPYTER
+# ==================================================
+
+.ipynb_checkpoints/
+
+# ==================================================
+# DOCKER
+# ==================================================
+
+docker-compose.override.yml
+
+# Docker volumes
+postgres_data/
+redis_data/
+
+# ==================================================
+# TERRAFORM
+# ==================================================
+
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# ==================================================
+# AWS
+# ==================================================
+
+.aws/
+
+# ==================================================
+# SECRETS / KEYS
+# ==================================================
+
+*.pem
+*.key
+*.crt
+*.p12
+
+# ==================================================
+# LINUX
+# ==================================================
+
+.directory
+
+# ==================================================
+# MACOS
+# ==================================================
+
+.AppleDouble
+.LSOverride
+
+# ==================================================
+# WINDOWS
+# ==================================================
+
+ehthumbs.db
+Desktop.ini
+
+# ==================================================
+# PROJECT SPECIFIC
+# ==================================================
+
+# Generated exports
+exports/
+
+# Backups
+backups/
+*.bak
+
+# Temporary files
+tmp/
+temp/
+
+# AI generated cache
+.ai/

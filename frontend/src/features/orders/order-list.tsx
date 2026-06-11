@@ -1,0 +1,124 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { Button, Badge, Input, Select } from "@/shared/ui";
+import { useOrders } from "@/api/queries";
+import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { useState } from "react";
+import { Search, Eye, Package } from "lucide-react";
+
+const statusColors: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  confirmed: "bg-blue-100 text-blue-800",
+  processing: "bg-purple-100 text-purple-800",
+  shipped: "bg-indigo-100 text-indigo-800",
+  delivered: "bg-green-100 text-green-800",
+  cancelled: "bg-red-100 text-red-800",
+  refunded: "bg-gray-100 text-gray-800",
+};
+
+const paymentColors: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  authorized: "bg-blue-100 text-blue-800",
+  paid: "bg-green-100 text-green-800",
+  partially_paid: "bg-orange-100 text-orange-800",
+  refunded: "bg-red-100 text-red-800",
+  voided: "bg-gray-100 text-gray-800",
+};
+
+export function OrderList() {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const { data: orders, isLoading } = useOrders({
+    search: search || undefined,
+    status: statusFilter || undefined,
+  });
+
+  const statusOptions = [
+    { value: "", label: "All Statuses" },
+    { value: "pending", label: "Pending" },
+    { value: "confirmed", label: "Confirmed" },
+    { value: "processing", label: "Processing" },
+    { value: "shipped", label: "Shipped" },
+    { value: "delivered", label: "Delivered" },
+    { value: "cancelled", label: "Cancelled" },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-200" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search orders..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+        <Select options={statusOptions} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} />
+      </div>
+
+      {!orders?.length ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
+          <Package className="mb-4 h-12 w-12 text-gray-400" />
+          <h3 className="mb-2 text-lg font-medium text-gray-900">No orders yet</h3>
+          <p className="text-sm text-gray-500">Orders will appear here when customers make purchases.</p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {orders.map((order) => (
+                <tr key={order.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/dashboard/orders/${order.id}`)}>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.order_number}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {order.customer_name || order.customer_email}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[order.status] || ""}`}>
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${paymentColors[order.payment_status] || ""}`}>
+                      {order.payment_status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">{formatCurrency(Number(order.total))}</td>
+                  <td className="px-4 py-3 text-right text-sm text-gray-500">{formatDateTime(order.created_at)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button className="rounded p-1 text-gray-400 hover:bg-gray-100"><Eye className="h-4 w-4" /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
