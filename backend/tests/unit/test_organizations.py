@@ -3,7 +3,7 @@ from django.test import TestCase
 from rest_framework import status
 
 from apps.authentication.models import User
-from apps.organizations.models import Organization, OrganizationMembership, Role
+from apps.organizations.models import Organization, OrganizationMembership, Role, Permission
 
 
 class TestOrganizationCRUD(TestCase):
@@ -16,6 +16,10 @@ class TestOrganizationCRUD(TestCase):
         refresh = RefreshToken.for_user(self.user)
         self.access_token = str(refresh.access_token)
 
+        # Seed roles and permissions (may not exist in test DB)
+        from apps.organizations.signals import create_default_roles_and_permissions
+        create_default_roles_and_permissions(sender=None)
+
     def test_create_organization(self):
         response = self.client.post(
             "/api/v1/organizations/",
@@ -25,7 +29,6 @@ class TestOrganizationCRUD(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "My Org")
-        # Verify owner membership was created
         org = Organization.objects.get(slug="my-org")
         self.assertTrue(
             OrganizationMembership.objects.filter(

@@ -2,20 +2,20 @@
 name = "tujjar-backend"
 version = "0.1.0"
 description = "Tujjar AI Marketplace SaaS Backend"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
-    "Django>=5.1,<5.2",
+    "Django>=4.2,<5.2",
     "djangorestframework>=3.15,<4.0",
     "djangorestframework-simplejwt>=5.3,<6.0",
     "django-cors-headers>=4.3,<5.0",
-    "django-filter>=24.2,<25.0",
+    "django-filter>=23.0,<25.0",
     "drf-spectacular>=0.27,<1.0",
-    "psycopg[binary]>=3.1,<4.0",
+    "psycopg2-binary>=2.9,<3.0",
     "redis>=5.0,<6.0",
     "celery[redis]>=5.4,<6.0",
     "django-celery-beat>=2.6,<3.0",
     "django-celery-results>=2.5,<3.0",
-    "Pillow>=10.4,<11.0",
+    "Pillow>=10.0,<12.0",
     "django-storages[boto3]>=1.14,<2.0",
     "boto3>=1.34,<2.0",
     "python-decouple>=3.8,<4.0",
@@ -40,7 +40,7 @@ dev = [
 ]
 
 [tool.ruff]
-target-version = "py313"
+target-version = "py310"
 line-length = 100
 src = ["apps", "config"]
 
@@ -52,7 +52,7 @@ ignore = ["E501"]
 known-first-party = ["apps", "config"]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.10"
 strict = true
 plugins = ["mypy_django_plugin.main"]
 warn_unused_configs = true
