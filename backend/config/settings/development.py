@@ -39,3 +39,6 @@ STORAGES = {
 }
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
+
+# No password restrictions in local dev
+AUTH_PASSWORD_VALIDATORS = []
