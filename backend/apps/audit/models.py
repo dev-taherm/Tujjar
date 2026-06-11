@@ -1,3 +1,4 @@
+import json
 import uuid
 from typing import Any
 
@@ -57,6 +58,7 @@ def log_action(
     resource_id: str,
     *,
     organization=None,
+    organization_id=None,
     user=None,
     old_value: dict[str, Any] | None = None,
     new_value: dict[str, Any] | None = None,
@@ -65,15 +67,25 @@ def log_action(
     metadata: dict[str, Any] | None = None,
 ) -> AuditLog:
     """Helper function to create an audit log entry."""
-    return AuditLog.objects.create(
-        organization=organization,
-        user=user,
-        action=action,
-        resource_type=resource_type,
-        resource_id=str(resource_id),
-        old_value=old_value,
-        new_value=new_value,
-        ip_address=ip_address,
-        user_agent=user_agent,
-        metadata=metadata or {},
-    )
+    if organization is None and organization_id is not None:
+        from apps.organizations.models import Organization
+
+        organization = Organization.objects.filter(id=organization_id).first()
+    data = {
+        "user": user,
+        "action": action,
+        "resource_type": resource_type,
+        "resource_id": str(resource_id),
+        "old_value": old_value,
+        "new_value": new_value,
+        "ip_address": ip_address,
+        "user_agent": user_agent,
+        "metadata": metadata or {},
+    }
+    if organization is not None:
+        data["organization"] = organization
+    if old_value is not None:
+        data["old_value"] = json.loads(json.dumps(old_value, default=str))
+    if new_value is not None:
+        data["new_value"] = json.loads(json.dumps(new_value, default=str))
+    return AuditLog.objects.create(**data)

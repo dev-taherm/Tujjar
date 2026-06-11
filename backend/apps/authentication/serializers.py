@@ -49,11 +49,29 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        from django.utils.text import slugify
+
+        from apps.organizations.models import Organization, OrganizationMembership, Role
+
         validated_data.pop("password_confirm")
         user = User.objects.create_user(**validated_data)
         # Generate verification token
         user.verification_token = secrets.token_urlsafe(48)
         user.save(update_fields=["verification_token"])
+        # Auto-create organization for the user
+        org_name = f"{user.first_name or user.email}'s Organization"
+        org = Organization.objects.create(
+            name=org_name,
+            slug=slugify(org_name) or f"user-{user.id}",
+        )
+        owner_role = Role.objects.filter(slug="owner", organization=None, is_system=True).first()
+        if owner_role:
+            OrganizationMembership.objects.create(
+                user=user,
+                organization=org,
+                role=owner_role,
+                is_accepted=True,
+            )
         # Send verification email
         self._send_verification_email(user)
         return user
@@ -90,6 +108,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["user_id"] = str(user.id)
         token["email"] = user.email
         token["is_verified"] = user.is_verified
+        # Include org_id from user's first organization membership
+        membership = user.memberships.filter(is_accepted=True).select_related("organization").first()
+        if membership:
+            token["org_id"] = str(membership.organization.id)
         return token
 
 

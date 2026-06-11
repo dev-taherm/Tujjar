@@ -23,10 +23,13 @@ class TenantMiddleware(MiddlewareMixin):
                 from django.conf import settings
 
                 token = auth_header.split(" ")[1]
+                jwt_settings = settings.SIMPLE_JWT
+                signing_key = jwt_settings.get("SIGNING_KEY", settings.SECRET_KEY)
+                algorithms = jwt_settings.get("ALGORITHMS", ["HS256"])
                 payload = jwt.decode(
                     token,
-                    settings.SIMPLE_JWT["SIGNING_KEY"],
-                    algorithms=[settings.SIMPLE_JWT["ALGORITHMS"]],
+                    signing_key,
+                    algorithms=algorithms,
                 )
                 request.org_id = payload.get("org_id")
                 set_current_org_id(request.org_id)

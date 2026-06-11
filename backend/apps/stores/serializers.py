@@ -3,6 +3,8 @@ from __future__ import annotations
 from django.utils.text import slugify
 from rest_framework import serializers
 
+from apps.organizations.models import Organization
+
 from .models import Store, StoreDomain
 
 
@@ -59,7 +61,13 @@ class StoreSerializer(serializers.ModelSerializer):
         return slug
 
     def create(self, validated_data):
-        validated_data["organization"] = self.context["request"].org_id
+        org_id = self.context["request"].org_id
+        if not org_id:
+            raise serializers.ValidationError("You must belong to an organization to create a store.")
+        try:
+            validated_data["organization"] = Organization.objects.get(id=org_id)
+        except Organization.DoesNotExist:
+            raise serializers.ValidationError("Organization not found.")
         return super().create(validated_data)
 
 

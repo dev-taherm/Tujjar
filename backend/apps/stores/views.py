@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+import json
+
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.models import log_action
+from apps.organizations.models import Organization
 
 from .models import Store, StoreDomain
 from .serializers import StoreDomainSerializer, StoreSerializer, StoreSettingsSerializer
+
+
+def _serialize_store(store):
+    """Make serializer data JSON-safe for audit log."""
+    return json.loads(json.dumps(StoreSerializer(store).data, default=str))
 
 
 class StoreViewSet(viewsets.ModelViewSet):
@@ -22,40 +30,43 @@ class StoreViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         store = serializer.save()
+        org = Organization.objects.filter(id=self.request.org_id).first()
         log_action(
             action="store.create",
             resource_type="store",
             resource_id=store.id,
-            organization_id=self.request.org_id,
+            organization=org,
             user=self.request.user,
-            new_value=StoreSerializer(store).data,
+            new_value=_serialize_store(store),
             ip_address=self.request.META.get("REMOTE_ADDR"),
             user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
         )
 
     def perform_update(self, serializer):
-        old_data = StoreSerializer(serializer.instance).data
+        old_data = _serialize_store(serializer.instance)
         store = serializer.save()
+        org = Organization.objects.filter(id=self.request.org_id).first()
         log_action(
             action="store.update",
             resource_type="store",
             resource_id=store.id,
-            organization_id=self.request.org_id,
+            organization=org,
             user=self.request.user,
             old_value=old_data,
-            new_value=StoreSerializer(store).data,
+            new_value=_serialize_store(store),
             ip_address=self.request.META.get("REMOTE_ADDR"),
             user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
         )
 
     def perform_destroy(self, instance):
+        org = Organization.objects.filter(id=self.request.org_id).first()
         log_action(
             action="store.delete",
             resource_type="store",
             resource_id=instance.id,
-            organization_id=self.request.org_id,
+            organization=org,
             user=self.request.user,
-            old_value=StoreSerializer(instance).data,
+            old_value=_serialize_store(instance),
             ip_address=self.request.META.get("REMOTE_ADDR"),
             user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
         )
