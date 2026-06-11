@@ -5,6 +5,8 @@ import copy
 from django.utils.text import slugify
 from rest_framework import serializers
 
+from apps.core.utils import resolve_organization
+
 from .models import Theme, ThemePreset
 
 
@@ -63,7 +65,7 @@ class ThemeSerializer(serializers.ModelSerializer):
         return slug
 
     def create(self, validated_data):
-        validated_data["organization"] = self.context["request"].org_id
+        validated_data["organization"] = resolve_organization(self.context["request"].org_id)
         return super().create(validated_data)
 
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 from django.utils.text import slugify
 from rest_framework import serializers
 
+from apps.core.utils import resolve_organization
+
 from .models import Page, PageVersion
 from .section_registry import get_section_types
 
@@ -75,7 +77,7 @@ class PageSerializer(serializers.ModelSerializer):
         return slug
 
     def create(self, validated_data):
-        validated_data["organization"] = self.context["request"].org_id
+        validated_data["organization"] = resolve_organization(self.context["request"].org_id)
         validated_data["created_by"] = self.context["request"].user
         if "content_schema" not in validated_data:
             validated_data["content_schema"] = {"sections": []}
