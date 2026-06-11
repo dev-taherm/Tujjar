@@ -6,8 +6,9 @@ import type { AuthTokens, User, Organization, Store, Theme, StoreDomain, ThemePr
 export const authApi = {
   login: async (email: string, password: string): Promise<{ user: User; tokens: AuthTokens }> => {
     const { data } = await apiClient.post("/auth/login/", { email, password });
-    setTokens(data.tokens.access, data.tokens.refresh);
-    return data;
+    const tokens = data.tokens || { access: data.access, refresh: data.refresh };
+    setTokens(tokens.access, tokens.refresh);
+    return { user: data.user, tokens };
   },
 
   register: async (payload: {
@@ -18,8 +19,9 @@ export const authApi = {
     password_confirm: string;
   }): Promise<{ user: User; tokens: AuthTokens }> => {
     const { data } = await apiClient.post("/auth/register/", payload);
-    setTokens(data.tokens.access, data.tokens.refresh);
-    return data;
+    const tokens = data.tokens || { access: data.access, refresh: data.refresh };
+    setTokens(tokens.access, tokens.refresh);
+    return { user: data.user, tokens };
   },
 
   logout: async () => {
