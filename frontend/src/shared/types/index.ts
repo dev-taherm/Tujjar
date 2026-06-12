@@ -34,6 +34,8 @@ export interface User {
   avatar: string | null;
   phone: string;
   is_verified: boolean;
+  is_staff: boolean;
+  is_superuser: boolean;
   two_factor_enabled: boolean;
   provider: string;
   created_at: string;

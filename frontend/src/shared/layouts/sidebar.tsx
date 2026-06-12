@@ -19,6 +19,7 @@ import {
   Bell,
   LogOut,
   ChevronLeft,
+  Shield,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 
@@ -89,6 +90,24 @@ export function Sidebar() {
               </Link>
             );
           })}
+
+          {user?.is_staff && (
+            <>
+              <div className="my-3 border-t border-gray-200" />
+              <Link
+                href="/admin"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/admin" || pathname.startsWith("/admin/")
+                    ? "bg-red-50 text-red-700"
+                    : "text-red-600 hover:bg-red-50 hover:text-red-700"
+                )}
+              >
+                <Shield className="h-5 w-5 flex-shrink-0" />
+                {sidebarOpen && <span>Admin Panel</span>}
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* User section */}

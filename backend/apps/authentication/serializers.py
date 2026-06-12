@@ -27,11 +27,13 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "phone",
             "is_verified",
+            "is_staff",
+            "is_superuser",
             "two_factor_enabled",
             "provider",
             "created_at",
         ]
-        read_only_fields = ["id", "email", "is_verified", "provider", "created_at"]
+        read_only_fields = ["id", "email", "is_verified", "is_staff", "is_superuser", "provider", "created_at"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -108,6 +110,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["user_id"] = str(user.id)
         token["email"] = user.email
         token["is_verified"] = user.is_verified
+        token["is_staff"] = user.is_staff
         # Include org_id from user's first organization membership
         membership = user.memberships.filter(is_accepted=True).select_related("organization").first()
         if membership:
