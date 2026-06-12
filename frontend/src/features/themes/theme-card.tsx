@@ -1,13 +1,16 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardDescription, Badge } from "@/shared/ui";
-import { Palette, Download, ExternalLink } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, Badge, Button } from "@/shared/ui";
+import { Palette, Download, ExternalLink, Check } from "lucide-react";
 import type { Theme, ThemeConfig } from "@/shared/types";
 
 interface ThemeCardProps {
   theme: Theme;
   onSelect?: (theme: Theme) => void;
+  onInstall?: (theme: Theme) => void;
   isSelected?: boolean;
+  isInstalling?: boolean;
+  isInstalled?: boolean;
 }
 
 function ColorSwatch({ colors }: { colors: ThemeConfig["colors"] }) {
@@ -26,7 +29,7 @@ function ColorSwatch({ colors }: { colors: ThemeConfig["colors"] }) {
   );
 }
 
-export function ThemeCard({ theme, onSelect, isSelected }: ThemeCardProps) {
+export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling, isInstalled }: ThemeCardProps) {
   return (
     <Card
       className={`group cursor-pointer transition-all hover:shadow-md ${
@@ -55,12 +58,43 @@ export function ThemeCard({ theme, onSelect, isSelected }: ThemeCardProps) {
         <ColorSwatch colors={theme.config.colors} />
       </div>
       <div className="px-6 pb-4">
-        <div className="flex gap-2 text-xs text-gray-500">
-          <span>{theme.config.typography.headingFont}</span>
-          <span>•</span>
-          <span>{theme.config.typography.bodyFont}</span>
-          <span>•</span>
-          <span>{theme.presets.length} preset{theme.presets.length !== 1 ? "s" : ""}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2 text-xs text-gray-500">
+            <span>{theme.config.typography.headingFont}</span>
+            <span>•</span>
+            <span>{theme.config.typography.bodyFont}</span>
+            <span>•</span>
+            <span>{theme.presets.length} preset{theme.presets.length !== 1 ? "s" : ""}</span>
+          </div>
+          {onInstall && (
+            <Button
+              size="sm"
+              variant={isInstalled ? "secondary" : "default"}
+              disabled={isInstalling || isInstalled}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isInstalling && !isInstalled) onInstall(theme);
+              }}
+              className="ml-2 shrink-0"
+            >
+              {isInstalling ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Installing...
+                </span>
+              ) : isInstalled ? (
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-3.5 w-3.5" />
+                  Installed
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <Download className="h-3.5 w-3.5" />
+                  Install
+                </span>
+              )}
+            </Button>
+          )}
         </div>
       </div>
     </Card>

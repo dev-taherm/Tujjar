@@ -87,6 +87,7 @@ class ThemeInstallSerializer(serializers.Serializer):
             name=theme.name,
             slug=f"{theme.slug}-{request.org_id}",
             version=theme.version,
+            parent_theme=theme,
             config=copy.deepcopy(theme.config),
             sections_schema=copy.deepcopy(theme.sections_schema),
             assets=copy.deepcopy(theme.assets),
