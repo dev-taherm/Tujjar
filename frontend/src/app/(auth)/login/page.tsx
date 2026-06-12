@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
 import { authApi } from "@/api/queries";
 import { useAuthStore } from "@/stores";
@@ -35,6 +36,7 @@ export default function LoginPage() {
       const result = await authApi.login(data.email, data.password);
       useAuthStore.getState().setUser(result.user);
       useAuthStore.getState().setTokens(result.tokens);
+      toast.success("Welcome back!");
       if (result.user.is_staff || result.user.is_superuser) {
         router.push("/admin");
       } else {
