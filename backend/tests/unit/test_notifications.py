@@ -18,7 +18,7 @@ class TestNotificationModel(TestCase):
             message="You have a new order",
         )
         self.assertFalse(n.is_read)
-        n.mark_as_read
+        n.mark_as_read()
         n.refresh_from_db()
         self.assertTrue(n.is_read)
 

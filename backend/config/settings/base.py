@@ -123,6 +123,10 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Upload limits
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom user model
@@ -139,6 +143,16 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_TASK_TIME_LIMIT = 300
+CELERY_TASK_SOFT_TIME_LIMIT = 240
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+CELERY_TASK_ROUTES = {
+    "apps.analytics.tasks.*": {"queue": "default"},
+    "apps.search.tasks.*": {"queue": "default"},
+    "apps.notifications.tasks.*": {"queue": "default"},
+    "apps.orders.tasks.*": {"queue": "default"},
+    "apps.billing.tasks.*": {"queue": "default"},
+}
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -306,6 +320,19 @@ LOGGING = {
 # Security headers (always enabled; production adds more)
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
+# Content Security Policy (basic defaults)
+CSP_DEFAULT_SRC = ["'self'"]
+CSP_SCRIPT_SRC = ["'self'"]
+CSP_STYLE_SRC = ["'self'", "'unsafe-inline'"]
+CSP_IMG_SRC = ["'self'", "data:", "https:"]
+CSP_FONT_SRC = ["'self'", "https://fonts.gstatic.com"]
+CSP_CONNECT_SRC = ["'self'"]
+CSP_FRAME_ANCESTORS = ["'none'"]
+
+# CSRF cookie
+CSRF_COOKIE_HTTPONLY = True
 
 # Throttle rates for auth endpoints
 AUTH_THROTTLE_RATE = "5/minute"

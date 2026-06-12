@@ -11,7 +11,35 @@ from drf_spectacular.views import (
 
 
 def health_check(request):
-    return JsonResponse({"status": "ok"})
+    import time
+    start = time.time()
+    health = {"status": "ok", "checks": {}}
+
+    # Check database
+    try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        health["checks"]["database"] = "ok"
+    except Exception as e:
+        health["status"] = "degraded"
+        health["checks"]["database"] = f"error: {str(e)}"
+
+    # Check cache
+    try:
+        from django.core.cache import cache
+        cache.set("_health_check", "ok", timeout=5)
+        val = cache.get("_health_check")
+        health["checks"]["cache"] = "ok" if val == "ok" else "error"
+    except Exception as e:
+        health["status"] = "degraded"
+        health["checks"]["cache"] = f"error: {str(e)}"
+
+    health["response_time_ms"] = round((time.time() - start) * 1000, 2)
+
+    from django.http import JsonResponse
+    status_code = 200 if health["status"] == "ok" else 503
+    return JsonResponse(health, status=status_code)
 
 
 urlpatterns = [

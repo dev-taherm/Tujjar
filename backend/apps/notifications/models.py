@@ -49,10 +49,60 @@ class Notification(UUIDModel, TimeStampedModel):
     def __str__(self) -> str:
         return f"{self.notification_type}: {self.title}"
 
-    @property
     def mark_as_read(self) -> None:
         self.is_read = True
         self.save(update_fields=["is_read"])
+
+    @classmethod
+    def create_for_user(
+        cls,
+        user,
+        notification_type: str,
+        title: str,
+        message: str,
+        organization=None,
+        entity_type: str = "",
+        entity_id=None,
+        action_url: str = "",
+        metadata: dict | None = None,
+    ) -> "Notification":
+        """Create a notification and optionally send email asynchronously."""
+        if not organization:
+            membership = user.memberships.filter(is_accepted=True).first()
+            if membership:
+                organization = membership.organization
+            else:
+                return None
+
+        pref, _ = NotificationPreference.objects.get_or_create(user=user)
+        type_pref_map = {
+            "order": pref.order_notifications,
+            "product": pref.product_notifications,
+            "store": pref.store_notifications,
+            "billing": pref.billing_notifications,
+            "system": pref.system_notifications,
+            "ai": pref.ai_notifications,
+        }
+        if not type_pref_map.get(notification_type, True):
+            return None
+
+        notification = cls.objects.create(
+            user=user,
+            organization=organization,
+            notification_type=notification_type,
+            title=title,
+            message=message,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            action_url=action_url,
+            metadata=metadata or {},
+        )
+
+        if pref.email_notifications:
+            from apps.notifications.tasks import send_notification_email_task
+            send_notification_email_task.delay(str(notification.id))
+
+        return notification
 
 
 class NotificationPreference(UUIDModel, TimeStampedModel):
