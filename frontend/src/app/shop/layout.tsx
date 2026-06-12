@@ -10,7 +10,7 @@ export default function StorefrontLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const slug = pathname.split("/")[1] || "";
+  const slug = pathname.split("/")[2] || "";
 
   return (
     <div className="min-h-screen bg-white">

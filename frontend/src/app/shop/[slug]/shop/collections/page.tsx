@@ -1,6 +1,6 @@
 "use client";
 
-export default function CollectionsPage({ params }: { params: { slug: string } }) {
+export default function CollectionsPage({ params }: { params: Promise<{ slug: string }> }) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold text-gray-900">Collections</h1>

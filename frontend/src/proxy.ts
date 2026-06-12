@@ -11,17 +11,17 @@ function getSubdomain(host: string): string | null {
   return null;
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const host = request.headers.get("host") || "";
   const subdomain = getSubdomain(host);
   const pathname = request.nextUrl.pathname;
 
   if (!subdomain) {
-    return;
+    return NextResponse.next();
   }
 
   if (EXCLUDED_PREFIXES.some((p) => pathname.startsWith(p))) {
-    return;
+    return NextResponse.next();
   }
 
   const slug = subdomain;

@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui";
 import { ShoppingCart, Heart, Minus, Plus } from "lucide-react";
@@ -8,9 +9,9 @@ import { useState } from "react";
 export default function StorefrontProductDetailPage({
   params,
 }: {
-  params: { slug: string; productSlug: string };
+  params: Promise<{ slug: string; productSlug: string }>;
 }) {
-  const { slug, productSlug } = params;
+  const { slug, productSlug } = use(params);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
 

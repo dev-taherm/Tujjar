@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StorefrontProductCard } from "@/features/storefront/product-card";
 
@@ -12,8 +12,8 @@ const sortOptions = [
   { value: "-price", label: "Price High-Low" },
 ];
 
-export default function StorefrontProductsPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
+export default function StorefrontProductsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const [sort, setSort] = useState("-created_at");
   const [search, setSearch] = useState("");
 

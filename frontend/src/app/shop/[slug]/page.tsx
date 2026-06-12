@@ -1,13 +1,14 @@
 "use client";
 
+import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StorefrontProductCard } from "@/features/storefront/product-card";
 import { Button } from "@/shared/ui";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export default function StorefrontHomePage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
+export default function StorefrontHomePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
 
   const { data, isLoading } = useQuery({
     queryKey: ["storefront", slug],

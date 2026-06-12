@@ -1,11 +1,12 @@
 "use client";
 
+import { use } from "react";
 import { Button } from "@/shared/ui";
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
-export default function CartPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
+export default function CartPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
