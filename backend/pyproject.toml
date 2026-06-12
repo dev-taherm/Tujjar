@@ -25,6 +25,7 @@ dependencies = [
     "langchain>=0.2,<1.0",
     "litellm>=1.40,<2.0",
     "django-ratelimit>=4.1,<5.0",
+    "pyotp>=2.9,<3.0",
 ]
 
 [project.optional-dependencies]
