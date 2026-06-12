@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,16 +31,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated } = useAuthStore();
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     if (!isAuthenticated || !user) {
       router.push("/login");
     } else if (!user.is_staff && !user.is_superuser) {
       router.push("/dashboard");
     }
-  }, [isAuthenticated, user, router]);
+  }, [hydrated, isAuthenticated, user, router]);
 
-  if (!isAuthenticated || !user || (!user.is_staff && !user.is_superuser)) {
+  if (!hydrated || !isAuthenticated || !user || (!user.is_staff && !user.is_superuser)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />

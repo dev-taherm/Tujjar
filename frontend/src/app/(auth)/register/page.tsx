@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
 import { authApi } from "@/api/queries";
+import { useAuthStore } from "@/stores";
 
 const registerSchema = z
   .object({
@@ -39,7 +40,9 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterForm) => {
     try {
       setError(null);
-      await authApi.register(data);
+      const result = await authApi.register(data);
+      useAuthStore.getState().setUser(result.user);
+      useAuthStore.getState().setTokens(result.tokens);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.error?.message || "Registration failed");

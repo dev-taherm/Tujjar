@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
 import { authApi } from "@/api/queries";
+import { useAuthStore } from "@/stores";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -31,8 +32,14 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     try {
       setError(null);
-      await authApi.login(data.email, data.password);
-      router.push("/dashboard");
+      const result = await authApi.login(data.email, data.password);
+      useAuthStore.getState().setUser(result.user);
+      useAuthStore.getState().setTokens(result.tokens);
+      if (result.user.is_staff || result.user.is_superuser) {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       setError(err.response?.data?.error?.message || "Login failed");
     }
