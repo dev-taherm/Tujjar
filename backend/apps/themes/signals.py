@@ -1072,12 +1072,13 @@ def create_default_themes(sender, **kwargs):
     from .models import Theme, ThemePreset
 
     for theme_data in THEMES_DATA:
-        presets_data = theme_data.pop("presets")
-        slug = theme_data["slug"]
+        data = dict(theme_data)
+        presets_data = data.pop("presets")
+        slug = data["slug"]
         theme, created = Theme.objects.get_or_create(
             slug=slug,
             defaults={
-                **theme_data,
+                **data,
                 "is_system": True,
                 "organization": None,
             },

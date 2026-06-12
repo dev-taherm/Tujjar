@@ -28,6 +28,9 @@ ALLOWED_HOSTS = _allowed_hosts
 # Use S3 storage in production
 STORAGES["default"]["BACKEND"] = "storages.backends.s3boto3.S3Boto3Storage"  # noqa: F405
 
+# Manifest static files for cache-busting
+STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"  # noqa: F405
+
 # Production cache (Redis)
 CACHES = {
     "default": {
