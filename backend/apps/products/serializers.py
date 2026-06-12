@@ -141,3 +141,11 @@ class CollectionDetailSerializer(serializers.ModelSerializer):
 
     def get_product_count(self, obj) -> int:
         return obj.products.count()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and hasattr(request, "org_id") and request.org_id:
+            self.fields["product_ids"].child_relation.queryset = Product.objects.filter(
+                organization_id=request.org_id
+            )

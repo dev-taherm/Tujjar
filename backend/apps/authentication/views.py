@@ -13,6 +13,7 @@ from .serializers import (
     ChangePasswordSerializer,
     ResetPasswordSerializer,
     RequestPasswordResetSerializer,
+    TwoFactorLoginSerializer,
     TwoFactorSetupSerializer,
     TwoFactorVerifySerializer,
     UserCreateSerializer,
@@ -22,7 +23,7 @@ from .serializers import (
 
 
 class AuthAnonThrottle(AnonRateThrottle):
-    rate = "20/hour"
+    rate = "100/hour"
 
 
 class AuthUserThrottle(UserRateThrottle):
@@ -56,6 +57,7 @@ class VerifyEmailView(APIView):
     """Verify email with token."""
 
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthAnonThrottle]
 
     def post(self, request):
         serializer = VerifyEmailSerializer(data=request.data)
@@ -132,13 +134,45 @@ class TwoFactorDisableView(APIView):
         return Response({"message": "2FA disabled successfully"})
 
 
+class TwoFactorLoginView(APIView):
+    """Complete 2FA verification during login flow."""
+
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthAnonThrottle]
+
+    def post(self, request):
+        serializer = TwoFactorLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        return Response(result)
+
+
 class UserViewSet(viewsets.ModelViewSet):
-    """User profile management."""
+    """User profile management — read and update only."""
 
     serializer_class = UserSerializer
+    http_method_names = ["get", "post", "patch", "head", "options"]
 
     def get_queryset(self):
         return User.objects.filter(id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        from rest_framework import status as http_status
+        from rest_framework.response import Response
+
+        return Response(
+            {"detail": "User creation is not allowed through this endpoint."},
+            status=http_status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        from rest_framework import status as http_status
+        from rest_framework.response import Response
+
+        return Response(
+            {"detail": "User deletion is not allowed through this endpoint."},
+            status=http_status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
 
     @action(detail=False, methods=["get", "patch"])
     def me(self, request):
@@ -157,15 +191,47 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response({"message": "Password changed successfully"})
 
 
+class ThrottledLoginView(APIView):
+    """Login endpoint with per-view rate limiting."""
+
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthAnonThrottle]
+
+    def post(self, request):
+        from rest_framework_simplejwt.views import TokenObtainPairView
+
+        from .serializers import CustomTokenObtainPairSerializer
+
+        view = TokenObtainPairView.as_view(serializer_class=CustomTokenObtainPairSerializer)
+        return view(request._request)
+
+
+class ThrottledTokenRefreshView(APIView):
+    """Token refresh endpoint with per-view rate limiting."""
+
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthAnonThrottle]
+
+    def post(self, request):
+        from rest_framework_simplejwt.views import TokenRefreshView
+
+        view = TokenRefreshView.as_view()
+        return view(request._request)
+
+
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def logout_view(request):
     """Blacklist refresh token."""
+    from rest_framework_simplejwt.exceptions import TokenError
+
     try:
         refresh_token = request.data.get("refresh")
         if refresh_token:
             token = RefreshToken(refresh_token)
             token.blacklist()
+    except TokenError:
+        pass
     except Exception:
         pass
     return Response({"message": "Logged out successfully"})

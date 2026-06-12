@@ -27,13 +27,11 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "phone",
             "is_verified",
-            "is_staff",
-            "is_superuser",
             "two_factor_enabled",
             "provider",
             "created_at",
         ]
-        read_only_fields = ["id", "email", "is_verified", "is_staff", "is_superuser", "provider", "created_at"]
+        read_only_fields = ["id", "email", "is_verified", "two_factor_enabled", "provider", "created_at"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -57,9 +55,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         validated_data.pop("password_confirm")
         user = User.objects.create_user(**validated_data)
-        # Generate verification token
-        user.verification_token = secrets.token_urlsafe(48)
-        user.save(update_fields=["verification_token"])
+        # Generate verification token and store hash
+        from .crypto import generate_verification_token
+
+        token, _ = generate_verification_token()
+        user.set_verification_token(token)
+        user.save(update_fields=["verification_token", "verification_token_hash"])
         # Auto-create organization for the user
         org_name = f"{user.first_name or user.email}'s Organization"
         org = Organization.objects.create(
@@ -75,12 +76,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 is_accepted=True,
             )
         # Send verification email
-        self._send_verification_email(user)
+        self._send_verification_email(user, token)
         return user
 
-    def _send_verification_email(self, user: User) -> None:
+    def _send_verification_email(self, user: User, token: str) -> None:
         try:
-            verify_url = f"{settings.FRONTEND_URL}/auth/verify-email?token={user.verification_token}"
+            verify_url = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
             send_mail(
                 subject="Verify your Tujjar account",
                 message=f"Click the link to verify your account: {verify_url}",
@@ -93,14 +94,50 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    """Custom JWT serializer that includes user info in token."""
+    """Custom JWT serializer with 2FA check, email verification, and account lockout."""
 
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        data = super().validate(attrs)
+        from django.core.cache import cache
+
+        email = attrs.get("email", "").lower().strip()
+        cache_key = f"login_attempts:{email}"
+        attempts = cache.get(cache_key, 0)
+
+        if attempts >= 5:
+            raise serializers.ValidationError(
+                {"detail": "Account locked due to too many failed attempts. Try again in 15 minutes."}
+            )
+
+        try:
+            data = super().validate(attrs)
+        except serializers.ValidationError:
+            cache.set(cache_key, attempts + 1, timeout=900)
+            raise
+
+        cache.delete(cache_key)
         user = self.user
+
+        if not user.is_verified:
+            raise serializers.ValidationError(
+                {"detail": "Email not verified. Please check your inbox."}
+            )
+
+        if user.two_factor_enabled:
+            import secrets as _secrets
+
+            temp_token = _secrets.token_urlsafe(32)
+            from django.core.cache import cache as _cache
+
+            _cache.set(f"2fa_pending:{temp_token}", str(user.id), timeout=60)
+            return {
+                "requires_2fa": True,
+                "two_factor_session_token": temp_token,
+                "user": UserSerializer(user).data,
+            }
+
         data["user"] = UserSerializer(user).data
         return data
 
@@ -135,6 +172,11 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context["request"].user
         user.set_password(self.validated_data["new_password"])
         user.save(update_fields=["password"])
+        # Blacklist all existing refresh tokens for this user
+        from rest_framework_simplejwt.tokens import RefreshToken
+        from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+
+        OutstandingToken.objects.filter(user=user).delete()
         return user
 
 
@@ -152,10 +194,14 @@ class RequestPasswordResetSerializer(serializers.Serializer):
         if self.user is None:
             return
         user = self.user
-        token = secrets.token_urlsafe(48)
-        user.password_reset_token = token
-        user.password_reset_expires = timezone.now() + timezone.timedelta(hours=24)
-        user.save(update_fields=["password_reset_token", "password_reset_expires"])
+        from .crypto import generate_password_reset_token
+
+        token, _ = generate_password_reset_token()
+        user.set_password_reset_token(token)
+        user.password_reset_expires = timezone.now() + timezone.timedelta(hours=1)
+        user.save(update_fields=[
+            "password_reset_token", "password_reset_token_hash", "password_reset_expires",
+        ])
         try:
             reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?token={token}"
             send_mail(
@@ -175,12 +221,15 @@ class ResetPasswordSerializer(serializers.Serializer):
     password_confirm = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
+        from .crypto import hash_token
+
         if attrs["password"] != attrs["password_confirm"]:
             raise serializers.ValidationError({"password_confirm": "Passwords do not match"})
         validate_password(attrs["password"])
+        token_hash = hash_token(attrs["token"])
         try:
             user = User.objects.get(
-                password_reset_token=attrs["token"],
+                password_reset_token_hash=token_hash,
                 password_reset_expires__gt=timezone.now(),
                 is_active=True,
             )
@@ -193,8 +242,11 @@ class ResetPasswordSerializer(serializers.Serializer):
         user = self.validated_data["user"]
         user.set_password(self.validated_data["password"])
         user.password_reset_token = ""
+        user.password_reset_token_hash = ""
         user.password_reset_expires = None
-        user.save(update_fields=["password", "password_reset_token", "password_reset_expires"])
+        user.save(update_fields=[
+            "password", "password_reset_token", "password_reset_token_hash", "password_reset_expires",
+        ])
         return user
 
 
@@ -202,8 +254,11 @@ class VerifyEmailSerializer(serializers.Serializer):
     token = serializers.CharField()
 
     def validate_token(self, value):
+        from .crypto import hash_token
+
+        token_hash = hash_token(value)
         try:
-            self.user = User.objects.get(verification_token=value, is_active=True)
+            self.user = User.objects.get(verification_token_hash=token_hash, is_active=True)
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid verification token")
         return value
@@ -211,7 +266,8 @@ class VerifyEmailSerializer(serializers.Serializer):
     def save(self, **kwargs):
         self.user.is_verified = True
         self.user.verification_token = ""
-        self.user.save(update_fields=["is_verified", "verification_token"])
+        self.user.verification_token_hash = ""
+        self.user.save(update_fields=["is_verified", "verification_token", "verification_token_hash"])
         return self.user
 
 
@@ -227,7 +283,7 @@ class TwoFactorSetupSerializer(serializers.Serializer):
 
         user = self.context["request"].user
         secret = pyotp.random_base32()
-        user.two_factor_secret = secret
+        user.set_two_factor_secret(secret)
         user.save(update_fields=["two_factor_secret"])
         totp = pyotp.TOTP(secret)
         return {
@@ -247,7 +303,8 @@ class TwoFactorVerifySerializer(serializers.Serializer):
         user = self.context["request"].user
         if not user.two_factor_secret:
             raise serializers.ValidationError("2FA is not set up")
-        totp = pyotp.TOTP(user.two_factor_secret)
+        secret = user.get_two_factor_secret()
+        totp = pyotp.TOTP(secret)
         if not totp.verify(value):
             raise serializers.ValidationError("Invalid code")
         return value
@@ -257,3 +314,56 @@ class TwoFactorVerifySerializer(serializers.Serializer):
         user.two_factor_enabled = True
         user.save(update_fields=["two_factor_enabled"])
         return user
+
+
+class TwoFactorLoginSerializer(serializers.Serializer):
+    """Complete 2FA verification during login flow."""
+
+    two_factor_session_token = serializers.CharField()
+    code = serializers.CharField(min_length=6, max_length=6)
+
+    def validate(self, attrs):
+        from django.core.cache import cache
+
+        import pyotp
+
+        session_token = attrs["two_factor_session_token"]
+        cache_key = f"2fa_pending:{session_token}"
+        user_id = cache.get(cache_key)
+
+        if not user_id:
+            raise serializers.ValidationError({"two_factor_session_token": "Invalid or expired session"})
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"two_factor_session_token": "Invalid session"})
+
+        if not user.two_factor_secret:
+            raise serializers.ValidationError("2FA is not set up")
+
+        secret = user.get_two_factor_secret()
+        totp = pyotp.TOTP(secret)
+        if not totp.verify(attrs["code"]):
+            raise serializers.ValidationError({"code": "Invalid 2FA code"})
+
+        cache.delete(cache_key)
+        attrs["user"] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.validated_data["user"]
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        tokens = RefreshToken.for_user(user)
+        # Include org_id in access token
+        membership = user.memberships.filter(is_accepted=True).select_related("organization").first()
+        if membership:
+            tokens["org_id"] = str(membership.organization.id)
+        return {
+            "user": UserSerializer(user).data,
+            "tokens": {
+                "access": str(tokens.access_token),
+                "refresh": str(tokens),
+            },
+        }

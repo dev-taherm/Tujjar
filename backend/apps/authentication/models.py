@@ -35,13 +35,15 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, default="")
 
-    # Auth fields
+    # Auth fields — tokens are stored as SHA-256 hashes for secure lookup
     is_verified = models.BooleanField(default=False)
     verification_token = models.CharField(max_length=255, blank=True, default="")
+    verification_token_hash = models.CharField(max_length=64, blank=True, default="", db_index=True)
     password_reset_token = models.CharField(max_length=255, blank=True, default="")
+    password_reset_token_hash = models.CharField(max_length=64, blank=True, default="", db_index=True)
     password_reset_expires = models.DateTimeField(null=True, blank=True)
 
-    # 2FA fields
+    # 2FA fields — secret is encrypted at rest with Fernet
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_secret = models.CharField(max_length=255, blank=True, default="")
 
@@ -79,3 +81,43 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         """Get the current active organization."""
         membership = self.memberships.filter(is_accepted=True).first()
         return membership.organization if membership else None
+
+    # --- Token management methods ---
+
+    def set_verification_token(self, token: str) -> None:
+        """Store verification token as a SHA-256 hash."""
+        from .crypto import hash_token
+
+        self.verification_token = ""
+        self.verification_token_hash = hash_token(token)
+
+    def verify_verification_token(self, token: str) -> bool:
+        """Check if a token matches the stored hash."""
+        from .crypto import hash_token
+
+        return self.verification_token_hash == hash_token(token)
+
+    def set_password_reset_token(self, token: str) -> None:
+        """Store password reset token as a SHA-256 hash."""
+        from .crypto import hash_token
+
+        self.password_reset_token = ""
+        self.password_reset_token_hash = hash_token(token)
+
+    def verify_password_reset_token(self, token: str) -> bool:
+        """Check if a token matches the stored hash."""
+        from .crypto import hash_token
+
+        return self.password_reset_token_hash == hash_token(token)
+
+    def set_two_factor_secret(self, secret: str) -> None:
+        """Encrypt and store 2FA secret."""
+        from .crypto import encrypt_token
+
+        self.two_factor_secret = encrypt_token(secret)
+
+    def get_two_factor_secret(self) -> str:
+        """Decrypt and return 2FA secret."""
+        from .crypto import decrypt_token
+
+        return decrypt_token(self.two_factor_secret)

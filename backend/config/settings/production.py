@@ -14,6 +14,17 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# Enforce explicit ALLOWED_HOSTS — never allow wildcard in production
+_allowed_hosts = config("DJANGO_ALLOWED_HOSTS", default="*", cast=lambda v: [s.strip() for s in v.split(",")])
+if "*" in _allowed_hosts:
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured(
+        "DJANGO_ALLOWED_HOSTS must not contain '*' in production. "
+        "Set the DJANGO_ALLOWED_HOSTS environment variable to your domain(s)."
+    )
+ALLOWED_HOSTS = _allowed_hosts
+
 # Use S3 storage in production
 STORAGES["default"]["BACKEND"] = "storages.backends.s3boto3.S3Boto3Storage"  # noqa: F405
 
