@@ -42,7 +42,7 @@ db.sqlite3
 db.sqlite3-journal
 
 # Media uploads
-media/
+/media/
 
 # Static build files
 staticfiles/

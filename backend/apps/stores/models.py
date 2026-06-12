@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import secrets
 
+from django.conf import settings
 from django.db import models
 
 from apps.core.models import TimeStampedModel, UUIDModel
@@ -56,7 +57,7 @@ class Store(UUIDModel, TimeStampedModel):
     def domain(self) -> str:
         if self.custom_domain:
             return self.custom_domain
-        return f"{self.slug}.tujjar.com"
+        return f"{self.slug}.{settings.STORE_DOMAIN}"
 
 
 class StoreDomain(UUIDModel, TimeStampedModel):

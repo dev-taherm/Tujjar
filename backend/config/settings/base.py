@@ -187,6 +187,9 @@ CORS_ALLOWED_ORIGINS: list[str] = config(
 )
 CORS_ALLOW_CREDENTIALS = True
 
+# Store domain (e.g., "tujjar.com" in production, "localhost" for local dev)
+STORE_DOMAIN = config("STORE_DOMAIN", default="tujjar.com")
+
 # DRF Spectacular (OpenAPI)
 SPECTACULAR_SETTINGS = {
     "TITLE": "Tujjar API",

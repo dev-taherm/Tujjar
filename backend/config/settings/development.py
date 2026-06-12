@@ -42,3 +42,6 @@ MEDIA_URL = "/media/"
 
 # No password restrictions in local dev
 AUTH_PASSWORD_VALIDATORS = []
+
+# Store domain for local dev (stores become {slug}.localhost)
+STORE_DOMAIN = "localhost"
