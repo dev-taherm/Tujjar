@@ -181,6 +181,25 @@ class CartViewSet(viewsets.ModelViewSet):
             user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
         )
 
+        # Send notification to store owner
+        from apps.notifications.models import Notification
+        from apps.stores.models import Store
+        try:
+            store = Store.objects.get(id=cart.store_id)
+            owner = store.organization.owner
+            if owner:
+                Notification.create_for_user(
+                    user=owner,
+                    notification_type="order",
+                    title=f"New Order: {order.order_number}",
+                    message=f"New order from {order.customer_email} — ${order.total}",
+                    organization=store.organization,
+                    entity_type="order",
+                    entity_id=order.id,
+                )
+        except Exception:
+            pass
+
         return Response(OrderDetailSerializer(order).data, status=status.HTTP_201_CREATED)
 
 

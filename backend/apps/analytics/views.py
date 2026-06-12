@@ -39,33 +39,25 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def summary(self, request):
-        org = getattr(request, "organization", None)
-        store = getattr(request, "store", None)
+        org_id = request.org_id
         now = timezone.now()
         period_start = now - timedelta(days=30)
         prev_start = now - timedelta(days=60)
 
-        current = Event.objects.filter(
-            organization=org, store=store, created_at__gte=period_start,
-        )
-        previous = Event.objects.filter(
-            organization=org, store=store, created_at__gte=prev_start, created_at__lt=period_start,
-        )
-
         current_stats = DailyStats.objects.filter(
-            organization=org, store=store, date__gte=period_start.date(),
+            organization_id=org_id, date__gte=period_start.date(),
         ).aggregate(
             revenue=Sum("total_revenue"),
             orders=Sum("total_orders"),
-            customers=Sum("total_customers"),
+            customers=Sum("total_visitors"),
         )
         prev_stats = DailyStats.objects.filter(
-            organization=org, store=store,
+            organization_id=org_id,
             date__gte=prev_start.date(), date__lt=period_start.date(),
         ).aggregate(
             revenue=Sum("total_revenue"),
             orders=Sum("total_orders"),
-            customers=Sum("total_customers"),
+            customers=Sum("total_visitors"),
         )
 
         def pct_change(curr, prev):
@@ -81,18 +73,25 @@ class EventViewSet(viewsets.ModelViewSet):
         prev_customers = prev_stats["customers"] or 0
 
         recent_orders = Event.objects.filter(
-            organization=org, store=store, event_type="purchase",
+            organization_id=org_id, event_type="purchase",
         ).order_by("-created_at")[:5]
 
-        # Last 30 days chart
+        # Last 30 days chart — single bulk query instead of N+1
+        chart_start = (now - timedelta(days=29)).date()
+        chart_stats = {
+            s["date"]: s
+            for s in DailyStats.objects.filter(
+                organization_id=org_id, date__gte=chart_start,
+            ).values("date", "total_revenue", "total_orders")
+        }
         chart = []
         for i in range(30):
             day = (now - timedelta(days=i)).date()
-            stats = DailyStats.objects.filter(store=store, date=day).first()
+            s = chart_stats.get(day)
             chart.append({
                 "date": day.isoformat(),
-                "revenue": float(stats.total_revenue) if stats else 0,
-                "orders": stats.total_orders if stats else 0,
+                "revenue": float(s["total_revenue"]) if s else 0,
+                "orders": s["total_orders"] if s else 0,
             })
         chart.reverse()
 
@@ -112,14 +111,13 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def revenue_chart(self, request):
-        org = getattr(request, "organization", None)
-        store = getattr(request, "store", None)
+        org_id = request.org_id
         period = request.query_params.get("period", "day")
         days = {"day": 30, "week": 12, "month": 12}.get(period, 30)
         start = timezone.now().date() - timedelta(days=days)
 
         stats = DailyStats.objects.filter(
-            organization=org, store=store, date__gte=start,
+            organization_id=org_id, date__gte=start,
         ).order_by("date")
 
         data = [
@@ -130,11 +128,10 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def realtime(self, request):
-        org = getattr(request, "organization", None)
-        store = getattr(request, "store", None)
+        org_id = request.org_id
         since = timezone.now() - timedelta(hours=24)
         events = Event.objects.filter(
-            organization=org, store=store, created_at__gte=since,
+            organization_id=org_id, created_at__gte=since,
         )
         return Response({
             "total_events": events.count(),

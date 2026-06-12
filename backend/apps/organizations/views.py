@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.utils import timezone
 from django.db import models
+from django.db.models import Prefetch
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -24,7 +25,12 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     serializer_class = OrganizationSerializer
 
     def get_queryset(self):
-        return Organization.objects.filter(
+        return Organization.objects.prefetch_related(
+            Prefetch(
+                "memberships",
+                queryset=OrganizationMembership.objects.filter(is_accepted=True).select_related("user", "role"),
+            )
+        ).filter(
             memberships__user=self.request.user,
             memberships__is_accepted=True,
         ).distinct()
@@ -114,6 +120,34 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             ip_address=request.META.get("REMOTE_ADDR"),
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
+
+        # Notify the invited user
+        from apps.notifications.models import Notification
+
+        Notification.create_for_user(
+            user=user,
+            notification_type="system",
+            title="Organization Invitation",
+            message=f"You've been invited to join {org.name} as {role.name}",
+            organization=org,
+            entity_type="organization",
+            entity_id=org.id,
+        )
+
+        # Send invitation email
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings
+
+            send_mail(
+                subject=f"You're invited to join {org.name}",
+                message=f"You've been invited to join {org.name} on Tujjar. Log in to accept the invitation.",
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@tujjar.com"),
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
 
         return Response(
             OrganizationMembershipSerializer(membership).data,
