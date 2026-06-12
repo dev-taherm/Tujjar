@@ -111,9 +111,20 @@ class TwoFactorVerifyView(APIView):
 
 
 class TwoFactorDisableView(APIView):
-    """Disable 2FA."""
+    """Disable 2FA — requires password confirmation."""
 
     def post(self, request):
+        password = request.data.get("password")
+        if not password:
+            return Response(
+                {"detail": "Password is required to disable 2FA."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not request.user.check_password(password):
+            return Response(
+                {"detail": "Incorrect password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         user = request.user
         user.two_factor_enabled = False
         user.two_factor_secret = ""

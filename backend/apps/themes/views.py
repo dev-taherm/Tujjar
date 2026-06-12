@@ -56,10 +56,8 @@ class ThemeViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         if instance.is_system:
-            return Response(
-                {"detail": "System themes cannot be deleted."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("System themes cannot be deleted.")
         log_action(
             action="theme.delete",
             resource_type="theme",

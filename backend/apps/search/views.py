@@ -21,8 +21,10 @@ if USE_TRIGRAM:
     from django.db.models import Value, FloatField
     from django.db.models.functions import Greatest
 class SearchIndexViewSet(viewsets.ModelViewSet):
-    queryset = SearchIndex.objects.all()
     serializer_class = SearchIndexSerializer
+
+    def get_queryset(self):
+        return SearchIndex.objects.filter(organization_id=self.request.org_id)
 
     @action(detail=False, methods=["post"])
     def search(self, request):
@@ -104,5 +106,7 @@ class SearchIndexViewSet(viewsets.ModelViewSet):
 
 
 class SearchQueryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = SearchQuery.objects.all()
     serializer_class = SearchQuerySerializer
+
+    def get_queryset(self):
+        return SearchQuery.objects.filter(organization_id=self.request.org_id)

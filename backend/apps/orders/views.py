@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from django.db import models
-from django.db.models import Q
+from decimal import Decimal
+
+from django.db import models, transaction
+from django.db.models import F, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -97,49 +99,53 @@ class CartViewSet(viewsets.ModelViewSet):
         if cart.items.count() == 0:
             return Response({"detail": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
 
-        order = Order.objects.create(
-            organization=cart.organization,
-            store=cart.store,
-            customer=cart.customer,
-            customer_email=request.data.get("customer_email", cart.customer.email if cart.customer else ""),
-            customer_first_name=request.data.get("customer_first_name", cart.customer.first_name if cart.customer else ""),
-            customer_last_name=request.data.get("customer_last_name", cart.customer.last_name if cart.customer else ""),
-            customer_phone=request.data.get("customer_phone", cart.customer.phone if cart.customer else ""),
-            subtotal=cart.subtotal,
-            tax_amount=request.data.get("tax_amount", 0),
-            shipping_amount=request.data.get("shipping_amount", 0),
-            discount_amount=request.data.get("discount_amount", 0),
-            total=cart.subtotal,
-            shipping_address_line1=request.data.get("shipping_address_line1", ""),
-            shipping_address_line2=request.data.get("shipping_address_line2", ""),
-            shipping_city=request.data.get("shipping_city", ""),
-            shipping_state=request.data.get("shipping_state", ""),
-            shipping_postal_code=request.data.get("shipping_postal_code", ""),
-            shipping_country=request.data.get("shipping_country", ""),
-        )
-        order.total = order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
-        order.save(update_fields=["total"])
-
-        for cart_item in cart.items.select_related("product", "variant").all():
-            OrderItem.objects.create(
-                order=order,
-                product=cart_item.product,
-                variant=cart_item.variant,
-                title=cart_item.product.title,
-                sku=cart_item.product.sku,
-                quantity=cart_item.quantity,
-                unit_price=cart_item.unit_price,
-                total_price=cart_item.line_total,
-                image_url=cart_item.product.primary_image.url if cart_item.product.primary_image else "",
+        with transaction.atomic():
+            order = Order.objects.create(
+                organization=cart.organization,
+                store=cart.store,
+                customer=cart.customer,
+                customer_email=request.data.get("customer_email", cart.customer.email if cart.customer else ""),
+                customer_first_name=request.data.get("customer_first_name", cart.customer.first_name if cart.customer else ""),
+                customer_last_name=request.data.get("customer_last_name", cart.customer.last_name if cart.customer else ""),
+                customer_phone=request.data.get("customer_phone", cart.customer.phone if cart.customer else ""),
+                subtotal=cart.subtotal,
+                tax_amount=request.data.get("tax_amount", 0),
+                shipping_amount=request.data.get("shipping_amount", 0),
+                discount_amount=request.data.get("discount_amount", 0),
+                total=cart.subtotal,
+                shipping_address_line1=request.data.get("shipping_address_line1", ""),
+                shipping_address_line2=request.data.get("shipping_address_line2", ""),
+                shipping_city=request.data.get("shipping_city", ""),
+                shipping_state=request.data.get("shipping_state", ""),
+                shipping_postal_code=request.data.get("shipping_postal_code", ""),
+                shipping_country=request.data.get("shipping_country", ""),
             )
-            if cart_item.product.track_inventory:
-                cart_item.product.inventory_quantity = max(0, cart_item.product.inventory_quantity - cart_item.quantity)
-                cart_item.product.total_sold += cart_item.quantity
-                cart_item.product.total_revenue += cart_item.line_total
-                cart_item.product.save(update_fields=["inventory_quantity", "total_sold", "total_revenue"])
+            order.total = order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
+            order.save(update_fields=["total"])
 
-        cart.status = "converted"
-        cart.save(update_fields=["status"])
+            for cart_item in cart.items.select_related("product", "variant").all():
+                product = cart_item.product
+                if product.track_inventory:
+                    Product.objects.filter(id=product.id).update(
+                        inventory_quantity=F("inventory_quantity") - cart_item.quantity,
+                        total_sold=F("total_sold") + cart_item.quantity,
+                        total_revenue=F("total_revenue") + cart_item.line_total,
+                    )
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    variant=cart_item.variant,
+                    title=product.title,
+                    sku=product.sku,
+                    quantity=cart_item.quantity,
+                    unit_price=cart_item.unit_price,
+                    total_price=Decimal(str(cart_item.line_total)),
+                    image_url=product.primary_image.url if product.primary_image else "",
+                )
+
+            cart.status = "converted"
+            cart.save(update_fields=["status"])
 
         log_action(
             action="order.create",

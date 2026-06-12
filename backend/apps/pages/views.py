@@ -18,7 +18,7 @@ class PageViewSet(viewsets.ModelViewSet):
     serializer_class = PageSerializer
 
     def get_queryset(self):
-        qs = Page.objects.select_related("store", "theme").filter(organization_id=self.request.org_id)
+        qs = Page.objects.select_related("store").filter(organization_id=self.request.org_id)
         store_id = self.request.query_params.get("store")
         if store_id:
             qs = qs.filter(store_id=store_id)

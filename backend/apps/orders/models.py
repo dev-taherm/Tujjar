@@ -89,8 +89,8 @@ class CartItem(UUIDModel, TimeStampedModel):
         return f"{self.quantity}x {self.product.title}"
 
     @property
-    def line_total(self) -> float:
-        return float(self.quantity * self.unit_price)
+    def line_total(self):
+        return self.quantity * self.unit_price
 
 
 class Order(UUIDModel, TimeStampedModel):

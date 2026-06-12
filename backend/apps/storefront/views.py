@@ -93,24 +93,17 @@ class StorefrontProductDetailView(generics.RetrieveAPIView):
         slug = self.kwargs.get("slug")
         store = get_store_by_slug(subdomain)
         if not store:
-            self.request._not_found_reason = "Store not found"
-            return None
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Store not found")
         product = Product.objects.filter(
             organization=store.organization,
             slug=slug,
             status="active",
         ).first()
         if not product:
-            self.request._not_found_reason = "Product not found"
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Product not found")
         return product
-
-    def retrieve(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if obj is None:
-            from rest_framework.response import Response as DRFResponse
-            return DRFResponse({"error": getattr(request, "_not_found_reason", "Not found")}, status=404)
-        serializer = self.get_serializer(obj)
-        return Response(serializer.data)
 
 
 class StorefrontCategoryListView(generics.ListAPIView):
@@ -144,17 +137,20 @@ class StorefrontPageView(generics.RetrieveAPIView):
         slug = self.kwargs.get("slug")
         store = get_store_by_slug(subdomain)
         if not store:
-            return None
-        return Page.objects.filter(
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Store not found")
+        page = Page.objects.filter(
             organization=store.organization,
             slug=slug,
-            status="published",
+            is_published=True,
         ).first()
+        if not page:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Page not found")
+        return page
 
     def retrieve(self, request, *args, **kwargs):
         page = self.get_object()
-        if not page:
-            return Response({"error": "Page not found"}, status=404)
         return Response({
             "id": str(page.id),
             "title": page.title,

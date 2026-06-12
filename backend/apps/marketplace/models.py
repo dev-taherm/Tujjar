@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from apps.core.models import TimeStampedModel, UUIDModel
@@ -68,7 +69,9 @@ class MarketplaceReview(UUIDModel, TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="marketplace_reviews",
     )
-    rating = models.PositiveSmallIntegerField()
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
     title = models.CharField(max_length=200)
     body = models.TextField(blank=True, default="")
     helpful_count = models.PositiveIntegerField(default=0)

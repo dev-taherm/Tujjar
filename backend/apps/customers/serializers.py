@@ -20,6 +20,6 @@ class CustomerSerializer(serializers.ModelSerializer):
             "created_at", "updated_at",
         ]
         read_only_fields = [
-            "id", "organization", "orders_count", "total_spent",
+            "id", "organization", "store", "orders_count", "total_spent",
             "loyalty_points", "created_at", "updated_at",
         ]

@@ -16,8 +16,10 @@ from apps.analytics.serializers import (
     DashboardSummarySerializer,
 )
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all()
     serializer_class = EventSerializer
+
+    def get_queryset(self):
+        return Event.objects.filter(organization_id=self.request.org_id)
 
     def get_serializer_class(self):
         if self.action == "create":
