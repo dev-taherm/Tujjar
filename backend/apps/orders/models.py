@@ -3,10 +3,28 @@ from __future__ import annotations
 import uuid
 
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from apps.core.models import TimeStampedModel, UUIDModel
+
+
+class OrderTransitionError(Exception):
+    """Raised when an invalid order status transition is attempted."""
+
+    pass
+
+
+# Valid order status transitions
+VALID_ORDER_TRANSITIONS = {
+    "pending": ["confirmed", "cancelled"],
+    "confirmed": ["processing", "cancelled"],
+    "processing": ["shipped", "cancelled"],
+    "shipped": ["delivered"],
+    "delivered": ["refunded"],
+    "cancelled": [],
+    "refunded": [],
+}
 
 
 class Cart(UUIDModel, TimeStampedModel):
@@ -44,6 +62,10 @@ class Cart(UUIDModel, TimeStampedModel):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["organization", "store"]),
+            models.Index(fields=["status", "created_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"Cart {self.id} ({self.status})"
@@ -191,6 +213,13 @@ class Order(UUIDModel, TimeStampedModel):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["organization", "store"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["payment_status"]),
+            models.Index(fields=["organization", "store", "status"]),
+            models.Index(fields=["customer_email"]),
+        ]
 
     def __str__(self) -> str:
         return f"Order {self.order_number}"
@@ -199,6 +228,32 @@ class Order(UUIDModel, TimeStampedModel):
         if not self.order_number:
             self.order_number = f"ORD-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
+
+    def transition_status(self, new_status: str, changed_by=None, notes: str = "") -> None:
+        """Transition to a new status with validation and history tracking."""
+        valid = VALID_ORDER_TRANSITIONS.get(self.status, [])
+        if new_status not in valid:
+            raise OrderTransitionError(
+                f"Cannot transition from '{self.status}' to '{new_status}'. "
+                f"Valid transitions: {valid}"
+            )
+        old_status = self.status
+        self.status = new_status
+        update_fields = ["status", "updated_at"]
+        if new_status == "shipped":
+            self.shipped_at = timezone.now()
+            update_fields.append("shipped_at")
+        elif new_status == "delivered":
+            self.delivered_at = timezone.now()
+            update_fields.append("delivered_at")
+        self.save(update_fields=update_fields)
+        OrderStatusHistory.objects.create(
+            order=self,
+            from_status=old_status,
+            to_status=new_status,
+            changed_by=changed_by,
+            notes=notes,
+        )
 
     def recalculate(self) -> None:
         """Recalculate order totals from items."""
@@ -215,21 +270,29 @@ class Order(UUIDModel, TimeStampedModel):
     def item_count(self) -> int:
         return self.items.aggregate(total=models.Sum("quantity"))["total"] or 0
 
-    def mark_shipped(self, tracking_number: str = "", tracking_url: str = "") -> None:
-        self.status = "shipped"
-        self.tracking_number = tracking_number
-        self.tracking_url = tracking_url
-        self.shipped_at = timezone.now()
-        self.save(update_fields=["status", "tracking_number", "tracking_url", "shipped_at", "updated_at"])
+    def cancel(self, changed_by=None, notes: str = "") -> None:
+        """Cancel order and restore inventory atomically."""
+        with transaction.atomic():
+            from apps.products.models import Product
 
-    def mark_delivered(self) -> None:
-        self.status = "delivered"
-        self.delivered_at = timezone.now()
-        self.save(update_fields=["status", "delivered_at", "updated_at"])
-
-    def cancel(self) -> None:
-        self.status = "cancelled"
-        self.save(update_fields=["status", "updated_at"])
+            old_status = self.status
+            self.status = "cancelled"
+            self.save(update_fields=["status", "updated_at"])
+            # Restore inventory for all items
+            for item in self.items.select_related("product").all():
+                if item.product and item.product.track_inventory:
+                    Product.objects.filter(id=item.product.id).update(
+                        inventory_quantity=models.F("inventory_quantity") + item.quantity,
+                        total_sold=models.F("total_sold") - item.quantity,
+                        total_revenue=models.F("total_revenue") - item.total_price,
+                    )
+            OrderStatusHistory.objects.create(
+                order=self,
+                from_status=old_status,
+                to_status="cancelled",
+                changed_by=changed_by,
+                notes=notes,
+            )
 
 
 class OrderItem(UUIDModel, TimeStampedModel):
@@ -265,3 +328,24 @@ class OrderItem(UUIDModel, TimeStampedModel):
         if not self.total_price:
             self.total_price = self.quantity * self.unit_price
         super().save(*args, **kwargs)
+
+
+class OrderStatusHistory(UUIDModel, TimeStampedModel):
+    """Tracks every status change on an order."""
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="status_history")
+    from_status = models.CharField(max_length=20)
+    to_status = models.CharField(max_length=20)
+    changed_by = models.ForeignKey(
+        "authentication.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    notes = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.order.order_number}: {self.from_status} → {self.to_status}"

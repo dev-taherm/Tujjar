@@ -11,13 +11,14 @@ from rest_framework.response import Response
 from apps.audit.models import log_action
 from apps.products.models import Product, ProductVariant
 
-from .models import Cart, CartItem, Order, OrderItem
+from .models import Cart, CartItem, Order, OrderItem, OrderStatusHistory, OrderTransitionError
 from .serializers import (
     CartItemSerializer,
     CartSerializer,
     OrderDetailSerializer,
     OrderItemSerializer,
     OrderListSerializer,
+    OrderStatusHistorySerializer,
 )
 
 
@@ -99,20 +100,40 @@ class CartViewSet(viewsets.ModelViewSet):
         if cart.items.count() == 0:
             return Response({"detail": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
 
+        customer_email = request.data.get("customer_email", "")
+        if not customer_email and cart.customer:
+            customer_email = cart.customer.email
+        if not customer_email:
+            return Response(
+                {"detail": "customer_email is required for guest checkout."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         with transaction.atomic():
+            # Validate inventory before creating order
+            for cart_item in cart.items.select_related("product", "variant").all():
+                product = cart_item.product
+                if product.track_inventory:
+                    locked_product = Product.objects.select_for_update().get(id=product.id)
+                    if locked_product.inventory_quantity < cart_item.quantity and not locked_product.allow_backorder:
+                        return Response(
+                            {"detail": f"Insufficient stock for '{product.title}'. Available: {locked_product.inventory_quantity}"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
             order = Order.objects.create(
                 organization=cart.organization,
                 store=cart.store,
                 customer=cart.customer,
-                customer_email=request.data.get("customer_email", cart.customer.email if cart.customer else ""),
+                customer_email=customer_email,
                 customer_first_name=request.data.get("customer_first_name", cart.customer.first_name if cart.customer else ""),
                 customer_last_name=request.data.get("customer_last_name", cart.customer.last_name if cart.customer else ""),
                 customer_phone=request.data.get("customer_phone", cart.customer.phone if cart.customer else ""),
                 subtotal=cart.subtotal,
-                tax_amount=request.data.get("tax_amount", 0),
-                shipping_amount=request.data.get("shipping_amount", 0),
-                discount_amount=request.data.get("discount_amount", 0),
-                total=cart.subtotal,
+                tax_amount=Decimal("0"),
+                shipping_amount=Decimal("0"),
+                discount_amount=Decimal("0"),
+                total=Decimal("0"),
                 shipping_address_line1=request.data.get("shipping_address_line1", ""),
                 shipping_address_line2=request.data.get("shipping_address_line2", ""),
                 shipping_city=request.data.get("shipping_city", ""),
@@ -120,6 +141,8 @@ class CartViewSet(viewsets.ModelViewSet):
                 shipping_postal_code=request.data.get("shipping_postal_code", ""),
                 shipping_country=request.data.get("shipping_country", ""),
             )
+
+            # Calculate totals server-side
             order.total = order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
             order.save(update_fields=["total"])
 
@@ -196,11 +219,11 @@ class OrderViewSet(viewsets.ModelViewSet):
     def update_status(self, request, pk=None):
         order = self.get_object()
         new_status = request.data.get("status")
-        valid = [c[0] for c in Order.ORDER_STATUS_CHOICES]
-        if new_status not in valid:
-            return Response({"detail": f"Invalid status. Must be one of: {valid}"}, status=status.HTTP_400_BAD_REQUEST)
-        order.status = new_status
-        order.save(update_fields=["status", "updated_at"])
+        notes = request.data.get("notes", "")
+        try:
+            order.transition_status(new_status, changed_by=request.user, notes=notes)
+        except OrderTransitionError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -219,20 +242,43 @@ class OrderViewSet(viewsets.ModelViewSet):
         order = self.get_object()
         tracking_number = request.data.get("tracking_number", "")
         tracking_url = request.data.get("tracking_url", "")
-        order.mark_shipped(tracking_number, tracking_url)
+        notes = request.data.get("notes", "")
+        if tracking_number:
+            order.tracking_number = tracking_number
+        if tracking_url:
+            order.tracking_url = tracking_url
+        order.save(update_fields=["tracking_number", "tracking_url", "updated_at"])
+        try:
+            order.transition_status("shipped", changed_by=request.user, notes=notes)
+        except OrderTransitionError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
     def deliver(self, request, pk=None):
         order = self.get_object()
-        order.mark_delivered()
+        notes = request.data.get("notes", "")
+        try:
+            order.transition_status("delivered", changed_by=request.user, notes=notes)
+        except OrderTransitionError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         order = self.get_object()
-        order.cancel()
+        notes = request.data.get("notes", "")
+        try:
+            order.cancel(changed_by=request.user, notes=notes)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(OrderDetailSerializer(order).data)
+
+    @action(detail=True, methods=["get"])
+    def timeline(self, request, pk=None):
+        order = self.get_object()
+        history = order.status_history.all()
+        return Response(OrderStatusHistorySerializer(history, many=True).data)
 
     @action(detail=True, methods=["post"])
     def add_note(self, request, pk=None):

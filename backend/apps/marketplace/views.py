@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db.models import Q
+from django.db.models import F, Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -11,6 +11,8 @@ from apps.marketplace.serializers import (
     MarketplaceReviewSerializer,
     MarketplaceOrderSerializer,
 )
+
+
 class MarketplaceListingViewSet(viewsets.ModelViewSet):
     queryset = MarketplaceListing.objects.filter(status=MarketplaceListing.Status.APPROVED)
     serializer_class = MarketplaceListingSerializer
@@ -35,8 +37,9 @@ class MarketplaceListingViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def install(self, request, pk=None):
         listing = self.get_object()
-        listing.download_count += 1
-        listing.save(update_fields=["download_count"])
+        MarketplaceListing.objects.filter(id=listing.id).update(
+            download_count=F("download_count") + 1
+        )
         return Response({"status": "installed", "theme_id": str(listing.theme_id)})
 
     @action(detail=False, methods=["get"])
@@ -65,3 +68,18 @@ class MyListingsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return MarketplaceListing.objects.filter(developer=self.request.user)
+
+
+class MarketplaceOrderViewSet(viewsets.ModelViewSet):
+    serializer_class = MarketplaceOrderSerializer
+
+    def get_queryset(self):
+        return MarketplaceOrder.objects.filter(buyer=self.request.user)
+
+    def perform_create(self, serializer):
+        listing = serializer.validated_data["listing"]
+        serializer.save(
+            buyer=self.request.user,
+            amount=listing.price,
+            status="pending",
+        )

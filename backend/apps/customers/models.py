@@ -43,6 +43,7 @@ class Customer(UUIDModel, TimeStampedModel):
     orders_count = models.PositiveIntegerField(default=0)
     total_spent = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     loyalty_points = models.IntegerField(default=0)
+    last_order_date = models.DateTimeField(null=True, blank=True)
 
     # Metadata
     tags = models.JSONField(default=list, blank=True)
@@ -52,6 +53,9 @@ class Customer(UUIDModel, TimeStampedModel):
     class Meta:
         unique_together = ["store", "email"]
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["organization", "store"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name} <{self.email}>".strip()

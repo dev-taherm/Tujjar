@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.db.models import F
 from rest_framework import serializers
 
 from apps.marketplace.models import MarketplaceListing, MarketplaceReview, MarketplaceOrder
@@ -18,8 +19,8 @@ class MarketplaceListingSerializer(serializers.ModelSerializer):
             "developer_name", "created_at", "updated_at",
         ]
         read_only_fields = [
-            "id", "download_count", "rating_average", "rating_count",
-            "created_at", "updated_at",
+            "id", "status", "download_count", "rating_average", "rating_count",
+            "is_featured", "created_at", "updated_at",
         ]
 
 
@@ -36,9 +37,12 @@ class MarketplaceReviewSerializer(serializers.ModelSerializer):
 
 
 class MarketplaceOrderSerializer(serializers.ModelSerializer):
+    buyer_email = serializers.CharField(source="buyer.email", read_only=True)
+
     class Meta:
         model = MarketplaceOrder
         fields = [
-            "id", "listing", "amount", "status", "created_at",
+            "id", "listing", "buyer", "buyer_email", "amount", "status",
+            "external_payment_id", "created_at",
         ]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "buyer", "amount", "status", "created_at"]

@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from apps.customers.serializers import CustomerSerializer
 
-from .models import Cart, CartItem, Order, OrderItem
+from .models import Cart, CartItem, Order, OrderItem, OrderStatusHistory
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -99,3 +99,16 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
     def get_customer_name(self, obj) -> str:
         return f"{obj.customer_first_name} {obj.customer_last_name}".strip()
+
+
+class OrderStatusHistorySerializer(serializers.ModelSerializer):
+    changed_by_email = serializers.CharField(source="changed_by.email", read_only=True, default="")
+
+    class Meta:
+        model = OrderStatusHistory
+        fields = [
+            "id", "order", "from_status", "to_status",
+            "changed_by", "changed_by_email", "notes",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
