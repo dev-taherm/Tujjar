@@ -25,7 +25,7 @@ class MediaFolderViewSet(viewsets.ModelViewSet):
     serializer_class = MediaFolderSerializer
 
     def get_queryset(self):
-        qs = MediaFolder.objects.filter(organization_id=self.request.org_id)
+        qs = MediaFolder.objects.select_related("store", "parent").filter(organization_id=self.request.org_id)
         store_id = self.request.query_params.get("store")
         if store_id:
             qs = qs.filter(store_id=store_id)
@@ -47,7 +47,7 @@ class MediaAssetViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
-        qs = MediaAsset.objects.filter(organization_id=self.request.org_id)
+        qs = MediaAsset.objects.select_related("store", "folder").filter(organization_id=self.request.org_id)
         store_id = self.request.query_params.get("store")
         if store_id:
             qs = qs.filter(store_id=store_id)

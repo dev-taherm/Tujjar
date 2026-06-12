@@ -100,10 +100,11 @@ export function ProductForm({ product, mode }: ProductFormProps) {
         await updateProduct.mutateAsync({ id: product.id, ...payload });
         router.push(`/dashboard/products/${product.id}`);
       }
-    } catch (err: any) {
-      const msg = err?.response?.data?.error?.message
-        || err?.response?.data?.detail
-        || err?.message
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: { message?: string }; detail?: string } }; message?: string };
+      const msg = axiosErr?.response?.data?.error?.message
+        || axiosErr?.response?.data?.detail
+        || axiosErr?.message
         || "An error occurred. Please try again.";
       setFormError(typeof msg === "string" ? msg : JSON.stringify(msg));
     }

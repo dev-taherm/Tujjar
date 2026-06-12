@@ -15,10 +15,7 @@ from apps.analytics.serializers import (
     DailyStatsSerializer,
     DashboardSummarySerializer,
 )
-from apps.core.managers import TenantManager
-
-
-class EventViewSet(TenantManager, viewsets.ModelViewSet):
+class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 

@@ -3,10 +3,13 @@ from datetime import timedelta
 from pathlib import Path
 
 from decouple import Csv, config
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = config("DJANGO_SECRET_KEY", default="change-me-in-production")
+SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
+if not SECRET_KEY:
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set in environment or .env file")
 
 DEBUG = config("DJANGO_DEBUG", default="False", cast=bool)
 
@@ -190,6 +193,9 @@ CORS_ALLOW_CREDENTIALS = True
 # Store domain (e.g., "tujjar.com" in production, "localhost" for local dev)
 STORE_DOMAIN = config("STORE_DOMAIN", default="tujjar.com")
 
+# Frontend URL for password reset links, etc.
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
+
 # DRF Spectacular (OpenAPI)
 SPECTACULAR_SETTINGS = {
     "TITLE": "Tujjar API",
@@ -296,3 +302,11 @@ LOGGING = {
         },
     },
 }
+
+# Security headers (always enabled; production adds more)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+
+# Throttle rates for auth endpoints
+AUTH_THROTTLE_RATE = "5/minute"
+AUTH_THROTTLE_ANON_RATE = "20/hour"

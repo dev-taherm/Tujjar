@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db.models import Q
+from django.core.cache import cache
 from rest_framework import viewsets, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -12,12 +13,25 @@ from apps.stores.models import Store
 from apps.pages.models import Page
 from apps.themes.models import Theme
 
+STORE_CACHE_TTL = 300  # 5 minutes
+
+
+def get_store_by_slug(slug: str):
+    """Get store by slug with caching and organization select_related."""
+    cache_key = f"storefront:store:{slug}"
+    store = cache.get(cache_key)
+    if store is None:
+        store = Store.objects.select_related("organization").filter(slug=slug).first()
+        if store:
+            cache.set(cache_key, store, STORE_CACHE_TTL)
+    return store
+
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def storefront_home(request, subdomain=None):
     """Public storefront home page data."""
-    store = Store.objects.filter(slug=subdomain).first()
+    store = get_store_by_slug(subdomain)
     if not store:
         return Response({"error": "Store not found"}, status=404)
 
@@ -42,7 +56,7 @@ class StorefrontProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         subdomain = self.kwargs.get("subdomain")
-        store = Store.objects.filter(slug=subdomain).first()
+        store = get_store_by_slug(subdomain)
         if not store:
             return Product.objects.none()
         qs = Product.objects.filter(organization=store.organization, status="active")
@@ -56,7 +70,7 @@ class StorefrontProductListView(generics.ListAPIView):
         if collection:
             qs = qs.filter(collections__slug=collection)
         if search:
-            qs = qs.filter(Q(name__icontains=search) | Q(description__icontains=search))
+            qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
 
         valid_sorts = {
             "name": "name",
@@ -77,14 +91,26 @@ class StorefrontProductDetailView(generics.RetrieveAPIView):
     def get_object(self):
         subdomain = self.kwargs.get("subdomain")
         slug = self.kwargs.get("slug")
-        store = Store.objects.filter(slug=subdomain).first()
+        store = get_store_by_slug(subdomain)
         if not store:
+            self.request._not_found_reason = "Store not found"
             return None
-        return Product.objects.filter(
+        product = Product.objects.filter(
             organization=store.organization,
             slug=slug,
             status="active",
         ).first()
+        if not product:
+            self.request._not_found_reason = "Product not found"
+        return product
+
+    def retrieve(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj is None:
+            from rest_framework.response import Response as DRFResponse
+            return DRFResponse({"error": getattr(request, "_not_found_reason", "Not found")}, status=404)
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data)
 
 
 class StorefrontCategoryListView(generics.ListAPIView):
@@ -93,7 +119,7 @@ class StorefrontCategoryListView(generics.ListAPIView):
 
     def get_queryset(self):
         subdomain = self.kwargs.get("subdomain")
-        store = Store.objects.filter(slug=subdomain).first()
+        store = get_store_by_slug(subdomain)
         if not store:
             return Category.objects.none()
         return Category.objects.filter(organization=store.organization, is_active=True)
@@ -105,7 +131,7 @@ class StorefrontCollectionListView(generics.ListAPIView):
 
     def get_queryset(self):
         subdomain = self.kwargs.get("subdomain")
-        store = Store.objects.filter(slug=subdomain).first()
+        store = get_store_by_slug(subdomain)
         if not store:
             return Collection.objects.none()
         return Collection.objects.filter(organization=store.organization, is_active=True)
@@ -116,7 +142,7 @@ class StorefrontPageView(generics.RetrieveAPIView):
     def get_object(self):
         subdomain = self.kwargs.get("subdomain")
         slug = self.kwargs.get("slug")
-        store = Store.objects.filter(slug=subdomain).first()
+        store = get_store_by_slug(subdomain)
         if not store:
             return None
         return Page.objects.filter(

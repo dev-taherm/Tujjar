@@ -4,6 +4,12 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { Button, Badge } from "@/shared/ui";
+import type { User } from "@/shared/types";
+
+interface AdminUser extends User {
+  is_active: boolean;
+  organization_count: number;
+}
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
@@ -69,7 +75,7 @@ export default function AdminUsersPage() {
               ) : data?.results?.length === 0 ? (
                 <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No users found.</td></tr>
               ) : (
-                data?.results?.map((user: any) => (
+                data?.results?.map((user: AdminUser) => (
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div>

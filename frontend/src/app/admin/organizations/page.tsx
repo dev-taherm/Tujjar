@@ -4,6 +4,12 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { Button, Badge } from "@/shared/ui";
+import type { Organization } from "@/shared/types";
+
+interface AdminOrganization extends Organization {
+  store_count: number;
+  subscription_status: string | null;
+}
 
 export default function AdminOrganizationsPage() {
   const queryClient = useQueryClient();
@@ -62,7 +68,7 @@ export default function AdminOrganizationsPage() {
               ) : data?.results?.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No organizations found.</td></tr>
               ) : (
-                data?.results?.map((org: any) => (
+                data?.results?.map((org: AdminOrganization) => (
                   <tr key={org.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div>

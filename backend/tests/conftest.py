@@ -40,7 +40,10 @@ def store(db, organization):
 def organization(user, db):
     from apps.organizations.models import Organization, OrganizationMembership, Role
     org = Organization.objects.create(name="Test Org", slug="test-org")
-    role = Role.objects.get(slug="owner")
+    role, _ = Role.objects.get_or_create(
+        slug="owner", organization=None,
+        defaults={"name": "Owner", "is_system": True},
+    )
     OrganizationMembership.objects.create(
         user=user, organization=org, role=role, is_accepted=True,
     )

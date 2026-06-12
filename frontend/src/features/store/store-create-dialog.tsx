@@ -39,7 +39,7 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
       reset();
       onClose();
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Error handled by React Query
     }
   };

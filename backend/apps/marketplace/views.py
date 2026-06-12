@@ -11,9 +11,6 @@ from apps.marketplace.serializers import (
     MarketplaceReviewSerializer,
     MarketplaceOrderSerializer,
 )
-from apps.core.managers import TenantManager
-
-
 class MarketplaceListingViewSet(viewsets.ModelViewSet):
     queryset = MarketplaceListing.objects.filter(status=MarketplaceListing.Status.APPROVED)
     serializer_class = MarketplaceListingSerializer
@@ -63,7 +60,7 @@ class MarketplaceListingViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=201)
 
 
-class MyListingsViewSet(TenantManager, viewsets.ModelViewSet):
+class MyListingsViewSet(viewsets.ModelViewSet):
     serializer_class = MarketplaceListingSerializer
 
     def get_queryset(self):

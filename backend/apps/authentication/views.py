@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from django.conf import settings
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -19,10 +21,19 @@ from .serializers import (
 )
 
 
+class AuthAnonThrottle(AnonRateThrottle):
+    rate = "20/hour"
+
+
+class AuthUserThrottle(UserRateThrottle):
+    rate = "1000/hour"
+
+
 class RegisterView(APIView):
     """Register a new user."""
 
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthAnonThrottle]
 
     def post(self, request):
         serializer = UserCreateSerializer(data=request.data)
@@ -57,6 +68,7 @@ class RequestPasswordResetView(APIView):
     """Request password reset email."""
 
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthAnonThrottle]
 
     def post(self, request):
         serializer = RequestPasswordResetSerializer(data=request.data)
@@ -69,6 +81,7 @@ class ResetPasswordView(APIView):
     """Reset password with token."""
 
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [AuthAnonThrottle]
 
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)

@@ -13,9 +13,6 @@ from apps.billing.serializers import (
     CreateCheckoutSessionSerializer,
     CreatePortalSessionSerializer,
 )
-from apps.core.managers import TenantManager
-
-
 class PlanViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Plan.objects.filter(is_active=True)
     serializer_class = PlanSerializer
@@ -24,7 +21,7 @@ class PlanViewSet(viewsets.ReadOnlyModelViewSet):
         return Plan.objects.filter(is_active=True)
 
 
-class SubscriptionViewSet(TenantManager, viewsets.ModelViewSet):
+class SubscriptionViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
 
     def get_queryset(self):
@@ -58,7 +55,7 @@ class SubscriptionViewSet(TenantManager, viewsets.ModelViewSet):
         return Response({"status": "canceled"})
 
 
-class InvoiceViewSet(TenantManager, viewsets.ReadOnlyModelViewSet):
+class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = InvoiceSerializer
 
     def get_queryset(self):
@@ -66,7 +63,7 @@ class InvoiceViewSet(TenantManager, viewsets.ReadOnlyModelViewSet):
         return Invoice.objects.filter(organization=org)
 
 
-class PaymentMethodViewSet(TenantManager, viewsets.ModelViewSet):
+class PaymentMethodViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentMethodSerializer
 
     def get_queryset(self):

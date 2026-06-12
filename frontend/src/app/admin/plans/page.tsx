@@ -4,11 +4,30 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { Button, Badge } from "@/shared/ui";
+import type { Plan } from "@/shared/types";
+
+interface AdminPlan extends Plan {
+  is_system: boolean;
+  subscription_count: number;
+}
+
+interface PlanForm {
+  name: string;
+  slug: string;
+  description: string;
+  price: string;
+  interval: string;
+  trial_days: string;
+  max_products: string;
+  max_orders: string;
+  max_storage_gb: string;
+  max_ai_generations: string;
+}
 
 export default function AdminPlansPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<any>(null);
+  const [editingPlan, setEditingPlan] = useState<AdminPlan | null>(null);
   const [form, setForm] = useState({
     name: "", slug: "", description: "", price: "0",
     interval: "monthly", trial_days: "14",
@@ -45,7 +64,7 @@ export default function AdminPlansPage() {
   });
 
   const updatePlan = useMutation({
-    mutationFn: async ({ id, ...plan }: any) => {
+    mutationFn: async ({ id, ...plan }: { id: string } & PlanForm) => {
       const { data } = await apiClient.patch(`/platform/plans/${id}/`, {
         ...plan,
         price: parseFloat(plan.price),
@@ -71,7 +90,7 @@ export default function AdminPlansPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "plans"] }),
   });
 
-  const startEdit = (plan: any) => {
+  const startEdit = (plan: AdminPlan) => {
     setEditingPlan(plan);
     setForm({
       name: plan.name, slug: plan.slug, description: plan.description || "",
@@ -154,7 +173,7 @@ export default function AdminPlansPage() {
         {isLoading ? (
           [1, 2, 3, 4].map((i) => <div key={i} className="h-48 animate-pulse rounded-xl bg-gray-200" />)
         ) : (
-          data?.results?.map((plan: any) => (
+          data?.results?.map((plan: AdminPlan) => (
             <div key={plan.id} className="rounded-xl border border-gray-200 bg-white p-5">
               <div className="flex items-start justify-between">
                 <div>

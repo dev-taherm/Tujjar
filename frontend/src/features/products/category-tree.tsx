@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { useCategories, useCreateCategory, useDeleteCategory } from "@/api/queries";
+import type { Category } from "@/shared/types";
 import { Plus, ChevronRight, ChevronDown, FolderTree, Trash2, Edit } from "lucide-react";
 
 interface CategoryNodeProps {
-  category: any;
+  category: Category;
   depth?: number;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
@@ -37,7 +38,7 @@ function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodePro
       </div>
       {expanded && hasChildren && (
         <div>
-          {category.children.map((child: any) => (
+          {category.children.map((child: Category) => (
             <CategoryNode key={child.id} category={child} depth={depth + 1} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>

@@ -159,9 +159,10 @@ cd Tujjar
 
 # نسخ ملف البيئة
 cp .env.example .env
+# عدّل .env واضبط DJANGO_SECRET_KEY
 
 # تشغيل جميع الخدمات
-make docker-up
+docker compose up -d
 
 # الوصول للتطبيق
 # الواجهة:     http://localhost:3000
@@ -179,9 +180,12 @@ cd Tujjar
 
 # إعداد الخلفية
 cd backend
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -e ".[dev]"
+
+# إنشاء .env بمفتاح DJANGO_SECRET_KEY (مطلوب)
+echo "DJANGO_SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')" > .env
 
 # تشغيل الهجرات وبدء الخلفية
 python manage.py migrate
@@ -191,6 +195,18 @@ python manage.py runserver 0.0.0.0:8000
 cd frontend
 pnpm install
 pnpm dev
+```
+
+### تشغيل الاختبارات
+
+```bash
+# اختبارات الخلفية
+cd backend
+DJANGO_SETTINGS_MODULE=config.settings.development python -m pytest -v
+
+# اختبارات الواجهة
+cd frontend
+pnpm test:run
 ```
 
 ### بيانات الاعتماد الافتراضية
@@ -229,21 +245,24 @@ Tujjar/
 │   │   ├── stores/             # إدارة المتاجر
 │   │   └── themes/             # نظام السمات
 │   ├── config/                 # إعدادات Django
-│   ├── tests/                  # مجموعة الاختبارات (34 اختبار)
+│   ├── conftest.py             # fixtures لـ pytest
+│   ├── tests/                  # مجموعة الاختبارات (71 اختبار backend)
 │   └── pyproject.toml          # تبعيات Python
 ├── frontend/                   # واجهة Next.js
 │   ├── src/
-│   │   ├── api/                # عميل API والخطافات
+│   │   ├── api/                # عميل API والخطافات (مقسّم حسب النطاق)
 │   │   ├── app/                # صفحات App Router
 │   │   │   ├── (auth)/         # تسجيل الدخول، التسجيل
 │   │   │   ├── (dashboard)/    # صفحات لوحة التحكم
-│   │   │   └── (shop)/         # صفحات واجهة المتجر
+│   │   │   ├── admin/          # لوحة تحكم إدارة المنصة
+│   │   │   └── shop/           # صفحات واجهة المتجر
 │   │   ├── features/           # وحدات الميزات (20+)
 │   │   ├── shared/             # المكونات المشتركة، الأنواع، الأدوات
 │   │   └── stores/             # متاجر Zustand
 │   └── package.json            # تبعيات الواجهة
 ├── docker/                     # إعدادات Docker
-├── docker-compose.yml          # إعداد Docker Compose
+├── docker-compose.yml          # إعداد Docker Compose (تطوير)
+├── docker-compose.prod.yml     # إعداد Docker Compose (إنتاج)
 ├── Makefile                    # أوامر التطوير
 └── .env.example                # قالب متغيرات البيئة
 ```
@@ -252,7 +271,7 @@ Tujjar/
 
 ## مرجع الـ API
 
-تججر توفر **71+ نقطة نهاية REST API** مع توثيق OpenAPI مُولّد تلقائياً.
+تججر توفر **75+ نقطة نهاية REST API** مع توثيق OpenAPI مُولّد تلقائياً.
 
 ### المصادقة
 | الطريقة | النهاية | الوصف |
@@ -319,11 +338,14 @@ Tujjar/
 |---------|-------|-----------|
 | `DJANGO_SECRET_KEY` | مفتاح Django السري | (مطلوب) |
 | `DJANGO_DEBUG` | وضع التطوير | `True` |
+| `DJANGO_SETTINGS_MODULE` | وحدة إعدادات Django | `config.settings.development` |
 | `POSTGRES_DB` | اسم قاعدة البيانات | `tujjar` |
 | `POSTGRES_USER` | مستخدم قاعدة البيانات | `tujjar` |
 | `POSTGRES_PASSWORD` | كلمة مرور قاعدة البيانات | `tujjar` |
 | `REDIS_URL` | رابط اتصال Redis | `redis://redis:6379/0` |
 | `CELERY_BROKER_URL` | رابط broker Celery | `redis://redis:6379/1` |
+| `STORE_DOMAIN` | نطاق المتجر للنطاقات الفرعية | `tujjar.com` |
+| `FRONTEND_URL` | رابط الواجهة الأمامية للروابط | `http://localhost:3000` |
 | `CORS_ALLOWED_ORIGINS` | مصادر CORS المسموح بها | `http://localhost:3000` |
 | `MINIO_ENDPOINT` | نقطة نهاية MinIO | `http://minio:9000` |
 | `MINIO_ACCESS_KEY` | مفتاح وصول MinIO | `minioadmin` |

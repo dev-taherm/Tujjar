@@ -3,6 +3,7 @@
 import { use, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StorefrontProductCard } from "@/features/storefront/product-card";
+import type { Product } from "@/shared/types";
 
 const sortOptions = [
   { value: "-created_at", label: "Newest" },
@@ -63,7 +64,7 @@ export default function StorefrontProductsPage({ params }: { params: Promise<{ s
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-          {products.map((p: any) => (
+          {products.map((p: Product) => (
             <StorefrontProductCard key={p.id} product={p} slug={slug} />
           ))}
         </div>

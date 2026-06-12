@@ -43,6 +43,7 @@ db.sqlite3-journal
 
 # Media uploads
 /media/
+backend/media/
 
 # Static build files
 staticfiles/

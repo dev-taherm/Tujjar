@@ -5,9 +5,15 @@ import { apiClient } from "@/api/client";
 import { Button } from "@/shared/ui";
 import { useState, useEffect } from "react";
 
+interface ConfigItem {
+  id: string;
+  key: string;
+  value: string | number | boolean;
+}
+
 export default function AdminSettingsPage() {
   const queryClient = useQueryClient();
-  const [configs, setConfigs] = useState<Record<string, any>>({});
+  const [configs, setConfigs] = useState<Record<string, ConfigItem>>({});
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "config"],
@@ -19,14 +25,14 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     if (data?.results) {
-      const map: Record<string, any> = {};
-      data.results.forEach((c: any) => { map[c.key] = c; });
+      const map: Record<string, ConfigItem> = {};
+      data.results.forEach((c: ConfigItem) => { map[c.key] = c; });
       setConfigs(map);
     }
   }, [data]);
 
   const updateConfig = useMutation({
-    mutationFn: async ({ key, value, id }: { key: string; value: any; id?: string }) => {
+    mutationFn: async ({ key, value, id }: { key: string; value: string | number | boolean; id?: string }) => {
       if (id) {
         const { data } = await apiClient.patch(`/platform/config/${id}/`, { value });
         return data;
@@ -72,7 +78,7 @@ export default function AdminSettingsPage() {
               <label className="mb-1 block text-sm font-medium text-gray-700">Site Name</label>
               <input
                 type="text"
-                defaultValue={configs.site_name?.value || "Tujjar"}
+                defaultValue={String(configs.site_name?.value || "Tujjar")}
                 onBlur={(e) => updateText("site_name", e.target.value)}
                 className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />
@@ -89,7 +95,7 @@ export default function AdminSettingsPage() {
                 <p className="text-xs text-gray-500">Allow new users to sign up</p>
               </div>
               <button
-                onClick={() => toggleSetting("registration_enabled", configs.registration_enabled?.value ?? true)}
+                onClick={() => toggleSetting("registration_enabled", Boolean(configs.registration_enabled?.value ?? true))}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   configs.registration_enabled?.value !== false ? "bg-primary-600" : "bg-gray-300"
                 }`}
@@ -106,7 +112,7 @@ export default function AdminSettingsPage() {
                 <p className="text-xs text-gray-500">Temporarily disable access to the platform</p>
               </div>
               <button
-                onClick={() => toggleSetting("maintenance_mode", configs.maintenance_mode?.value ?? false)}
+                onClick={() => toggleSetting("maintenance_mode", Boolean(configs.maintenance_mode?.value ?? false))}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   configs.maintenance_mode?.value ? "bg-red-600" : "bg-gray-300"
                 }`}
@@ -126,7 +132,7 @@ export default function AdminSettingsPage() {
               <label className="mb-1 block text-sm font-medium text-gray-700">Default Trial Days</label>
               <input
                 type="number"
-                defaultValue={configs.default_trial_days?.value || 14}
+                defaultValue={Number(configs.default_trial_days?.value || 14)}
                 onBlur={(e) => updateText("default_trial_days", e.target.value)}
                 className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />

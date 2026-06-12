@@ -6,6 +6,7 @@ import { StorefrontProductCard } from "@/features/storefront/product-card";
 import { Button } from "@/shared/ui";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import type { Product } from "@/shared/types";
 
 export default function StorefrontHomePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -80,7 +81,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
         </div>
         {featuredProducts.length > 0 ? (
           <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
-            {featuredProducts.map((product: any) => (
+            {featuredProducts.map((product: Product) => (
               <StorefrontProductCard key={product.id} product={product} />
             ))}
           </div>

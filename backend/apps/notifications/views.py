@@ -9,10 +9,7 @@ from apps.notifications.serializers import (
     NotificationSerializer,
     NotificationPreferenceSerializer,
 )
-from apps.core.managers import TenantManager
-
-
-class NotificationViewSet(TenantManager, viewsets.ModelViewSet):
+class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
@@ -21,7 +18,9 @@ class NotificationViewSet(TenantManager, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def mark_read(self, request, pk=None):
         notification = self.get_object()
-        notification.mark_as_read
+        if not notification.is_read:
+            notification.is_read = True
+            notification.save(update_fields=["is_read"])
         return Response({"status": "ok"})
 
     @action(detail=False, methods=["post"])
@@ -35,7 +34,7 @@ class NotificationViewSet(TenantManager, viewsets.ModelViewSet):
         return Response({"count": count})
 
 
-class NotificationPreferenceViewSet(TenantManager, viewsets.ModelViewSet):
+class NotificationPreferenceViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationPreferenceSerializer
 
     def get_queryset(self):

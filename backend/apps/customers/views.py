@@ -15,7 +15,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     serializer_class = CustomerSerializer
 
     def get_queryset(self):
-        qs = Customer.objects.filter(organization_id=self.request.org_id)
+        qs = Customer.objects.select_related("store").filter(organization_id=self.request.org_id)
         store_id = self.request.query_params.get("store")
         if store_id:
             qs = qs.filter(store_id=store_id)

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/stores";
+import { ErrorBoundary } from "@/shared/components/error-boundary";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -105,7 +106,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <main className="ml-64 flex-1 overflow-y-auto">
-        <div className="p-8">{children}</div>
+        <div className="p-8">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </div>
       </main>
     </div>
   );

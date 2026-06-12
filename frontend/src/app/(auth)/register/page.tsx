@@ -44,8 +44,9 @@ export default function RegisterPage() {
       useAuthStore.getState().setUser(result.user);
       useAuthStore.getState().setTokens(result.tokens);
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Registration failed");
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(axiosErr.response?.data?.error?.message || "Registration failed");
     }
   };
 

@@ -40,8 +40,9 @@ export default function LoginPage() {
       } else {
         router.push("/dashboard");
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Login failed");
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(axiosErr.response?.data?.error?.message || "Login failed");
     }
   };
 

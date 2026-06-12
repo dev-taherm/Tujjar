@@ -6,6 +6,12 @@ import { Button } from "@/shared/ui";
 import { ShoppingCart, Heart, Minus, Plus } from "lucide-react";
 import { useState } from "react";
 
+interface StorefrontVariant {
+  id: string;
+  name: string;
+  price: number | null;
+}
+
 export default function StorefrontProductDetailPage({
   params,
 }: {
@@ -77,7 +83,7 @@ export default function StorefrontProductDetailPage({
             <div>
               <h3 className="text-sm font-medium text-gray-700">Options</h3>
               <div className="mt-2 flex flex-wrap gap-2">
-                {product.variants.map((v: any) => (
+                {product.variants.map((v: StorefrontVariant) => (
                   <button
                     key={v.id}
                     onClick={() => setSelectedVariant(v.id)}

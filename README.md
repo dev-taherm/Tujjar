@@ -159,9 +159,10 @@ cd Tujjar
 
 # Copy environment file
 cp .env.example .env
+# Edit .env and set DJANGO_SECRET_KEY
 
 # Start all services
-make docker-up
+docker compose up -d
 
 # Access the application
 # Frontend:  http://localhost:3000
@@ -179,9 +180,12 @@ cd Tujjar
 
 # Backend setup
 cd backend
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -e ".[dev]"
+
+# Create .env with DJANGO_SECRET_KEY (required)
+echo "DJANGO_SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')" > .env
 
 # Run migrations and start backend
 python manage.py migrate
@@ -191,6 +195,18 @@ python manage.py runserver 0.0.0.0:8000
 cd frontend
 pnpm install
 pnpm dev
+```
+
+### Running Tests
+
+```bash
+# Backend tests
+cd backend
+DJANGO_SETTINGS_MODULE=config.settings.development python -m pytest -v
+
+# Frontend tests
+cd frontend
+pnpm test:run
 ```
 
 ### Default Credentials
@@ -229,21 +245,24 @@ Tujjar/
 │   │   ├── stores/             # Store management
 │   │   └── themes/             # Theme system
 │   ├── config/                 # Django settings
-│   ├── tests/                  # Test suite (34 tests)
+│   ├── conftest.py             # Pytest fixtures
+│   ├── tests/                  # Test suite (71 backend tests)
 │   └── pyproject.toml          # Python dependencies
 ├── frontend/                   # Next.js frontend
 │   ├── src/
-│   │   ├── api/                # API client & hooks
+│   │   ├── api/                # API client & hooks (split by domain)
 │   │   ├── app/                # App Router pages
 │   │   │   ├── (auth)/         # Login, Register
 │   │   │   ├── (dashboard)/    # Dashboard pages
-│   │   │   └── (shop)/         # Storefront pages
+│   │   │   ├── admin/          # Platform admin dashboard
+│   │   │   └── shop/           # Storefront pages
 │   │   ├── features/           # Feature modules (20+)
 │   │   ├── shared/             # Shared components, types, utils
 │   │   └── stores/             # Zustand stores
 │   └── package.json            # Frontend dependencies
 ├── docker/                     # Docker configurations
-├── docker-compose.yml          # Docker Compose setup
+├── docker-compose.yml          # Development Docker Compose
+├── docker-compose.prod.yml     # Production Docker Compose
 ├── Makefile                    # Development commands
 └── .env.example                # Environment variables template
 ```
@@ -252,7 +271,7 @@ Tujjar/
 
 ## API Reference
 
-Tujjar provides **71+ REST API endpoints** with auto-generated OpenAPI documentation.
+Tujjar provides **75+ REST API endpoints** with auto-generated OpenAPI documentation.
 
 ### Authentication
 | Method | Endpoint | Description |
@@ -319,11 +338,14 @@ Tujjar supports **6 AI providers** with automatic failover:
 |----------|-------------|---------|
 | `DJANGO_SECRET_KEY` | Django secret key | (required) |
 | `DJANGO_DEBUG` | Debug mode | `True` |
+| `DJANGO_SETTINGS_MODULE` | Django settings module | `config.settings.development` |
 | `POSTGRES_DB` | Database name | `tujjar` |
 | `POSTGRES_USER` | Database user | `tujjar` |
 | `POSTGRES_PASSWORD` | Database password | `tujjar` |
 | `REDIS_URL` | Redis connection URL | `redis://redis:6379/0` |
 | `CELERY_BROKER_URL` | Celery broker URL | `redis://redis:6379/1` |
+| `STORE_DOMAIN` | Store domain for subdomains | `tujjar.com` |
+| `FRONTEND_URL` | Frontend URL for links | `http://localhost:3000` |
 | `CORS_ALLOWED_ORIGINS` | Allowed CORS origins | `http://localhost:3000` |
 | `MINIO_ENDPOINT` | MinIO endpoint | `http://minio:9000` |
 | `MINIO_ACCESS_KEY` | MinIO access key | `minioadmin` |
