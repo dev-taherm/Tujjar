@@ -1,10 +1,12 @@
 "use client";
 
 import { Button } from "@/shared/ui";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
-export default function CartPage() {
+export default function CartPage({ params }: { params: { slug: string } }) {
+  const slug = params.slug;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold text-gray-900">Shopping Cart</h1>
@@ -12,7 +14,7 @@ export default function CartPage() {
         <ShoppingBag className="mx-auto h-12 w-12 text-gray-300" />
         <h2 className="mt-4 text-lg font-medium text-gray-900">Your cart is empty</h2>
         <p className="mt-2 text-sm text-gray-500">Add items to your cart to see them here.</p>
-        <Link href="/products" className="mt-6 inline-block">
+        <Link href={`/shop/${slug}/shop`} className="mt-6 inline-block">
           <Button>Continue Shopping</Button>
         </Link>
       </div>

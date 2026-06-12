@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from django.db.models import Q
 from rest_framework import viewsets, generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.products.models import Product, Category, Collection
@@ -13,22 +14,22 @@ from apps.themes.models import Theme
 
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def storefront_home(request, subdomain=None):
     """Public storefront home page data."""
-    store = Store.objects.filter(subdomain=subdomain).first()
+    store = Store.objects.filter(slug=subdomain).first()
     if not store:
         return Response({"error": "Store not found"}, status=404)
 
     featured_products = Product.objects.filter(
         organization=store.organization,
         status="active",
-        is_featured=True,
     )[:8]
 
     return Response({
         "store": {
             "name": store.name,
-            "subdomain": store.subdomain,
+            "slug": store.slug,
             "settings": store.settings,
         },
         "featured_products": ProductListSerializer(featured_products, many=True).data,
@@ -37,10 +38,11 @@ def storefront_home(request, subdomain=None):
 
 class StorefrontProductListView(generics.ListAPIView):
     serializer_class = ProductListSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         subdomain = self.kwargs.get("subdomain")
-        store = Store.objects.filter(subdomain=subdomain).first()
+        store = Store.objects.filter(slug=subdomain).first()
         if not store:
             return Product.objects.none()
         qs = Product.objects.filter(organization=store.organization, status="active")
@@ -70,11 +72,12 @@ class StorefrontProductListView(generics.ListAPIView):
 
 class StorefrontProductDetailView(generics.RetrieveAPIView):
     serializer_class = ProductDetailSerializer
+    permission_classes = [AllowAny]
 
     def get_object(self):
         subdomain = self.kwargs.get("subdomain")
         slug = self.kwargs.get("slug")
-        store = Store.objects.filter(subdomain=subdomain).first()
+        store = Store.objects.filter(slug=subdomain).first()
         if not store:
             return None
         return Product.objects.filter(
@@ -86,10 +89,11 @@ class StorefrontProductDetailView(generics.RetrieveAPIView):
 
 class StorefrontCategoryListView(generics.ListAPIView):
     serializer_class = CategorySerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         subdomain = self.kwargs.get("subdomain")
-        store = Store.objects.filter(subdomain=subdomain).first()
+        store = Store.objects.filter(slug=subdomain).first()
         if not store:
             return Category.objects.none()
         return Category.objects.filter(organization=store.organization, is_active=True)
@@ -97,20 +101,22 @@ class StorefrontCategoryListView(generics.ListAPIView):
 
 class StorefrontCollectionListView(generics.ListAPIView):
     serializer_class = CollectionSerializer
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         subdomain = self.kwargs.get("subdomain")
-        store = Store.objects.filter(subdomain=subdomain).first()
+        store = Store.objects.filter(slug=subdomain).first()
         if not store:
             return Collection.objects.none()
         return Collection.objects.filter(organization=store.organization, is_active=True)
 
 
 class StorefrontPageView(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
     def get_object(self):
         subdomain = self.kwargs.get("subdomain")
         slug = self.kwargs.get("slug")
-        store = Store.objects.filter(subdomain=subdomain).first()
+        store = Store.objects.filter(slug=subdomain).first()
         if not store:
             return None
         return Page.objects.filter(
