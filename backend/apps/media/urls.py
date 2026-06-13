@@ -5,6 +5,8 @@ from rest_framework.routers import DefaultRouter
 
 from .views import MediaAssetViewSet, MediaFolderViewSet
 
+app_name = "media"
+
 router = DefaultRouter()
 router.register("folders", MediaFolderViewSet, basename="media-folder")
 router.register("assets", MediaAssetViewSet, basename="media-asset")

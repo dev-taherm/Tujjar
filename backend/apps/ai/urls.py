@@ -5,6 +5,8 @@ from rest_framework.routers import DefaultRouter
 
 from .views import AIConversationViewSet, AIGenerationViewSet, AIProviderViewSet
 
+app_name = "ai"
+
 router = DefaultRouter()
 router.register("providers", AIProviderViewSet, basename="ai-provider")
 router.register("conversations", AIConversationViewSet, basename="ai-conversation")

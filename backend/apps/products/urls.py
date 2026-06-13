@@ -11,6 +11,8 @@ from .views import (
     ProductViewSet,
 )
 
+app_name = "products"
+
 router = DefaultRouter()
 router.register("categories", CategoryViewSet, basename="category")
 router.register("collections", CollectionViewSet, basename="collection")

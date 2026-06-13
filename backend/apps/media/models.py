@@ -121,6 +121,10 @@ class MediaAsset(UUIDModel, TimeStampedModel):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["organization", "store"]),
+            models.Index(fields=["organization", "store", "file_type"]),
+        ]
 
     def __str__(self) -> str:
         return self.title or self.filename

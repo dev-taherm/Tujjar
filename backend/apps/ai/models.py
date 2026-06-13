@@ -1,8 +1,20 @@
 from __future__ import annotations
 
+import base64
+import hashlib
+
+from django.conf import settings
 from django.db import models
 
 from apps.core.models import TimeStampedModel, UUIDModel
+
+
+def _get_fernet():
+    """Get Fernet instance for encryption/decryption."""
+    from cryptography.fernet import Fernet
+
+    key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(key))
 
 
 class AIProvider(UUIDModel, TimeStampedModel):
@@ -37,6 +49,25 @@ class AIProvider(UUIDModel, TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.provider}/{self.model_name})"
+
+    def set_api_key(self, key: str) -> None:
+        """Encrypt and store the API key."""
+        if key:
+            fernet = _get_fernet()
+            self.api_key = fernet.encrypt(key.encode()).decode()
+        else:
+            self.api_key = ""
+
+    def get_api_key(self) -> str:
+        """Decrypt and return the API key."""
+        if not self.api_key:
+            return ""
+        try:
+            fernet = _get_fernet()
+            return fernet.decrypt(self.api_key.encode()).decode()
+        except Exception:
+            # Key may be stored in plaintext from before encryption was added
+            return self.api_key
 
 
 class AIConversation(UUIDModel, TimeStampedModel):

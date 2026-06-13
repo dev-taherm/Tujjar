@@ -38,19 +38,19 @@ typecheck:
 
 # Frontend
 frontend-install:
-	cd frontend && npm install
+	cd frontend && pnpm install
 
 frontend-dev:
-	cd frontend && npm run dev
+	cd frontend && pnpm dev
 
 frontend-build:
-	cd frontend && npm run build
+	cd frontend && pnpm build
 
 frontend-lint:
-	cd frontend && npm run lint
+	cd frontend && pnpm lint
 
 frontend-typecheck:
-	cd frontend && npm run typecheck
+	cd frontend && pnpm typecheck
 
 # Docker
 docker-up:

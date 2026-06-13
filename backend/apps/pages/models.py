@@ -60,6 +60,11 @@ class Page(UUIDModel, TimeStampedModel):
     class Meta:
         unique_together = ["organization", "store", "slug"]
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["organization", "store", "is_published"]),
+            models.Index(fields=["organization", "store", "page_type"]),
+            models.Index(fields=["is_published"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.title} ({self.store.name})"
