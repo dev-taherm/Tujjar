@@ -20,6 +20,7 @@ import {
   LogOut,
   ChevronLeft,
   Shield,
+  LayoutTemplate,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 
@@ -31,6 +32,7 @@ const navigation = [
   { name: "Customers", href: "/dashboard/customers", icon: Users },
   { name: "Pages", href: "/dashboard/pages", icon: FileText },
   { name: "Themes", href: "/dashboard/themes", icon: Palette },
+  { name: "Templates", href: "/dashboard/templates", icon: LayoutTemplate },
   { name: "Marketplace", href: "/dashboard/marketplace", icon: Palette },
   { name: "Media", href: "/dashboard/media", icon: Image },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },

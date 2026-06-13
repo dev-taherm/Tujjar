@@ -94,6 +94,17 @@ export interface Store {
   logo: string | null;
   favicon: string | null;
   theme: UUID | null;
+  template: UUID | null;
+  navigation: {
+    logo_text: string;
+    links: Array<{ label: string; url: string; order?: number }>;
+    cta_button?: { label: string; url: string; enabled: boolean };
+  } | null;
+  footer_config: {
+    columns: Array<{ title: string; links: Array<{ label: string; url: string }> }>;
+    copyright: string;
+    social_links: Record<string, string>;
+  } | null;
   settings: Record<string, unknown>;
   seo_title: string;
   seo_description: string;
