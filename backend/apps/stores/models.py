@@ -45,6 +45,15 @@ class Store(UUIDModel, TimeStampedModel):
     seo_title = models.CharField(max_length=255, blank=True, default="")
     seo_description = models.TextField(blank=True, default="")
     is_active = models.BooleanField(default=True)
+    template = models.ForeignKey(
+        "templates.Template",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="stores",
+    )
+    navigation = models.JSONField(default=dict, blank=True)
+    footer_config = models.JSONField(default=dict, blank=True)
 
     class Meta:
         unique_together = ["organization", "slug"]

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "apps.platform",
     "apps.marketplace",
     "apps.storefront",
+    "apps.templates",
 ]
 
 MIDDLEWARE = [

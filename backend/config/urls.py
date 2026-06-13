@@ -61,6 +61,7 @@ urlpatterns = [
     path("api/v1/ai/", include("apps.ai.urls")),
     path("api/v1/platform/", include("apps.platform.urls")),
     path("api/v1/marketplace/", include("apps.marketplace.urls")),
+    path("api/v1/templates/", include("apps.templates.urls")),
     path("api/v1/store/", include("apps.storefront.urls")),
 ]
 
