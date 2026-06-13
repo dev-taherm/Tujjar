@@ -247,4 +247,4 @@ class TemplateViewSet(viewsets.ModelViewSet):
             serializer = TemplateListSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = TemplateListSerializer(qs, many=True)
-        return Response(serializer.data)
+        return Response({"results": serializer.data})

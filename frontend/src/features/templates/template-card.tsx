@@ -44,7 +44,7 @@ export function TemplateCard({ template, onPreview, onInstall, isInstalling }: T
             <>
               <div className="h-5 w-5 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: colors.primary }} />
               <div className="h-5 w-5 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: colors.secondary }} />
-              <div className="h-5 w-5 rounded-full border-2 border-2 border-white shadow-sm" style={{ backgroundColor: colors.accent }} />
+              <div className="h-5 w-5 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: colors.accent }} />
             </>
           )}
         </div>
