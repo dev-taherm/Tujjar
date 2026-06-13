@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import uuid
 
-from django.conf import settings
 from django.db import models
 
 from apps.core.models import TimeStampedModel, UUIDModel
@@ -65,6 +63,9 @@ class Subscription(UUIDModel, TimeStampedModel):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.organization} - {self.plan} ({self.status})"
@@ -103,6 +104,9 @@ class Invoice(UUIDModel, TimeStampedModel):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+        ]
 
     def __str__(self) -> str:
         return f"Invoice {self.invoice_number} - ${self.amount}"
@@ -130,6 +134,9 @@ class PaymentMethod(UUIDModel, TimeStampedModel):
 
     class Meta:
         ordering = ["-is_default", "-created_at"]
+        indexes = [
+            models.Index(fields=["organization", "is_default"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.brand} ****{self.last_four}"

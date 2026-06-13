@@ -7,7 +7,6 @@ from .models import (
     OrganizationMembership,
     Permission,
     Role,
-    RolePermission,
 )
 
 

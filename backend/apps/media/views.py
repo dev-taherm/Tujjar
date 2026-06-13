@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import uuid
 
-from django.db.models import Q
+from django.db.models import Count, Q, Sum
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -133,10 +132,14 @@ class MediaAssetViewSet(viewsets.ModelViewSet):
     def stats(self, request):
         """Get media library statistics."""
         qs = MediaAsset.objects.filter(organization_id=request.org_id)
+        agg = qs.aggregate(
+            total_assets=Count("id"),
+            total_size=Sum("file_size"),
+        )
         return Response({
-            "total_assets": qs.count(),
+            "total_assets": agg["total_assets"],
             "total_images": qs.filter(file_type="image").count(),
             "total_videos": qs.filter(file_type="video").count(),
             "total_documents": qs.filter(file_type="document").count(),
-            "total_size": sum(a.file_size for a in qs),
+            "total_size": agg["total_size"] or 0,
         })

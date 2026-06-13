@@ -70,7 +70,7 @@ class TestRegister(TestCase):
 class TestLogin(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            email="test@example.com", password="testpass123"
+            email="test@example.com", password="testpass123", is_verified=True
         )
 
     def test_login_success(self):

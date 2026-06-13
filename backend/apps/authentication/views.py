@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from django.conf import settings
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response

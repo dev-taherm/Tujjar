@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from django.db.models import F, Q
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.marketplace.models import MarketplaceListing, MarketplaceReview, MarketplaceOrder
+from apps.marketplace.models import MarketplaceListing, MarketplaceOrder
 from apps.marketplace.serializers import (
     MarketplaceListingSerializer,
     MarketplaceReviewSerializer,

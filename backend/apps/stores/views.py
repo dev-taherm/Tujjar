@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from rest_framework import permissions, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -100,11 +100,25 @@ class StoreDomainViewSet(viewsets.ModelViewSet):
     serializer_class = StoreDomainSerializer
 
     def get_queryset(self):
-        return StoreDomain.objects.filter(
-            store_id=self.kwargs["pk"]
-        )
+        from rest_framework.exceptions import PermissionDenied
+
+        store = Store.objects.filter(
+            id=self.kwargs["pk"],
+            organization_id=self.request.org_id,
+        ).first()
+        if not store:
+            raise PermissionDenied("Store not found or access denied.")
+        return StoreDomain.objects.filter(store_id=self.kwargs["pk"])
 
     def perform_create(self, serializer):
+        from rest_framework.exceptions import PermissionDenied
+
+        store = Store.objects.filter(
+            id=self.kwargs["pk"],
+            organization_id=self.request.org_id,
+        ).first()
+        if not store:
+            raise PermissionDenied("Store not found or access denied.")
         serializer.save(store_id=self.kwargs["pk"])
 
     def perform_destroy(self, instance):

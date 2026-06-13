@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import mimetypes
-import os
 import uuid
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
 

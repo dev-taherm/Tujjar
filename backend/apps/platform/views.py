@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from django.db.models import Count, Q, Sum
+from django.db.models import Q, Sum
 from django.utils import timezone
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.authentication.models import User

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.customers.serializers import CustomerSerializer
 
 from .models import Cart, CartItem, Order, OrderItem, OrderStatusHistory
 

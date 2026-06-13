@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from django.db.models import Count, Sum, F
+from django.db.models import Sum
 from django.utils import timezone
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -12,8 +12,6 @@ from apps.analytics.models import Event, DailyStats
 from apps.analytics.serializers import (
     EventSerializer,
     EventCreateSerializer,
-    DailyStatsSerializer,
-    DashboardSummarySerializer,
 )
 class EventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer

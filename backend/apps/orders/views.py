@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from django.db import models, transaction
+from django.db import transaction
 from django.db.models import F, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -11,12 +11,10 @@ from rest_framework.response import Response
 from apps.audit.models import log_action
 from apps.products.models import Product, ProductVariant
 
-from .models import Cart, CartItem, Order, OrderItem, OrderStatusHistory, OrderTransitionError
+from .models import Cart, CartItem, Order, OrderItem, OrderTransitionError
 from .serializers import (
-    CartItemSerializer,
     CartSerializer,
     OrderDetailSerializer,
-    OrderItemSerializer,
     OrderListSerializer,
     OrderStatusHistorySerializer,
 )

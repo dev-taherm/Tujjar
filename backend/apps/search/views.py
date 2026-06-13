@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db.models import Q
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -34,10 +34,9 @@ class SearchIndexViewSet(viewsets.ModelViewSet):
         entity_types = serializer.validated_data["entity_types"]
         limit = serializer.validated_data["limit"]
 
-        org = getattr(request, "organization", None)
-        store = getattr(request, "store", None)
+        org_id = getattr(request, "org_id", None)
 
-        qs = SearchIndex.objects.filter(organization=org, store=store)
+        qs = SearchIndex.objects.filter(organization_id=org_id)
         if entity_types:
             qs = qs.filter(entity_type__in=entity_types)
 
@@ -80,8 +79,7 @@ class SearchIndexViewSet(viewsets.ModelViewSet):
 
         # Log the search query
         SearchQuery.objects.create(
-            organization=org,
-            store=store,
+            organization_id=org_id,
             query=query,
             results_count=len(results),
         )
@@ -94,11 +92,10 @@ class SearchIndexViewSet(viewsets.ModelViewSet):
         if len(q) < 2:
             return Response({"suggestions": []})
 
-        org = getattr(request, "organization", None)
-        store = getattr(request, "store", None)
+        org_id = getattr(request, "org_id", None)
 
         qs = SearchIndex.objects.filter(
-            organization=org, store=store,
+            organization_id=org_id,
             title__icontains=q,
         ).values_list("title", flat=True).distinct()[:8]
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from django.db.models import F
 from rest_framework import serializers
 
 from apps.marketplace.models import MarketplaceListing, MarketplaceReview, MarketplaceOrder

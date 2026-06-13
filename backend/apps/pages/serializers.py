@@ -6,7 +6,6 @@ from rest_framework import serializers
 from apps.core.utils import resolve_organization
 
 from .models import Page, PageVersion
-from .section_registry import get_section_types
 
 
 class PageVersionSerializer(serializers.ModelSerializer):

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.db.models import Q
 from django.core.cache import cache
-from rest_framework import viewsets, generics
+from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -11,7 +11,6 @@ from apps.products.models import Product, Category, Collection
 from apps.products.serializers import ProductListSerializer, ProductDetailSerializer, CategorySerializer, CollectionSerializer
 from apps.stores.models import Store
 from apps.pages.models import Page
-from apps.themes.models import Theme
 
 STORE_CACHE_TTL = 300  # 5 minutes
 
@@ -59,7 +58,9 @@ class StorefrontProductListView(generics.ListAPIView):
         store = get_store_by_slug(subdomain)
         if not store:
             return Product.objects.none()
-        qs = Product.objects.filter(organization=store.organization, status="active")
+        qs = Product.objects.filter(
+            organization=store.organization, status="active"
+        ).prefetch_related("images", "categories", "variants")
         category = self.request.query_params.get("category")
         collection = self.request.query_params.get("collection")
         search = self.request.query_params.get("search")
@@ -75,8 +76,8 @@ class StorefrontProductListView(generics.ListAPIView):
         valid_sorts = {
             "name": "name",
             "-name": "-name",
-            "price": "min_price",
-            "-price": "-min_price",
+            "price": "price",
+            "-price": "-price",
             "created_at": "created_at",
             "-created_at": "-created_at",
         }

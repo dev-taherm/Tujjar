@@ -15,7 +15,6 @@ def aggregate_daily_stats(self, date_str: str | None = None):
     """Aggregate Event data into DailyStats for a given date (default: yesterday)."""
     from apps.analytics.models import DailyStats, Event
     from apps.orders.models import Order
-    from apps.products.models import Product
 
     if date_str:
         target_date = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()

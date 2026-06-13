@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -51,6 +50,12 @@ class MarketplaceListing(UUIDModel, TimeStampedModel):
 
     class Meta:
         ordering = ["-is_featured", "-download_count"]
+        indexes = [
+            models.Index(fields=["status", "is_featured"]),
+            models.Index(fields=["status", "category"]),
+            models.Index(fields=["status", "pricing_type"]),
+            models.Index(fields=["developer", "status"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.name} by {self.developer}"

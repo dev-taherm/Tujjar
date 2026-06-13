@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from django.contrib.postgres.search import (
     SearchVectorField,
-    TrigramSimilarity,
 )
 from django.db import models
 

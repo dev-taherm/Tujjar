@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import secrets
-import string
 
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
@@ -173,7 +171,6 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.set_password(self.validated_data["new_password"])
         user.save(update_fields=["password"])
         # Blacklist all existing refresh tokens for this user
-        from rest_framework_simplejwt.tokens import RefreshToken
         from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
         OutstandingToken.objects.filter(user=user).delete()

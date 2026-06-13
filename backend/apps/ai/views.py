@@ -4,8 +4,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.audit.models import log_action
-from apps.products.models import Product
 
 from .models import AIGenerationLog, AIProvider, AIConversation, AIMessage
 from .serializers import (
@@ -13,12 +11,10 @@ from .serializers import (
     AIConversationListSerializer,
     AIGenerationLogSerializer,
     AIProviderSerializer,
-    AIMessageSerializer,
     ChatMessageSerializer,
     GenerateContentSerializer,
     ProductGenerateSerializer,
 )
-from .services import AIProviderError
 from .services.chat import AIChatAssistant
 from .services.content import ContentGenerator
 
@@ -36,7 +32,7 @@ def _get_active_provider(organization_id) -> dict | None:
         return None
     return {
         "provider": provider.provider,
-        "api_key": provider.api_key,
+        "api_key": provider.get_api_key(),
         "model_name": provider.model_name,
         "api_base_url": provider.api_base_url,
         "max_tokens": provider.max_tokens,

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 
 from django.conf import settings
 from django.db import models
@@ -33,7 +32,7 @@ class Organization(UUIDModel, TimeStampedModel):
     @property
     def owner(self):
         membership = self.memberships.filter(role__slug="owner", is_accepted=True).first()
-        return membership.user if membership else None
+        return membership.user if membership and membership.user else None
 
 
 class Role(UUIDModel, TimeStampedModel):
@@ -107,6 +106,9 @@ class OrganizationMembership(UUIDModel, TimeStampedModel):
     class Meta:
         unique_together = ["user", "organization"]
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "is_accepted"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.user.email} - {self.organization.name} ({self.role.slug})"

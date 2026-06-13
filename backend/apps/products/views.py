@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.db import models
 from django.db.models import Q
-from rest_framework import permissions, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -26,7 +26,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
 
     def get_queryset(self):
-        qs = Category.objects.filter(organization_id=self.request.org_id)
+        qs = Category.objects.prefetch_related("children", "products").filter(
+            organization_id=self.request.org_id
+        )
         store_id = self.request.query_params.get("store")
         if store_id:
             qs = qs.filter(store_id=store_id)

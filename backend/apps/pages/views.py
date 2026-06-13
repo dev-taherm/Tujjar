@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from django.db import models
-from rest_framework import permissions, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -87,7 +86,7 @@ class PageViewSet(viewsets.ModelViewSet):
         serializer = PageVersionSerializer(versions, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"], url_path="versions/(?P<version_number>\d+)/restore")
+    @action(detail=True, methods=["post"], url_path=r"versions/(?P<version_number>\d+)/restore")
     def restore_version(self, request, pk=None, version_number=None):
         """Restore page to a specific version."""
         page = self.get_object()

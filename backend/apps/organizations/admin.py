@@ -1,7 +1,6 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import Organization, OrganizationMembership, Permission, Role, RolePermission
+from .models import Organization, OrganizationMembership, Permission, Role
 
 
 @admin.register(Organization)

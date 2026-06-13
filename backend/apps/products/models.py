@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import uuid
 
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.utils.text import slugify
 
 from apps.core.models import TimeStampedModel, UUIDModel
 
@@ -39,6 +37,10 @@ class Category(UUIDModel, TimeStampedModel):
     class Meta:
         unique_together = ["store", "slug"]
         ordering = ["sort_order", "name"]
+        indexes = [
+            models.Index(fields=["organization", "is_active"]),
+            models.Index(fields=["organization", "store"]),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -72,6 +74,10 @@ class Collection(UUIDModel, TimeStampedModel):
     class Meta:
         unique_together = ["store", "slug"]
         ordering = ["sort_order", "name"]
+        indexes = [
+            models.Index(fields=["organization", "is_active"]),
+            models.Index(fields=["organization", "store"]),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -162,6 +168,13 @@ class Product(UUIDModel, TimeStampedModel):
     class Meta:
         unique_together = ["store", "slug"]
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["organization", "status"]),
+            models.Index(fields=["organization", "store"]),
+            models.Index(fields=["store", "status"]),
+            models.Index(fields=["status", "track_inventory", "inventory_quantity"]),
+            models.Index(fields=["product_type"]),
+        ]
 
     def __str__(self) -> str:
         return self.title
@@ -236,6 +249,9 @@ class ProductImage(UUIDModel, TimeStampedModel):
 
     class Meta:
         ordering = ["position", "created_at"]
+        indexes = [
+            models.Index(fields=["product", "is_primary"]),
+        ]
 
     def __str__(self) -> str:
         return f"Image {self.position} for {self.product.title}"
