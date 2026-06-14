@@ -27,9 +27,10 @@ interface TemplateCardProps {
   onPreview: (template: Template) => void;
   onInstall: (template: Template) => void;
   isInstalling?: boolean;
+  showInstallButton?: boolean;
 }
 
-export function TemplateCard({ template, onPreview, onInstall, isInstalling }: TemplateCardProps) {
+export function TemplateCard({ template, onPreview, onInstall, isInstalling, showInstallButton = true }: TemplateCardProps) {
   const gradient = CATEGORY_GRADIENTS[template.category] || CATEGORY_GRADIENTS.general;
   const colorClass = CATEGORY_COLORS[template.category] || CATEGORY_COLORS.general;
 
@@ -88,18 +89,20 @@ export function TemplateCard({ template, onPreview, onInstall, isInstalling }: T
             <Eye className="h-4 w-4" />
             Preview
           </button>
-          <button
-            onClick={() => onInstall(template)}
-            disabled={isInstalling}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isInstalling ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Check className="h-4 w-4" />
-            )}
-            {isInstalling ? "Installing..." : "Install"}
-          </button>
+          {showInstallButton && (
+            <button
+              onClick={() => onInstall(template)}
+              disabled={isInstalling}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+            >
+              {isInstalling ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
+              {isInstalling ? "Installing..." : "Install"}
+            </button>
+          )}
         </div>
       </div>
     </div>

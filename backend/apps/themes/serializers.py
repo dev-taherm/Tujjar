@@ -72,15 +72,24 @@ class ThemeSerializer(serializers.ModelSerializer):
 class ThemeInstallSerializer(serializers.Serializer):
     """Install a system theme into the current organization."""
 
+    store_id = serializers.UUIDField(required=False, allow_null=True)
+
     def validate(self, attrs):
         theme = self.context["view"].get_object()
         if not theme.is_system:
             raise serializers.ValidationError("Only system themes can be installed.")
+        store_id = attrs.get("store_id")
+        if store_id:
+            from apps.stores.models import Store
+            request = self.context["request"]
+            if not Store.objects.filter(id=store_id, organization_id=request.org_id).exists():
+                raise serializers.ValidationError("Store not found.")
         return attrs
 
     def save(self, **kwargs):
         theme = self.context["view"].get_object()
         request = self.context["request"]
+        store_id = self.validated_data.get("store_id")
         # Create a copy of the theme for this organization
         new_theme = Theme.objects.create(
             organization_id=request.org_id,
@@ -101,6 +110,12 @@ class ThemeInstallSerializer(serializers.Serializer):
                 name=preset.name,
                 config=copy.deepcopy(preset.config),
             )
+        # Assign to store if store_id provided
+        if store_id:
+            from apps.stores.models import Store
+            store = Store.objects.get(id=store_id, organization_id=request.org_id)
+            store.theme = new_theme
+            store.save()
         return new_theme
 
 

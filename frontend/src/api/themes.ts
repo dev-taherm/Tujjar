@@ -27,8 +27,8 @@ export const themesApi = {
     await apiClient.delete(`/themes/${id}/`);
   },
 
-  install: async (id: string): Promise<Theme> => {
-    const { data } = await apiClient.post(`/themes/${id}/install/`);
+  install: async (id: string, storeId?: string): Promise<Theme> => {
+    const { data } = await apiClient.post(`/themes/${id}/install/`, storeId ? { store_id: storeId } : {});
     return data;
   },
 
@@ -98,9 +98,11 @@ export function useUpdateTheme() {
 export function useInstallTheme() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: themesApi.install,
+    mutationFn: ({ id, storeId }: { id: string; storeId?: string }) =>
+      themesApi.install(id, storeId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["themes"] });
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
     },
   });
 }

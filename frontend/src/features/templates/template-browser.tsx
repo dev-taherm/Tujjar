@@ -6,6 +6,7 @@ import { useTemplateMarketplace, useInstalledTemplate, useInstallTemplate } from
 import type { Template } from "@/api/templates";
 import { TemplateCard } from "./template-card";
 import { TemplatePreview } from "./template-preview";
+import { StoreSelectorDialog } from "./store-selector-dialog";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -27,6 +28,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
   const [search, setSearch] = useState("");
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [installingId, setInstallingId] = useState<string | null>(null);
+  const [storeDialogTemplate, setStoreDialogTemplate] = useState<Template | null>(null);
 
   const { data: installedTemplate, isLoading: loadingInstalled } = useInstalledTemplate(
     storeId ? (storeId as string) : null
@@ -44,19 +46,21 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
       t.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const handleInstall = async (template: Template) => {
-    if (!storeId) {
-      toast.error("Please select a store first.");
-      return;
-    }
-    setInstallingId(template.id);
+  const handleInstallClick = (template: Template) => {
+    setStoreDialogTemplate(template);
+  };
+
+  const handleConfirmInstall = async (selectedStoreId: string) => {
+    if (!storeDialogTemplate) return;
+    setInstallingId(storeDialogTemplate.id);
     try {
       const result = await installMutation.mutateAsync({
-        templateId: template.id,
-        storeId: storeId as string,
+        templateId: storeDialogTemplate.id,
+        storeId: selectedStoreId as string,
       });
-      toast.success(`Template "${template.name}" installed! ${result.pages_created} pages created.`);
+      toast.success(`Template "${storeDialogTemplate.name}" installed! ${result.pages_created} pages created.`);
       setPreviewTemplate(null);
+      setStoreDialogTemplate(null);
       queryClient.invalidateQueries({ queryKey: ["stores"] });
       queryClient.invalidateQueries({ queryKey: ["pages"] });
       queryClient.invalidateQueries({ queryKey: ["templates", "installed"] });
@@ -168,7 +172,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
                 key={template.id}
                 template={template}
                 onPreview={setPreviewTemplate}
-                onInstall={handleInstall}
+                onInstall={handleInstallClick}
                 isInstalling={installingId === template.id}
               />
             ))}
@@ -181,10 +185,21 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
         <TemplatePreview
           template={previewTemplate}
           onClose={() => setPreviewTemplate(null)}
-          onInstall={handleInstall}
+          onInstall={handleInstallClick}
           isInstalling={installingId === previewTemplate.id}
         />
       )}
+
+      {/* Store Selector Dialog */}
+      <StoreSelectorDialog
+        open={!!storeDialogTemplate}
+        onClose={() => setStoreDialogTemplate(null)}
+        onConfirm={handleConfirmInstall}
+        title="Install Template"
+        description={`Select a store to install "${storeDialogTemplate?.name || ""}" on.`}
+        currentTemplateName={storeDialogTemplate?.name}
+        isLoading={!!installingId}
+      />
     </div>
   );
 }

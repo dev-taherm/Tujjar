@@ -73,7 +73,10 @@ class ThemeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def install(self, request, pk=None):
         """Install a system theme into the current organization."""
-        serializer = ThemeInstallSerializer(data={}, context={"view": self, "request": request})
+        serializer = ThemeInstallSerializer(
+            data=request.data,
+            context={"view": self, "request": request},
+        )
         serializer.is_valid(raise_exception=True)
         new_theme = serializer.save()
         return Response(

@@ -60,12 +60,14 @@ class TemplateViewSet(viewsets.ModelViewSet):
             )
 
         with transaction.atomic():
-            # 1. Create theme for the org
+            # 1. Create theme for the org (delete old if re-installing)
             theme_data = copy.deepcopy(template.config)
+            theme_slug = f"{template.slug}-theme-{request.org_id}"
+            Theme.objects.filter(slug=theme_slug).delete()
             theme = Theme.objects.create(
                 organization_id=request.org_id,
                 name=f"{template.name} Theme",
-                slug=f"{template.slug}-theme-{request.org_id}",
+                slug=theme_slug,
                 version=template.version,
                 config=theme_data,
                 sections_schema={"sections": template.pages[0]["sections"] if template.pages else []},

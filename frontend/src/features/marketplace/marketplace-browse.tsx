@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useThemeMarketplace, useInstallTheme, useTemplateMarketplace, useInstallTemplate } from "@/api/queries";
-import { useStores } from "@/api/queries";
 import { Badge, Button } from "@/shared/ui";
 import { Palette, LayoutTemplate, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +9,7 @@ import { TemplateCard } from "@/features/templates/template-card";
 import type { Template } from "@/api/templates";
 import type { Theme } from "@/shared/types";
 import { TemplatePreview } from "@/features/templates/template-preview";
+import { StoreSelectorDialog } from "@/features/templates/store-selector-dialog";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -68,9 +68,6 @@ export function MarketplaceBrowse() {
   const [templateSearch, setTemplateSearch] = useState("");
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
 
-  const { data: stores } = useStores();
-  const storeId = stores?.[0]?.id;
-
   return (
     <div className="space-y-6">
       {/* Tabs */}
@@ -111,7 +108,6 @@ export function MarketplaceBrowse() {
           setCategory={setTemplateCategory}
           search={templateSearch}
           setSearch={setTemplateSearch}
-          storeId={storeId}
           previewTemplate={previewTemplate}
           setPreviewTemplate={setPreviewTemplate}
         />
@@ -125,13 +121,24 @@ export function MarketplaceBrowse() {
 function ThemesTab() {
   const { data: themes, isLoading } = useThemeMarketplace();
   const installTheme = useInstallTheme();
+  const queryClient = useQueryClient();
   const [installingId, setInstallingId] = useState<string | null>(null);
+  const [dialogTheme, setDialogTheme] = useState<Theme | null>(null);
 
-  const handleInstall = async (themeId: string, themeName: string) => {
-    setInstallingId(themeId);
+  const themeList = themes || [];
+
+  const handleInstallClick = (theme: Theme) => {
+    setDialogTheme(theme);
+  };
+
+  const handleConfirmInstall = async (storeId: string) => {
+    if (!dialogTheme) return;
+    setInstallingId(dialogTheme.id);
     try {
-      await installTheme.mutateAsync(themeId);
-      toast.success(`Theme "${themeName}" installed!`);
+      await installTheme.mutateAsync({ id: dialogTheme.id, storeId });
+      toast.success(`Theme "${dialogTheme.name}" installed!`);
+      setDialogTheme(null);
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
     } catch {
       toast.error("Failed to install theme.");
     } finally {
@@ -139,34 +146,44 @@ function ThemesTab() {
     }
   };
 
-  const themeList = themes || [];
-
   return (
-    <div>
-      {isLoading ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
-          ))}
-        </div>
-      ) : !themeList.length ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
-          <Palette className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-4 text-gray-500">No themes available</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {themeList.map((theme) => (
-            <ThemeMarketplaceCard
-              key={theme.id}
-              theme={theme}
-              isInstalling={installingId === theme.id}
-              onInstall={() => handleInstall(theme.id, theme.name)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    <>
+      <div>
+        {isLoading ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
+            ))}
+          </div>
+        ) : !themeList.length ? (
+          <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
+            <Palette className="mx-auto h-12 w-12 text-gray-300" />
+            <p className="mt-4 text-gray-500">No themes available</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {themeList.map((theme) => (
+              <ThemeMarketplaceCard
+                key={theme.id}
+                theme={theme}
+                isInstalling={installingId === theme.id}
+                onInstall={() => handleInstallClick(theme)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <StoreSelectorDialog
+        open={!!dialogTheme}
+        onClose={() => setDialogTheme(null)}
+        onConfirm={handleConfirmInstall}
+        title="Install Theme"
+        description={`Select a store to install "${dialogTheme?.name || ""}" on.`}
+        currentThemeName={dialogTheme?.name}
+        isLoading={!!installingId}
+      />
+    </>
   );
 }
 
@@ -177,7 +194,6 @@ function TemplatesTab({
   setCategory,
   search,
   setSearch,
-  storeId,
   previewTemplate,
   setPreviewTemplate,
 }: {
@@ -185,7 +201,6 @@ function TemplatesTab({
   setCategory: (v: string) => void;
   search: string;
   setSearch: (v: string) => void;
-  storeId: string | undefined;
   previewTemplate: Template | null;
   setPreviewTemplate: (t: Template | null) => void;
 }) {
@@ -193,6 +208,7 @@ function TemplatesTab({
   const installMutation = useInstallTemplate();
   const queryClient = useQueryClient();
   const [installingId, setInstallingId] = useState<string | null>(null);
+  const [dialogTemplate, setDialogTemplate] = useState<Template | null>(null);
 
   const templates = (data?.results || []).filter(
     (t) =>
@@ -201,19 +217,21 @@ function TemplatesTab({
       t.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const handleInstall = async (template: Template) => {
-    if (!storeId) {
-      toast.error("Please create a store first.");
-      return;
-    }
-    setInstallingId(template.id);
+  const handleInstallClick = (template: Template) => {
+    setDialogTemplate(template);
+  };
+
+  const handleConfirmInstall = async (storeId: string) => {
+    if (!dialogTemplate) return;
+    setInstallingId(dialogTemplate.id);
     try {
       const result = await installMutation.mutateAsync({
-        templateId: template.id,
+        templateId: dialogTemplate.id,
         storeId: storeId as string,
       });
-      toast.success(`Template "${template.name}" installed! ${result.pages_created} pages created.`);
+      toast.success(`Template "${dialogTemplate.name}" installed! ${result.pages_created} pages created.`);
       setPreviewTemplate(null);
+      setDialogTemplate(null);
       queryClient.invalidateQueries({ queryKey: ["stores"] });
       queryClient.invalidateQueries({ queryKey: ["pages"] });
     } catch {
@@ -224,71 +242,83 @@ function TemplatesTab({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-1">
-          {TEMPLATE_CATEGORIES.map((cat) => (
-            <button
-              key={cat.value}
-              onClick={() => setCategory(cat.value)}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                category === cat.value
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              )}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search templates..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-4 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
-          />
-        </div>
-      </div>
-
-      {/* Grid */}
-      {isLoading ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-80 animate-pulse rounded-2xl bg-gray-100" />
-          ))}
-        </div>
-      ) : templates.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
-          <LayoutTemplate className="mx-auto h-12 w-12 text-gray-300" />
-          <p className="mt-4 text-gray-500">No templates found</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {templates.map((template) => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              onPreview={setPreviewTemplate}
-              onInstall={handleInstall}
-              isInstalling={installingId === template.id}
+    <>
+      <div className="space-y-6">
+        {/* Filters */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-1">
+            {TEMPLATE_CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setCategory(cat.value)}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  category === cat.value
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search templates..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-4 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
             />
-          ))}
+          </div>
         </div>
-      )}
+
+        {/* Grid */}
+        {isLoading ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-80 animate-pulse rounded-2xl bg-gray-100" />
+            ))}
+          </div>
+        ) : templates.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
+            <LayoutTemplate className="mx-auto h-12 w-12 text-gray-300" />
+            <p className="mt-4 text-gray-500">No templates found</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {templates.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onPreview={setPreviewTemplate}
+                onInstall={handleInstallClick}
+                isInstalling={installingId === template.id}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {previewTemplate && (
         <TemplatePreview
           template={previewTemplate}
           onClose={() => setPreviewTemplate(null)}
-          onInstall={handleInstall}
+          onInstall={handleInstallClick}
           isInstalling={installingId === previewTemplate.id}
         />
       )}
-    </div>
+
+      <StoreSelectorDialog
+        open={!!dialogTemplate}
+        onClose={() => setDialogTemplate(null)}
+        onConfirm={handleConfirmInstall}
+        title="Install Template"
+        description={`Select a store to install "${dialogTemplate?.name || ""}" on.`}
+        currentTemplateName={dialogTemplate?.name}
+        isLoading={!!installingId}
+      />
+    </>
   );
 }
