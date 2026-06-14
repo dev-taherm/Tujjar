@@ -54,7 +54,7 @@ export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps)
               placeholder="Search sections..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-300 py-2 ps-10 pe-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
           <div className="mt-3 flex gap-2 overflow-x-auto">

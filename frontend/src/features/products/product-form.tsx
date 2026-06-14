@@ -153,7 +153,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
         <div className="flex items-center gap-2">
           <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
           <Button type="submit" isLoading={createProduct.isPending || updateProduct.isPending}>
-            <Save className="mr-2 h-4 w-4" /> {mode === "create" ? "Create" : "Save"}
+            <Save className="me-2 h-4 w-4" /> {mode === "create" ? "Create" : "Save"}
           </Button>
         </div>
       </div>
@@ -226,7 +226,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
               {!stores?.length ? (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
                   You need to create a store first before adding products.
-                  <Button type="button" variant="link" className="ml-1 p-0" onClick={() => router.push("/dashboard/stores")}>
+                  <Button type="button" variant="link" className="ms-1 p-0" onClick={() => router.push("/dashboard/stores")}>
                     Create Store
                   </Button>
                 </div>

@@ -148,7 +148,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
               placeholder="Search templates..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-4 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
+              className="w-full rounded-lg border border-gray-200 py-2 ps-9 pe-4 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
             />
           </div>
         </div>

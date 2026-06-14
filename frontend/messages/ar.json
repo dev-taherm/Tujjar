@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "title": "تججر - منصة سوق مدعومة بالذكاء الاصطناعي",
+    "description": "أنشئ وخصّص ووسّع متجرك الإلكتروني باستخدام أدوات الذكاء الاصطناعي"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث...",
+    "loading": "جاري التحميل...",
+    "notFound": "غير موجود",
+    "backToStore": "العودة للمتجر",
+    "backToDashboard": "العودة للوحة التحكم",
+    "backToSignIn": "العودة لتسجيل الدخول",
+    "proceedToSignIn": "المتابعة لتسجيل الدخول",
+    "error": "خطأ",
+    "success": "نجاح",
+    "confirm": "تأكيد",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "yes": "نعم",
+    "no": "لا",
+    "items": "عناصر",
+    "each": "لكل",
+    "published": "منشور",
+    "draft": "مسودة",
+    "noImage": "بدون صورة",
+    "section": "قسم"
+  },
+  "landing": {
+    "title": "تججر",
+    "subtitle": "منصة سوق مدعومة بالذكاء الاصطناعي",
+    "description": "أنشئ وخصّص ووسّع متجرك الإلكتروني باستخدام أدوات الذكاء الاصطناعي ومنشئ صفحات مرئي.",
+    "signIn": "تسجيل الدخول",
+    "getStarted": "ابدأ الآن"
+  },
+  "auth": {
+    "login": {
+      "title": "مرحباً بعودتك",
+      "subtitle": "سجّل الدخول إلى حسابك في تججر",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "you@example.com",
+      "password": "كلمة المرور",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "signIn": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "signUp": "إنشاء حساب",
+      "welcomeBack": "مرحباً بعودتك!",
+      "loginFailed": "فشل تسجيل الدخول",
+      "emailInvalid": "عنوان بريد إلكتروني غير صالح",
+      "passwordMin": "يجب أن تكون كلمة المرور 8 أحرف على الأقل"
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "subtitle": "ابدأ مع تججر",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "you@example.com",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "createAccount": "إنشاء حساب",
+      "hasAccount": "لديك حساب بالفعل؟",
+      "signIn": "تسجيل الدخول",
+      "registrationFailed": "فشل التسجيل",
+      "firstNameRequired": "الاسم الأول مطلوب",
+      "lastNameRequired": "اسم العائلة مطلوب",
+      "emailInvalid": "عنوان بريد إلكتروني غير صالح",
+      "passwordMin": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+      "passwordsNoMatch": "كلمتا المرور غير متطابقتين"
+    },
+    "verifyEmail": {
+      "title": "التحقق من البريد الإلكتروني",
+      "verifying": "جاري التحقق من بريدك الإلكتروني...",
+      "noToken": "لم يتم تقديم رمز التحقق.",
+      "success": "تم التحقق من بريدك الإلكتروني بنجاح.",
+      "invalid": "رابط التحقق غير صالح أو منتهي الصلاحية."
+    },
+    "resetPassword": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "you@example.com",
+      "sendResetLink": "إرسال رابط إعادة التعيين",
+      "checkEmail": "تحقق من بريدك الإلكتروني",
+      "checkEmailDescription": "إذا كان هناك حساب مرتبط بهذا البريد، فقد أرسلنا رابط إعادة تعيين كلمة المرور.",
+      "emailInvalid": "عنوان بريد إلكتروني غير صالح",
+      "error": "حدث خطأ. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "لوحة التحكم",
+      "stores": "المتاجر",
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "customers": "العملاء",
+      "pages": "الصفحات",
+      "themes": "السمات",
+      "templates": "القوالب",
+      "marketplace": "السوق",
+      "media": "الوسائط",
+      "analytics": "التحليلات",
+      "ai": "الذكاء الاصطناعي",
+      "notifications": "الإشعارات",
+      "billing": "الفواتير",
+      "settings": "الإعدادات",
+      "adminPanel": "لوحة الإدارة",
+      "signOut": "تسجيل الخروج"
+    }
+  },
+  "admin": {
+    "nav": {
+      "overview": "نظرة عامة",
+      "users": "المستخدمون",
+      "organizations": "المنظمات",
+      "stores": "المتاجر",
+      "plans": "الخطط",
+      "settings": "الإعدادات",
+      "adminPanel": "لوحة الإدارة",
+      "backToDashboard": "العودة للوحة التحكم",
+      "signOut": "تسجيل الخروج"
+    }
+  },
+  "storeSettings": {
+    "tabs": {
+      "general": "عام",
+      "template": "القالب",
+      "theme": "السمة",
+      "pages": "الصفحات"
+    },
+    "general": {
+      "title": "الإعدادات العامة",
+      "storeName": "اسم المتجر",
+      "description": "الوصف",
+      "descriptionPlaceholder": "وصف مختصر لمتجرك",
+      "seoTitle": "عنوان SEO",
+      "seoDescription": "وصف SEO",
+      "seoTitlePlaceholder": "عنوان الصفحة لمحركات البحث",
+      "seoDescriptionPlaceholder": "وصف الصفحة لمحركات البحث",
+      "saveChanges": "حفظ التغييرات"
+    },
+    "template": {
+      "title": "القالب الحالي",
+      "description": "هذا المتجر يستخدم قالباً مخصصاً. قم بتثبيت قالب جديد من الأسفل لاستبداله."
+    },
+    "theme": {
+      "title": "السمة",
+      "description": "إدارة المظهر البصري لمتجرك.",
+      "noTheme": "لم يتم تطبيق سمة بعد. قم بتثبيت قالب من تبويب القالب لإعداد سمتك."
+    },
+    "pages": {
+      "title": "الصفحات",
+      "manageAll": "إدارة جميع الصفحات",
+      "noPages": "لا توجد صفحات بعد",
+      "noPagesDescription": "قم بتثبيت قالب لإنشاء الصفحات تلقائياً، أو أنشئها يدوياً.",
+      "createPage": "إنشاء صفحة"
+    }
+  },
+  "storefront": {
+    "home": {
+      "featuredProducts": "منتجات مميزة",
+      "viewAll": "عرض الكل",
+      "shopNow": "تسوق الآن",
+      "discoverProducts": "اكتشف مجموعتنا المختارة من المنتجات. الجودة والأسلوب والابتكار.",
+      "noFeaturedProducts": "لا توجد منتجات مميزة بعد."
+    },
+    "products": {
+      "allProducts": "جميع المنتجات",
+      "sortNewest": "الأحدث",
+      "sortNameAZ": "الاسم أ-ي",
+      "sortNameZA": "الاسم ي-أ",
+      "sortPriceLowHigh": "السعر من الأقل للأعلى",
+      "sortPriceHighLow": "السعر من الأعلى للأقل",
+      "searchPlaceholder": "بحث...",
+      "noProducts": "لا توجد منتجات متاحة بعد."
+    },
+    "product": {
+      "options": "الخيارات",
+      "addToCart": "أضف إلى السلة",
+      "notFound": "المنتج غير موجود"
+    },
+    "cart": {
+      "title": "سلة التسوق",
+      "empty": "سلة التسوق فارغة",
+      "emptyDescription": "أضف منتجات إلى سلة التسوق لتراها هنا.",
+      "continueShopping": "متابعة التسوق",
+      "orderSummary": "ملخص الطلب",
+      "subtotal": "المجموع الفرعي",
+      "shipping": "الشحن",
+      "calculatedAtCheckout": "يُحسب عند الدفع",
+      "total": "الإجمالي",
+      "updateFailed": "فشل تحديث سلة التسوق"
+    },
+    "collections": {
+      "title": "المجموعات",
+      "noCollections": "لا توجد مجموعات متاحة بعد."
+    },
+    "notFound": {
+      "title": "المتجر غير موجود",
+      "description": "هذا المتجر غير موجود أو لم يعد متاحاً.",
+      "goToTujjar": "الذهاب إلى تججر"
+    },
+    "pageNotFound": {
+      "title": "الصفحة غير موجودة",
+      "description": "هذه الصفحة غير موجودة أو لم تعد متاحة."
+    },
+    "header": {
+      "store": "المتجر",
+      "poweredBy": "مدعوم بواسطة تججر"
+    }
+  }
+}

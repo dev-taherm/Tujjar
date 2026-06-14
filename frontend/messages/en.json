@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "title": "Tujjar - AI Marketplace Platform",
+    "description": "Build, customize, and scale your online store with AI-powered tools"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search...",
+    "loading": "Loading...",
+    "notFound": "Not found",
+    "backToStore": "Back to Store",
+    "backToDashboard": "Back to Dashboard",
+    "backToSignIn": "Back to Sign In",
+    "proceedToSignIn": "Proceed to Sign In",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "yes": "Yes",
+    "no": "No",
+    "items": "items",
+    "each": "each",
+    "published": "Published",
+    "draft": "Draft",
+    "noImage": "No Image",
+    "section": "section"
+  },
+  "landing": {
+    "title": "Tujjar",
+    "subtitle": "AI-Powered Marketplace Platform",
+    "description": "Build, customize, and scale your online store with AI-powered tools and a visual page builder.",
+    "signIn": "Sign In",
+    "getStarted": "Get Started"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your Tujjar account",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "signIn": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign Up",
+      "welcomeBack": "Welcome back!",
+      "loginFailed": "Login failed",
+      "emailInvalid": "Invalid email address",
+      "passwordMin": "Password must be at least 8 characters"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Get started with Tujjar",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "createAccount": "Create Account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign In",
+      "registrationFailed": "Registration failed",
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailInvalid": "Invalid email address",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordsNoMatch": "Passwords do not match"
+    },
+    "verifyEmail": {
+      "title": "Email Verification",
+      "verifying": "Verifying your email...",
+      "noToken": "No verification token provided.",
+      "success": "Your email has been verified successfully.",
+      "invalid": "Invalid or expired verification link."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "sendResetLink": "Send Reset Link",
+      "checkEmail": "Check Your Email",
+      "checkEmailDescription": "If an account exists with that email, we've sent a password reset link.",
+      "emailInvalid": "Invalid email address",
+      "error": "Something went wrong. Please try again."
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "stores": "Stores",
+      "products": "Products",
+      "orders": "Orders",
+      "customers": "Customers",
+      "pages": "Pages",
+      "themes": "Themes",
+      "templates": "Templates",
+      "marketplace": "Marketplace",
+      "media": "Media",
+      "analytics": "Analytics",
+      "ai": "AI",
+      "notifications": "Notifications",
+      "billing": "Billing",
+      "settings": "Settings",
+      "adminPanel": "Admin Panel",
+      "signOut": "Sign Out"
+    }
+  },
+  "admin": {
+    "nav": {
+      "overview": "Overview",
+      "users": "Users",
+      "organizations": "Organizations",
+      "stores": "Stores",
+      "plans": "Plans",
+      "settings": "Settings",
+      "adminPanel": "Admin Panel",
+      "backToDashboard": "Back to Dashboard",
+      "signOut": "Sign Out"
+    }
+  },
+  "storeSettings": {
+    "tabs": {
+      "general": "General",
+      "template": "Template",
+      "theme": "Theme",
+      "pages": "Pages"
+    },
+    "general": {
+      "title": "General Settings",
+      "storeName": "Store Name",
+      "description": "Description",
+      "descriptionPlaceholder": "A brief description of your store",
+      "seoTitle": "SEO Title",
+      "seoDescription": "SEO Description",
+      "seoTitlePlaceholder": "Page title for search engines",
+      "seoDescriptionPlaceholder": "Page description for search engines",
+      "saveChanges": "Save Changes"
+    },
+    "template": {
+      "title": "Current Template",
+      "description": "This store uses a custom template. Install a new one below to replace it."
+    },
+    "theme": {
+      "title": "Theme",
+      "description": "Manage your store's visual theme.",
+      "noTheme": "No theme applied yet. Install a template from the Template tab to set up your theme."
+    },
+    "pages": {
+      "title": "Pages",
+      "manageAll": "Manage All Pages",
+      "noPages": "No pages yet",
+      "noPagesDescription": "Install a template to auto-create pages, or create them manually.",
+      "createPage": "Create Page"
+    }
+  },
+  "storefront": {
+    "home": {
+      "featuredProducts": "Featured Products",
+      "viewAll": "View All",
+      "shopNow": "Shop Now",
+      "discoverProducts": "Discover our curated collection of products. Quality, style, and innovation.",
+      "noFeaturedProducts": "No featured products yet."
+    },
+    "products": {
+      "allProducts": "All Products",
+      "sortNewest": "Newest",
+      "sortNameAZ": "Name A-Z",
+      "sortNameZA": "Name Z-A",
+      "sortPriceLowHigh": "Price Low-High",
+      "sortPriceHighLow": "Price High-Low",
+      "searchPlaceholder": "Search...",
+      "noProducts": "No products available yet."
+    },
+    "product": {
+      "options": "Options",
+      "addToCart": "Add to Cart",
+      "notFound": "Product not found"
+    },
+    "cart": {
+      "title": "Shopping Cart",
+      "empty": "Your cart is empty",
+      "emptyDescription": "Add items to your cart to see them here.",
+      "continueShopping": "Continue Shopping",
+      "orderSummary": "Order Summary",
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "calculatedAtCheckout": "Calculated at checkout",
+      "total": "Total",
+      "updateFailed": "Failed to update cart"
+    },
+    "collections": {
+      "title": "Collections",
+      "noCollections": "No collections available yet."
+    },
+    "notFound": {
+      "title": "Store not found",
+      "description": "This store doesn't exist or is no longer available.",
+      "goToTujjar": "Go to Tujjar"
+    },
+    "pageNotFound": {
+      "title": "Page not found",
+      "description": "This page doesn't exist or is no longer available."
+    },
+    "header": {
+      "store": "Store",
+      "poweredBy": "Powered by Tujjar"
+    }
+  }
+}

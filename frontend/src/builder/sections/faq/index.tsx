@@ -12,7 +12,7 @@ export function FaqPreview({ section }: { section: Section }) {
       <div className="space-y-3 max-w-2xl">
         {faqs.map((faq, i) => (
           <div key={i} className="rounded-lg border border-gray-200">
-            <button className="flex w-full items-center justify-between px-4 py-3 text-left font-medium" onClick={() => setOpenIndex(openIndex === i ? null : i)}>
+            <button className="flex w-full items-center justify-between px-4 py-3 text-start font-medium" onClick={() => setOpenIndex(openIndex === i ? null : i)}>
               {faq.question}
               <span className="text-gray-400">{openIndex === i ? "\u2212" : "+"}</span>
             </button>

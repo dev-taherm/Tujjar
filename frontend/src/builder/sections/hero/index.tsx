@@ -14,7 +14,7 @@ export function HeroPreview({ section }: { section: Section }) {
   const textColor = String(s.textColor || "#ffffff");
   const minHeight = Number(s.minHeight) || 500;
 
-  const alignMap: Record<string, string> = { left: "items-start text-left", center: "items-center text-center", right: "items-end text-right" };
+  const alignMap: Record<string, string> = { left: "items-start text-start", center: "items-center text-center", right: "items-end text-end" };
 
   return (
     <div

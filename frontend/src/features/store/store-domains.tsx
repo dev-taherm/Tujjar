@@ -82,9 +82,9 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
                   <Globe className="h-4 w-4 text-gray-400" />
                   <span className="text-sm font-medium">{domain.domain}</span>
                   {domain.verified ? (
-                    <Badge variant="success"><CheckCircle className="mr-1 h-3 w-3" />Verified</Badge>
+                    <Badge variant="success"><CheckCircle className="me-1 h-3 w-3" />Verified</Badge>
                   ) : (
-                    <Badge variant="warning"><XCircle className="mr-1 h-3 w-3" />Pending</Badge>
+                    <Badge variant="warning"><XCircle className="me-1 h-3 w-3" />Pending</Badge>
                   )}
                   {domain.is_primary && <Badge>Primary</Badge>}
                 </div>

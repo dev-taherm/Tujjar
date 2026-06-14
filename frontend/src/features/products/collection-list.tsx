@@ -39,7 +39,7 @@ export function CollectionList() {
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">Collections</h2>
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Add Collection
+          <Plus className="me-2 h-4 w-4" /> Add Collection
         </Button>
       </div>
 
@@ -49,7 +49,7 @@ export function CollectionList() {
           <h3 className="mb-2 text-lg font-medium text-gray-900">No collections yet</h3>
           <p className="mb-6 text-sm text-gray-500">Create collections to group your products.</p>
           <Button onClick={() => setShowCreate(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Add Collection
+            <Plus className="me-2 h-4 w-4" /> Add Collection
           </Button>
         </div>
       ) : (

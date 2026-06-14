@@ -57,7 +57,7 @@ export function AIProviderConfig() {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">AI Providers</h3>
         <Button size="sm" onClick={() => setShowAdd(true)}>
-          <Plus className="mr-1 h-4 w-4" /> Add Provider
+          <Plus className="me-1 h-4 w-4" /> Add Provider
         </Button>
       </div>
 
@@ -108,7 +108,7 @@ export function AIProviderConfig() {
             <Settings className="mb-3 h-10 w-10 text-gray-300" />
             <p className="text-sm text-gray-500 mb-3">No AI providers configured.</p>
             <Button size="sm" onClick={() => setShowAdd(true)}>
-              <Plus className="mr-1 h-4 w-4" /> Add Your First Provider
+              <Plus className="me-1 h-4 w-4" /> Add Your First Provider
             </Button>
           </CardContent>
         </Card>

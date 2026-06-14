@@ -62,7 +62,7 @@ export function VersionHistory({ pageId, onClose }: VersionHistoryProps) {
                   </div>
                   {v.version !== versions[0]?.version && (
                     <Button variant="outline" size="sm" onClick={() => restoreMutation.mutate(v.version)} isLoading={restoreMutation.isPending}>
-                      <RotateCcw className="mr-1 h-3 w-3" /> Restore
+                      <RotateCcw className="me-1 h-3 w-3" /> Restore
                     </Button>
                   )}
                 </div>

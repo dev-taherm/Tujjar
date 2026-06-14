@@ -198,7 +198,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Section Palette */}
-        <div className="w-56 border-r border-gray-200 overflow-y-auto p-3">
+        <div className="w-56 border-e border-gray-200 overflow-y-auto p-3">
           <SectionPalette onAddSection={handleAddSection} />
         </div>
 
@@ -259,7 +259,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
         {/* Right: Inspector */}
         {selectedSection && !isPreviewMode && (
-          <div className="w-80 border-l border-gray-200 overflow-y-auto p-4">
+          <div className="w-80 border-s border-gray-200 overflow-y-auto p-4">
             <SectionSettingsPanel
               section={selectedSection}
               onUpdate={(settings) => handleUpdateSection(selectedSection.id, settings)}

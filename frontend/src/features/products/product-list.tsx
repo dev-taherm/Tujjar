@@ -46,7 +46,7 @@ export function ProductList() {
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-300 py-2 ps-10 pe-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
           <Select
@@ -56,7 +56,7 @@ export function ProductList() {
           />
         </div>
         <Button onClick={() => router.push("/dashboard/products/new")}>
-          <Plus className="mr-2 h-4 w-4" /> Add Product
+          <Plus className="me-2 h-4 w-4" /> Add Product
         </Button>
       </div>
 
@@ -67,7 +67,7 @@ export function ProductList() {
           <h3 className="mb-2 text-lg font-medium text-gray-900">No products yet</h3>
           <p className="mb-6 text-sm text-gray-500">Create your first product to start selling.</p>
           <Button onClick={() => router.push("/dashboard/products/new")}>
-            <Plus className="mr-2 h-4 w-4" /> Add Product
+            <Plus className="me-2 h-4 w-4" /> Add Product
           </Button>
         </div>
       ) : (

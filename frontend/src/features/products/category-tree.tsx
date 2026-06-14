@@ -79,7 +79,7 @@ export function CategoryTree() {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Categories</CardTitle>
         <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="mr-1 h-4 w-4" /> Add
+          <Plus className="me-1 h-4 w-4" /> Add
         </Button>
       </CardHeader>
       <CardContent>

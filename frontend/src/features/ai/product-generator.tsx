@@ -52,7 +52,7 @@ export function ProductGenerator() {
             <Input label="Category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g., Electronics" />
             <Select label="Tone" options={[{ value: "professional", label: "Professional" }, { value: "casual", label: "Casual" }, { value: "luxury", label: "Luxury" }, { value: "playful", label: "Playful" }]} value={tone} onChange={(e) => setTone(e.target.value)} />
             <Button onClick={handleGenerate} isLoading={generate.isPending} className="w-full">
-              <Sparkles className="mr-2 h-4 w-4" /> Generate Content
+              <Sparkles className="me-2 h-4 w-4" /> Generate Content
             </Button>
           </CardContent>
         </Card>

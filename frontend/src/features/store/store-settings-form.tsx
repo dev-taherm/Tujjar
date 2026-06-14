@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -28,22 +29,24 @@ const settingsSchema = z.object({
 
 type SettingsForm = z.infer<typeof settingsSchema>;
 
-const TABS = [
-  { id: "general", label: "General", icon: Settings },
-  { id: "template", label: "Template", icon: LayoutTemplate },
-  { id: "theme", label: "Theme", icon: Palette },
-  { id: "pages", label: "Pages", icon: FileText },
-] as const;
-
-type TabId = (typeof TABS)[number]["id"];
+type TabId = "general" | "template" | "theme" | "pages";
 
 interface StoreSettingsFormProps {
   store: Store;
 }
 
 export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
+  const t = useTranslations("storeSettings");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<TabId>("general");
-  const updateStore = useUpdateStore();
+
+  const TABS: { id: TabId; label: string; icon: typeof Settings }[] = [
+    { id: "general", label: t("tabs.general"), icon: Settings },
+    { id: "template", label: t("tabs.template"), icon: LayoutTemplate },
+    { id: "theme", label: t("tabs.theme"), icon: Palette },
+    { id: "pages", label: t("tabs.pages"), icon: FileText },
+  ];
 
   return (
     <div className="space-y-6">
@@ -71,17 +74,19 @@ export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
       </div>
 
       {/* Tab Content */}
-      {activeTab === "general" && <GeneralTab store={store} updateStore={updateStore} />}
+      {activeTab === "general" && <GeneralTab store={store} />}
       {activeTab === "template" && <TemplateTab store={store} />}
       {activeTab === "theme" && <ThemeTab store={store} />}
-      {activeTab === "pages" && <PagesTab store={store} />}
+      {activeTab === "pages" && <PagesTab store={store} locale={locale} />}
     </div>
   );
 }
 
 /* ── General Tab ─────────────────────────────────────────────────────── */
 
-function GeneralTab({ store, updateStore }: { store: Store; updateStore: ReturnType<typeof useUpdateStore> }) {
+function GeneralTab({ store }: { store: Store }) {
+  const t = useTranslations("storeSettings.general");
+  const updateStore = useUpdateStore();
   const {
     register,
     handleSubmit,
@@ -104,32 +109,32 @@ function GeneralTab({ store, updateStore }: { store: Store; updateStore: ReturnT
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
         <CardHeader>
-          <CardTitle>General Settings</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
-            label="Store Name"
+            label={t("storeName")}
             error={errors.name?.message}
             {...register("name")}
           />
           <Input
-            label="Description"
-            placeholder="A brief description of your store"
+            label={t("description")}
+            placeholder={t("descriptionPlaceholder")}
             {...register("description")}
           />
           <Input
-            label="SEO Title"
-            placeholder="Page title for search engines"
+            label={t("seoTitle")}
+            placeholder={t("seoTitlePlaceholder")}
             {...register("seo_title")}
           />
           <Input
-            label="SEO Description"
-            placeholder="Page description for search engines"
+            label={t("seoDescription")}
+            placeholder={t("seoDescriptionPlaceholder")}
             {...register("seo_description")}
           />
           <div className="flex justify-end">
             <Button type="submit" isLoading={isSubmitting} disabled={!isDirty}>
-              Save Changes
+              {t("saveChanges")}
             </Button>
           </div>
         </CardContent>
@@ -141,16 +146,18 @@ function GeneralTab({ store, updateStore }: { store: Store; updateStore: ReturnT
 /* ── Template Tab ────────────────────────────────────────────────────── */
 
 function TemplateTab({ store }: { store: Store }) {
+  const t = useTranslations("storeSettings.template");
+
   return (
     <div>
       {store.template && (
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Current Template</CardTitle>
+            <CardTitle>{t("title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-600">
-              This store uses a custom template. Install a new one below to replace it.
+              {t("description")}
             </p>
           </CardContent>
         </Card>
@@ -163,14 +170,16 @@ function TemplateTab({ store }: { store: Store }) {
 /* ── Theme Tab ───────────────────────────────────────────────────────── */
 
 function ThemeTab({ store }: { store: Store }) {
+  const t = useTranslations("storeSettings.theme");
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Theme</CardTitle>
+        <CardTitle>{t("title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-gray-500">
-          {store.theme ? "Manage your store's visual theme." : "No theme applied yet. Install a template from the Template tab to set up your theme."}
+          {store.theme ? t("description") : t("noTheme")}
         </p>
       </CardContent>
     </Card>
@@ -179,14 +188,16 @@ function ThemeTab({ store }: { store: Store }) {
 
 /* ── Pages Tab ───────────────────────────────────────────────────────── */
 
-function PagesTab({ store }: { store: Store }) {
+function PagesTab({ store, locale }: { store: Store; locale: string }) {
+  const t = useTranslations("storeSettings.pages");
+  const tCommon = useTranslations("common");
   const { data: pages, isLoading } = usePages(store.id);
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Pages</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -203,11 +214,11 @@ function PagesTab({ store }: { store: Store }) {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Pages</CardTitle>
-          <Link href="/dashboard/pages">
+          <CardTitle>{t("title")}</CardTitle>
+          <Link href={`/${locale}/dashboard/pages`}>
             <Button variant="outline" size="sm">
-              <FileText className="mr-2 h-4 w-4" />
-              Manage All Pages
+              <FileText className="me-2 h-4 w-4" />
+              {t("manageAll")}
             </Button>
           </Link>
         </div>
@@ -216,14 +227,14 @@ function PagesTab({ store }: { store: Store }) {
         {!pages?.length ? (
           <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-12">
             <FileText className="mb-3 h-10 w-10 text-gray-400" />
-            <h4 className="mb-1 text-sm font-medium text-gray-900">No pages yet</h4>
+            <h4 className="mb-1 text-sm font-medium text-gray-900">{t("noPages")}</h4>
             <p className="mb-4 text-xs text-gray-500">
-              Install a template to auto-create pages, or create them manually.
+              {t("noPagesDescription")}
             </p>
-            <Link href="/dashboard/pages">
+            <Link href={`/${locale}/dashboard/pages`}>
               <Button size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Create Page
+                <FileText className="me-2 h-4 w-4" />
+                {t("createPage")}
               </Button>
             </Link>
           </div>
@@ -232,7 +243,7 @@ function PagesTab({ store }: { store: Store }) {
             {pages.map((page) => (
               <Link
                 key={page.id}
-                href={`/dashboard/pages/${page.id}`}
+                href={`/${locale}/dashboard/pages/${page.id}`}
                 className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-gray-50"
               >
                 <div className="flex items-center gap-3">
@@ -246,7 +257,7 @@ function PagesTab({ store }: { store: Store }) {
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge variant={page.is_published ? "success" : "secondary"}>
-                    {page.is_published ? "Published" : "Draft"}
+                    {page.is_published ? tCommon("published") : tCommon("draft")}
                   </Badge>
                   <ExternalLink className="h-4 w-4 text-gray-400" />
                 </div>

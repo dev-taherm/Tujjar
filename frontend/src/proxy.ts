@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const LOCALES = ["en", "ar"];
+const DEFAULT_LOCALE = "en";
 const EXCLUDED_PREFIXES = ["/login", "/register", "/dashboard", "/api", "/_next", "/favicon.ico"];
 
 function getSubdomain(host: string): string | null {
@@ -11,23 +13,43 @@ function getSubdomain(host: string): string | null {
   return null;
 }
 
+function detectLocale(request: NextRequest): string {
+  const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
+  if (cookieLocale && LOCALES.includes(cookieLocale)) return cookieLocale;
+
+  const acceptLanguage = request.headers.get("accept-language") || "";
+  const preferred = acceptLanguage.split(",")[0]?.split("-")[0]?.trim();
+  if (preferred && LOCALES.includes(preferred)) return preferred;
+
+  return DEFAULT_LOCALE;
+}
+
 export function proxy(request: NextRequest) {
   const host = request.headers.get("host") || "";
   const subdomain = getSubdomain(host);
   const pathname = request.nextUrl.pathname;
 
-  if (!subdomain) {
-    return NextResponse.next();
-  }
+  const firstSegment = pathname.split("/")[1] || "";
+  const hasLocalePrefix = LOCALES.includes(firstSegment);
 
   if (EXCLUDED_PREFIXES.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 
-  const slug = subdomain;
-  const newPath = pathname === "/" ? `/shop/${slug}` : `/shop/${slug}${pathname}`;
+  if (subdomain) {
+    const slug = subdomain;
+    const locale = hasLocalePrefix ? firstSegment : detectLocale(request);
+    const rest = hasLocalePrefix ? pathname.slice(`/${locale}`.length) : pathname;
+    const newPath = `/shop/${slug}${rest === "/" ? "" : rest}`;
+    return NextResponse.rewrite(new URL(`/${locale}${newPath}`, request.url));
+  }
 
-  return NextResponse.rewrite(new URL(newPath, request.url));
+  if (hasLocalePrefix) {
+    return NextResponse.next();
+  }
+
+  const locale = detectLocale(request);
+  return NextResponse.redirect(new URL(`/${locale}${pathname}`, request.url));
 }
 
 export const config = {

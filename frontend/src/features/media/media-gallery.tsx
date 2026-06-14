@@ -63,25 +63,25 @@ export function MediaGallery() {
   return (
     <div className="flex h-[calc(100vh-160px)] overflow-hidden rounded-xl border border-gray-200 bg-white">
       {/* Sidebar */}
-      <div className="w-56 border-r border-gray-200 flex flex-col">
+      <div className="w-56 border-e border-gray-200 flex flex-col">
         <div className="p-3 border-b border-gray-200 space-y-2">
           <Button onClick={() => fileInputRef.current?.click()} className="w-full" size="sm">
-            <Upload className="mr-1 h-4 w-4" /> Upload
+            <Upload className="me-1 h-4 w-4" /> Upload
           </Button>
           <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx" className="hidden" onChange={handleUpload} />
           <Button variant="outline" onClick={() => setShowNewFolder(!showNewFolder)} className="w-full" size="sm">
-            <FolderPlus className="mr-1 h-4 w-4" /> New Folder
+            <FolderPlus className="me-1 h-4 w-4" /> New Folder
           </Button>
         </div>
         <div className="p-2 space-y-1">
-          <button onClick={() => setCurrentFolder(undefined)} className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${!currentFolder ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"}`}>
+          <button onClick={() => setCurrentFolder(undefined)} className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-start text-sm ${!currentFolder ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"}`}>
             <Folder className="h-4 w-4" /> All Files
           </button>
           {folders?.map((f) => (
-            <button key={f.id} onClick={() => setCurrentFolder(f.id)} className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${currentFolder === f.id ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"}`}>
+            <button key={f.id} onClick={() => setCurrentFolder(f.id)} className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-start text-sm ${currentFolder === f.id ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"}`}>
               <Folder className="h-4 w-4" />
               <span className="truncate">{f.name}</span>
-              <span className="ml-auto text-xs text-gray-400">{f.asset_count}</span>
+              <span className="ms-auto text-xs text-gray-400">{f.asset_count}</span>
             </button>
           ))}
         </div>
@@ -107,7 +107,7 @@ export function MediaGallery() {
           )}
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search files..." className="w-full rounded-lg border border-gray-200 py-1.5 pl-8 pr-3 text-sm" />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search files..." className="w-full rounded-lg border border-gray-200 py-1.5 ps-8 pe-3 text-sm" />
           </div>
           <div className="flex gap-1 rounded-lg border border-gray-200 p-0.5">
             <button onClick={() => setTypeFilter("")} className={`rounded px-2 py-1 text-xs ${!typeFilter ? "bg-gray-100" : ""}`}>All</button>
@@ -167,7 +167,7 @@ export function MediaGallery() {
 
       {/* Detail Panel */}
       {selected && (
-        <div className="w-72 border-l border-gray-200 flex flex-col overflow-hidden">
+        <div className="w-72 border-s border-gray-200 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between border-b border-gray-200 p-3">
             <h3 className="text-sm font-semibold">Details</h3>
             <button onClick={() => setSelectedAsset(null)} className="text-gray-400 hover:text-gray-600">&times;</button>
@@ -186,8 +186,8 @@ export function MediaGallery() {
             <Input label="Alt Text" value={selected?.alt_text || ""} onChange={() => {}} placeholder="Describe this image..." />
           </div>
           <div className="border-t border-gray-200 p-3 flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => window.open(selected?.file_url)}><Eye className="mr-1 h-3 w-3" /> View</Button>
-            <Button variant="outline" size="sm" className="flex-1 text-red-600" onClick={() => handleDelete(selected?.id || "")}><Trash2 className="mr-1 h-3 w-3" /> Delete</Button>
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => window.open(selected?.file_url)}><Eye className="me-1 h-3 w-3" /> View</Button>
+            <Button variant="outline" size="sm" className="flex-1 text-red-600" onClick={() => handleDelete(selected?.id || "")}><Trash2 className="me-1 h-3 w-3" /> Delete</Button>
           </div>
         </div>
       )}

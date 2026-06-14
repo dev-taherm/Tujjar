@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -25,32 +26,34 @@ import {
 import { useAuthStore, useUIStore } from "@/stores";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Stores", href: "/dashboard/stores", icon: Store },
-  { name: "Products", href: "/dashboard/products", icon: Package },
-  { name: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
-  { name: "Customers", href: "/dashboard/customers", icon: Users },
-  { name: "Pages", href: "/dashboard/pages", icon: FileText },
-  { name: "Themes", href: "/dashboard/themes", icon: Palette },
-  { name: "Templates", href: "/dashboard/templates", icon: LayoutTemplate },
-  { name: "Marketplace", href: "/dashboard/marketplace", icon: Palette },
-  { name: "Media", href: "/dashboard/media", icon: Image },
-  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { name: "AI", href: "/dashboard/ai", icon: Bot },
-  { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
-  { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { nameKey: "dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { nameKey: "stores", href: "/dashboard/stores", icon: Store },
+  { nameKey: "products", href: "/dashboard/products", icon: Package },
+  { nameKey: "orders", href: "/dashboard/orders", icon: ShoppingCart },
+  { nameKey: "customers", href: "/dashboard/customers", icon: Users },
+  { nameKey: "pages", href: "/dashboard/pages", icon: FileText },
+  { nameKey: "themes", href: "/dashboard/themes", icon: Palette },
+  { nameKey: "templates", href: "/dashboard/templates", icon: LayoutTemplate },
+  { nameKey: "marketplace", href: "/dashboard/marketplace", icon: Palette },
+  { nameKey: "media", href: "/dashboard/media", icon: Image },
+  { nameKey: "analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { nameKey: "ai", href: "/dashboard/ai", icon: Bot },
+  { nameKey: "notifications", href: "/dashboard/notifications", icon: Bell },
+  { nameKey: "billing", href: "/dashboard/billing", icon: CreditCard },
+  { nameKey: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { user, organization } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUIStore();
+  const t = useTranslations("dashboard.nav");
+  const locale = useLocale();
 
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen border-r border-gray-200 bg-white transition-all",
+        "fixed left-0 top-0 z-40 h-screen border-e border-gray-200 bg-white transition-all",
         sidebarOpen ? "w-64" : "w-16"
       )}
     >
@@ -58,7 +61,7 @@ export function Sidebar() {
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
           {sidebarOpen && (
-            <Link href="/dashboard" className="text-xl font-bold text-primary-600">
+            <Link href={`/${locale}/dashboard`} className="text-xl font-bold text-primary-600">
               Tujjar
             </Link>
           )}
@@ -75,11 +78,12 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-2 py-4">
           {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+            const href = `/${locale}${item.href}`;
+            const isActive = pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
-                key={item.name}
-                href={item.href}
+                key={item.nameKey}
+                href={href}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   isActive
@@ -88,7 +92,7 @@ export function Sidebar() {
                 )}
               >
                 <item.icon className="h-5 w-5 flex-shrink-0" />
-                {sidebarOpen && <span>{item.name}</span>}
+                {sidebarOpen && <span>{t(item.nameKey)}</span>}
               </Link>
             );
           })}
@@ -97,16 +101,16 @@ export function Sidebar() {
             <>
               <div className="my-3 border-t border-gray-200" />
               <Link
-                href="/admin"
+                href={`/${locale}/admin`}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  pathname === "/admin" || pathname.startsWith("/admin/")
+                  pathname === `/${locale}/admin` || pathname.startsWith(`/${locale}/admin/`)
                     ? "bg-red-50 text-red-700"
                     : "text-red-600 hover:bg-red-50 hover:text-red-700"
                 )}
               >
                 <Shield className="h-5 w-5 flex-shrink-0" />
-                {sidebarOpen && <span>Admin Panel</span>}
+                {sidebarOpen && <span>{t("adminPanel")}</span>}
               </Link>
             </>
           )}
@@ -127,12 +131,12 @@ export function Sidebar() {
           <button
             onClick={() => {
               useAuthStore.getState().logout();
-              window.location.href = "/login";
+              window.location.href = `/${locale}/login`;
             }}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           >
             <LogOut className="h-5 w-5" />
-            {sidebarOpen && <span>Sign Out</span>}
+            {sidebarOpen && <span>{t("signOut")}</span>}
           </button>
         </div>
       </div>

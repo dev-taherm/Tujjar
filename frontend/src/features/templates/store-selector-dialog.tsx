@@ -86,7 +86,7 @@ export function StoreSelectorDialog({
                     key={store.id}
                     onClick={() => setSelectedStoreId(store.id)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left transition-all",
+                      "flex w-full items-center gap-3 rounded-xl border-2 p-4 text-start transition-all",
                       isSelected
                         ? "border-blue-500 bg-blue-50"
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"

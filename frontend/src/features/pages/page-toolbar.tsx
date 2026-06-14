@@ -36,17 +36,17 @@ export function PageToolbar({
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={onAddSection}>
-          <Plus className="mr-1 h-4 w-4" /> Add Section
+          <Plus className="me-1 h-4 w-4" /> Add Section
         </Button>
         <Button variant="outline" size="sm" onClick={onTogglePreview}>
-          {isPreviewMode ? <EyeOff className="mr-1 h-4 w-4" /> : <Eye className="mr-1 h-4 w-4" />}
+          {isPreviewMode ? <EyeOff className="me-1 h-4 w-4" /> : <Eye className="me-1 h-4 w-4" />}
           {isPreviewMode ? "Edit" : "Preview"}
         </Button>
         <Button variant="outline" size="sm" onClick={onShowHistory}>
-          <History className="mr-1 h-4 w-4" /> History
+          <History className="me-1 h-4 w-4" /> History
         </Button>
         <Button size="sm" onClick={onSave} isLoading={isSaving} disabled={!isDirty}>
-          <Save className="mr-1 h-4 w-4" /> Save
+          <Save className="me-1 h-4 w-4" /> Save
         </Button>
         {isPublished ? (
           <Button variant="destructive" size="sm" onClick={onUnpublish}>Unpublish</Button>

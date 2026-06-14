@@ -75,7 +75,7 @@ export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling
                 e.stopPropagation();
                 if (!isInstalling && !isInstalled) onInstall(theme);
               }}
-              className="ml-2 shrink-0"
+              className="ms-2 shrink-0"
             >
               {isInstalling ? (
                 <span className="flex items-center gap-1.5">

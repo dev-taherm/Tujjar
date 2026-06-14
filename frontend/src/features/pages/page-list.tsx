@@ -36,7 +36,7 @@ export function PageList() {
           <h2 className="text-lg font-semibold text-gray-900">Pages</h2>
           <p className="text-sm text-gray-500">{pages?.length || 0} page{(pages?.length || 0) !== 1 ? "s" : ""}</p>
         </div>
-        <Button onClick={() => setShowCreate(true)}><Plus className="mr-2 h-4 w-4" /> Create Page</Button>
+        <Button onClick={() => setShowCreate(true)}><Plus className="me-2 h-4 w-4" /> Create Page</Button>
       </div>
 
       {!pages?.length ? (
@@ -44,7 +44,7 @@ export function PageList() {
           <FileText className="mb-4 h-12 w-12 text-gray-400" />
           <h3 className="mb-2 text-lg font-medium text-gray-900">No pages yet</h3>
           <p className="mb-6 text-sm text-gray-500">Create your first page to start building.</p>
-          <Button onClick={() => setShowCreate(true)}><Plus className="mr-2 h-4 w-4" /> Create Page</Button>
+          <Button onClick={() => setShowCreate(true)}><Plus className="me-2 h-4 w-4" /> Create Page</Button>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

@@ -34,7 +34,7 @@ function PlanCard({ plan, currentPlanSlug }: { plan: Plan; currentPlanSlug?: str
       </div>
       {!isCurrent && (
         <Button className="mt-6 w-full" onClick={() => checkout.mutate({ planSlug: plan.slug, successUrl: window.location.href, cancelUrl: window.location.href })}>
-          {checkout.isPending ? "Processing..." : "Select Plan"} <ArrowRight className="ml-1 h-4 w-4" />
+          {checkout.isPending ? "Processing..." : "Select Plan"} <ArrowRight className="ms-1 h-4 w-4" />
         </Button>
       )}
     </div>
@@ -82,7 +82,7 @@ function InvoiceList() {
               <p className="font-medium">{inv.invoice_number}</p>
               <p className="text-gray-500">{formatDateTime(inv.created_at)}</p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="font-medium">${inv.amount}</p>
               <Badge variant={inv.status === "paid" ? "success" : inv.status === "open" ? "warning" : "default"}>{inv.status}</Badge>
             </div>

@@ -28,7 +28,7 @@ export function StoreList() {
         <h3 className="mb-2 text-lg font-medium text-gray-900">No stores yet</h3>
         <p className="mb-6 text-sm text-gray-500">Create your first store to get started.</p>
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="me-2 h-4 w-4" />
           Create Store
         </Button>
       </div>
@@ -43,7 +43,7 @@ export function StoreList() {
           <p className="text-sm text-gray-500">{stores.length} store{stores.length !== 1 ? "s" : ""}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="me-2 h-4 w-4" />
           Create Store
         </Button>
       </div>

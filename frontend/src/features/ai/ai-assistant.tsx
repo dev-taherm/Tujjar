@@ -47,10 +47,10 @@ export function AIAssistant() {
   return (
     <div className="flex h-[calc(100vh-160px)] overflow-hidden rounded-xl border border-gray-200 bg-white">
       {/* Sidebar */}
-      <div className="w-64 border-r border-gray-200 flex flex-col">
+      <div className="w-64 border-e border-gray-200 flex flex-col">
         <div className="p-3 border-b border-gray-200">
           <Button onClick={handleNewConversation} className="w-full" size="sm">
-            <Plus className="mr-1 h-4 w-4" /> New Chat
+            <Plus className="me-1 h-4 w-4" /> New Chat
           </Button>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -58,7 +58,7 @@ export function AIAssistant() {
             <button
               key={conv.id}
               onClick={() => { setSelectedConversation(conv.id); setLocalMessages([]); }}
-              className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+              className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-start text-sm transition-colors ${
                 selectedConversation === conv.id ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"
               }`}
             >
@@ -77,7 +77,7 @@ export function AIAssistant() {
             <h2 className="mb-2 text-xl font-semibold text-gray-900">AI Assistant</h2>
             <p className="mb-6 text-sm text-gray-500">Ask me anything about your store, products, or analytics.</p>
             <Button onClick={handleNewConversation}>
-              <Plus className="mr-2 h-4 w-4" /> Start a Conversation
+              <Plus className="me-2 h-4 w-4" /> Start a Conversation
             </Button>
           </div>
         ) : (

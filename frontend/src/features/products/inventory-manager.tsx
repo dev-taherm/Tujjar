@@ -97,7 +97,7 @@ export function InventoryManager() {
                       className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm"
                     />
                     <Button size="sm" onClick={() => handleAdjust(product.id)} disabled={!adjustments[product.id]}>
-                      <TrendingUp className="mr-1 h-3 w-3" /> Adjust
+                      <TrendingUp className="me-1 h-3 w-3" /> Adjust
                     </Button>
                   </div>
                 </div>

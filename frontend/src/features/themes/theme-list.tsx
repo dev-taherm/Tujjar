@@ -30,7 +30,7 @@ export function ThemeList() {
           <p className="mb-6 text-sm text-gray-500">Browse the marketplace to install a theme.</p>
           <Link href="/dashboard/marketplace">
             <Button>
-              <ExternalLink className="mr-2 h-4 w-4" />
+              <ExternalLink className="me-2 h-4 w-4" />
               Browse Marketplace
             </Button>
           </Link>

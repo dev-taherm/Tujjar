@@ -48,7 +48,7 @@ export function SectionPalette({ onAddSection }: SectionPaletteProps) {
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border border-gray-200 py-1.5 pl-8 pr-3 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+          className="w-full rounded-md border border-gray-200 py-1.5 ps-8 pe-3 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
         />
       </div>
 
@@ -64,7 +64,7 @@ export function SectionPalette({ onAddSection }: SectionPaletteProps) {
             >
               {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               {label}
-              <span className="ml-auto text-gray-400">{catSections.length}</span>
+              <span className="ms-auto text-gray-400">{catSections.length}</span>
             </button>
             {expanded && (
               <div className="mt-1 space-y-1">
@@ -74,7 +74,7 @@ export function SectionPalette({ onAddSection }: SectionPaletteProps) {
                     <button
                       key={def.type}
                       onClick={() => onAddSection(def.type)}
-                      className="flex w-full items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-left text-xs transition-colors hover:border-blue-200 hover:bg-blue-50"
+                      className="flex w-full items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-start text-xs transition-colors hover:border-blue-200 hover:bg-blue-50"
                     >
                       <Icon className="h-4 w-4 text-gray-400" />
                       <span className="font-medium text-gray-700">{def.label}</span>

@@ -33,7 +33,7 @@ export function CustomerList() {
             placeholder="Search customers..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 py-2 ps-10 pe-4 text-sm focus:border-blue-500 focus:outline-none"
           />
         </div>
       </div>
@@ -49,12 +49,12 @@ export function CustomerList() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Orders</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Spent</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Joined</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"></th>
+                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">Customer</th>
+                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">Email</th>
+                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">Orders</th>
+                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">Total Spent</th>
+                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">Joined</th>
+                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -69,10 +69,10 @@ export function CustomerList() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">{customer.email}</td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600">{customer.orders_count}</td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">{formatCurrency(Number(customer.total_spent))}</td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-500">{formatDateTime(customer.created_at)}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end text-sm text-gray-600">{customer.orders_count}</td>
+                  <td className="px-4 py-3 text-end text-sm font-medium text-gray-900">{formatCurrency(Number(customer.total_spent))}</td>
+                  <td className="px-4 py-3 text-end text-sm text-gray-500">{formatDateTime(customer.created_at)}</td>
+                  <td className="px-4 py-3 text-end">
                     <button onClick={(e) => { e.stopPropagation(); if (confirm("Delete customer?")) deleteCustomer.mutateAsync(customer.id); }} className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
                   </td>
                 </tr>
