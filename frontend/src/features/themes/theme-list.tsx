@@ -5,11 +5,12 @@ import { useThemes } from "@/api/queries";
 import { ThemeCard } from "./theme-card";
 import { Palette, ExternalLink } from "lucide-react";
 import { Button } from "@/shared/ui";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export function ThemeList() {
   const t = useTranslations("dashboard.themes");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const { data: themes, isLoading } = useThemes();
 
   if (isLoading) {
@@ -31,7 +32,7 @@ export function ThemeList() {
           <Palette className="mb-4 h-12 w-12 text-gray-400" />
           <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noThemesInstalled")}</h3>
           <p className="mb-6 text-sm text-gray-500">{t("browseMarketplaceToInstall")}</p>
-          <Link href="/dashboard/marketplace">
+          <Link href={`/${locale}/dashboard/marketplace`}>
             <Button>
               <ExternalLink className="me-2 h-4 w-4" />
               {t("browseMarketplace")}

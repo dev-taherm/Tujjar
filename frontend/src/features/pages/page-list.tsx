@@ -6,11 +6,12 @@ import { Button, Card, Badge, Input, Select } from "@/shared/ui";
 import { usePages, useCreatePage, useDeletePage, useStores } from "@/api/queries";
 import { Plus, FileText, Trash2, Globe, Clock } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export function PageList() {
   const t = useTranslations("dashboard.pages");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const { data: pages, isLoading } = usePages();
   const { data: stores } = useStores();
   const createPage = useCreatePage();
@@ -52,7 +53,7 @@ export function PageList() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {pages.map((page) => (
-            <Link key={page.id} href={`/dashboard/pages/${page.id}`}>
+            <Link key={page.id} href={`/${locale}/dashboard/pages/${page.id}`}>
               <Card className="group cursor-pointer transition-all hover:shadow-md hover:border-primary-300">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">

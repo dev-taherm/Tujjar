@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from
 import { Store, Globe, ExternalLink, ArrowUpRight } from "lucide-react";
 import type { Store as StoreType } from "@/shared/types";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 
 interface StoreCardProps {
   store: StoreType;
@@ -13,8 +14,9 @@ interface StoreCardProps {
 export function StoreCard({ store }: StoreCardProps) {
   const t = useTranslations("storeSettings");
   const tc = useTranslations("common");
+  const locale = useLocale();
   return (
-    <Link href={`/dashboard/stores/${store.id}`}>
+    <Link href={`/${locale}/dashboard/stores/${store.id}`}>
       <Card className="group cursor-pointer transition-all hover:shadow-md hover:border-primary-300">
         <CardHeader>
           <div className="flex items-start justify-between">

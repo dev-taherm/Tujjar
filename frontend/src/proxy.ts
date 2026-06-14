@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const LOCALES = ["en", "ar"];
 const DEFAULT_LOCALE = "en";
-const EXCLUDED_PREFIXES = ["/login", "/register", "/dashboard", "/api", "/_next", "/favicon.ico"];
+const EXCLUDED_PREFIXES = ["/api", "/_next", "/favicon.ico"];
 
 function getSubdomain(host: string): string | null {
   const hostname = host.split(":")[0];
@@ -40,7 +40,11 @@ export function proxy(request: NextRequest) {
     const slug = subdomain;
     const locale = hasLocalePrefix ? firstSegment : detectLocale(request);
     const rest = hasLocalePrefix ? pathname.slice(`/${locale}`.length) : pathname;
-    const newPath = `/shop/${slug}${rest === "/" ? "" : rest}`;
+
+    const shopPrefix = `/shop/${slug}`;
+    const cleanRest = rest.startsWith(shopPrefix) ? rest.slice(shopPrefix.length) : rest;
+
+    const newPath = `/shop/${slug}${cleanRest === "/" ? "" : cleanRest}`;
     return NextResponse.rewrite(new URL(`/${locale}${newPath}`, request.url));
   }
 

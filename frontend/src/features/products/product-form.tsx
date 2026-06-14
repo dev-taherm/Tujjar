@@ -7,7 +7,7 @@ import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useCreateProduct, useUpdateProduct, useCategories, useStores } from "@/api/queries";
 import type { Product } from "@/shared/types";
 import { Save, ArrowLeft, Plus, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface ProductFormProps {
   product?: Product;
@@ -17,6 +17,7 @@ interface ProductFormProps {
 export function ProductForm({ product, mode }: ProductFormProps) {
   const t = useTranslations("dashboard.products");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const { data: stores } = useStores();
   const createProduct = useCreateProduct();
@@ -134,10 +135,10 @@ export function ProductForm({ product, mode }: ProductFormProps) {
     try {
       if (mode === "create") {
         const created = await createProduct.mutateAsync(payload);
-        router.push(`/dashboard/products/${created.id}`);
+        router.push(`/${locale}/dashboard/products/${created.id}`);
       } else if (product) {
         await updateProduct.mutateAsync({ id: product.id, ...payload });
-        router.push(`/dashboard/products/${product.id}`);
+        router.push(`/${locale}/dashboard/products/${product.id}`);
       }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: { message?: string }; detail?: string } }; message?: string };
@@ -275,7 +276,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
               {!stores?.length ? (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
                   {t("needStoreFirst")}
-                  <Button type="button" variant="link" className="ms-1 p-0" onClick={() => router.push("/dashboard/stores")}>
+                  <Button type="button" variant="link" className="ms-1 p-0" onClick={() => router.push(`/${locale}/dashboard/stores`)}>
                     {t("createStore")}
                   </Button>
                 </div>

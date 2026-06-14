@@ -6,7 +6,7 @@ import { useOrders } from "@/api/queries";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { useState } from "react";
 import { Search, Eye, Package } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -30,6 +30,7 @@ const paymentColors: Record<string, string> = {
 export function OrderList() {
   const t = useTranslations("dashboard.orders");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -96,7 +97,7 @@ export function OrderList() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/dashboard/orders/${order.id}`)}>
+                <tr key={order.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.order_number}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {order.customer_name || order.customer_email}

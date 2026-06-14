@@ -6,11 +6,12 @@ import { Button, Input } from "@/shared/ui";
 import { useCustomers, useDeleteCustomer } from "@/api/queries";
 import { formatCurrency, formatDateTime, getInitials } from "@/lib/utils";
 import { Search, Users, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export function CustomerList() {
   const t = useTranslations("dashboard.customer");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const { data: customers, isLoading } = useCustomers({ search: search || undefined });
@@ -62,7 +63,7 @@ export function CustomerList() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {customers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/dashboard/customers/${customer.id}`)}>
+                <tr key={customer.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/${locale}/dashboard/customers/${customer.id}`)}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">

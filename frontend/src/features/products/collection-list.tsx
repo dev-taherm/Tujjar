@@ -6,11 +6,12 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Input } from "@/share
 import { useCollections, useCreateCollection, useDeleteCollection } from "@/api/queries";
 import { Plus, Layers, Trash2, Edit } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export function CollectionList() {
   const t = useTranslations("dashboard.products");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const { data: collections, isLoading } = useCollections();
   const createCollection = useCreateCollection();
@@ -58,7 +59,7 @@ export function CollectionList() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collections.map((col) => (
-            <Card key={col.id} className="group cursor-pointer transition-all hover:shadow-md" onClick={() => router.push(`/dashboard/products/collections/${col.id}`)}>
+            <Card key={col.id} className="group cursor-pointer transition-all hover:shadow-md" onClick={() => router.push(`/${locale}/dashboard/products/collections/${col.id}`)}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -66,7 +67,7 @@ export function CollectionList() {
                     <h3 className="font-semibold text-gray-900">{col.name}</h3>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                    <button onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/products/collections/${col.id}`); }} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); router.push(`/${locale}/dashboard/products/collections/${col.id}`); }} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
                     <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="rounded p-1 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
                   </div>
                 </div>

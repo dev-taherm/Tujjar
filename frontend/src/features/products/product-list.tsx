@@ -6,11 +6,12 @@ import { Button, Input, Select, Badge } from "@/shared/ui";
 import { ProductCard } from "./product-card";
 import { useProducts, useDeleteProduct } from "@/api/queries";
 import { Plus, Search, Filter, Package } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export function ProductList() {
   const t = useTranslations("dashboard.products");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -58,7 +59,7 @@ export function ProductList() {
             onChange={(e) => setStatusFilter(e.target.value)}
           />
         </div>
-        <Button onClick={() => router.push("/dashboard/products/new")}>
+        <Button onClick={() => router.push(`/${locale}/dashboard/products/new`)}>
           <Plus className="me-2 h-4 w-4" /> {t("addProduct")}
         </Button>
       </div>
@@ -69,7 +70,7 @@ export function ProductList() {
           <Package className="mb-4 h-12 w-12 text-gray-400" />
           <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noProducts")}</h3>
           <p className="mb-6 text-sm text-gray-500">{t("createFirstProduct")}</p>
-          <Button onClick={() => router.push("/dashboard/products/new")}>
+        <Button onClick={() => router.push(`/${locale}/dashboard/products/new`)}>
             <Plus className="me-2 h-4 w-4" /> {t("addProduct")}
           </Button>
         </div>
@@ -79,7 +80,7 @@ export function ProductList() {
             <ProductCard
               key={product.id}
               product={product}
-              onClick={() => router.push(`/dashboard/products/${product.id}`)}
+              onClick={() => router.push(`/${locale}/dashboard/products/${product.id}`)}
             />
           ))}
         </div>

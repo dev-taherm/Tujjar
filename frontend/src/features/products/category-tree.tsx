@@ -6,7 +6,7 @@ import { Button, Input, Card, CardContent, CardHeader, CardTitle } from "@/share
 import { useCategories, useCreateCategory, useDeleteCategory } from "@/api/queries";
 import type { Category } from "@/shared/types";
 import { Plus, ChevronRight, ChevronDown, FolderTree, Trash2, Edit } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface CategoryNodeProps {
   category: Category;
@@ -52,6 +52,7 @@ function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodePro
 export function CategoryTree() {
   const t = useTranslations("dashboard.products");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const { data: categories, isLoading } = useCategories();
   const createCategory = useCreateCategory();
@@ -95,7 +96,7 @@ export function CategoryTree() {
               <div key={cat.id} className="group">
                 <CategoryNode
                   category={cat}
-                  onEdit={(id) => router.push(`/dashboard/products/categories/${id}`)}
+                  onEdit={(id) => router.push(`/${locale}/dashboard/products/categories/${id}`)}
                   onDelete={handleDelete}
                 />
               </div>
