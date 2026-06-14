@@ -24,6 +24,7 @@ import {
   LayoutTemplate,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
+import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 
 const navigation = [
   { nameKey: "dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -128,6 +129,7 @@ export function Sidebar() {
               )}
             </div>
           )}
+          <LocaleSwitcher variant="sidebar" />
           <button
             onClick={() => {
               useAuthStore.getState().logout();

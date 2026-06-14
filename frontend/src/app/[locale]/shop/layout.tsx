@@ -6,6 +6,7 @@ import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
 import { ShoppingCart, User, Search } from "lucide-react";
+import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 
 interface NavLink {
   label: string;
@@ -116,6 +117,7 @@ export default function StorefrontLayout({
             ))}
           </nav>
           <div className="flex items-center gap-4">
+            <LocaleSwitcher variant="header" />
             {navigation.cta_button?.enabled && (
               <Link
                 href={prefixLink(navigation.cta_button.url)}
