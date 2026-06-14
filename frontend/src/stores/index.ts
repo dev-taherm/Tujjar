@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { setTokens as setApiTokens } from "@/api/client";
 import type { User, AuthTokens, Organization } from "@/shared/types";
 
 interface AuthStore {
@@ -21,15 +22,22 @@ export const useAuthStore = create<AuthStore>()(
       organization: null,
       isAuthenticated: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
-      setTokens: (tokens) => set({ tokens }),
+      setTokens: (tokens) => {
+        if (tokens) {
+          setApiTokens(tokens.access, tokens.refresh);
+        }
+        set({ tokens });
+      },
       setOrganization: (organization) => set({ organization }),
-      logout: () =>
+      logout: () => {
+        setApiTokens("", "");
         set({
           user: null,
           tokens: null,
           organization: null,
           isAuthenticated: false,
-        }),
+        });
+      },
     }),
     {
       name: "tujjar-auth",
@@ -39,6 +47,11 @@ export const useAuthStore = create<AuthStore>()(
         organization: state.organization,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.tokens?.access && state?.tokens?.refresh) {
+          setApiTokens(state.tokens.access, state.tokens.refresh);
+        }
+      },
     }
   )
 );
