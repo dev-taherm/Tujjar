@@ -37,9 +37,9 @@ export default function StorefrontLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const slug = pathname.split("/")[2] || "";
+  const slug = pathname.split("/")[3] || "";
   const locale = useLocale();
-  const tHeader = useTranslations("storefront.header");
+  const tNav = useTranslations("storefront.header");
 
   const { data } = useQuery({
     queryKey: ["storefront", slug, locale],
@@ -88,6 +88,18 @@ export default function StorefrontLayout({
     },
   ];
 
+  const resolveLabel = (label: string | Record<string, string> | undefined): string => {
+    if (!label) return "";
+    if (typeof label === "string") return label;
+    return label[locale] || label.en || "";
+  };
+
+  const resolveField = (field: string | Record<string, string> | undefined, fallback: string): string => {
+    if (!field) return fallback;
+    if (typeof field === "string") return field;
+    return field[locale] || field.en || fallback;
+  };
+
   const navLinks = navigation.links?.length
     ? navigation.links.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     : defaultNavLinks;
@@ -96,7 +108,8 @@ export default function StorefrontLayout({
     ? footerConfig.columns
     : defaultFooterColumns;
 
-  const logoText = navigation.logo_text || store?.name || tHeader("store");
+  const logoText = resolveLabel(navigation.logo_text as string | Record<string, string> | undefined) || store?.name || tNav("store");
+  const copyrightText = resolveField(footerConfig.copyright as string | Record<string, string> | undefined, tNav("poweredBy"));
 
   return (
     <div className="min-h-screen bg-white">
@@ -112,7 +125,7 @@ export default function StorefrontLayout({
                 href={prefixLink(link.url)}
                 className="text-sm font-medium text-gray-600 hover:text-gray-900"
               >
-                {link.label}
+                {resolveLabel(link.label)}
               </Link>
             ))}
           </nav>
@@ -123,7 +136,7 @@ export default function StorefrontLayout({
                 href={prefixLink(navigation.cta_button.url)}
                 className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
               >
-                {navigation.cta_button.label}
+                {resolveLabel(navigation.cta_button?.label)}
               </Link>
             )}
             <button className="rounded-lg p-2 text-gray-500 hover:bg-gray-100">
@@ -147,7 +160,7 @@ export default function StorefrontLayout({
           <div className="grid grid-cols-3 gap-8 text-sm text-gray-500">
             {footerColumns.map((column) => (
               <div key={column.title}>
-                <h4 className="mb-3 font-semibold text-gray-900">{column.title}</h4>
+                <h4 className="mb-3 font-semibold text-gray-900">{resolveLabel(column.title)}</h4>
                 <div className="space-y-2">
                   {column.links.map((link) => (
                     <Link
@@ -155,7 +168,7 @@ export default function StorefrontLayout({
                       href={prefixLink(link.url)}
                       className="block hover:text-gray-900"
                     >
-                      {link.label}
+                      {resolveLabel(link.label)}
                     </Link>
                   ))}
                 </div>
@@ -163,7 +176,7 @@ export default function StorefrontLayout({
             ))}
           </div>
           <div className="mt-8 border-t border-gray-200 pt-4 text-center text-xs text-gray-400">
-            {footerConfig.copyright || tHeader("poweredBy")}
+            {copyrightText}
           </div>
         </div>
       </footer>

@@ -148,6 +148,7 @@ class TemplateViewSet(TenantViewSet):
                     defaults={
                         "name": coll_data["name"],
                         "description": coll_data.get("description", ""),
+                        "translations": coll_data.get("translations", {}),
                     },
                 )
 
@@ -162,6 +163,7 @@ class TemplateViewSet(TenantViewSet):
                     defaults={
                         "name": cat_data["name"],
                         "description": cat_data.get("description", ""),
+                        "translations": cat_data.get("translations", {}),
                     },
                 )
 

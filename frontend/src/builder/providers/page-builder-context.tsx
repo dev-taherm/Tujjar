@@ -37,11 +37,13 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
   const [editLocale, setEditLocaleState] = useState("en");
   const [localeSchemas, setLocaleSchemas] = useState<Record<string, PageSchema>>({});
 
+  const pageId = initialPage?.id;
+
   useEffect(() => {
     setPageState(initialPage);
     setIsDirty(false);
     setLocaleSchemas({});
-  }, [initialPage]);
+  }, [pageId]);
 
   const setEditLocale = useCallback((locale: string) => {
     setEditLocaleState(locale);

@@ -208,7 +208,7 @@ interface NavLink {
 }
 
 interface NavigationData {
-  logo_text?: string;
+  logo_text?: string | Record<string, string>;
   links?: NavLink[];
   cta_button?: { label: string | Record<string, string>; url: string; enabled: boolean };
 }
@@ -220,7 +220,7 @@ interface FooterColumn {
 
 interface FooterData {
   columns?: FooterColumn[];
-  copyright?: string;
+  copyright?: string | Record<string, string>;
   social_links?: Record<string, string>;
 }
 
@@ -362,7 +362,7 @@ function NavigationTab({ store }: { store: Store }) {
       navigation: {
         logo_text: navData.logo_text || "",
         links: (navData.links || []).map((l, i) => ({
-          label: typeof l.label === "string" ? l.label : l.label.en || "",
+          label: l.label || "",
           url: l.url,
           order: l.order ?? i,
         })),
@@ -376,9 +376,9 @@ function NavigationTab({ store }: { store: Store }) {
       id: store.id,
       footer_config: {
         columns: (footerData.columns || []).map((col) => ({
-          title: typeof col.title === "string" ? col.title : col.title.en || "",
+          title: col.title || "",
           links: col.links.map((l) => ({
-            label: typeof l.label === "string" ? l.label : l.label.en || "",
+            label: l.label || "",
             url: l.url,
           })),
         })),
@@ -404,14 +404,34 @@ function NavigationTab({ store }: { store: Store }) {
       {/* Navigation */}
       <Card>
         <CardHeader>
+          <CardTitle>Navigation Links</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Logo Text"
+              value={getNavLabel(navData.logo_text || "")}
+              onChange={(e) => {
+                const val = e.target.value;
+                setNavData((prev) => {
+                  const current = prev.logo_text || "";
+                  if (editLocale !== "en") {
+                    const nested: Record<string, string> = typeof current === "string" ? { en: current } : { ...(current as Record<string, string>) };
+                    nested[editLocale] = val;
+                    return { ...prev, logo_text: nested };
+                  }
+                  return { ...prev, logo_text: val };
+                });
+              }}
+              className="flex-1"
+            />
+          </div>
           <div className="flex items-center justify-between">
-            <CardTitle>Navigation Links</CardTitle>
+            <span className="text-sm font-medium text-gray-700">Links</span>
             <Button variant="outline" size="sm" onClick={addNavLink}>
               <Plus className="me-1 h-4 w-4" /> Add Link
             </Button>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
           {navData.links?.map((link, index) => (
             <div key={index} className="flex items-center gap-2">
               <GripVertical className="h-4 w-4 text-gray-300" />
@@ -476,12 +496,21 @@ function NavigationTab({ store }: { store: Store }) {
               <Input
                 placeholder="Button Label"
                 value={getNavLabel(navData.cta_button?.label || "")}
-                onChange={(e) =>
-                  setNavData((prev) => ({
-                    ...prev,
-                    cta_button: { ...prev.cta_button!, label: e.target.value },
-                  }))
-                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setNavData((prev) => {
+                    const currentLabel = prev.cta_button?.label || "";
+                    let newLabel: string | Record<string, string>;
+                    if (editLocale !== "en") {
+                      const nested: Record<string, string> = typeof currentLabel === "string" ? { en: currentLabel } : { ...(currentLabel as Record<string, string>) };
+                      nested[editLocale] = val;
+                      newLabel = nested;
+                    } else {
+                      newLabel = val;
+                    }
+                    return { ...prev, cta_button: { ...prev.cta_button!, label: newLabel } };
+                  });
+                }}
                 className="flex-1"
               />
               <Input
@@ -560,8 +589,19 @@ function NavigationTab({ store }: { store: Store }) {
           ))}
           <Input
             placeholder="Copyright text"
-            value={footerData.copyright || ""}
-            onChange={(e) => setFooterData((prev) => ({ ...prev, copyright: e.target.value }))}
+            value={getFooterTitle(footerData.copyright || "")}
+            onChange={(e) => {
+              const val = e.target.value;
+              setFooterData((prev) => {
+                const current = prev.copyright || "";
+                if (editLocale !== "en") {
+                  const nested: Record<string, string> = typeof current === "string" ? { en: current } : { ...(current as Record<string, string>) };
+                  nested[editLocale] = val;
+                  return { ...prev, copyright: nested };
+                }
+                return { ...prev, copyright: val };
+              });
+            }}
           />
           <div className="flex justify-end pt-2">
             <Button onClick={handleSaveFooter} isLoading={updateStore.isPending}>
