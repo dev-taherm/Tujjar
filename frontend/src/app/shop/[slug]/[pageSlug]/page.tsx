@@ -1,0 +1,67 @@
+"use client";
+
+import { use } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { StorefrontSectionRenderer } from "@/features/storefront/section-renderer";
+import { Button } from "@/shared/ui";
+import Link from "next/link";
+import type { Section } from "@/shared/types";
+
+interface PageData {
+  id: string;
+  title: string;
+  slug: string;
+  content_schema: { sections: Section[] };
+  seo_title: string;
+  seo_description: string;
+}
+
+export default function StorefrontPage({ params }: { params: Promise<{ slug: string; pageSlug: string }> }) {
+  const { slug, pageSlug } = use(params);
+
+  const { data, isLoading } = useQuery<PageData | null>({
+    queryKey: ["storefront-page", slug, pageSlug],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/store/${slug}/pages/${pageSlug}/`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-1/3 rounded bg-gray-200" />
+          <div className="h-4 w-1/2 rounded bg-gray-200" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24">
+        <h1 className="text-2xl font-bold text-gray-900">Page not found</h1>
+        <p className="mt-2 text-gray-500">This page doesn&apos;t exist or is no longer available.</p>
+        <Link href={`/shop/${slug}`} className="mt-6">
+          <Button>Back to Store</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const sections = data.content_schema?.sections || [];
+
+  return (
+    <div className="space-y-8 py-8">
+      {sections.length > 0 ? (
+        <StorefrontSectionRenderer sections={sections} />
+      ) : (
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-gray-900">{data.title}</h1>
+        </div>
+      )}
+    </div>
+  );
+}

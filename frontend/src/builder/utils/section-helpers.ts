@@ -66,8 +66,8 @@ export function toggleSectionVisibility(
       ? {
           ...s,
           visibility: {
-            ...s.visibility,
-            [device]: !s.visibility[device],
+            ...(s.visibility || { desktop: true, tablet: true, mobile: true }),
+            [device]: !(s.visibility?.[device] ?? true),
           },
         }
       : s

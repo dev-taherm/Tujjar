@@ -47,6 +47,7 @@ export function clearTokens() {
   if (typeof window !== "undefined") {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    localStorage.removeItem("tujjar-auth");
   }
 }
 

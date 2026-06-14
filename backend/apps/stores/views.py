@@ -26,7 +26,7 @@ class StoreViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Store.objects.filter(
             organization_id=self.request.org_id
-        ).select_related("theme", "logo", "favicon")
+        ).select_related("theme", "template", "logo", "favicon")
 
     def perform_create(self, serializer):
         store = serializer.save()

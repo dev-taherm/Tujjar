@@ -59,7 +59,7 @@ export function SectionList({
                   <ChevronDown className="h-3 w-3" />
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); onToggleVisibility(section.id, "desktop"); }} className="rounded p-0.5 hover:bg-gray-200">
-                  {section.visibility.desktop ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3 text-gray-400" />}
+                  {section.visibility?.desktop ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3 text-gray-400" />}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); onDuplicate(section.id); }} className="rounded p-0.5 hover:bg-gray-200">
                   <Copy className="h-3 w-3" />

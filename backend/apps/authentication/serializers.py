@@ -25,11 +25,13 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "phone",
             "is_verified",
+            "is_staff",
+            "is_superuser",
             "two_factor_enabled",
             "provider",
             "created_at",
         ]
-        read_only_fields = ["id", "email", "is_verified", "two_factor_enabled", "provider", "created_at"]
+        read_only_fields = ["id", "email", "is_verified", "is_staff", "is_superuser", "two_factor_enabled", "provider", "created_at"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

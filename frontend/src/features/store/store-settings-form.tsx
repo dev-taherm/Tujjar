@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button, Input, Card, CardHeader, CardTitle, CardContent } from "@/shared/ui";
+import { Button, Input, Card, CardHeader, CardTitle, CardContent, Badge } from "@/shared/ui";
 import { useUpdateStore } from "@/api/queries";
+import { usePages } from "@/api/pages";
 import { TemplateBrowser } from "@/features/templates/template-browser";
 import type { Store } from "@/shared/types";
 import {
@@ -13,6 +15,8 @@ import {
   LayoutTemplate,
   Palette,
   FileText,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 
 const settingsSchema = z.object({
@@ -176,15 +180,80 @@ function ThemeTab({ store }: { store: Store }) {
 /* ── Pages Tab ───────────────────────────────────────────────────────── */
 
 function PagesTab({ store }: { store: Store }) {
+  const { data: pages, isLoading } = usePages(store.id);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Pages</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Pages</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Pages</CardTitle>
+          <Link href="/dashboard/pages">
+            <Button variant="outline" size="sm">
+              <FileText className="mr-2 h-4 w-4" />
+              Manage All Pages
+            </Button>
+          </Link>
+        </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-500">
-          Manage your store&apos;s pages. Visit the Pages section for full page editing.
-        </p>
+        {!pages?.length ? (
+          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-12">
+            <FileText className="mb-3 h-10 w-10 text-gray-400" />
+            <h4 className="mb-1 text-sm font-medium text-gray-900">No pages yet</h4>
+            <p className="mb-4 text-xs text-gray-500">
+              Install a template to auto-create pages, or create them manually.
+            </p>
+            <Link href="/dashboard/pages">
+              <Button size="sm">
+                <FileText className="mr-2 h-4 w-4" />
+                Create Page
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100 rounded-lg border border-gray-200">
+            {pages.map((page) => (
+              <Link
+                key={page.id}
+                href={`/dashboard/pages/${page.id}`}
+                className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50">
+                    <Globe className="h-4 w-4 text-primary-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{page.title}</p>
+                    <p className="text-xs text-gray-500">/{page.slug || "home"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={page.is_published ? "success" : "secondary"}>
+                    {page.is_published ? "Published" : "Draft"}
+                  </Badge>
+                  <ExternalLink className="h-4 w-4 text-gray-400" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

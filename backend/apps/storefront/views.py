@@ -39,13 +39,31 @@ def storefront_home(request, subdomain=None):
         status="active",
     )[:8]
 
+    homepage = Page.objects.filter(
+        organization=store.organization,
+        store=store,
+        page_type="homepage",
+        is_published=True,
+    ).first()
+
     return Response({
         "store": {
             "name": store.name,
             "slug": store.slug,
+            "description": store.description,
+            "logo": store.logo.url if store.logo else None,
             "settings": store.settings,
+            "navigation": store.navigation or {},
+            "footer_config": store.footer_config or {},
+            "seo_title": store.seo_title or "",
+            "seo_description": store.seo_description or "",
         },
         "featured_products": ProductListSerializer(featured_products, many=True).data,
+        "homepage": {
+            "content_schema": homepage.content_schema,
+            "seo_title": homepage.seo_title,
+            "seo_description": homepage.seo_description,
+        } if homepage else None,
     })
 
 
@@ -142,6 +160,7 @@ class StorefrontPageView(generics.RetrieveAPIView):
             raise NotFound("Store not found")
         page = Page.objects.filter(
             organization=store.organization,
+            store=store,
             slug=slug,
             is_published=True,
         ).first()

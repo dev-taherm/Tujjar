@@ -3,15 +3,32 @@
 import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StorefrontProductCard } from "@/features/storefront/product-card";
+import { StorefrontSectionRenderer } from "@/features/storefront/section-renderer";
 import { Button } from "@/shared/ui";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { Product } from "@/shared/types";
+import type { Product, Section } from "@/shared/types";
+
+interface StorefrontData {
+  store: {
+    name: string;
+    slug: string;
+    description: string;
+    navigation: Record<string, unknown>;
+    footer_config: Record<string, unknown>;
+  };
+  featured_products: Product[];
+  homepage: {
+    content_schema: { sections: Section[] };
+    seo_title: string;
+    seo_description: string;
+  } | null;
+}
 
 export default function StorefrontHomePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<StorefrontData | null>({
     queryKey: ["storefront", slug],
     queryFn: async () => {
       const res = await fetch(`/api/v1/store/${slug}/`);
@@ -39,7 +56,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
     return (
       <div className="flex flex-col items-center justify-center py-24">
         <h1 className="text-2xl font-bold text-gray-900">Store not found</h1>
-        <p className="mt-2 text-gray-500">This store doesn't exist or is no longer available.</p>
+        <p className="mt-2 text-gray-500">This store doesn&apos;t exist or is no longer available.</p>
         <Link href="/" className="mt-6">
           <Button>Go to Tujjar</Button>
         </Link>
@@ -48,7 +65,31 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
   }
 
   const store = data.store;
+  const sections = data.homepage?.content_schema?.sections;
   const featuredProducts = data.featured_products || [];
+
+  if (sections && sections.length > 0) {
+    return (
+      <div className="space-y-16 py-8">
+        <StorefrontSectionRenderer sections={sections} />
+        {featuredProducts.length > 0 && (
+          <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Featured Products</h2>
+              <Link href={`/shop/${slug}/shop`} className="text-sm font-medium text-primary-600 hover:text-primary-700">
+                View All
+              </Link>
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
+              {featuredProducts.map((product: Product) => (
+                <StorefrontProductCard key={product.id} product={product} slug={slug} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-16">
@@ -82,7 +123,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
         {featuredProducts.length > 0 ? (
           <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
             {featuredProducts.map((product: Product) => (
-              <StorefrontProductCard key={product.id} product={product} />
+              <StorefrontProductCard key={product.id} product={product} slug={slug} />
             ))}
           </div>
         ) : (

@@ -54,7 +54,7 @@ export function SortableSection({
         </div>
         <div className="flex items-center gap-0.5 rounded-md bg-white px-1 py-0.5 shadow-sm">
           <button onClick={(e) => { e.stopPropagation(); onToggleVisibility("desktop"); }} className="rounded p-1 hover:bg-gray-100">
-            {section.visibility.desktop ? <Eye className="h-3.5 w-3.5 text-gray-500" /> : <EyeOff className="h-3.5 w-3.5 text-gray-400" />}
+            {section.visibility?.desktop ? <Eye className="h-3.5 w-3.5 text-gray-500" /> : <EyeOff className="h-3.5 w-3.5 text-gray-400" />}
           </button>
           <button onClick={(e) => { e.stopPropagation(); onDuplicate(); }} className="rounded p-1 hover:bg-gray-100">
             <Copy className="h-3.5 w-3.5 text-gray-500" />

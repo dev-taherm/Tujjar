@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { setTokens as setApiTokens } from "@/api/client";
+import { setTokens as setApiTokens, clearTokens as clearApiTokens } from "@/api/client";
 import type { User, AuthTokens, Organization } from "@/shared/types";
 
 interface AuthStore {
@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthStore>()(
       },
       setOrganization: (organization) => set({ organization }),
       logout: () => {
-        setApiTokens("", "");
+        clearApiTokens();
         set({
           user: null,
           tokens: null,

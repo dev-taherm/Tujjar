@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from "@/shared/ui";
-import { Store, MoreVertical, Globe, ExternalLink } from "lucide-react";
+import { Store, Globe, ExternalLink, ArrowUpRight } from "lucide-react";
 import type { Store as StoreType } from "@/shared/types";
 
 interface StoreCardProps {
@@ -35,7 +35,20 @@ export function StoreCard({ store }: StoreCardProps) {
         <CardContent>
           <div className="flex items-center justify-between text-sm text-gray-500">
             <span>{store.description || "No description"}</span>
-            <ExternalLink className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex items-center gap-2">
+              <span
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(`http://${store.domain}/`, "_blank", "noopener,noreferrer");
+                }}
+                className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 opacity-0 transition-all hover:bg-gray-50 group-hover:opacity-100"
+              >
+                Visit Store
+                <ArrowUpRight className="h-3 w-3" />
+              </span>
+              <ExternalLink className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+            </div>
           </div>
         </CardContent>
       </Card>
