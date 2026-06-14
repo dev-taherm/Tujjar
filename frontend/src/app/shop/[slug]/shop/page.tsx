@@ -25,7 +25,8 @@ export default function StorefrontProductsPage({ params }: { params: Promise<{ s
       if (search) sp.set("search", search);
       const res = await fetch(`/api/v1/store/${slug}/products/?${sp}`);
       if (!res.ok) return [];
-      return res.json();
+      const data = await res.json();
+      return data.results || [];
     },
   });
 
