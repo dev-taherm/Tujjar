@@ -44,6 +44,7 @@ class StoreSerializer(serializers.ModelSerializer):
             "is_active",
             "navigation",
             "footer_config",
+            "translations",
             "domain",
             "domains",
             "created_at",

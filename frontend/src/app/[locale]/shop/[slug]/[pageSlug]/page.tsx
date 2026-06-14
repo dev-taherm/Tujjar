@@ -24,9 +24,9 @@ export default function StorefrontPage({ params }: { params: Promise<{ slug: str
   const tCommon = useTranslations("common");
 
   const { data, isLoading } = useQuery<PageData | null>({
-    queryKey: ["storefront-page", slug, pageSlug],
+    queryKey: ["storefront-page", slug, pageSlug, locale],
     queryFn: async () => {
-      const res = await fetch(`/api/v1/store/${slug}/pages/${pageSlug}/`);
+      const res = await fetch(`/api/v1/store/${slug}/pages/${pageSlug}/?locale=${locale}`);
       if (!res.ok) return null;
       return res.json();
     },

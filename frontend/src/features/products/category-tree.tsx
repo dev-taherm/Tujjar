@@ -6,6 +6,7 @@ import { Button, Input, Card, CardContent, CardHeader, CardTitle } from "@/share
 import { useCategories, useCreateCategory, useDeleteCategory } from "@/api/queries";
 import type { Category } from "@/shared/types";
 import { Plus, ChevronRight, ChevronDown, FolderTree, Trash2, Edit } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface CategoryNodeProps {
   category: Category;
@@ -15,6 +16,7 @@ interface CategoryNodeProps {
 }
 
 function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodeProps) {
+  const t = useTranslations("dashboard.products");
   const [expanded, setExpanded] = useState(true);
   const hasChildren = category.children && category.children.length > 0;
 
@@ -30,7 +32,7 @@ function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodePro
         )}
         <FolderTree className="h-4 w-4 text-amber-500" />
         <span className="flex-1 text-sm font-medium text-gray-700">{category.name}</span>
-        <span className="text-xs text-gray-400">{category.product_count} products</span>
+        <span className="text-xs text-gray-400">{category.product_count} {t("totalProducts").toLowerCase()}</span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
           <button onClick={() => onEdit(category.id)} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
           <button onClick={() => onDelete(category.id)} className="rounded p-1 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
@@ -48,6 +50,8 @@ function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodePro
 }
 
 export function CategoryTree() {
+  const t = useTranslations("dashboard.products");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { data: categories, isLoading } = useCategories();
   const createCategory = useCreateCategory();
@@ -65,7 +69,7 @@ export function CategoryTree() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this category? Products will be unlinked.")) {
+    if (confirm(t("deleteCategoryConfirm"))) {
       await deleteCategory.mutateAsync(id);
     }
   };
@@ -77,14 +81,14 @@ export function CategoryTree() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Categories</CardTitle>
+        <CardTitle>{t("categories")}</CardTitle>
         <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="me-1 h-4 w-4" /> Add
+          <Plus className="me-1 h-4 w-4" /> {tc("add")}
         </Button>
       </CardHeader>
       <CardContent>
         {!categories?.length ? (
-          <div className="py-8 text-center text-sm text-gray-500">No categories yet.</div>
+          <div className="py-8 text-center text-sm text-gray-500">{t("noCategories")}</div>
         ) : (
           <div className="space-y-0.5">
             {categories.map((cat) => (
@@ -101,11 +105,11 @@ export function CategoryTree() {
 
         {showCreate && (
           <div className="mt-4 space-y-3 rounded-lg border border-gray-200 p-4">
-            <Input label="Name" value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} />
-            <Input label="Slug" value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
+            <Input label={tc("add")} value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} />
+            <Input label={t("slug")} value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setShowCreate(false)}>Cancel</Button>
-              <Button size="sm" onClick={handleCreate} isLoading={createCategory.isPending}>Create</Button>
+              <Button variant="outline" size="sm" onClick={() => setShowCreate(false)}>{tc("cancel")}</Button>
+              <Button size="sm" onClick={handleCreate} isLoading={createCategory.isPending}>{tc("create")}</Button>
             </div>
           </div>
         )}

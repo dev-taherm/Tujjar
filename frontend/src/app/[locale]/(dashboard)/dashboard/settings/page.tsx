@@ -5,10 +5,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui";
 import { authApi } from "@/api/queries";
 import { useAuthStore } from "@/stores";
+import { useTranslations } from "next-intl";
 
 type Tab = "profile" | "security";
 
 export default function SettingsPage() {
+  const t = useTranslations("dashboard.settings");
+  const tc = useTranslations("common");
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const queryClient = useQueryClient();
@@ -25,9 +28,9 @@ export default function SettingsPage() {
     mutationFn: () => authApi.updateMe({ first_name: firstName, last_name: lastName, phone }),
     onSuccess: (data) => {
       setUser(data);
-      setMessage({ type: "success", text: "Profile updated successfully." });
+      setMessage({ type: "success", text: t("profileUpdated") });
     },
-    onError: () => setMessage({ type: "error", text: "Failed to update profile." }),
+    onError: () => setMessage({ type: "error", text: t("profileUpdateFailed") }),
   });
 
   const changePassword = useMutation({
@@ -39,30 +42,30 @@ export default function SettingsPage() {
       });
     },
     onSuccess: () => {
-      setMessage({ type: "success", text: "Password changed successfully." });
+      setMessage({ type: "success", text: t("passwordChanged") });
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     },
-    onError: () => setMessage({ type: "error", text: "Failed to change password." }),
+    onError: () => setMessage({ type: "error", text: t("passwordChangeFailed") }),
   });
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       <div className="flex gap-2 border-b pb-2">
-        {(["profile", "security"] as Tab[]).map((t) => (
+        {(["profile", "security"] as Tab[]).map((tabKey) => (
           <button
-            key={t}
-            onClick={() => { setTab(t); setMessage(null); }}
+            key={tabKey}
+            onClick={() => { setTab(tabKey); setMessage(null); }}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-              tab === t
+              tab === tabKey
                 ? "bg-primary-50 text-primary-700 border-b-2 border-primary-600"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
+            {tabKey === "profile" ? t("tabProfile") : t("tabSecurity")}
           </button>
         ))}
       </div>
@@ -78,18 +81,18 @@ export default function SettingsPage() {
       {tab === "profile" && (
         <Card>
           <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>Update your personal details.</CardDescription>
+            <CardTitle>{t("profileInformation")}</CardTitle>
+            <CardDescription>{t("profileDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Input label="Email" value={user?.email || ""} disabled />
+            <Input label={t("email")} value={user?.email || ""} disabled />
             <div className="grid grid-cols-2 gap-4">
-              <Input label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-              <Input label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              <Input label={t("firstName")} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <Input label={t("lastName")} value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </div>
-            <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <Input label={t("phone")} value={phone} onChange={(e) => setPhone(e.target.value)} />
             <Button onClick={() => updateProfile.mutate()} isLoading={updateProfile.isPending}>
-              Save Changes
+              {tc("saveChanges")}
             </Button>
           </CardContent>
         </Card>
@@ -98,24 +101,24 @@ export default function SettingsPage() {
       {tab === "security" && (
         <Card>
           <CardHeader>
-            <CardTitle>Change Password</CardTitle>
-            <CardDescription>Update your password regularly for security.</CardDescription>
+            <CardTitle>{t("changePassword")}</CardTitle>
+            <CardDescription>{t("securityDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input
-              label="Current Password"
+              label={t("currentPassword")}
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
             />
             <Input
-              label="New Password"
+              label={t("newPassword")}
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
             <Input
-              label="Confirm New Password"
+              label={t("confirmNewPassword")}
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -123,18 +126,18 @@ export default function SettingsPage() {
             <Button
               onClick={() => {
                 if (newPassword !== confirmPassword) {
-                  setMessage({ type: "error", text: "Passwords do not match." });
+                  setMessage({ type: "error", text: t("passwordsDoNotMatch") });
                   return;
                 }
                 if (newPassword.length < 8) {
-                  setMessage({ type: "error", text: "Password must be at least 8 characters." });
+                  setMessage({ type: "error", text: t("passwordTooShort") });
                   return;
                 }
                 changePassword.mutate();
               }}
               isLoading={changePassword.isPending}
             >
-              Change Password
+              {tc("changePassword")}
             </Button>
           </CardContent>
         </Card>

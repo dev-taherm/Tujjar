@@ -5,23 +5,25 @@ import { CategoryTree } from "@/features/products/category-tree";
 import { CollectionList } from "@/features/products/collection-list";
 import { useState } from "react";
 import { Package, FolderTree, Layers } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Tab = "products" | "categories" | "collections";
 
 export default function ProductsPage() {
+  const t = useTranslations("dashboard.products");
   const [tab, setTab] = useState<Tab>("products");
 
   const tabs = [
-    { key: "products" as Tab, label: "Products", icon: Package },
-    { key: "categories" as Tab, label: "Categories", icon: FolderTree },
-    { key: "collections" as Tab, label: "Collections", icon: Layers },
+    { key: "products" as Tab, label: t("tabProducts"), icon: Package },
+    { key: "categories" as Tab, label: t("tabCategories"), icon: FolderTree },
+    { key: "collections" as Tab, label: t("tabCollections"), icon: Layers },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-        <p className="text-sm text-gray-500">Manage your product catalog.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-sm text-gray-500">{t("description")}</p>
       </div>
 
       <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1">
@@ -44,7 +46,7 @@ export default function ProductsPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           <CategoryTree />
           <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <p className="text-sm text-gray-500">Select a category to manage its products, or create a new category to organize your catalog.</p>
+            <p className="text-sm text-gray-500">{t("categoryHelp")}</p>
           </div>
         </div>
       )}

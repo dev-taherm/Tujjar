@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button, Input, Select, Card, CardContent, CardHeader, CardTitle, Badge } from "@/shared/ui";
 import { useAIProviders, useCreateAIProvider, useDeleteAIProvider } from "@/api/queries";
 import { Plus, Trash2, Check, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const providerOptions = [
   { value: "openai", label: "OpenAI" },
@@ -24,6 +25,8 @@ const modelOptions: Record<string, string[]> = {
 };
 
 export function AIProviderConfig() {
+  const t = useTranslations("dashboard.ai");
+  const tc = useTranslations("common");
   const { data: providers, isLoading } = useAIProviders();
   const createProvider = useCreateAIProvider();
   const deleteProvider = useDeleteAIProvider();
@@ -55,9 +58,9 @@ export function AIProviderConfig() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">AI Providers</h3>
+        <h3 className="text-lg font-semibold text-gray-900">{t("aiProviders")}</h3>
         <Button size="sm" onClick={() => setShowAdd(true)}>
-          <Plus className="me-1 h-4 w-4" /> Add Provider
+          <Plus className="me-1 h-4 w-4" /> {t("addProvider")}
         </Button>
       </div>
 
@@ -65,19 +68,19 @@ export function AIProviderConfig() {
         <Card>
           <CardContent className="p-4 space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="My OpenAI" />
-              <Select label="Provider" options={providerOptions} value={provider} onChange={(e) => { setProvider(e.target.value); setModel(modelOptions[e.target.value]?.[0] || ""); }} />
+              <Input label={t("name")} value={name} onChange={(e) => setName(e.target.value)} placeholder="My OpenAI" />
+              <Select label={t("provider")} options={providerOptions} value={provider} onChange={(e) => { setProvider(e.target.value); setModel(modelOptions[e.target.value]?.[0] || ""); }} />
             </div>
-            <Select label="Model" options={(modelOptions[provider] || []).map((m) => ({ value: m, label: m }))} value={model} onChange={(e) => setModel(e.target.value)} />
+            <Select label={t("model")} options={(modelOptions[provider] || []).map((m) => ({ value: m, label: m }))} value={model} onChange={(e) => setModel(e.target.value)} />
             {provider !== "ollama" && (
-              <Input label="API Key" type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-..." />
+              <Input label={t("apiKey")} type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-..." />
             )}
             {provider === "ollama" && (
-              <Input label="API Base URL" value={apiBase} onChange={(e) => setApiBase(e.target.value)} placeholder="http://localhost:11434" />
+              <Input label={t("apiBaseUrl")} value={apiBase} onChange={(e) => setApiBase(e.target.value)} placeholder="http://localhost:11434" />
             )}
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setShowAdd(false)}>Cancel</Button>
-              <Button size="sm" onClick={handleAdd} isLoading={createProvider.isPending}>Add</Button>
+              <Button variant="outline" size="sm" onClick={() => setShowAdd(false)}>{tc("cancel")}</Button>
+              <Button size="sm" onClick={handleAdd} isLoading={createProvider.isPending}>{tc("add")}</Button>
             </div>
           </CardContent>
         </Card>
@@ -90,8 +93,8 @@ export function AIProviderConfig() {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-gray-900">{p.name}</span>
-                {p.is_default && <Badge variant="success">Default</Badge>}
-                <Badge variant={p.is_active ? "success" : "secondary"}>{p.is_active ? "Active" : "Inactive"}</Badge>
+                {p.is_default && <Badge variant="success">{t("default")}</Badge>}
+                <Badge variant={p.is_active ? "success" : "secondary"}>{p.is_active ? tc("active") : tc("inactive")}</Badge>
               </div>
               <p className="text-sm text-gray-500">{p.provider} / {p.model_name}</p>
             </div>
@@ -106,9 +109,9 @@ export function AIProviderConfig() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Settings className="mb-3 h-10 w-10 text-gray-300" />
-            <p className="text-sm text-gray-500 mb-3">No AI providers configured.</p>
+            <p className="text-sm text-gray-500 mb-3">{t("noAiProviders")}</p>
             <Button size="sm" onClick={() => setShowAdd(true)}>
-              <Plus className="me-1 h-4 w-4" /> Add Your First Provider
+              <Plus className="me-1 h-4 w-4" /> {t("addFirstProvider")}
             </Button>
           </CardContent>
         </Card>

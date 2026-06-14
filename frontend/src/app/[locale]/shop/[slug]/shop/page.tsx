@@ -3,11 +3,12 @@
 import { use, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StorefrontProductCard } from "@/features/storefront/product-card";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import type { Product } from "@/shared/types";
 
 export default function StorefrontProductsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const locale = useLocale();
   const t = useTranslations("storefront.products");
   const [sort, setSort] = useState("-created_at");
   const [search, setSearch] = useState("");
@@ -21,9 +22,9 @@ export default function StorefrontProductsPage({ params }: { params: Promise<{ s
   ];
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ["storefront", slug, "products", sort, search],
+    queryKey: ["storefront", slug, "products", sort, search, locale],
     queryFn: async () => {
-      const sp = new URLSearchParams({ sort });
+      const sp = new URLSearchParams({ sort, locale });
       if (search) sp.set("search", search);
       const res = await fetch(`/api/v1/store/${slug}/products/?${sp}`);
       if (!res.ok) return [];

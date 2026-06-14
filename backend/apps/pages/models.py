@@ -50,6 +50,10 @@ class Page(UUIDModel, TimeStampedModel):
     )
     seo_title = models.CharField(max_length=255, blank=True, default="")
     seo_description = models.TextField(blank=True, default="")
+    translations = models.JSONField(
+        default=dict, blank=True,
+        help_text='Per-locale translations, e.g. {"ar": {"title": "...", "content_schema": {...}}}',
+    )
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(

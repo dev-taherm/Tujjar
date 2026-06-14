@@ -2,14 +2,16 @@
 
 import { useMediaStats } from "@/api/queries";
 import { Image, Film, FileText, HardDrive } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function MediaStatsCards() {
+  const t = useTranslations("dashboard.media");
   const { data: stats } = useMediaStats();
   return (
     <div className="grid grid-cols-4 gap-4 mb-6">
       {[
-        { icon: Image, label: "Images", value: stats?.total_images || 0, color: "text-blue-600 bg-blue-50" },
-        { icon: Film, label: "Videos", value: stats?.total_videos || 0, color: "text-purple-600 bg-purple-50" },
+        { icon: Image, label: t("images"), value: stats?.total_images || 0, color: "text-blue-600 bg-blue-50" },
+        { icon: Film, label: t("videos"), value: stats?.total_videos || 0, color: "text-purple-600 bg-purple-50" },
         { icon: FileText, label: "Documents", value: stats?.total_documents || 0, color: "text-green-600 bg-green-50" },
         { icon: HardDrive, label: "Total", value: stats?.total_assets || 0, color: "text-gray-600 bg-gray-50" },
       ].map((s) => (

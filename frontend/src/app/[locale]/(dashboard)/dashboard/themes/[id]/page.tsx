@@ -8,8 +8,11 @@ import { ThemeTypographyEditor } from "@/features/themes/theme-typography-editor
 import { ThemeSpacingEditor } from "@/features/themes/theme-spacing-editor";
 import { Button, Card, CardHeader, CardTitle, CardContent, Skeleton } from "@/shared/ui";
 import { Save, Eye } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function ThemeDetailPage() {
+  const t = useTranslations("dashboard.themes");
+  const tc = useTranslations("common");
   const params = useParams();
   const { data: theme, isLoading } = useTheme(params.id as string);
   const updateTheme = useUpdateTheme();
@@ -18,14 +21,14 @@ export default function ThemeDetailPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="mb-8 text-3xl font-bold text-gray-900">Theme Editor</h1>
+        <h1 className="mb-8 text-3xl font-bold text-gray-900">{t("themeEditor")}</h1>
         <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
   if (!theme) {
-    return <div>Theme not found.</div>;
+    return <div>{t("themeNotFound")}</div>;
   }
 
   const activeConfig = (config as any) || theme.config;
@@ -43,16 +46,16 @@ export default function ThemeDetailPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{theme.name}</h1>
-          <p className="text-sm text-gray-500">v{theme.version} {theme.is_system ? "• System Theme" : ""}</p>
+          <p className="text-sm text-gray-500">v{theme.version} {theme.is_system ? `• ${t("systemTheme")}` : ""}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">
             <Eye className="me-2 h-4 w-4" />
-            Preview
+            {tc("preview")}
           </Button>
           <Button onClick={handleSave} isLoading={updateTheme.isPending} disabled={!config}>
             <Save className="me-2 h-4 w-4" />
-            Save Changes
+            {tc("saveChanges")}
           </Button>
         </div>
       </div>
@@ -61,7 +64,7 @@ export default function ThemeDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Colors</CardTitle>
+              <CardTitle>{t("colors")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ThemeColorEditor
@@ -73,7 +76,7 @@ export default function ThemeDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Typography</CardTitle>
+              <CardTitle>{t("typography")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ThemeTypographyEditor
@@ -85,7 +88,7 @@ export default function ThemeDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Spacing</CardTitle>
+              <CardTitle>{t("spacing")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ThemeSpacingEditor
@@ -99,7 +102,7 @@ export default function ThemeDetailPage() {
         <div>
           <Card className="sticky top-8">
             <CardHeader>
-              <CardTitle>Preview</CardTitle>
+              <CardTitle>{t("preview")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -111,19 +114,19 @@ export default function ThemeDetailPage() {
                     className="mb-2 text-lg font-bold"
                     style={{ color: activeConfig.colors.text, fontFamily: activeConfig.typography.headingFont }}
                   >
-                    Sample Heading
+                    {t("sampleHeading")}
                   </h3>
                   <p
                     className="text-sm"
                     style={{ color: activeConfig.colors.textSecondary, fontFamily: activeConfig.typography.bodyFont }}
                   >
-                    This is a preview of how your theme will look with the current settings.
+                    {t("previewDescription")}
                   </p>
                   <button
                     className="mt-4 rounded-lg px-4 py-2 text-sm font-medium text-white"
                     style={{ backgroundColor: activeConfig.colors.primary }}
                   >
-                    Primary Button
+                    {t("primaryButton")}
                   </button>
                 </div>
                 <div className="flex gap-1">

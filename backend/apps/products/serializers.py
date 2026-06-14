@@ -14,7 +14,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = [
             "id", "organization", "store", "parent", "name", "slug",
             "description", "image", "is_active", "sort_order",
-            "children", "product_count", "created_at", "updated_at",
+            "translations", "children", "product_count", "created_at", "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
@@ -96,6 +96,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "categories", "category_ids", "tags",
             "images", "variants",
             "is_in_stock", "is_on_sale",
+            "translations",
             "total_sold", "total_revenue",
             "created_at", "updated_at",
         ]
@@ -113,7 +114,7 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = [
             "id", "organization", "store", "name", "slug",
             "description", "image", "is_active", "sort_order",
-            "product_count", "created_at", "updated_at",
+            "translations", "product_count", "created_at", "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
@@ -135,7 +136,7 @@ class CollectionDetailSerializer(serializers.ModelSerializer):
             "id", "organization", "store", "name", "slug",
             "description", "image", "is_active", "sort_order",
             "products", "product_ids", "product_count",
-            "created_at", "updated_at",
+            "translations", "created_at", "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 

@@ -42,9 +42,9 @@ export default function StorefrontLayout({
   const tHeader = useTranslations("storefront.header");
 
   const { data } = useQuery({
-    queryKey: ["storefront", slug],
+    queryKey: ["storefront", slug, locale],
     queryFn: async () => {
-      const res = await fetch(`/api/v1/store/${slug}/`);
+      const res = await fetch(`/api/v1/store/${slug}/?locale=${locale}`);
       if (!res.ok) return null;
       return res.json();
     },

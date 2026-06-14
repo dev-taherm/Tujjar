@@ -9,6 +9,7 @@ import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ArrowLeft, Truck, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 import type { Order } from "@/shared/types";
+import { useTranslations } from "next-intl";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -21,6 +22,8 @@ const statusColors: Record<string, string> = {
 };
 
 export default function OrderDetailPage() {
+  const t = useTranslations("dashboard.orders");
+  const tc = useTranslations("common");
   const params = useParams();
   const router = useRouter();
   const orderId = params.id as string;
@@ -46,7 +49,7 @@ export default function OrderDetailPage() {
   }
 
   if (!order) {
-    return <div className="flex h-96 items-center justify-center"><p className="text-gray-500">Order not found.</p></div>;
+    return <div className="flex h-96 items-center justify-center"><p className="text-gray-500">{t("orderNotFound")}</p></div>;
   }
 
   const handleShip = async () => {
@@ -59,10 +62,10 @@ export default function OrderDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"><ArrowLeft className="h-5 w-5" /></button>
+          <button onClick={() => router.back()} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"><ArrowLeft className="h-5 w-5 rtl:rotate-180" /></button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{order.order_number}</h1>
-            <p className="text-sm text-gray-500">Placed on {formatDateTime(order.created_at)}</p>
+            <p className="text-sm text-gray-500">{t("placedOn")} {formatDateTime(order.created_at)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -73,7 +76,7 @@ export default function OrderDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader><CardTitle>Items ({order.items.length})</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("items")} ({order.items.length})</CardTitle></CardHeader>
             <CardContent>
               <div className="divide-y divide-gray-200">
                 {order.items.map((item) => (
@@ -85,7 +88,7 @@ export default function OrderDetailPage() {
                     )}
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{item.title}</p>
-                      {item.sku && <p className="text-xs text-gray-500">SKU: {item.sku}</p>}
+                      {item.sku && <p className="text-xs text-gray-500">{t("sku")}: {item.sku}</p>}
                     </div>
                     <div className="text-end">
                       <p className="font-medium text-gray-900">{formatCurrency(Number(item.total_price))}</p>
@@ -100,55 +103,55 @@ export default function OrderDetailPage() {
 
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Summary</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("summary")}</CardTitle></CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>{formatCurrency(Number(order.subtotal))}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Shipping</span><span>{formatCurrency(Number(order.shipping_amount))}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Tax</span><span>{formatCurrency(Number(order.tax_amount))}</span></div>
-              {Number(order.discount_amount) > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatCurrency(Number(order.discount_amount))}</span></div>}
-              <div className="flex justify-between border-t border-gray-200 pt-2 font-semibold text-gray-900"><span>Total</span><span>{formatCurrency(Number(order.total))}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">{t("subtotal")}</span><span>{formatCurrency(Number(order.subtotal))}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">{t("shipping")}</span><span>{formatCurrency(Number(order.shipping_amount))}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">{t("tax")}</span><span>{formatCurrency(Number(order.tax_amount))}</span></div>
+              {Number(order.discount_amount) > 0 && <div className="flex justify-between text-green-600"><span>{t("discount")}</span><span>-{formatCurrency(Number(order.discount_amount))}</span></div>}
+              <div className="flex justify-between border-t border-gray-200 pt-2 font-semibold text-gray-900"><span>{t("total")}</span><span>{formatCurrency(Number(order.total))}</span></div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Actions</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("actions")}</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <Select
-                label="Status"
+                label={t("status")}
                 options={[
-                  { value: "pending", label: "Pending" },
-                  { value: "confirmed", label: "Confirmed" },
-                  { value: "processing", label: "Processing" },
-                  { value: "shipped", label: "Shipped" },
-                  { value: "delivered", label: "Delivered" },
-                  { value: "cancelled", label: "Cancelled" },
+                  { value: "pending", label: t("statusPending") },
+                  { value: "confirmed", label: t("statusConfirmed") },
+                  { value: "processing", label: t("statusProcessing") },
+                  { value: "shipped", label: t("statusShipped") },
+                  { value: "delivered", label: t("statusDelivered") },
+                  { value: "cancelled", label: t("statusCancelled") },
                 ]}
                 value={order.status}
                 onChange={(e) => updateStatus.mutateAsync({ id: orderId, status: e.target.value })}
               />
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setShipShow(!shipShow)}><Truck className="me-1 h-4 w-4" /> Ship</Button>
-                <Button variant="outline" size="sm" onClick={() => deliverOrder.mutateAsync(orderId)}><CheckCircle className="me-1 h-4 w-4" /> Deliver</Button>
-                <Button variant="outline" size="sm" onClick={() => cancelOrder.mutateAsync(orderId)}><XCircle className="me-1 h-4 w-4" /> Cancel</Button>
+                <Button variant="outline" size="sm" onClick={() => setShipShow(!shipShow)}><Truck className="me-1 h-4 w-4" /> {tc("ship")}</Button>
+                <Button variant="outline" size="sm" onClick={() => deliverOrder.mutateAsync(orderId)}><CheckCircle className="me-1 h-4 w-4" /> {tc("deliver")}</Button>
+                <Button variant="outline" size="sm" onClick={() => cancelOrder.mutateAsync(orderId)}><XCircle className="me-1 h-4 w-4" /> {tc("cancel")}</Button>
               </div>
               {shipShow && (
                 <div className="space-y-2 rounded-lg border border-gray-200 p-3">
-                  <input type="text" placeholder="Tracking number" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
-                  <Button size="sm" onClick={handleShip} isLoading={shipOrder.isPending}>Confirm Shipment</Button>
+                  <input type="text" placeholder={t("trackingNumber")} value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+                  <Button size="sm" onClick={handleShip} isLoading={shipOrder.isPending}>{t("confirmShipment")}</Button>
                 </div>
               )}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Customer</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("customer")}</CardTitle></CardHeader>
             <CardContent className="space-y-1 text-sm">
               <p className="font-medium text-gray-900">{order.customer_first_name} {order.customer_last_name}</p>
               <p className="text-gray-500">{order.customer_email}</p>
               {order.customer_phone && <p className="text-gray-500">{order.customer_phone}</p>}
               {order.shipping_address_line1 && (
                 <div className="mt-3 border-t border-gray-200 pt-3">
-                  <p className="font-medium text-gray-700">Shipping Address</p>
+                  <p className="font-medium text-gray-700">{t("shippingAddress")}</p>
                   <p className="text-gray-500">{order.shipping_address_line1}</p>
                   {order.shipping_address_line2 && <p className="text-gray-500">{order.shipping_address_line2}</p>}
                   <p className="text-gray-500">{order.shipping_city}, {order.shipping_state} {order.shipping_postal_code}</p>

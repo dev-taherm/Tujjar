@@ -5,8 +5,11 @@ import { Button, Input, Card, CardContent, CardHeader, CardTitle, Badge } from "
 import { useProducts, useUpdateInventory } from "@/api/queries";
 import { AlertTriangle, Package, TrendingDown, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export function InventoryManager() {
+  const t = useTranslations("dashboard.products");
+  const tc = useTranslations("common");
   const { data: products, isLoading } = useProducts({ status: "active" });
   const updateInventory = useUpdateInventory();
   const [adjustments, setAdjustments] = useState<Record<string, number>>({});
@@ -39,7 +42,7 @@ export function InventoryManager() {
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-blue-100 p-2"><Package className="h-5 w-5 text-blue-600" /></div>
               <div>
-                <p className="text-sm text-gray-500">Total Products</p>
+                <p className="text-sm text-gray-500">{t("totalProducts")}</p>
                 <p className="text-2xl font-bold">{products?.length || 0}</p>
               </div>
             </div>
@@ -50,7 +53,7 @@ export function InventoryManager() {
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-amber-100 p-2"><AlertTriangle className="h-5 w-5 text-amber-600" /></div>
               <div>
-                <p className="text-sm text-gray-500">Low Stock</p>
+                <p className="text-sm text-gray-500">{t("lowStock")}</p>
                 <p className="text-2xl font-bold">{lowStockProducts.length}</p>
               </div>
             </div>
@@ -61,7 +64,7 @@ export function InventoryManager() {
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-red-100 p-2"><TrendingDown className="h-5 w-5 text-red-600" /></div>
               <div>
-                <p className="text-sm text-gray-500">Out of Stock</p>
+                <p className="text-sm text-gray-500">{t("outOfStock")}</p>
                 <p className="text-2xl font-bold">{outOfStockProducts.length}</p>
               </div>
             </div>
@@ -75,7 +78,7 @@ export function InventoryManager() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-700">
               <AlertTriangle className="h-5 w-5" />
-              Low Stock Alert ({lowStockProducts.length})
+              {t("lowStockAlert")} ({lowStockProducts.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -97,7 +100,7 @@ export function InventoryManager() {
                       className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm"
                     />
                     <Button size="sm" onClick={() => handleAdjust(product.id)} disabled={!adjustments[product.id]}>
-                      <TrendingUp className="me-1 h-3 w-3" /> Adjust
+                      <TrendingUp className="me-1 h-3 w-3" /> {t("adjust")}
                     </Button>
                   </div>
                 </div>

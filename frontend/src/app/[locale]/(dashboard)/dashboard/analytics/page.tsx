@@ -1,17 +1,15 @@
-import { Metadata } from "next";
-import { AnalyticsDashboard } from "@/features/analytics/analytics-dashboard";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Analytics - Tujjar",
-  description: "View your store analytics and insights",
-};
+import { AnalyticsDashboard } from "@/features/analytics/analytics-dashboard";
+import { useTranslations } from "next-intl";
 
 export default function AnalyticsPage() {
+  const t = useTranslations("dashboard.analytics");
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Analytics</h1>
-        <p className="text-gray-500">Track your store performance and customer behavior</p>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <p className="text-gray-500">{t("description")}</p>
       </div>
       <AnalyticsDashboard />
     </div>

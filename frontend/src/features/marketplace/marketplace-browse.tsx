@@ -12,6 +12,7 @@ import { TemplatePreview } from "@/features/templates/template-preview";
 import { StoreSelectorDialog } from "@/features/templates/store-selector-dialog";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 type Tab = "themes" | "templates";
 
@@ -63,6 +64,8 @@ function ThemeMarketplaceCard({ theme, isInstalling, onInstall }: {
 /* ── Main Component ────────────────────────────────────────────────── */
 
 export function MarketplaceBrowse() {
+  const t = useTranslations("dashboard.marketplace");
+  const tc = useTranslations("common");
   const [activeTab, setActiveTab] = useState<Tab>("themes");
   const [templateCategory, setTemplateCategory] = useState("");
   const [templateSearch, setTemplateSearch] = useState("");
@@ -83,7 +86,7 @@ export function MarketplaceBrowse() {
             )}
           >
             <Palette className="h-4 w-4" />
-            Themes
+            {t("themes")}
           </button>
           <button
             onClick={() => setActiveTab("templates")}
@@ -95,7 +98,7 @@ export function MarketplaceBrowse() {
             )}
           >
             <LayoutTemplate className="h-4 w-4" />
-            Templates
+            {t("templates")}
           </button>
         </nav>
       </div>
@@ -119,6 +122,7 @@ export function MarketplaceBrowse() {
 /* ── Themes Tab ────────────────────────────────────────────────────── */
 
 function ThemesTab() {
+  const t = useTranslations("dashboard.marketplace");
   const { data: themes, isLoading } = useThemeMarketplace();
   const installTheme = useInstallTheme();
   const queryClient = useQueryClient();
@@ -158,7 +162,7 @@ function ThemesTab() {
         ) : !themeList.length ? (
           <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
             <Palette className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">No themes available</p>
+            <p className="mt-4 text-gray-500">{t("noThemesAvailable")}</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -204,6 +208,7 @@ function TemplatesTab({
   previewTemplate: Template | null;
   setPreviewTemplate: (t: Template | null) => void;
 }) {
+  const tm = useTranslations("dashboard.marketplace");
   const { data, isLoading } = useTemplateMarketplace(category || undefined);
   const installMutation = useInstallTemplate();
   const queryClient = useQueryClient();
@@ -284,7 +289,7 @@ function TemplatesTab({
         ) : templates.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
             <LayoutTemplate className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">No templates found</p>
+            <p className="mt-4 text-gray-500">{tm("noTemplatesFound")}</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

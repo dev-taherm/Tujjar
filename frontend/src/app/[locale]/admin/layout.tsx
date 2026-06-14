@@ -94,7 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             href={`/${locale}/dashboard`}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
             {t("backToDashboard")}
           </Link>
           <button

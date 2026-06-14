@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, Input, Card, CardHeader, CardTitle, CardContent, Badge } from "@/shared/ui";
+import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useUpdateStore } from "@/api/queries";
 import { usePages } from "@/api/pages";
 import { TemplateBrowser } from "@/features/templates/template-browser";
@@ -18,6 +19,10 @@ import {
   FileText,
   Globe,
   ExternalLink,
+  Plus,
+  Trash2,
+  GripVertical,
+  Navigation,
 } from "lucide-react";
 
 const settingsSchema = z.object({
@@ -29,7 +34,7 @@ const settingsSchema = z.object({
 
 type SettingsForm = z.infer<typeof settingsSchema>;
 
-type TabId = "general" | "template" | "theme" | "pages";
+type TabId = "general" | "navigation" | "template" | "theme" | "pages";
 
 interface StoreSettingsFormProps {
   store: Store;
@@ -37,12 +42,12 @@ interface StoreSettingsFormProps {
 
 export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
   const t = useTranslations("storeSettings");
-  const tCommon = useTranslations("common");
   const locale = useLocale();
   const [activeTab, setActiveTab] = useState<TabId>("general");
 
   const TABS: { id: TabId; label: string; icon: typeof Settings }[] = [
     { id: "general", label: t("tabs.general"), icon: Settings },
+    { id: "navigation", label: t("tabs.navigation") || "Navigation", icon: Navigation },
     { id: "template", label: t("tabs.template"), icon: LayoutTemplate },
     { id: "theme", label: t("tabs.theme"), icon: Palette },
     { id: "pages", label: t("tabs.pages"), icon: FileText },
@@ -50,7 +55,6 @@ export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex gap-6">
           {TABS.map((tab) => {
@@ -73,8 +77,8 @@ export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
         </nav>
       </div>
 
-      {/* Tab Content */}
       {activeTab === "general" && <GeneralTab store={store} />}
+      {activeTab === "navigation" && <NavigationTab store={store} />}
       {activeTab === "template" && <TemplateTab store={store} />}
       {activeTab === "theme" && <ThemeTab store={store} />}
       {activeTab === "pages" && <PagesTab store={store} locale={locale} />}
@@ -87,31 +91,83 @@ export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
 function GeneralTab({ store }: { store: Store }) {
   const t = useTranslations("storeSettings.general");
   const updateStore = useUpdateStore();
+  const [editLocale, setEditLocale] = useState("en");
+
+  const getTranslation = (field: string) => {
+    if (editLocale === "en") return "";
+    return (store.translations?.[editLocale] as Record<string, string>)?.[field] || "";
+  };
+
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      name: store.name,
-      description: store.description,
-      seo_title: store.seo_title,
-      seo_description: store.seo_description,
+      name: editLocale === "en" ? store.name : getTranslation("name"),
+      description: editLocale === "en" ? store.description : getTranslation("description"),
+      seo_title: editLocale === "en" ? store.seo_title : getTranslation("seo_title"),
+      seo_description: editLocale === "en" ? store.seo_description : getTranslation("seo_description"),
     },
   });
 
+  const handleLocaleChange = useCallback(
+    (newLocale: string) => {
+      setEditLocale(newLocale);
+      if (newLocale === "en") {
+        setValue("name", store.name);
+        setValue("description", store.description);
+        setValue("seo_title", store.seo_title);
+        setValue("seo_description", store.seo_description);
+      } else {
+        const t = store.translations?.[newLocale] as Record<string, string> | undefined;
+        setValue("name", t?.name || "");
+        setValue("description", t?.description || "");
+        setValue("seo_title", t?.seo_title || "");
+        setValue("seo_description", t?.seo_description || "");
+      }
+    },
+    [store, setValue]
+  );
+
   const onSubmit = async (data: SettingsForm) => {
-    await updateStore.mutateAsync({ id: store.id, ...data });
+    if (editLocale === "en") {
+      await updateStore.mutateAsync({ id: store.id, ...data });
+    } else {
+      const currentTranslations = store.translations || {};
+      const localeData = currentTranslations[editLocale] || {};
+      await updateStore.mutateAsync({
+        id: store.id,
+        translations: {
+          ...currentTranslations,
+          [editLocale]: { ...localeData, ...data },
+        },
+      });
+    }
   };
+
+  const descriptionPlaceholder = editLocale === "en"
+    ? t("descriptionPlaceholder")
+    : `Enter ${editLocale === "ar" ? "Arabic" : editLocale} description...`;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
         <CardHeader>
-          <CardTitle>{t("title")}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>{t("title")}</CardTitle>
+            <LocaleToggle value={editLocale} onChange={handleLocaleChange} />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {editLocale !== "en" && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+              Editing {editLocale === "ar" ? "Arabic" : editLocale} translations. English values are used as fallback.
+            </div>
+          )}
           <Input
             label={t("storeName")}
             error={errors.name?.message}
@@ -119,17 +175,17 @@ function GeneralTab({ store }: { store: Store }) {
           />
           <Input
             label={t("description")}
-            placeholder={t("descriptionPlaceholder")}
+            placeholder={descriptionPlaceholder}
             {...register("description")}
           />
           <Input
             label={t("seoTitle")}
-            placeholder={t("seoTitlePlaceholder")}
+            placeholder={editLocale !== "en" ? `SEO title in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoTitlePlaceholder")}
             {...register("seo_title")}
           />
           <Input
             label={t("seoDescription")}
-            placeholder={t("seoDescriptionPlaceholder")}
+            placeholder={editLocale !== "en" ? `SEO description in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoDescriptionPlaceholder")}
             {...register("seo_description")}
           />
           <div className="flex justify-end">
@@ -140,6 +196,381 @@ function GeneralTab({ store }: { store: Store }) {
         </CardContent>
       </Card>
     </form>
+  );
+}
+
+/* ── Navigation Tab ──────────────────────────────────────────────────── */
+
+interface NavLink {
+  label: string | Record<string, string>;
+  url: string;
+  order?: number;
+}
+
+interface NavigationData {
+  logo_text?: string;
+  links?: NavLink[];
+  cta_button?: { label: string | Record<string, string>; url: string; enabled: boolean };
+}
+
+interface FooterColumn {
+  title: string | Record<string, string>;
+  links: { label: string | Record<string, string>; url: string }[];
+}
+
+interface FooterData {
+  columns?: FooterColumn[];
+  copyright?: string;
+  social_links?: Record<string, string>;
+}
+
+function NavigationTab({ store }: { store: Store }) {
+  const t = useTranslations("storeSettings");
+  const updateStore = useUpdateStore();
+  const [editLocale, setEditLocale] = useState("en");
+
+  const nav: NavigationData = store.navigation || {};
+  const footer: FooterData = store.footer_config || {};
+
+  const [navData, setNavData] = useState<NavigationData>({
+    logo_text: nav.logo_text || "",
+    links: nav.links || [],
+    cta_button: nav.cta_button || { label: "", url: "", enabled: false },
+  });
+
+  const [footerData, setFooterData] = useState<FooterData>({
+    columns: footer.columns || [],
+    copyright: footer.copyright || "",
+    social_links: footer.social_links || {},
+  });
+
+  const getNavLabel = (label: string | Record<string, string>) => {
+    if (typeof label === "string") return label;
+    if (editLocale === "en") return label.en || "";
+    return label[editLocale] || label.en || "";
+  };
+
+  const getFooterTitle = (title: string | Record<string, string>) => {
+    if (typeof title === "string") return title;
+    if (editLocale === "en") return title.en || "";
+    return title[editLocale] || title.en || "";
+  };
+
+  const updateNavLink = (index: number, field: string, value: string) => {
+    setNavData((prev) => {
+      const links = [...(prev.links || [])];
+      const link = { ...links[index] };
+      if (field === "label" && editLocale !== "en") {
+        const currentLabel: Record<string, string> = typeof link.label === "string" ? { en: link.label } : { ...(link.label as Record<string, string>) };
+        currentLabel[editLocale] = value;
+        link.label = currentLabel;
+      } else {
+        (link as Record<string, unknown>)[field] = value;
+      }
+      links[index] = link;
+      return { ...prev, links };
+    });
+  };
+
+  const addNavLink = () => {
+    setNavData((prev) => ({
+      ...prev,
+      links: [...(prev.links || []), { label: "", url: "/", order: (prev.links?.length || 0) }],
+    }));
+  };
+
+  const removeNavLink = (index: number) => {
+    setNavData((prev) => ({
+      ...prev,
+      links: (prev.links || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateFooterColumnTitle = (colIndex: number, value: string) => {
+    setFooterData((prev) => {
+      const columns = [...(prev.columns || [])];
+      const col = { ...columns[colIndex] };
+      if (editLocale !== "en") {
+        const currentTitle: Record<string, string> = typeof col.title === "string" ? { en: col.title } : { ...(col.title as Record<string, string>) };
+        currentTitle[editLocale] = value;
+        col.title = currentTitle;
+      } else {
+        col.title = value;
+      }
+      columns[colIndex] = col;
+      return { ...prev, columns };
+    });
+  };
+
+  const addFooterColumn = () => {
+    setFooterData((prev) => ({
+      ...prev,
+      columns: [...(prev.columns || []), { title: "", links: [] }],
+    }));
+  };
+
+  const removeFooterColumn = (index: number) => {
+    setFooterData((prev) => ({
+      ...prev,
+      columns: (prev.columns || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateFooterLink = (colIndex: number, linkIndex: number, field: string, value: string) => {
+    setFooterData((prev) => {
+      const columns = [...(prev.columns || [])];
+      const col = { ...columns[colIndex] };
+      const links = [...col.links];
+      const link = { ...links[linkIndex] };
+      if (field === "label" && editLocale !== "en") {
+        const currentLabel: Record<string, string> = typeof link.label === "string" ? { en: link.label } : { ...(link.label as Record<string, string>) };
+        currentLabel[editLocale] = value;
+        link.label = currentLabel;
+      } else {
+        (link as Record<string, unknown>)[field] = value;
+      }
+      links[linkIndex] = link;
+      col.links = links;
+      columns[colIndex] = col;
+      return { ...prev, columns };
+    });
+  };
+
+  const addFooterLink = (colIndex: number) => {
+    setFooterData((prev) => {
+      const columns = [...(prev.columns || [])];
+      const col = { ...columns[colIndex] };
+      col.links = [...col.links, { label: "", url: "/" }];
+      columns[colIndex] = col;
+      return { ...prev, columns };
+    });
+  };
+
+  const removeFooterLink = (colIndex: number, linkIndex: number) => {
+    setFooterData((prev) => {
+      const columns = [...(prev.columns || [])];
+      const col = { ...columns[colIndex] };
+      col.links = col.links.filter((_, i) => i !== linkIndex);
+      columns[colIndex] = col;
+      return { ...prev, columns };
+    });
+  };
+
+  const handleSaveNav = async () => {
+    await updateStore.mutateAsync({
+      id: store.id,
+      navigation: {
+        logo_text: navData.logo_text || "",
+        links: (navData.links || []).map((l, i) => ({
+          label: typeof l.label === "string" ? l.label : l.label.en || "",
+          url: l.url,
+          order: l.order ?? i,
+        })),
+        cta_button: navData.cta_button,
+      } as Store["navigation"],
+    });
+  };
+
+  const handleSaveFooter = async () => {
+    await updateStore.mutateAsync({
+      id: store.id,
+      footer_config: {
+        columns: (footerData.columns || []).map((col) => ({
+          title: typeof col.title === "string" ? col.title : col.title.en || "",
+          links: col.links.map((l) => ({
+            label: typeof l.label === "string" ? l.label : l.label.en || "",
+            url: l.url,
+          })),
+        })),
+        copyright: footerData.copyright || "",
+        social_links: footerData.social_links || {},
+      } as Store["footer_config"],
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">Navigation & Footer</h3>
+        <LocaleToggle value={editLocale} onChange={setEditLocale} />
+      </div>
+
+      {editLocale !== "en" && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+          Editing {editLocale === "ar" ? "Arabic" : editLocale} labels. English values are used as fallback.
+        </div>
+      )}
+
+      {/* Navigation */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Navigation Links</CardTitle>
+            <Button variant="outline" size="sm" onClick={addNavLink}>
+              <Plus className="me-1 h-4 w-4" /> Add Link
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {navData.links?.map((link, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <GripVertical className="h-4 w-4 text-gray-300" />
+              <Input
+                placeholder="Label"
+                value={getNavLabel(link.label)}
+                onChange={(e) => updateNavLink(index, "label", e.target.value)}
+                className="flex-1"
+              />
+              <Input
+                placeholder="URL"
+                value={link.url}
+                onChange={(e) => updateNavLink(index, "url", e.target.value)}
+                className="flex-1"
+              />
+              <button
+                type="button"
+                onClick={() => removeNavLink(index)}
+                className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSaveNav} isLoading={updateStore.isPending}>
+              Save Navigation
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* CTA Button */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Call-to-Action Button</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Enabled</label>
+            <button
+              type="button"
+              onClick={() =>
+                setNavData((prev) => ({
+                  ...prev,
+                  cta_button: { ...prev.cta_button!, enabled: !prev.cta_button?.enabled },
+                }))
+              }
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                navData.cta_button?.enabled ? "bg-blue-600" : "bg-gray-200"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  navData.cta_button?.enabled ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+          {navData.cta_button?.enabled && (
+            <div className="flex gap-2">
+              <Input
+                placeholder="Button Label"
+                value={getNavLabel(navData.cta_button?.label || "")}
+                onChange={(e) =>
+                  setNavData((prev) => ({
+                    ...prev,
+                    cta_button: { ...prev.cta_button!, label: e.target.value },
+                  }))
+                }
+                className="flex-1"
+              />
+              <Input
+                placeholder="Button URL"
+                value={navData.cta_button?.url || ""}
+                onChange={(e) =>
+                  setNavData((prev) => ({
+                    ...prev,
+                    cta_button: { ...prev.cta_button!, url: e.target.value },
+                  }))
+                }
+                className="flex-1"
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Footer */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Footer Columns</CardTitle>
+            <Button variant="outline" size="sm" onClick={addFooterColumn}>
+              <Plus className="me-1 h-4 w-4" /> Add Column
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {footerData.columns?.map((col, colIndex) => (
+            <div key={colIndex} className="rounded-lg border border-gray-200 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Input
+                  placeholder="Column Title"
+                  value={getFooterTitle(col.title)}
+                  onChange={(e) => updateFooterColumnTitle(colIndex, e.target.value)}
+                  className="flex-1"
+                />
+                <Button variant="outline" size="sm" onClick={() => addFooterLink(colIndex)}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => removeFooterColumn(colIndex)}
+                  className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="space-y-2">
+                {col.links.map((link, linkIndex) => (
+                  <div key={linkIndex} className="flex items-center gap-2">
+                    <Input
+                      placeholder="Label"
+                      value={getFooterTitle(link.label)}
+                      onChange={(e) => updateFooterLink(colIndex, linkIndex, "label", e.target.value)}
+                      className="flex-1"
+                    />
+                    <Input
+                      placeholder="URL"
+                      value={link.url}
+                      onChange={(e) => updateFooterLink(colIndex, linkIndex, "url", e.target.value)}
+                      className="flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeFooterLink(colIndex, linkIndex)}
+                      className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          <Input
+            placeholder="Copyright text"
+            value={footerData.copyright || ""}
+            onChange={(e) => setFooterData((prev) => ({ ...prev, copyright: e.target.value }))}
+          />
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSaveFooter} isLoading={updateStore.isPending}>
+              Save Footer
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

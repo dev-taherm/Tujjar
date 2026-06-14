@@ -2,6 +2,7 @@
 
 import { Component, type ReactNode } from "react";
 import { Button } from "@/shared/ui";
+import { useTranslations } from "next-intl";
 
 interface Props {
   children: ReactNode;

@@ -4,12 +4,15 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from "@/shared/ui";
 import { Store, Globe, ExternalLink, ArrowUpRight } from "lucide-react";
 import type { Store as StoreType } from "@/shared/types";
+import { useTranslations } from "next-intl";
 
 interface StoreCardProps {
   store: StoreType;
 }
 
 export function StoreCard({ store }: StoreCardProps) {
+  const t = useTranslations("storeSettings");
+  const tc = useTranslations("common");
   return (
     <Link href={`/dashboard/stores/${store.id}`}>
       <Card className="group cursor-pointer transition-all hover:shadow-md hover:border-primary-300">
@@ -28,13 +31,13 @@ export function StoreCard({ store }: StoreCardProps) {
               </div>
             </div>
             <Badge variant={store.is_active ? "success" : "secondary"}>
-              {store.is_active ? "Active" : "Inactive"}
+              {store.is_active ? tc("active") : tc("inactive")}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between text-sm text-gray-500">
-            <span>{store.description || "No description"}</span>
+            <span>{store.description || t("noDescription")}</span>
             <div className="flex items-center gap-2">
               <span
                 onClick={(e) => {
@@ -44,7 +47,7 @@ export function StoreCard({ store }: StoreCardProps) {
                 }}
                 className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 opacity-0 transition-all hover:bg-gray-50 group-hover:opacity-100"
               >
-                Visit Store
+                {t("visitStore")}
                 <ArrowUpRight className="h-3 w-3" />
               </span>
               <ExternalLink className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />

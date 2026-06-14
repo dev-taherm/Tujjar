@@ -26,9 +26,9 @@ export default function StorefrontProductDetailPage({
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
 
   const { data: product, isLoading } = useQuery({
-    queryKey: ["storefront", slug, "product", productSlug],
+    queryKey: ["storefront", slug, "product", productSlug, locale],
     queryFn: async () => {
-      const res = await fetch(`/api/v1/store/${slug}/products/${productSlug}/`);
+      const res = await fetch(`/api/v1/store/${slug}/products/${productSlug}/?locale=${locale}`);
       if (!res.ok) return null;
       return res.json();
     },

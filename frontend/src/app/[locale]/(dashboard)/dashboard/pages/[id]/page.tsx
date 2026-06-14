@@ -9,10 +9,12 @@ import { DndPageBuilder } from "@/builder/dnd/dnd-page-builder";
 import type { Page } from "@/shared/types";
 import { useState } from "react";
 import { LayoutTemplate, MousePointerClick } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type BuilderMode = "section" | "dnd";
 
 export default function PageDetailPage() {
+  const t = useTranslations("dashboard.pages");
   const params = useParams();
   const pageId = params.id as string;
   const [builderMode, setBuilderMode] = useState<BuilderMode>("dnd");
@@ -38,7 +40,7 @@ export default function PageDetailPage() {
   if (error || !page) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <p className="text-gray-500">Page not found or error loading.</p>
+        <p className="text-gray-500">{t("pageNotFound")}</p>
       </div>
     );
   }
@@ -47,7 +49,7 @@ export default function PageDetailPage() {
     <div className="space-y-4">
       {/* Builder mode toggle */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">Builder mode:</span>
+        <span className="text-sm text-gray-500">{t("builderMode")}:</span>
         <div className="flex rounded-lg border border-gray-200 bg-white p-0.5">
           <button
             onClick={() => setBuilderMode("dnd")}
@@ -56,7 +58,7 @@ export default function PageDetailPage() {
             }`}
           >
             <MousePointerClick className="h-3.5 w-3.5" />
-            Drag & Drop
+            {t("dragDrop")}
           </button>
           <button
             onClick={() => setBuilderMode("section")}
@@ -65,7 +67,7 @@ export default function PageDetailPage() {
             }`}
           >
             <LayoutTemplate className="h-3.5 w-3.5" />
-            Section Builder
+            {t("sectionBuilder")}
           </button>
         </div>
       </div>

@@ -5,8 +5,11 @@ import { useAIConversations, useCreateAIConversation, useSendAIMessage } from "@
 import { Button } from "@/shared/ui";
 import { Send, Plus, MessageSquare, Bot, User, Loader2 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export function AIAssistant() {
+  const t = useTranslations("dashboard.ai");
+  const tc = useTranslations("common");
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -25,7 +28,7 @@ export function AIAssistant() {
   }, [localMessages]);
 
   const handleNewConversation = async () => {
-    const conv = await createConversation.mutateAsync({ title: "New Chat", context_type: "chat" });
+    const conv = await createConversation.mutateAsync({ title: t("newChat"), context_type: "chat" });
     setSelectedConversation(conv.id);
     setLocalMessages([]);
   };
@@ -40,7 +43,7 @@ export function AIAssistant() {
       const result = await sendMessage.mutateAsync({ conversationId: selectedConversation, message: userMsg });
       setLocalMessages((prev) => [...prev, { role: "assistant", content: result.content }]);
     } catch {
-      setLocalMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I encountered an error. Please try again." }]);
+      setLocalMessages((prev) => [...prev, { role: "assistant", content: t("sorryError") }]);
     }
   };
 
@@ -50,7 +53,7 @@ export function AIAssistant() {
       <div className="w-64 border-e border-gray-200 flex flex-col">
         <div className="p-3 border-b border-gray-200">
           <Button onClick={handleNewConversation} className="w-full" size="sm">
-            <Plus className="me-1 h-4 w-4" /> New Chat
+            <Plus className="me-1 h-4 w-4" /> {t("newChat")}
           </Button>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -74,10 +77,10 @@ export function AIAssistant() {
         {!selectedConversation ? (
           <div className="flex-1 flex flex-col items-center justify-center">
             <Bot className="mb-4 h-16 w-16 text-gray-300" />
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">AI Assistant</h2>
-            <p className="mb-6 text-sm text-gray-500">Ask me anything about your store, products, or analytics.</p>
+            <h2 className="mb-2 text-xl font-semibold text-gray-900">{t("aiAssistant")}</h2>
+            <p className="mb-6 text-sm text-gray-500">{t("askAnything")}</p>
             <Button onClick={handleNewConversation}>
-              <Plus className="me-2 h-4 w-4" /> Start a Conversation
+              <Plus className="me-2 h-4 w-4" /> {t("startConversation")}
             </Button>
           </div>
         ) : (
@@ -87,7 +90,7 @@ export function AIAssistant() {
               {localMessages.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Bot className="mb-3 h-12 w-12 text-gray-300" />
-                  <p className="text-sm text-gray-500">Send a message to start the conversation.</p>
+                  <p className="text-sm text-gray-500">{t("sendMessageToStart")}</p>
                 </div>
               )}
               {localMessages.map((msg, i) => (
@@ -130,7 +133,7 @@ export function AIAssistant() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                  placeholder="Ask me anything..."
+                  placeholder={t("askMeAnything")}
                   className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
                 <Button onClick={handleSend} disabled={!input.trim() || sendMessage.isPending}>

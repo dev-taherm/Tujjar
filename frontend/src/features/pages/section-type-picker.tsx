@@ -5,6 +5,7 @@ import { getAllSectionTypes } from "@/builder/sections/registry";
 import type { SectionDefinition } from "@/shared/types";
 import * as Icons from "lucide-react";
 import { X, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface SectionTypePickerProps {
   onSelect: (type: string) => void;
@@ -21,6 +22,8 @@ const categoryLabels: Record<string, string> = {
 };
 
 export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps) {
+  const t = useTranslations("dashboard.pages");
+  const tc = useTranslations("common");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const allTypes = getAllSectionTypes();
@@ -40,7 +43,7 @@ export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps)
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-2xl rounded-xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-gray-200 p-4">
-          <h2 className="text-lg font-semibold">Add Section</h2>
+          <h2 className="text-lg font-semibold">{t("addSection")}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="h-5 w-5" />
           </button>
@@ -51,7 +54,7 @@ export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps)
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search sections..."
+              placeholder={t("searchSections")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-300 py-2 ps-10 pe-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -64,7 +67,7 @@ export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps)
                 activeCategory === "all" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              All
+              {t("all")}
             </button>
             {categories.map((cat) => (
               <button
@@ -82,7 +85,7 @@ export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps)
 
         <div className="max-h-96 overflow-y-auto p-4">
           {filtered.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-500">No sections found.</p>
+            <p className="py-8 text-center text-sm text-gray-500">{t("noSectionsFound")}</p>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {filtered.map((def: SectionDefinition) => {

@@ -6,8 +6,11 @@ import { Button, Input, Select, Badge } from "@/shared/ui";
 import { ProductCard } from "./product-card";
 import { useProducts, useDeleteProduct } from "@/api/queries";
 import { Plus, Search, Filter, Package } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function ProductList() {
+  const t = useTranslations("dashboard.products");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -18,10 +21,10 @@ export function ProductList() {
   const deleteProduct = useDeleteProduct();
 
   const statusOptions = [
-    { value: "", label: "All Statuses" },
-    { value: "draft", label: "Draft" },
-    { value: "active", label: "Active" },
-    { value: "archived", label: "Archived" },
+    { value: "", label: t("allStatuses") },
+    { value: "draft", label: tc("draft") },
+    { value: "active", label: tc("active") },
+    { value: "archived", label: t("archived") },
   ];
 
   if (isLoading) {
@@ -43,7 +46,7 @@ export function ProductList() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-300 py-2 ps-10 pe-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -56,7 +59,7 @@ export function ProductList() {
           />
         </div>
         <Button onClick={() => router.push("/dashboard/products/new")}>
-          <Plus className="me-2 h-4 w-4" /> Add Product
+          <Plus className="me-2 h-4 w-4" /> {t("addProduct")}
         </Button>
       </div>
 
@@ -64,10 +67,10 @@ export function ProductList() {
       {!products?.length ? (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
           <Package className="mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-lg font-medium text-gray-900">No products yet</h3>
-          <p className="mb-6 text-sm text-gray-500">Create your first product to start selling.</p>
+          <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noProducts")}</h3>
+          <p className="mb-6 text-sm text-gray-500">{t("createFirstProduct")}</p>
           <Button onClick={() => router.push("/dashboard/products/new")}>
-            <Plus className="me-2 h-4 w-4" /> Add Product
+            <Plus className="me-2 h-4 w-4" /> {t("addProduct")}
           </Button>
         </div>
       ) : (

@@ -109,6 +109,7 @@ export interface Store {
   seo_title: string;
   seo_description: string;
   is_active: boolean;
+  translations?: Record<string, { name?: string; description?: string; seo_title?: string; seo_description?: string }>;
   domain: string;
   domains: StoreDomain[];
   created_at: string;
@@ -220,6 +221,7 @@ export interface Page {
   theme_override: Record<string, unknown> | null;
   seo_title: string;
   seo_description: string;
+  translations?: Record<string, { title?: string; content_schema?: PageSchema; seo_title?: string; seo_description?: string }>;
   is_published: boolean;
   published_at: string | null;
   created_by: UUID | null;
@@ -270,6 +272,7 @@ export interface Category {
   image: string;
   is_active: boolean;
   sort_order: number;
+  translations?: Record<string, { name?: string; description?: string }>;
   children: Category[];
   product_count: number;
   created_at: string;
@@ -288,6 +291,7 @@ export interface Collection {
   sort_order: number;
   products: Product[];
   product_count: number;
+  translations?: Record<string, { name?: string; description?: string }>;
   created_at: string;
   updated_at: string;
 }
@@ -358,6 +362,7 @@ export interface Product {
   variant_count?: number;
   total_sold: number;
   total_revenue: number;
+  translations?: Record<string, { title?: string; description?: string; seo_title?: string; seo_description?: string; tags?: string[] }>;
   created_at: string;
   updated_at: string;
 }

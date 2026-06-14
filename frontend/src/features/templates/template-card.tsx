@@ -3,6 +3,7 @@
 import { Badge } from "@/shared/ui";
 import { Eye, Check, Loader2 } from "lucide-react";
 import type { Template } from "@/api/templates";
+import { useTranslations } from "next-intl";
 
 const CATEGORY_COLORS: Record<string, string> = {
   fashion: "bg-pink-100 text-pink-800",
@@ -31,6 +32,7 @@ interface TemplateCardProps {
 }
 
 export function TemplateCard({ template, onPreview, onInstall, isInstalling, showInstallButton = true }: TemplateCardProps) {
+  const t = useTranslations("dashboard.templates");
   const gradient = CATEGORY_GRADIENTS[template.category] || CATEGORY_GRADIENTS.general;
   const colorClass = CATEGORY_COLORS[template.category] || CATEGORY_COLORS.general;
 
@@ -75,7 +77,7 @@ export function TemplateCard({ template, onPreview, onInstall, isInstalling, sho
 
         {/* Meta */}
         <div className="mb-4 flex items-center gap-4 text-xs text-gray-400">
-          <span>{template.page_count} pages</span>
+          <span>{template.page_count} {t("pagesCount")}</span>
           <span>v{template.version}</span>
           <span>by {template.author}</span>
         </div>
@@ -87,7 +89,7 @@ export function TemplateCard({ template, onPreview, onInstall, isInstalling, sho
             className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
             <Eye className="h-4 w-4" />
-            Preview
+            {t("browseTemplates").split(" ")[0]}
           </button>
           {showInstallButton && (
             <button
@@ -100,7 +102,7 @@ export function TemplateCard({ template, onPreview, onInstall, isInstalling, sho
               ) : (
                 <Check className="h-4 w-4" />
               )}
-              {isInstalling ? "Installing..." : "Install"}
+              {isInstalling ? t("installing") : t("installTemplate").split(" ")[0]}
             </button>
           )}
         </div>

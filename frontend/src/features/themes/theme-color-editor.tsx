@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Input, Label } from "@/shared/ui";
 import type { ThemeConfig } from "@/shared/types";
+import { useTranslations } from "next-intl";
 
 interface ThemeColorEditorProps {
   colors: ThemeConfig["colors"];
@@ -24,13 +25,14 @@ const COLOR_FIELDS = [
 ];
 
 export function ThemeColorEditor({ colors, onChange }: ThemeColorEditorProps) {
+  const t = useTranslations("dashboard.themes");
   const handleChange = (key: keyof ThemeConfig["colors"], value: string) => {
     onChange({ ...colors, [key]: value });
   };
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-medium text-gray-900">Colors</h3>
+      <h3 className="text-sm font-medium text-gray-900">{t("colors")}</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         {COLOR_FIELDS.map(({ key, label }) => (
           <div key={key} className="flex items-center gap-3">

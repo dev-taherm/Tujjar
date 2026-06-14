@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, ChevronLeft, ChevronRight, Check, Loader2 } from "lucide-react";
 import type { Template } from "@/api/templates";
+import { useTranslations } from "next-intl";
 
 interface TemplatePreviewProps {
   template: Template;
@@ -12,6 +13,8 @@ interface TemplatePreviewProps {
 }
 
 export function TemplatePreview({ template, onClose, onInstall, isInstalling }: TemplatePreviewProps) {
+  const t = useTranslations("dashboard.templates");
+  const tc = useTranslations("common");
   const [activePageIndex, setActivePageIndex] = useState(0);
   const pages = template.pages || [];
   const colors = (template.config as Record<string, unknown>)?.colors as Record<string, string> | undefined;
@@ -36,7 +39,7 @@ export function TemplatePreview({ template, onClose, onInstall, isInstalling }: 
           {/* Color Palette */}
           {colors && (
             <div className="border-b px-6 py-4">
-              <h3 className="mb-2 text-sm font-medium text-gray-700">Color Palette</h3>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">{t("colorPalette")}</h3>
               <div className="flex gap-3">
                 {["primary", "secondary", "accent", "background", "text"].map((key) => (
                   <div key={key} className="text-center">
@@ -54,7 +57,7 @@ export function TemplatePreview({ template, onClose, onInstall, isInstalling }: 
           {/* Typography */}
           {typography && (
             <div className="border-b px-6 py-4">
-              <h3 className="mb-2 text-sm font-medium text-gray-700">Typography</h3>
+              <h3 className="mb-2 text-sm font-medium text-gray-700">{t("browseTemplates").split(" ")[0]}</h3>
               <div className="flex gap-8">
                 <div>
                   <span className="text-xs text-gray-400">Heading</span>
@@ -74,7 +77,7 @@ export function TemplatePreview({ template, onClose, onInstall, isInstalling }: 
 
           {/* Pages */}
           <div className="border-b px-6 py-4">
-            <h3 className="mb-3 text-sm font-medium text-gray-700">Pages ({pages.length})</h3>
+            <h3 className="mb-3 text-sm font-medium text-gray-700">{t("pagesCount")} ({pages.length})</h3>
             <div className="flex flex-wrap gap-2">
               {pages.map((page, i) => (
                 <button
@@ -117,7 +120,7 @@ export function TemplatePreview({ template, onClose, onInstall, isInstalling }: 
         {/* Footer */}
         <div className="flex items-center justify-between border-t bg-gray-50 px-6 py-4">
           <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200">
-            Close
+            {tc("close")}
           </button>
           <button
             onClick={() => onInstall(template)}
@@ -125,7 +128,7 @@ export function TemplatePreview({ template, onClose, onInstall, isInstalling }: 
             className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
             {isInstalling ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            {isInstalling ? "Installing..." : "Install Template"}
+            {isInstalling ? t("installing") : t("installTemplate")}
           </button>
         </div>
       </div>

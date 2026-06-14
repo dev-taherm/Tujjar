@@ -6,8 +6,11 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Input } from "@/share
 import { useCollections, useCreateCollection, useDeleteCollection } from "@/api/queries";
 import { Plus, Layers, Trash2, Edit } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export function CollectionList() {
+  const t = useTranslations("dashboard.products");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { data: collections, isLoading } = useCollections();
   const createCollection = useCreateCollection();
@@ -25,7 +28,7 @@ export function CollectionList() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this collection? Products will be unlinked.")) {
+    if (confirm(t("deleteCollectionConfirm"))) {
       await deleteCollection.mutateAsync(id);
     }
   };
@@ -37,19 +40,19 @@ export function CollectionList() {
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Collections</h2>
+        <h2 className="text-lg font-semibold text-gray-900">{t("collections")}</h2>
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="me-2 h-4 w-4" /> Add Collection
+          <Plus className="me-2 h-4 w-4" /> {t("addCollection")}
         </Button>
       </div>
 
       {!collections?.length ? (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
           <Layers className="mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-lg font-medium text-gray-900">No collections yet</h3>
-          <p className="mb-6 text-sm text-gray-500">Create collections to group your products.</p>
+          <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noCollections")}</h3>
+          <p className="mb-6 text-sm text-gray-500">{t("createCollectionsToGroup")}</p>
           <Button onClick={() => setShowCreate(true)}>
-            <Plus className="me-2 h-4 w-4" /> Add Collection
+            <Plus className="me-2 h-4 w-4" /> {t("addCollection")}
           </Button>
         </div>
       ) : (
@@ -69,7 +72,7 @@ export function CollectionList() {
                 </div>
                 {col.description && <p className="mb-2 text-sm text-gray-500 line-clamp-2">{col.description}</p>}
                 <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>{col.product_count} products</span>
+                  <span>{col.product_count} {t("totalProducts").toLowerCase()}</span>
                   <span>{formatDateTime(col.updated_at)}</span>
                 </div>
               </CardContent>
@@ -82,14 +85,14 @@ export function CollectionList() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <Card className="w-full max-w-md">
             <CardContent className="p-6">
-              <h2 className="mb-4 text-lg font-semibold">Create Collection</h2>
+              <h2 className="mb-4 text-lg font-semibold">{t("createCollection")}</h2>
               <div className="space-y-4">
-                <Input label="Name" value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} />
-                <Input label="Slug" value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
+                <Input label={tc("add")} value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} />
+                <Input label={t("slug")} value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
               </div>
               <div className="mt-6 flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-                <Button onClick={handleCreate} isLoading={createCollection.isPending}>Create</Button>
+                <Button variant="outline" onClick={() => setShowCreate(false)}>{tc("cancel")}</Button>
+                <Button onClick={handleCreate} isLoading={createCollection.isPending}>{tc("create")}</Button>
               </div>
             </CardContent>
           </Card>

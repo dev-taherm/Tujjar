@@ -33,9 +33,9 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
   const tNotFound = useTranslations("storefront.notFound");
 
   const { data, isLoading } = useQuery<StorefrontData | null>({
-    queryKey: ["storefront", slug],
+    queryKey: ["storefront", slug, locale],
     queryFn: async () => {
-      const res = await fetch(`/api/v1/store/${slug}/`);
+      const res = await fetch(`/api/v1/store/${slug}/?locale=${locale}`);
       if (!res.ok) return null;
       return res.json();
     },

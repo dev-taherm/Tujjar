@@ -5,23 +5,25 @@ import { AIAssistant } from "@/features/ai/ai-assistant";
 import { ProductGenerator } from "@/features/ai/product-generator";
 import { AIProviderConfig } from "@/features/ai/ai-provider-config";
 import { Bot, Sparkles, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Tab = "assistant" | "generator" | "providers";
 
 export default function AIPage() {
+  const t = useTranslations("dashboard.ai");
   const [tab, setTab] = useState<Tab>("assistant");
 
   const tabs = [
-    { key: "assistant" as Tab, label: "AI Assistant", icon: Bot },
-    { key: "generator" as Tab, label: "Product Generator", icon: Sparkles },
-    { key: "providers" as Tab, label: "Providers", icon: Settings },
+    { key: "assistant" as Tab, label: t("tabAssistant"), icon: Bot },
+    { key: "generator" as Tab, label: t("tabGenerator"), icon: Sparkles },
+    { key: "providers" as Tab, label: t("tabProviders"), icon: Settings },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">AI Tools</h1>
-        <p className="text-sm text-gray-500">AI-powered tools to help you manage and grow your store.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-sm text-gray-500">{t("description")}</p>
       </div>
 
       <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1">

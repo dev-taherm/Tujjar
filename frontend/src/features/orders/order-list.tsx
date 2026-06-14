@@ -6,6 +6,7 @@ import { useOrders } from "@/api/queries";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { useState } from "react";
 import { Search, Eye, Package } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -27,6 +28,8 @@ const paymentColors: Record<string, string> = {
 };
 
 export function OrderList() {
+  const t = useTranslations("dashboard.orders");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -36,13 +39,13 @@ export function OrderList() {
   });
 
   const statusOptions = [
-    { value: "", label: "All Statuses" },
-    { value: "pending", label: "Pending" },
-    { value: "confirmed", label: "Confirmed" },
-    { value: "processing", label: "Processing" },
-    { value: "shipped", label: "Shipped" },
-    { value: "delivered", label: "Delivered" },
-    { value: "cancelled", label: "Cancelled" },
+    { value: "", label: t("allStatuses") },
+    { value: "pending", label: t("pending") },
+    { value: "confirmed", label: t("confirmed") },
+    { value: "processing", label: t("processing") },
+    { value: "shipped", label: t("shipped") },
+    { value: "delivered", label: t("delivered") },
+    { value: "cancelled", label: t("cancelled") },
   ];
 
   if (isLoading) {
@@ -62,7 +65,7 @@ export function OrderList() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search orders..."
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg border border-gray-300 py-2 ps-10 pe-4 text-sm focus:border-blue-500 focus:outline-none"
@@ -74,20 +77,20 @@ export function OrderList() {
       {!orders?.length ? (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
           <Package className="mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-lg font-medium text-gray-900">No orders yet</h3>
-          <p className="text-sm text-gray-500">Orders will appear here when customers make purchases.</p>
+          <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noOrders")}</h3>
+          <p className="text-sm text-gray-500">{t("ordersWillAppear")}</p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">Order</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">Payment</th>
-                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">Total</th>
-                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("order")}</th>
+                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("customer")}</th>
+                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{tc("status")}</th>
+                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("payment")}</th>
+                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">{t("total")}</th>
+                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">{t("date")}</th>
                 <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase"></th>
               </tr>
             </thead>

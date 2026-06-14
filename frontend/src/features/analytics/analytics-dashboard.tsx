@@ -3,8 +3,9 @@
 import { useAnalyticsSummary, useRealtimeStats } from "@/api/queries";
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Eye, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
-function StatCard({ label, value, change, icon: Icon, color }: { label: string; value: string | number; change?: number; icon: React.ElementType; color: string }) {
+function StatCard({ label, value, change, icon: Icon, color, changeLabel }: { label: string; value: string | number; change?: number; icon: React.ElementType; color: string; changeLabel?: string }) {
   const isPositive = (change ?? 0) >= 0;
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -15,7 +16,7 @@ function StatCard({ label, value, change, icon: Icon, color }: { label: string; 
           {change !== undefined && (
             <div className={cn("mt-1 flex items-center gap-1 text-xs font-medium", isPositive ? "text-green-600" : "text-red-600")}>
               {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              {Math.abs(change)}% vs last period
+              {Math.abs(change)}% {changeLabel}
             </div>
           )}
         </div>
@@ -26,11 +27,12 @@ function StatCard({ label, value, change, icon: Icon, color }: { label: string; 
 }
 
 function RevenueChart({ data }: { data: { date: string; revenue: number; orders: number }[] }) {
+  const t = useTranslations("dashboard.analytics");
   if (!data?.length) return null;
   const maxRevenue = Math.max(...data.map((d) => d.revenue), 1);
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-4 text-sm font-semibold text-gray-900">Revenue (Last 30 Days)</h3>
+      <h3 className="mb-4 text-sm font-semibold text-gray-900">{t("revenueLast30Days")}</h3>
       <div className="flex items-end gap-1 h-48">
         {data.map((d, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -44,24 +46,26 @@ function RevenueChart({ data }: { data: { date: string; revenue: number; orders:
 }
 
 function RealtimeCard() {
+  const t = useTranslations("dashboard.analytics");
   const { data: stats } = useRealtimeStats();
   return (
     <div className="rounded-xl border border-green-200 bg-green-50 p-5">
       <div className="flex items-center gap-2 mb-3">
         <Zap className="h-4 w-4 text-green-600" />
-        <h3 className="text-sm font-semibold text-green-900">Realtime (24h)</h3>
+        <h3 className="text-sm font-semibold text-green-900">{t("realtime24h")}</h3>
       </div>
       <div className="grid grid-cols-2 gap-3 text-sm">
-        <div><span className="text-green-700">Visitors</span><p className="font-bold">{stats?.visitors || 0}</p></div>
-        <div><span className="text-green-700">Page Views</span><p className="font-bold">{stats?.page_views || 0}</p></div>
-        <div><span className="text-green-700">Product Views</span><p className="font-bold">{stats?.product_views || 0}</p></div>
-        <div><span className="text-green-700">Purchases</span><p className="font-bold">{stats?.purchases || 0}</p></div>
+        <div><span className="text-green-700">{t("visitors")}</span><p className="font-bold">{stats?.visitors || 0}</p></div>
+        <div><span className="text-green-700">{t("pageViews")}</span><p className="font-bold">{stats?.page_views || 0}</p></div>
+        <div><span className="text-green-700">{t("productViews")}</span><p className="font-bold">{stats?.product_views || 0}</p></div>
+        <div><span className="text-green-700">{t("purchases")}</span><p className="font-bold">{stats?.purchases || 0}</p></div>
       </div>
     </div>
   );
 }
 
 export function AnalyticsDashboard() {
+  const t = useTranslations("dashboard.analytics");
   const { data: summary, isLoading } = useAnalyticsSummary();
 
   if (isLoading) {
@@ -75,10 +79,10 @@ export function AnalyticsDashboard() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Total Revenue" value={`$${(summary?.total_revenue || 0).toLocaleString()}`} change={summary?.revenue_change_pct} icon={DollarSign} color="bg-green-50 text-green-600" />
-        <StatCard label="Total Orders" value={summary?.total_orders || 0} change={summary?.orders_change_pct} icon={ShoppingCart} color="bg-blue-50 text-blue-600" />
-        <StatCard label="Total Customers" value={summary?.total_customers || 0} change={summary?.customers_change_pct} icon={Users} color="bg-purple-50 text-purple-600" />
-        <StatCard label="Products Sold" value={summary?.total_products_sold || 0} icon={Eye} color="bg-orange-50 text-orange-600" />
+        <StatCard label={t("totalRevenue")} value={`$${(summary?.total_revenue || 0).toLocaleString()}`} change={summary?.revenue_change_pct} changeLabel={t("vsLastPeriod")} icon={DollarSign} color="bg-green-50 text-green-600" />
+        <StatCard label={t("totalOrders")} value={summary?.total_orders || 0} change={summary?.orders_change_pct} changeLabel={t("vsLastPeriod")} icon={ShoppingCart} color="bg-blue-50 text-blue-600" />
+        <StatCard label={t("totalCustomers")} value={summary?.total_customers || 0} change={summary?.customers_change_pct} changeLabel={t("vsLastPeriod")} icon={Users} color="bg-purple-50 text-purple-600" />
+        <StatCard label={t("productsSold")} value={summary?.total_products_sold || 0} icon={Eye} color="bg-orange-50 text-orange-600" />
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

@@ -5,10 +5,13 @@ import { useMediaAssets, useUploadMedia, useDeleteMedia, useMediaFolders, useCre
 import { Button, Input, Badge } from "@/shared/ui";
 import { Upload, Image, Film, FileText, FolderPlus, Trash2, Search, Grid, List, ArrowLeft, Folder, Eye } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type ViewMode = "grid" | "list";
 
 export function MediaGallery() {
+  const t = useTranslations("dashboard.media");
+  const tc = useTranslations("common");
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [currentFolder, setCurrentFolder] = useState<string | undefined>();
@@ -45,7 +48,7 @@ export function MediaGallery() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this asset?")) {
+    if (confirm(t("deleteAssetConfirm"))) {
       await deleteMedia.mutateAsync(id);
       if (selectedAsset === id) setSelectedAsset(null);
     }
@@ -66,16 +69,16 @@ export function MediaGallery() {
       <div className="w-56 border-e border-gray-200 flex flex-col">
         <div className="p-3 border-b border-gray-200 space-y-2">
           <Button onClick={() => fileInputRef.current?.click()} className="w-full" size="sm">
-            <Upload className="me-1 h-4 w-4" /> Upload
+            <Upload className="me-1 h-4 w-4" /> {t("upload")}
           </Button>
           <input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx" className="hidden" onChange={handleUpload} />
           <Button variant="outline" onClick={() => setShowNewFolder(!showNewFolder)} className="w-full" size="sm">
-            <FolderPlus className="me-1 h-4 w-4" /> New Folder
+            <FolderPlus className="me-1 h-4 w-4" /> {t("newFolder")}
           </Button>
         </div>
         <div className="p-2 space-y-1">
           <button onClick={() => setCurrentFolder(undefined)} className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-start text-sm ${!currentFolder ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"}`}>
-            <Folder className="h-4 w-4" /> All Files
+            <Folder className="h-4 w-4" /> {t("allFiles")}
           </button>
           {folders?.map((f) => (
             <button key={f.id} onClick={() => setCurrentFolder(f.id)} className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-start text-sm ${currentFolder === f.id ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"}`}>
@@ -87,10 +90,10 @@ export function MediaGallery() {
         </div>
         {showNewFolder && (
           <div className="p-3 border-t border-gray-200 space-y-2">
-            <input type="text" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} placeholder="Folder name" className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm" onKeyDown={(e) => { if (e.key === "Enter") handleCreateFolder(); }} />
+            <input type="text" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} placeholder={t("folderName")} className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm" onKeyDown={(e) => { if (e.key === "Enter") handleCreateFolder(); }} />
             <div className="flex gap-1">
-              <Button size="sm" onClick={handleCreateFolder}>Create</Button>
-              <Button variant="outline" size="sm" onClick={() => setShowNewFolder(false)}>Cancel</Button>
+              <Button size="sm" onClick={handleCreateFolder}>{tc("create")}</Button>
+              <Button variant="outline" size="sm" onClick={() => setShowNewFolder(false)}>{tc("cancel")}</Button>
             </div>
           </div>
         )}
@@ -102,18 +105,18 @@ export function MediaGallery() {
         <div className="flex items-center gap-3 border-b border-gray-200 p-3">
           {currentFolder && (
             <button onClick={() => setCurrentFolder(undefined)} className="rounded p-1 hover:bg-gray-100">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
             </button>
           )}
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search files..." className="w-full rounded-lg border border-gray-200 py-1.5 ps-8 pe-3 text-sm" />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("searchFiles")} className="w-full rounded-lg border border-gray-200 py-1.5 ps-8 pe-3 text-sm" />
           </div>
           <div className="flex gap-1 rounded-lg border border-gray-200 p-0.5">
-            <button onClick={() => setTypeFilter("")} className={`rounded px-2 py-1 text-xs ${!typeFilter ? "bg-gray-100" : ""}`}>All</button>
-            <button onClick={() => setTypeFilter("image")} className={`rounded px-2 py-1 text-xs ${typeFilter === "image" ? "bg-gray-100" : ""}`}>Images</button>
-            <button onClick={() => setTypeFilter("video")} className={`rounded px-2 py-1 text-xs ${typeFilter === "video" ? "bg-gray-100" : ""}`}>Videos</button>
-            <button onClick={() => setTypeFilter("document")} className={`rounded px-2 py-1 text-xs ${typeFilter === "document" ? "bg-gray-100" : ""}`}>Docs</button>
+            <button onClick={() => setTypeFilter("")} className={`rounded px-2 py-1 text-xs ${!typeFilter ? "bg-gray-100" : ""}`}>{t("all")}</button>
+            <button onClick={() => setTypeFilter("image")} className={`rounded px-2 py-1 text-xs ${typeFilter === "image" ? "bg-gray-100" : ""}`}>{t("images")}</button>
+            <button onClick={() => setTypeFilter("video")} className={`rounded px-2 py-1 text-xs ${typeFilter === "video" ? "bg-gray-100" : ""}`}>{t("videos")}</button>
+            <button onClick={() => setTypeFilter("document")} className={`rounded px-2 py-1 text-xs ${typeFilter === "document" ? "bg-gray-100" : ""}`}>{t("docs")}</button>
           </div>
           <div className="flex gap-1 rounded-lg border border-gray-200 p-0.5">
             <button onClick={() => setViewMode("grid")} className={`rounded p-1 ${viewMode === "grid" ? "bg-gray-100" : ""}`}><Grid className="h-4 w-4" /></button>
@@ -130,7 +133,7 @@ export function MediaGallery() {
           ) : !assets?.length ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Upload className="mb-3 h-12 w-12 text-gray-300" />
-              <p className="text-sm text-gray-500">No files yet. Click Upload to add files.</p>
+              <p className="text-sm text-gray-500">{t("noFiles")}</p>
             </div>
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-4 gap-3">
@@ -169,7 +172,7 @@ export function MediaGallery() {
       {selected && (
         <div className="w-72 border-s border-gray-200 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between border-b border-gray-200 p-3">
-            <h3 className="text-sm font-semibold">Details</h3>
+            <h3 className="text-sm font-semibold">{t("details")}</h3>
             <button onClick={() => setSelectedAsset(null)} className="text-gray-400 hover:text-gray-600">&times;</button>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-4">
@@ -177,17 +180,17 @@ export function MediaGallery() {
               <img src={selected.file_url} alt={selected.alt_text} className="w-full rounded-lg" />
             )}
             <div className="space-y-2 text-sm">
-              <div><span className="text-gray-500">Name</span><p className="font-medium">{selected?.title || selected?.original_filename}</p></div>
-              <div><span className="text-gray-500">Type</span><p>{selected?.mime_type}</p></div>
-              <div><span className="text-gray-500">Size</span><p>{selected?.file_size_display}</p></div>
-              {selected?.width && <div><span className="text-gray-500">Dimensions</span><p>{selected?.width} x {selected?.height}</p></div>}
-              <div><span className="text-gray-500">URL</span><p className="text-xs break-all text-blue-600">{selected?.file_url}</p></div>
+              <div><span className="text-gray-500">{t("name")}</span><p className="font-medium">{selected?.title || selected?.original_filename}</p></div>
+              <div><span className="text-gray-500">{t("type")}</span><p>{selected?.mime_type}</p></div>
+              <div><span className="text-gray-500">{t("size")}</span><p>{selected?.file_size_display}</p></div>
+              {selected?.width && <div><span className="text-gray-500">{t("dimensions")}</span><p>{selected?.width} x {selected?.height}</p></div>}
+              <div><span className="text-gray-500">{t("url")}</span><p className="text-xs break-all text-blue-600">{selected?.file_url}</p></div>
             </div>
-            <Input label="Alt Text" value={selected?.alt_text || ""} onChange={() => {}} placeholder="Describe this image..." />
+            <Input label={t("altText")} value={selected?.alt_text || ""} onChange={() => {}} placeholder={t("describeImage")} />
           </div>
           <div className="border-t border-gray-200 p-3 flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => window.open(selected?.file_url)}><Eye className="me-1 h-3 w-3" /> View</Button>
-            <Button variant="outline" size="sm" className="flex-1 text-red-600" onClick={() => handleDelete(selected?.id || "")}><Trash2 className="me-1 h-3 w-3" /> Delete</Button>
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => window.open(selected?.file_url)}><Eye className="me-1 h-3 w-3" /> {t("view")}</Button>
+            <Button variant="outline" size="sm" className="flex-1 text-red-600" onClick={() => handleDelete(selected?.id || "")}><Trash2 className="me-1 h-3 w-3" /> {tc("delete")}</Button>
           </div>
         </div>
       )}

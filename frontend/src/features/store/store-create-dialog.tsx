@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
 import { useCreateStore } from "@/api/queries";
+import { useTranslations } from "next-intl";
 
 const storeSchema = z.object({
   name: z.string().min(1, "Store name is required"),
@@ -22,6 +23,8 @@ interface StoreCreateDialogProps {
 }
 
 export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialogProps) {
+  const t = useTranslations("storeSettings");
+  const tc = useTranslations("common");
   const createStore = useCreateStore();
 
   const {
@@ -51,34 +54,34 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
       <Card className="w-full max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardHeader>
-            <CardTitle>Create Store</CardTitle>
-            <CardDescription>Set up a new online store</CardDescription>
+            <CardTitle>{t("createStore")}</CardTitle>
+            <CardDescription>{t("setNewStore")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input
-              label="Store Name"
+              label={t("storeName")}
               placeholder="My Store"
               error={errors.name?.message}
               {...register("name")}
             />
             <Input
-              label="Slug (URL)"
-              placeholder="my-store"
+              label={t("slug")}
+              placeholder={t("slugPlaceholder")}
               error={errors.slug?.message}
               {...register("slug")}
             />
             <Input
-              label="Description (optional)"
-              placeholder="A brief description of your store"
+              label={t("description")}
+              placeholder={t("descriptionPlaceholder")}
               {...register("description")}
             />
           </CardContent>
           <CardFooter className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {tc("cancel")}
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
-              Create Store
+              {t("createStore")}
             </Button>
           </CardFooter>
         </form>

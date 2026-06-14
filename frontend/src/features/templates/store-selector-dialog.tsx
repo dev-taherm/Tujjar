@@ -5,6 +5,7 @@ import { useStores } from "@/api/queries";
 import type { Store } from "@/shared/types";
 import { AlertTriangle, Check, Store as StoreIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface StoreSelectorDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function StoreSelectorDialog({
   currentTemplateName,
   isLoading,
 }: StoreSelectorDialogProps) {
+  const tc = useTranslations("common");
   const { data: stores, isLoading: loadingStores } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
@@ -72,7 +74,7 @@ export function StoreSelectorDialog({
           ) : storeList.length === 0 ? (
             <div className="py-8 text-center">
               <StoreIcon className="mx-auto h-10 w-10 text-gray-300" />
-              <p className="mt-3 text-sm text-gray-500">No stores found. Create a store first.</p>
+              <p className="mt-3 text-sm text-gray-500">No stores found. {tc("create")} a store first.</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -140,7 +142,7 @@ export function StoreSelectorDialog({
             onClick={handleClose}
             className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200"
           >
-            Cancel
+            {tc("cancel")}
           </button>
           <button
             onClick={handleConfirm}

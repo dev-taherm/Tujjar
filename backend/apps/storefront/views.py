@@ -7,6 +7,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.core.utils import (
+    DEFAULT_LOCALE,
+    resolve_locale_field,
+    resolve_navigation_locale,
+    resolve_footer_locale,
+)
 from apps.products.models import Product, Category, Collection
 from apps.products.serializers import ProductListSerializer, ProductDetailSerializer, CategorySerializer, CollectionSerializer
 from apps.stores.models import Store
@@ -26,6 +32,86 @@ def get_store_by_slug(slug: str):
     return store
 
 
+def _get_locale(request) -> str:
+    """Extract locale from query params, default to 'en'."""
+    locale = request.query_params.get("locale", DEFAULT_LOCALE)
+    if locale not in ("en", "ar"):
+        locale = DEFAULT_LOCALE
+    return locale
+
+
+def _resolve_page(page: Page, locale: str) -> dict:
+    """Resolve a Page's content for the given locale."""
+    if locale != DEFAULT_LOCALE:
+        translations = getattr(page, "translations", None) or {}
+        locale_data = translations.get(locale, {})
+        return {
+            "id": str(page.id),
+            "title": locale_data.get("title") or page.title,
+            "slug": page.slug,
+            "content_schema": locale_data.get("content_schema") or page.content_schema,
+            "seo_title": locale_data.get("seo_title") or page.seo_title or "",
+            "seo_description": locale_data.get("seo_description") or page.seo_description or "",
+        }
+    return {
+        "id": str(page.id),
+        "title": page.title,
+        "slug": page.slug,
+        "content_schema": page.content_schema,
+        "seo_title": page.seo_title or "",
+        "seo_description": page.seo_description or "",
+    }
+
+
+def _resolve_product(product: Product, locale: str) -> dict:
+    """Resolve a Product's content for the given locale."""
+    if locale != DEFAULT_LOCALE:
+        translations = getattr(product, "translations", None) or {}
+        locale_data = translations.get(locale, {})
+        return {
+            "title": locale_data.get("title") or product.title,
+            "description": locale_data.get("description") or product.description,
+            "seo_title": locale_data.get("seo_title") or product.seo_title or "",
+            "seo_description": locale_data.get("seo_description") or product.seo_description or "",
+            "tags": locale_data.get("tags") if "tags" in locale_data else product.tags,
+        }
+    return {
+        "title": product.title,
+        "description": product.description,
+        "seo_title": product.seo_title or "",
+        "seo_description": product.seo_description or "",
+        "tags": product.tags,
+    }
+
+
+def _resolve_store(store: Store, locale: str) -> dict:
+    """Resolve a Store's content for the given locale."""
+    name = store.name
+    description = store.description
+    seo_title = store.seo_title or ""
+    seo_description = store.seo_description or ""
+
+    if locale != DEFAULT_LOCALE:
+        translations = getattr(store, "translations", None) or {}
+        locale_data = translations.get(locale, {})
+        name = locale_data.get("name") or name
+        description = locale_data.get("description") or description
+        seo_title = locale_data.get("seo_title") or seo_title
+        seo_description = locale_data.get("seo_description") or seo_description
+
+    return {
+        "name": name,
+        "slug": store.slug,
+        "description": description,
+        "logo": store.logo.url if store.logo else None,
+        "settings": store.settings,
+        "navigation": resolve_navigation_locale(store.navigation, locale) or {},
+        "footer_config": resolve_footer_locale(store.footer_config, locale) or {},
+        "seo_title": seo_title,
+        "seo_description": seo_description,
+    }
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def storefront_home(request, subdomain=None):
@@ -33,6 +119,8 @@ def storefront_home(request, subdomain=None):
     store = get_store_by_slug(subdomain)
     if not store:
         return Response({"error": "Store not found"}, status=404)
+
+    locale = _get_locale(request)
 
     featured_products = Product.objects.filter(
         organization=store.organization,
@@ -46,24 +134,17 @@ def storefront_home(request, subdomain=None):
         is_published=True,
     ).first()
 
+    serialized_products = ProductListSerializer(featured_products, many=True).data
+    if locale != DEFAULT_LOCALE:
+        for product_obj, serialized in zip(featured_products, serialized_products):
+            locale_data = (getattr(product_obj, "translations", None) or {}).get(locale, {})
+            if locale_data.get("title"):
+                serialized["title"] = locale_data["title"]
+
     return Response({
-        "store": {
-            "name": store.name,
-            "slug": store.slug,
-            "description": store.description,
-            "logo": store.logo.url if store.logo else None,
-            "settings": store.settings,
-            "navigation": store.navigation or {},
-            "footer_config": store.footer_config or {},
-            "seo_title": store.seo_title or "",
-            "seo_description": store.seo_description or "",
-        },
-        "featured_products": ProductListSerializer(featured_products, many=True).data,
-        "homepage": {
-            "content_schema": homepage.content_schema,
-            "seo_title": homepage.seo_title,
-            "seo_description": homepage.seo_description,
-        } if homepage else None,
+        "store": _resolve_store(store, locale),
+        "featured_products": serialized_products,
+        "homepage": _resolve_page(homepage, locale) if homepage else None,
     })
 
 
@@ -102,6 +183,20 @@ class StorefrontProductListView(generics.ListAPIView):
         qs = qs.order_by(valid_sorts.get(sort, "-created_at"))
         return qs.distinct()
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        locale = _get_locale(request)
+        if locale != DEFAULT_LOCALE:
+            products = self.get_queryset()
+            products_map = {str(p.id): p for p in products}
+            for item in response.data.get("results", []):
+                product_obj = products_map.get(item["id"])
+                if product_obj:
+                    locale_data = (getattr(product_obj, "translations", None) or {}).get(locale, {})
+                    if locale_data.get("title"):
+                        item["title"] = locale_data["title"]
+        return response
+
 
 class StorefrontProductDetailView(generics.RetrieveAPIView):
     serializer_class = ProductDetailSerializer
@@ -123,6 +218,24 @@ class StorefrontProductDetailView(generics.RetrieveAPIView):
             from rest_framework.exceptions import NotFound
             raise NotFound("Product not found")
         return product
+
+    def retrieve(self, request, *args, **kwargs):
+        product = self.get_object()
+        locale = _get_locale(request)
+        data = ProductDetailSerializer(product).data
+        if locale != DEFAULT_LOCALE:
+            locale_data = (getattr(product, "translations", None) or {}).get(locale, {})
+            if locale_data.get("title"):
+                data["title"] = locale_data["title"]
+            if locale_data.get("description"):
+                data["description"] = locale_data["description"]
+            if locale_data.get("seo_title"):
+                data["seo_title"] = locale_data["seo_title"]
+            if locale_data.get("seo_description"):
+                data["seo_description"] = locale_data["seo_description"]
+            if "tags" in locale_data:
+                data["tags"] = locale_data["tags"]
+        return Response(data)
 
 
 class StorefrontCategoryListView(generics.ListAPIView):
@@ -171,11 +284,5 @@ class StorefrontPageView(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         page = self.get_object()
-        return Response({
-            "id": str(page.id),
-            "title": page.title,
-            "slug": page.slug,
-            "content_schema": page.content_schema,
-            "seo_title": page.seo_title,
-            "seo_description": page.seo_description,
-        })
+        locale = _get_locale(request)
+        return Response(_resolve_page(page, locale))

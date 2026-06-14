@@ -6,8 +6,11 @@ import { useStores } from "@/api/queries";
 import { StoreCard } from "./store-card";
 import { StoreCreateDialog } from "./store-create-dialog";
 import { Plus, Store } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function StoreList() {
+  const t = useTranslations("storeSettings");
+  const tc = useTranslations("common");
   const { data: stores, isLoading } = useStores();
   const [showCreate, setShowCreate] = useState(false);
 
@@ -25,11 +28,11 @@ export function StoreList() {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
         <Store className="mb-4 h-12 w-12 text-gray-400" />
-        <h3 className="mb-2 text-lg font-medium text-gray-900">No stores yet</h3>
-        <p className="mb-6 text-sm text-gray-500">Create your first store to get started.</p>
+        <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noStores")}</h3>
+        <p className="mb-6 text-sm text-gray-500">{t("createFirstStore")}</p>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="me-2 h-4 w-4" />
-          Create Store
+          {t("createStore")}
         </Button>
       </div>
     );
@@ -39,12 +42,12 @@ export function StoreList() {
     <>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Your Stores</h2>
-          <p className="text-sm text-gray-500">{stores.length} store{stores.length !== 1 ? "s" : ""}</p>
+          <h2 className="text-lg font-semibold text-gray-900">{t("yourStores")}</h2>
+          <p className="text-sm text-gray-500">{stores.length} {stores.length !== 1 ? t("storeCountPlural") : t("storeCount")}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="me-2 h-4 w-4" />
-          Create Store
+          {t("createStore")}
         </Button>
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

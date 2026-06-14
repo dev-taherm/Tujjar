@@ -3,6 +3,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, Badge, Button } from "@/shared/ui";
 import { Palette, Download, ExternalLink, Check } from "lucide-react";
 import type { Theme, ThemeConfig } from "@/shared/types";
+import { useTranslations } from "next-intl";
 
 interface ThemeCardProps {
   theme: Theme;
@@ -30,6 +31,8 @@ function ColorSwatch({ colors }: { colors: ThemeConfig["colors"] }) {
 }
 
 export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling, isInstalled }: ThemeCardProps) {
+  const t = useTranslations("dashboard.themes");
+  const tc = useTranslations("common");
   return (
     <Card
       className={`group cursor-pointer transition-all hover:shadow-md ${
@@ -51,7 +54,7 @@ export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling
               <CardDescription>v{theme.version}</CardDescription>
             </div>
           </div>
-          {theme.is_system && <Badge>System</Badge>}
+          {theme.is_system && <Badge>{t("system")}</Badge>}
         </div>
       </CardHeader>
       <div className="px-6 pb-2">
@@ -64,7 +67,7 @@ export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling
             <span>•</span>
             <span>{theme.config.typography.bodyFont}</span>
             <span>•</span>
-            <span>{theme.presets.length} preset{theme.presets.length !== 1 ? "s" : ""}</span>
+            <span>{theme.presets.length} {t("presets")}{theme.presets.length !== 1 ? "s" : ""}</span>
           </div>
           {onInstall && (
             <Button
@@ -78,19 +81,19 @@ export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling
               className="ms-2 shrink-0"
             >
               {isInstalling ? (
-                <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5">
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Installing...
+                  {t("installing")}
                 </span>
               ) : isInstalled ? (
                 <span className="flex items-center gap-1.5">
                   <Check className="h-3.5 w-3.5" />
-                  Installed
+                  {t("installed")}
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5">
                   <Download className="h-3.5 w-3.5" />
-                  Install
+                  {t("install")}
                 </span>
               )}
             </Button>

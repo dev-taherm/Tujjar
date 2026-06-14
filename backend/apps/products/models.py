@@ -37,6 +37,10 @@ class Category(UUIDModel, TimeStampedModel):
     image = models.URLField(blank=True, default="")
     is_active = models.BooleanField(default=True)
     sort_order = models.IntegerField(default=0)
+    translations = models.JSONField(
+        default=dict, blank=True,
+        help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
+    )
 
     class Meta:
         unique_together = ["store", "slug"]
@@ -76,6 +80,10 @@ class Collection(UUIDModel, TimeStampedModel):
         "products.Product",
         blank=True,
         related_name="collection_set",
+    )
+    translations = models.JSONField(
+        default=dict, blank=True,
+        help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
     )
 
     class Meta:
@@ -168,6 +176,10 @@ class Product(UUIDModel, TimeStampedModel):
         Category, blank=True, related_name="products"
     )
     tags = models.JSONField(default=list, blank=True)
+    translations = models.JSONField(
+        default=dict, blank=True,
+        help_text='Per-locale translations, e.g. {"ar": {"title": "...", "description": "..."}}',
+    )
 
     # Stats
     total_sold = models.PositiveIntegerField(default=0)

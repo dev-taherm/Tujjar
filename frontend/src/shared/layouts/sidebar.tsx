@@ -71,7 +71,7 @@ export function Sidebar() {
             className="rounded-lg p-1.5 hover:bg-gray-100"
           >
             <ChevronLeft
-              className={cn("h-5 w-5 transition-transform", !sidebarOpen && "rotate-180")}
+              className={cn("h-5 w-5 transition-transform rtl:rotate-180", !sidebarOpen && "rotate-180")}
             />
           </button>
         </div>

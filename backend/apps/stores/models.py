@@ -58,6 +58,10 @@ class Store(UUIDModel, TimeStampedModel):
     )
     navigation = models.JSONField(default=dict, blank=True)
     footer_config = models.JSONField(default=dict, blank=True)
+    translations = models.JSONField(
+        default=dict, blank=True,
+        help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
+    )
 
     class Meta:
         unique_together = ["organization", "slug"]

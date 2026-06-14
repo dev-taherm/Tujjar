@@ -1,33 +1,35 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui";
+import { useTranslations } from "next-intl";
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard.page");
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="mb-8 text-3xl font-bold text-gray-900">{t("title")}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader>
-            <CardDescription>Total Revenue</CardDescription>
+            <CardDescription>{t("totalRevenue")}</CardDescription>
             <CardTitle className="text-2xl">$0.00</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Total Orders</CardDescription>
+            <CardDescription>{t("totalOrders")}</CardDescription>
             <CardTitle className="text-2xl">0</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Customers</CardDescription>
+            <CardDescription>{t("customers")}</CardDescription>
             <CardTitle className="text-2xl">0</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Products</CardDescription>
+            <CardDescription>{t("products")}</CardDescription>
             <CardTitle className="text-2xl">0</CardTitle>
           </CardHeader>
         </Card>

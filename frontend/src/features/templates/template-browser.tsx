@@ -9,6 +9,7 @@ import { TemplatePreview } from "./template-preview";
 import { StoreSelectorDialog } from "./store-selector-dialog";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 const CATEGORIES = [
   { value: "", label: "All" },
@@ -24,6 +25,8 @@ interface TemplateBrowserProps {
 }
 
 export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
+  const t = useTranslations("dashboard.templates");
+  const tc = useTranslations("common");
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
@@ -75,17 +78,17 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
     <div className="space-y-8">
       {/* ── Installed Template ─────────────────────────────── */}
       <section>
-        <h2 className="mb-1 text-xl font-bold text-gray-900">Current Template</h2>
+        <h2 className="mb-1 text-xl font-bold text-gray-900">{t("currentTemplate")}</h2>
         <p className="mb-4 text-sm text-gray-500">
           {storeId
-            ? "The template applied to your store."
-            : "Select a store to see its installed template."}
+            ? t("templateAppliedToStore")
+            : t("selectStoreToSeeTemplate")}
         </p>
 
         {!storeId ? (
           <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center">
             <LayoutTemplate className="mx-auto h-10 w-10 text-gray-300" />
-            <p className="mt-3 text-sm text-gray-500">Select a store from the sidebar first.</p>
+            <p className="mt-3 text-sm text-gray-500">{t("selectStoreFromSidebar")}</p>
           </div>
         ) : loadingInstalled ? (
           <div className="h-32 animate-pulse rounded-2xl bg-gray-100" />
@@ -106,22 +109,22 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
               className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
             >
               <ExternalLink className="h-4 w-4" />
-              View Details
+              {t("viewDetails")}
             </button>
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center">
             <LayoutTemplate className="mx-auto h-10 w-10 text-gray-300" />
-            <p className="mt-3 text-sm text-gray-500">No template installed yet. Browse below to install one.</p>
+            <p className="mt-3 text-sm text-gray-500">{t("noTemplateInstalled")}</p>
           </div>
         )}
       </section>
 
       {/* ── Marketplace ────────────────────────────────────── */}
       <section>
-        <h2 className="mb-1 text-xl font-bold text-gray-900">Browse Templates</h2>
+        <h2 className="mb-1 text-xl font-bold text-gray-900">{t("browseTemplates")}</h2>
         <p className="mb-4 text-sm text-gray-500">
-          Choose a ready-to-use template. Each includes pages, navigation, and theme.
+          {t("chooseReadyToUseTemplate")}
         </p>
 
         {/* Filters */}
@@ -145,7 +148,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search templates..."
+              placeholder={t("searchTemplates")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-200 py-2 ps-9 pe-4 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
@@ -163,7 +166,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
         ) : marketplaceTemplates.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
             <LayoutTemplate className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">No templates found</p>
+            <p className="mt-4 text-gray-500">{t("noTemplatesFound")}</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

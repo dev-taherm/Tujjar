@@ -3,6 +3,7 @@
 import { Input, Textarea, Select, Label } from "@/shared/ui";
 import type { Section, SettingField } from "@/shared/types";
 import { getRegistryEntry } from "@/builder/sections/registry";
+import { useTranslations } from "next-intl";
 
 interface SectionSettingsPanelProps {
   section: Section;
@@ -10,8 +11,9 @@ interface SectionSettingsPanelProps {
 }
 
 export function SectionSettingsPanel({ section, onUpdate }: SectionSettingsPanelProps) {
+  const t = useTranslations("dashboard.pages");
   const definition = getRegistryEntry(section.type);
-  if (!definition) return <p className="text-sm text-gray-500">No settings for this section type.</p>;
+  if (!definition) return <p className="text-sm text-gray-500">{t("noSettingsForSection")}</p>;
 
   const handleChange = (key: string, value: unknown) => {
     onUpdate({ ...section.settings, [key]: value });
@@ -21,7 +23,7 @@ export function SectionSettingsPanel({ section, onUpdate }: SectionSettingsPanel
     <div className="space-y-4">
       <div className="border-b border-gray-200 pb-3">
         <h3 className="text-sm font-semibold text-gray-900">{definition.label}</h3>
-        <p className="text-xs text-gray-500">Configure this section</p>
+        <p className="text-xs text-gray-500">{t("configureSection")}</p>
       </div>
       {definition.settingsSchema.map((field: SettingField) => (
         <div key={field.key}>

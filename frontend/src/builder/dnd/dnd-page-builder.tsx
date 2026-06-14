@@ -63,7 +63,7 @@ interface DndPageBuilderProps {
 }
 
 export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
-  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isPreviewMode, togglePreviewMode, isDirty } = usePageBuilder();
+  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isPreviewMode, togglePreviewMode, isDirty, editLocale, setEditLocale, getSavePayload } = usePageBuilder();
   const [activeDragType, setActiveDragType] = useState<string | null>(null);
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -149,8 +149,18 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
   const handleSave = useCallback(async () => {
     if (!page) return;
-    await updatePage.mutateAsync({ id: page.id, content_schema: schema });
-  }, [page, schema, updatePage]);
+    if (editLocale === "en") {
+      await updatePage.mutateAsync({ id: page.id, content_schema: schema });
+    } else {
+      await updatePage.mutateAsync({
+        id: page.id,
+        translations: {
+          ...page.translations,
+          [editLocale]: { ...(page.translations?.[editLocale] || {}), content_schema: schema },
+        },
+      });
+    }
+  }, [page, schema, updatePage, editLocale]);
 
   const handlePublish = useCallback(async () => {
     await publishPage.mutateAsync(pageId);
@@ -187,12 +197,14 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
         version={page?.version || 1}
         isDirty={isDirty}
         isPreviewMode={isPreviewMode}
+        editLocale={editLocale}
         onAddSection={() => setShowTypePicker(true)}
         onSave={handleSave}
         onPublish={handlePublish}
         onUnpublish={handleUnpublish}
         onTogglePreview={togglePreviewMode}
         onShowHistory={() => setShowHistory(!showHistory)}
+        onLocaleChange={setEditLocale}
         isSaving={updatePage.isPending}
       />
 

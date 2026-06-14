@@ -3,6 +3,7 @@
 import { useNotifications, useUnreadCount, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/api/queries";
 import { formatDateTime } from "@/lib/utils";
 import { Bell, Check, CheckCheck, Package, ShoppingCart, CreditCard, Settings, Bot } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const typeIcons: Record<string, React.ElementType> = {
   order: ShoppingCart,
@@ -25,6 +26,7 @@ const typeColors: Record<string, string> = {
 };
 
 export function NotificationPanel() {
+  const t = useTranslations("dashboard.notifications");
   const { data: notifications } = useNotifications();
   const { data: unreadData } = useUnreadCount();
   const markRead = useMarkNotificationRead();
@@ -35,20 +37,20 @@ export function NotificationPanel() {
       <div className="flex items-center justify-between border-b border-gray-200 p-4">
         <div className="flex items-center gap-2">
           <Bell className="h-5 w-5 text-gray-700" />
-          <h2 className="font-semibold">Notifications</h2>
+          <h2 className="font-semibold">{t("notifications")}</h2>
           {unreadData && unreadData.count > 0 && (
             <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">{unreadData.count}</span>
           )}
         </div>
         {(unreadData?.count ?? 0) > 0 && (
           <button onClick={() => markAllRead.mutate()} className="text-sm text-primary-600 hover:text-primary-700">
-            Mark all read
+            {t("markAllRead")}
           </button>
         )}
       </div>
       <div className="max-h-96 overflow-y-auto">
         {!notifications?.length ? (
-          <div className="p-8 text-center text-sm text-gray-500">No notifications yet</div>
+          <div className="p-8 text-center text-sm text-gray-500">{t("noNotifications")}</div>
         ) : (
           notifications.map((n) => {
             const Icon = typeIcons[n.notification_type] || Bell;

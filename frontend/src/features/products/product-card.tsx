@@ -4,6 +4,7 @@ import { Badge } from "@/shared/ui";
 import { formatCurrency } from "@/lib/utils";
 import type { Product } from "@/shared/types";
 import { Package, Tag, AlertTriangle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +12,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
+  const t = useTranslations("dashboard.products");
+  const tc = useTranslations("common");
   const statusColors: Record<string, string> = {
     draft: "bg-gray-100 text-gray-700",
     active: "bg-green-100 text-green-700",
@@ -37,12 +40,12 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         )}
         {product.is_on_sale && (
           <div className="absolute left-2 top-2">
-            <Badge variant="danger">Sale</Badge>
+            <Badge variant="danger">{t("sale")}</Badge>
           </div>
         )}
         {!product.is_in_stock && (
           <div className="absolute right-2 top-2">
-            <Badge variant="secondary">Out of Stock</Badge>
+            <Badge variant="secondary">{t("outOfStockBadge")}</Badge>
           </div>
         )}
       </div>
@@ -82,8 +85,8 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         )}
 
         <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-          <span>Stock: {product.track_inventory ? product.inventory_quantity : "Unlimited"}</span>
-          <span>{product.total_sold} sold</span>
+          <span>Stock: {product.track_inventory ? product.inventory_quantity : t("unlimited")}</span>
+          <span>{product.total_sold} {t("sold")}</span>
         </div>
       </div>
     </div>

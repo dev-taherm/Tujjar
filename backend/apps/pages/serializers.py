@@ -42,6 +42,7 @@ class PageSerializer(serializers.ModelSerializer):
             "theme_override",
             "seo_title",
             "seo_description",
+            "translations",
             "is_published",
             "published_at",
             "created_by",

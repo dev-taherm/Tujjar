@@ -6,12 +6,15 @@ import { apiClient } from "@/api/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Globe, Trash2, CheckCircle, XCircle } from "lucide-react";
 import type { StoreDomain } from "@/shared/types";
+import { useTranslations } from "next-intl";
 
 interface StoreDomainsProps {
   storeId: string;
 }
 
 export function StoreDomains({ storeId }: StoreDomainsProps) {
+  const t = useTranslations("dashboard.domains");
+  const tc = useTranslations("common");
   const queryClient = useQueryClient();
   const [newDomain, setNewDomain] = useState("");
 
@@ -46,8 +49,8 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Custom Domains</CardTitle>
-        <CardDescription>Connect your own domain to this store</CardDescription>
+        <CardTitle>{t("customDomains")}</CardTitle>
+        <CardDescription>{t("connectDomain")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
@@ -61,7 +64,7 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
             disabled={!newDomain}
             isLoading={addDomain.isPending}
           >
-            Add Domain
+            {t("addDomain")}
           </Button>
         </div>
 
@@ -82,11 +85,11 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
                   <Globe className="h-4 w-4 text-gray-400" />
                   <span className="text-sm font-medium">{domain.domain}</span>
                   {domain.verified ? (
-                    <Badge variant="success"><CheckCircle className="me-1 h-3 w-3" />Verified</Badge>
+                    <Badge variant="success"><CheckCircle className="me-1 h-3 w-3" />{t("verified")}</Badge>
                   ) : (
-                    <Badge variant="warning"><XCircle className="me-1 h-3 w-3" />Pending</Badge>
+                    <Badge variant="warning"><XCircle className="me-1 h-3 w-3" />{tc("pending")}</Badge>
                   )}
-                  {domain.is_primary && <Badge>Primary</Badge>}
+                  {domain.is_primary && <Badge>{t("primary")}</Badge>}
                 </div>
                 <Button
                   variant="ghost"
@@ -99,7 +102,7 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">No custom domains configured.</p>
+          <p className="text-sm text-gray-500">{t("noCustomDomains")}</p>
         )}
       </CardContent>
     </Card>

@@ -5,6 +5,7 @@ import { getRegistryEntry } from "@/builder/sections/registry";
 import type { Section } from "@/shared/types";
 import { GripVertical, Eye, EyeOff, Copy, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import * as Icons from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface SectionListProps {
   sections: Section[];
@@ -20,6 +21,7 @@ interface SectionListProps {
 export function SectionList({
   sections, selectedSectionId, onSelect, onMoveUp, onMoveDown, onDuplicate, onRemove, onToggleVisibility,
 }: SectionListProps) {
+  const t = useTranslations("dashboard.pages");
   const getIcon = (iconName: string) => {
     const IconComponent = (Icons as any)[iconName];
     return IconComponent || Icons.Box;
@@ -28,12 +30,12 @@ export function SectionList({
   return (
     <div className="space-y-1">
       <div className="mb-3 flex items-center justify-between px-1">
-        <h3 className="text-sm font-semibold text-gray-900">Sections</h3>
+        <h3 className="text-sm font-semibold text-gray-900">{t("sections")}</h3>
         <Badge variant="secondary">{sections.length}</Badge>
       </div>
       {sections.length === 0 ? (
         <div className="rounded-lg border-2 border-dashed border-gray-200 py-8 text-center">
-          <p className="text-sm text-gray-500">No sections yet. Click &quot;Add Section&quot; to start.</p>
+          <p className="text-sm text-gray-500">{t("noSectionsClick")}</p>
         </div>
       ) : (
         sections.map((section, index) => {

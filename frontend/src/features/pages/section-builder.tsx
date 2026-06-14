@@ -17,6 +17,7 @@ import { RichTextPreview } from "@/builder/sections/rich-text";
 import { BannerPreview } from "@/builder/sections/banner";
 import { NewsletterPreview } from "@/builder/sections/newsletter";
 import type { Section } from "@/shared/types";
+import { useTranslations } from "next-intl";
 
 const sectionComponents: Record<string, React.ComponentType<{ section: Section }>> = {
   hero: HeroPreview,
@@ -30,9 +31,10 @@ const sectionComponents: Record<string, React.ComponentType<{ section: Section }
 };
 
 function SectionRenderer({ section }: { section: Section }) {
+  const t = useTranslations("dashboard.pages");
   const Component = sectionComponents[section.type];
   if (!Component) {
-    return <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-500">Unknown section type: {section.type}</div>;
+    return <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-500">{t("unknownSectionType")} {section.type}</div>;
   }
   return <Component section={section} />;
 }
@@ -42,7 +44,9 @@ interface SectionBuilderProps {
 }
 
 export function SectionBuilder({ pageId }: SectionBuilderProps) {
-  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isDirty, isPreviewMode, togglePreviewMode } = usePageBuilder();
+  const t = useTranslations("dashboard.pages");
+  const tc = useTranslations("common");
+  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isDirty, isPreviewMode, togglePreviewMode, editLocale, setEditLocale, getSavePayload } = usePageBuilder();
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -58,8 +62,10 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
 
   const handleSave = useCallback(async () => {
     if (!page) return;
-    await updatePage.mutateAsync({ id: page.id, content_schema: page.content_schema });
-  }, [page, updatePage]);
+    const payload = getSavePayload();
+    if (Object.keys(payload).length === 0) return;
+    await updatePage.mutateAsync({ id: page.id, ...payload });
+  }, [page, updatePage, getSavePayload]);
 
   const handlePublish = useCallback(async () => {
     await publishPage.mutateAsync(pageId);
@@ -114,12 +120,14 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
         version={page?.version || 1}
         isDirty={isDirty}
         isPreviewMode={isPreviewMode}
+        editLocale={editLocale}
         onAddSection={() => setShowTypePicker(true)}
         onSave={handleSave}
         onPublish={handlePublish}
         onUnpublish={handleUnpublish}
         onTogglePreview={togglePreviewMode}
         onShowHistory={() => setShowHistory(!showHistory)}
+        onLocaleChange={setEditLocale}
         isSaving={updatePage.isPending}
       />
       <div className="flex flex-1 overflow-hidden">
@@ -141,9 +149,9 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
         <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
           {sections.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center">
-              <p className="mb-4 text-gray-500">This page has no sections yet.</p>
+              <p className="mb-4 text-gray-500">{t("noSections")}</p>
               <button onClick={() => setShowTypePicker(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                Add Your First Section
+                {t("addFirstSection")}
               </button>
             </div>
           ) : (
