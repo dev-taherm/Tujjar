@@ -105,3 +105,11 @@ export {
   usePaymentMethods,
 } from "./billing";
 export { marketplaceApi, useMarketplaceListings, useMarketplaceCategories, useInstallListing } from "./marketplace";
+export {
+  templatesApi,
+  useTemplates,
+  useTemplate,
+  useTemplateMarketplace,
+  useInstallTemplate,
+  useInstalledTemplate,
+} from "./templates";

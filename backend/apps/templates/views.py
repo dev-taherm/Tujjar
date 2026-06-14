@@ -81,8 +81,9 @@ class TemplateViewSet(viewsets.ModelViewSet):
                     config=preset_data.get("config", {}),
                 )
 
-            # 2. Assign theme to store
+            # 2. Assign theme and template to store
             store.theme = theme
+            store.template = template
 
             # 3. Set navigation and footer on store
             store.navigation = copy.deepcopy(template.navigation)
@@ -234,6 +235,31 @@ class TemplateViewSet(viewsets.ModelViewSet):
             TemplateDetailSerializer(template).data,
             status=status.HTTP_201_CREATED,
         )
+
+    @action(detail=False, methods=["get"])
+    def installed(self, request):
+        """Return the template installed on a specific store."""
+        store_id = request.query_params.get("store_id")
+        if not store_id:
+            return Response(
+                {"detail": "store_id query parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from apps.stores.models import Store
+
+        try:
+            store = Store.objects.get(id=store_id, organization_id=request.org_id)
+        except Store.DoesNotExist:
+            return Response(
+                {"detail": "Store not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if store.template:
+            return Response(TemplateDetailSerializer(store.template).data)
+
+        return Response(None)
 
     @action(detail=False, methods=["get"])
     def marketplace(self, request):

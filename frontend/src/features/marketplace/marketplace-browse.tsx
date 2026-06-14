@@ -1,100 +1,293 @@
 "use client";
 
 import { useState } from "react";
-import type { MarketplaceListing } from "@/shared/types";
-import { useMarketplaceListings, useMarketplaceCategories, useInstallListing } from "@/api/queries";
-import { Badge, Button, Input } from "@/shared/ui";
-import { Search, Download, Star, ExternalLink, ShoppingCart, Filter } from "lucide-react";
+import { useThemeMarketplace, useInstallTheme, useTemplateMarketplace, useInstallTemplate } from "@/api/queries";
+import { useStores } from "@/api/queries";
+import { Badge, Button } from "@/shared/ui";
+import { Palette, LayoutTemplate, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TemplateCard } from "@/features/templates/template-card";
+import type { Template } from "@/api/templates";
+import type { Theme } from "@/shared/types";
+import { TemplatePreview } from "@/features/templates/template-preview";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
-function ListingCard({ listing }: { listing: MarketplaceListing }) {
-  const install = useInstallListing();
+type Tab = "themes" | "templates";
+
+const TEMPLATE_CATEGORIES = [
+  { value: "", label: "All" },
+  { value: "fashion", label: "Fashion" },
+  { value: "electronics", label: "Electronics" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "pharmacy", label: "Pharmacy" },
+  { value: "furniture", label: "Furniture" },
+];
+
+/* ── Theme Card ────────────────────────────────────────────────────── */
+
+function ThemeMarketplaceCard({ theme, isInstalling, onInstall }: {
+  theme: Theme;
+  isInstalling: boolean;
+  onInstall: () => void;
+}) {
+  const colors = theme.config?.colors || {};
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden hover:shadow-md transition-shadow">
-      {listing.screenshots?.[0] ? (
-        <img src={listing.screenshots[0]} alt={listing.name} className="w-full h-40 object-cover" />
-      ) : (
-        <div className="w-full h-40 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
-          <span className="text-primary-600 font-bold text-2xl">{listing.name[0]}</span>
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-lg">
+      <div className="flex h-36 items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+        <div className="flex gap-2">
+          {[colors.primary, colors.secondary, colors.accent].filter(Boolean).map((c, i) => (
+            <div key={i} className="h-8 w-8 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: c }} />
+          ))}
         </div>
-      )}
-      <div className="p-4">
-        <div className="flex items-start justify-between">
+      </div>
+      <div className="p-5">
+        <div className="mb-2 flex items-start justify-between">
           <div>
-            <h3 className="font-semibold text-gray-900">{listing.name}</h3>
-            <p className="text-xs text-gray-500">by {listing.developer_name}</p>
+            <h3 className="text-lg font-semibold text-gray-900">{theme.name}</h3>
+            <p className="text-xs text-gray-400">v{theme.version}</p>
           </div>
-          {listing.pricing_type === "free" ? (
-            <Badge variant="success">Free</Badge>
-          ) : (
-            <Badge variant="warning">${listing.price}</Badge>
-          )}
+          {theme.is_system && <Badge variant="secondary">System</Badge>}
         </div>
-        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{listing.short_description || listing.description}</p>
-        <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />{listing.rating_average.toFixed(1)} ({listing.rating_count})</span>
-          <span className="flex items-center gap-1"><Download className="h-3 w-3" />{listing.download_count}</span>
-          {listing.category && <Badge variant="secondary">{listing.category}</Badge>}
-        </div>
-        <div className="mt-4 flex gap-2">
-          <Button size="sm" className="flex-1" onClick={() => install.mutate(listing.id)} disabled={install.isPending}>
-            <ShoppingCart className="mr-1 h-3 w-3" /> {install.isPending ? "Installing..." : "Install"}
-          </Button>
-          {listing.demo_url && (
-            <Button size="sm" variant="outline" onClick={() => window.open(listing.demo_url)}>
-              <ExternalLink className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
+        <p className="mb-3 text-sm text-gray-500">
+          {theme.config?.typography?.headingFont || "Inter"} / {theme.config?.typography?.bodyFont || "Inter"}
+        </p>
+        <Button onClick={onInstall} disabled={isInstalling} className="w-full">
+          {isInstalling ? "Installing..." : "Install Theme"}
+        </Button>
       </div>
     </div>
   );
 }
 
-export function MarketplaceBrowse() {
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [pricingFilter, setPricingFilter] = useState<string>("");
+/* ── Main Component ────────────────────────────────────────────────── */
 
-  const { data: categories } = useMarketplaceCategories();
-  const { data: listings, isLoading } = useMarketplaceListings({
-    category: selectedCategory || undefined,
-    pricing_type: pricingFilter || undefined,
-    search: search || undefined,
-  });
+export function MarketplaceBrowse() {
+  const [activeTab, setActiveTab] = useState<Tab>("themes");
+  const [templateCategory, setTemplateCategory] = useState("");
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+
+  const { data: stores } = useStores();
+  const storeId = stores?.[0]?.id;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search themes..." className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm" />
-        </div>
-        <div className="flex gap-1 rounded-lg border border-gray-200 p-0.5">
-          <button onClick={() => setSelectedCategory("")} className={cn("rounded px-3 py-1 text-xs", !selectedCategory && "bg-gray-100")}>All</button>
-          {categories?.categories.slice(0, 5).map((cat) => (
-            <button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("rounded px-3 py-1 text-xs", selectedCategory === cat && "bg-gray-100")}>{cat}</button>
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex gap-6">
+          <button
+            onClick={() => setActiveTab("themes")}
+            className={cn(
+              "flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors",
+              activeTab === "themes"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            )}
+          >
+            <Palette className="h-4 w-4" />
+            Themes
+          </button>
+          <button
+            onClick={() => setActiveTab("templates")}
+            className={cn(
+              "flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors",
+              activeTab === "templates"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            )}
+          >
+            <LayoutTemplate className="h-4 w-4" />
+            Templates
+          </button>
+        </nav>
+      </div>
+
+      {activeTab === "themes" ? (
+        <ThemesTab />
+      ) : (
+        <TemplatesTab
+          category={templateCategory}
+          setCategory={setTemplateCategory}
+          search={templateSearch}
+          setSearch={setTemplateSearch}
+          storeId={storeId}
+          previewTemplate={previewTemplate}
+          setPreviewTemplate={setPreviewTemplate}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Themes Tab ────────────────────────────────────────────────────── */
+
+function ThemesTab() {
+  const { data: themes, isLoading } = useThemeMarketplace();
+  const installTheme = useInstallTheme();
+  const [installingId, setInstallingId] = useState<string | null>(null);
+
+  const handleInstall = async (themeId: string, themeName: string) => {
+    setInstallingId(themeId);
+    try {
+      await installTheme.mutateAsync(themeId);
+      toast.success(`Theme "${themeName}" installed!`);
+    } catch {
+      toast.error("Failed to install theme.");
+    } finally {
+      setInstallingId(null);
+    }
+  };
+
+  const themeList = themes || [];
+
+  return (
+    <div>
+      {isLoading ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
           ))}
         </div>
-        <div className="flex gap-1 rounded-lg border border-gray-200 p-0.5">
-          <button onClick={() => setPricingFilter("")} className={cn("rounded px-3 py-1 text-xs", !pricingFilter && "bg-gray-100")}>All</button>
-          <button onClick={() => setPricingFilter("free")} className={cn("rounded px-3 py-1 text-xs", pricingFilter === "free" && "bg-gray-100")}>Free</button>
-          <button onClick={() => setPricingFilter("paid")} className={cn("rounded px-3 py-1 text-xs", pricingFilter === "paid" && "bg-gray-100")}>Paid</button>
+      ) : !themeList.length ? (
+        <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
+          <Palette className="mx-auto h-12 w-12 text-gray-300" />
+          <p className="mt-4 text-gray-500">No themes available</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {themeList.map((theme) => (
+            <ThemeMarketplaceCard
+              key={theme.id}
+              theme={theme}
+              isInstalling={installingId === theme.id}
+              onInstall={() => handleInstall(theme.id, theme.name)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Templates Tab ─────────────────────────────────────────────────── */
+
+function TemplatesTab({
+  category,
+  setCategory,
+  search,
+  setSearch,
+  storeId,
+  previewTemplate,
+  setPreviewTemplate,
+}: {
+  category: string;
+  setCategory: (v: string) => void;
+  search: string;
+  setSearch: (v: string) => void;
+  storeId: string | undefined;
+  previewTemplate: Template | null;
+  setPreviewTemplate: (t: Template | null) => void;
+}) {
+  const { data, isLoading } = useTemplateMarketplace(category || undefined);
+  const installMutation = useInstallTemplate();
+  const queryClient = useQueryClient();
+  const [installingId, setInstallingId] = useState<string | null>(null);
+
+  const templates = (data?.results || []).filter(
+    (t) =>
+      !search ||
+      t.name.toLowerCase().includes(search.toLowerCase()) ||
+      t.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const handleInstall = async (template: Template) => {
+    if (!storeId) {
+      toast.error("Please create a store first.");
+      return;
+    }
+    setInstallingId(template.id);
+    try {
+      const result = await installMutation.mutateAsync({
+        templateId: template.id,
+        storeId: storeId as string,
+      });
+      toast.success(`Template "${template.name}" installed! ${result.pages_created} pages created.`);
+      setPreviewTemplate(null);
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      queryClient.invalidateQueries({ queryKey: ["pages"] });
+    } catch {
+      toast.error("Failed to install template.");
+    } finally {
+      setInstallingId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Filters */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1">
+          {TEMPLATE_CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setCategory(cat.value)}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                category === cat.value
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search templates..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-4 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
+          />
         </div>
       </div>
 
+      {/* Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-72 animate-pulse rounded-xl bg-gray-200" />)}
-        </div>
-      ) : !listings?.length ? (
-        <div className="text-center py-16 text-gray-500">No themes found</div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-80 animate-pulse rounded-2xl bg-gray-100" />
           ))}
         </div>
+      ) : templates.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
+          <LayoutTemplate className="mx-auto h-12 w-12 text-gray-300" />
+          <p className="mt-4 text-gray-500">No templates found</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {templates.map((template) => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onPreview={setPreviewTemplate}
+              onInstall={handleInstall}
+              isInstalling={installingId === template.id}
+            />
+          ))}
+        </div>
+      )}
+
+      {previewTemplate && (
+        <TemplatePreview
+          template={previewTemplate}
+          onClose={() => setPreviewTemplate(null)}
+          onInstall={handleInstall}
+          isInstalling={installingId === previewTemplate.id}
+        />
       )}
     </div>
   );

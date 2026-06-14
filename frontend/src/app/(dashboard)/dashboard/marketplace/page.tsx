@@ -10,8 +10,8 @@ export default function MarketplacePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Theme Marketplace</h1>
-        <p className="text-gray-500">Discover and install themes built by the community</p>
+        <h1 className="text-2xl font-bold">Marketplace</h1>
+        <p className="text-gray-500">Discover and install themes and templates for your store</p>
       </div>
       <MarketplaceBrowse />
     </div>

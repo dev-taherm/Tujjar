@@ -58,6 +58,9 @@ export const templatesApi = {
   get: (id: UUID) =>
     apiClient.get<Template>(`/templates/${id}/`).then((r) => r.data),
 
+  installed: (storeId: UUID) =>
+    apiClient.get<Template | null>("/templates/installed/", { params: { store_id: storeId } }).then((r) => r.data),
+
   install: (id: UUID, storeId: UUID) =>
     apiClient.post(`/templates/${id}/install/`, { store_id: storeId }).then((r) => r.data),
 
@@ -107,5 +110,13 @@ export function useInstallTemplate() {
       queryClient.invalidateQueries({ queryKey: ["themes"] });
       queryClient.invalidateQueries({ queryKey: ["pages"] });
     },
+  });
+}
+
+export function useInstalledTemplate(storeId: UUID | null) {
+  return useQuery({
+    queryKey: ["templates", "installed", storeId],
+    queryFn: () => templatesApi.installed(storeId!),
+    enabled: !!storeId,
   });
 }
