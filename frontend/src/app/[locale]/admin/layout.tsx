@@ -60,7 +60,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-e border-gray-200 bg-white">
+      <aside className="fixed start-0 top-0 z-40 flex h-screen w-64 flex-col border-e border-gray-200 bg-white">
         <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-4">
           <Shield className="h-6 w-6 text-red-600" />
           <span className="text-lg font-bold text-gray-900">{t("adminPanel")}</span>

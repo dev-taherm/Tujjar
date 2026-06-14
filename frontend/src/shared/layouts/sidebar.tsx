@@ -54,7 +54,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen border-e border-gray-200 bg-white transition-all",
+        "fixed start-0 top-0 z-40 h-screen border-e border-gray-200 bg-white transition-all",
         sidebarOpen ? "w-64" : "w-16"
       )}
     >
