@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
+import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 
 export default function HomePage() {
   const t = useTranslations("landing");
@@ -9,6 +10,7 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-white to-gray-50">
+      <LocaleSwitcher variant="floating" />
       <div className="mx-auto max-w-2xl px-4 text-center">
         <h1 className="mb-4 text-6xl font-bold tracking-tight text-gray-900">
           {t("title")}

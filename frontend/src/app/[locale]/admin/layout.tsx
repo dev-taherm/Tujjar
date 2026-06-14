@@ -19,6 +19,7 @@ import {
   LogOut,
   ArrowLeft,
 } from "lucide-react";
+import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations("admin.nav");
@@ -88,6 +89,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="border-t border-gray-200 p-3 space-y-1">
+          <LocaleSwitcher variant="sidebar" />
           <Link
             href={`/${locale}/dashboard`}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
