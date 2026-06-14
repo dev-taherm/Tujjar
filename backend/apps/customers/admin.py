@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin
+
 from .models import Customer
 
 
 @admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
+class CustomerAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "email",
         "first_name",

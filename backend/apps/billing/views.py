@@ -16,6 +16,7 @@ from apps.billing.serializers import (
     PaymentMethodSerializer,
     CreateCheckoutSessionSerializer,
 )
+from apps.core.viewsets import TenantViewSet
 
 
 def check_plan_limits(organization, resource_type: str) -> dict:
@@ -49,8 +50,9 @@ class PlanViewSet(viewsets.ReadOnlyModelViewSet):
         return Plan.objects.filter(is_active=True)
 
 
-class SubscriptionViewSet(viewsets.ModelViewSet):
+class SubscriptionViewSet(TenantViewSet):
     serializer_class = SubscriptionSerializer
+    required_permission = "billing.manage"
 
     def get_queryset(self):
         org = getattr(self.request, "org_id", None)
@@ -107,8 +109,9 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         return Response({"status": "canceled", "cancel_at": sub.cancel_at})
 
 
-class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
+class InvoiceViewSet(TenantViewSet):
     serializer_class = InvoiceSerializer
+    required_permission = "billing.view_invoices"
 
     def get_queryset(self):
         org = getattr(self.request, "org_id", None)
@@ -117,8 +120,9 @@ class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
         return Invoice.objects.filter(organization_id=org).select_related("subscription")
 
 
-class PaymentMethodViewSet(viewsets.ModelViewSet):
+class PaymentMethodViewSet(TenantViewSet):
     serializer_class = PaymentMethodSerializer
+    required_permission = "billing.manage"
 
     def get_queryset(self):
         org = getattr(self.request, "org_id", None)

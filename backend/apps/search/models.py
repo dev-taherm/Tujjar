@@ -5,11 +5,15 @@ from django.contrib.postgres.search import (
 )
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class SearchIndex(UUIDModel, TimeStampedModel):
     """Full-text search index entry for cross-entity search."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     class EntityType(models.TextChoices):
         PRODUCT = "product", "Product"
@@ -52,6 +56,9 @@ class SearchIndex(UUIDModel, TimeStampedModel):
 
 class SearchQuery(UUIDModel, TimeStampedModel):
     """Log of user search queries for analytics."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     organization = models.ForeignKey(
         "organizations.Organization",

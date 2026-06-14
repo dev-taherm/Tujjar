@@ -3,11 +3,15 @@ from __future__ import annotations
 
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class Event(UUIDModel, TimeStampedModel):
     """Generic analytics event."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     class EventType(models.TextChoices):
         PAGE_VIEW = "page_view", "Page View"
@@ -57,6 +61,9 @@ class Event(UUIDModel, TimeStampedModel):
 
 class DailyStats(UUIDModel, TimeStampedModel):
     """Pre-aggregated daily statistics per store."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     store = models.ForeignKey(
         "stores.Store",

@@ -4,11 +4,15 @@ import uuid
 
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class MediaFolder(UUIDModel, TimeStampedModel):
     """Folder for organizing media assets."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     organization = models.ForeignKey(
         "organizations.Organization",
@@ -62,6 +66,9 @@ def media_upload_path(instance, filename) -> str:
 
 class MediaAsset(UUIDModel, TimeStampedModel):
     """Uploaded media file (image, video, document)."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     FILE_TYPE_CHOICES = [
         ("image", "Image"),

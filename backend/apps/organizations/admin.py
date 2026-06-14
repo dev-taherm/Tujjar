@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin
+
 from .models import Organization, OrganizationMembership, Permission, Role
 
 
@@ -12,7 +14,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 
 @admin.register(Role)
-class RoleAdmin(admin.ModelAdmin):
+class RoleAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["name", "slug", "is_system", "organization"]
     list_filter = ["is_system"]
     search_fields = ["name", "slug"]
@@ -26,6 +28,6 @@ class PermissionAdmin(admin.ModelAdmin):
 
 
 @admin.register(OrganizationMembership)
-class OrganizationMembershipAdmin(admin.ModelAdmin):
+class OrganizationMembershipAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["user", "organization", "role", "is_accepted", "invited_at"]
     list_filter = ["is_accepted", "role"]

@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin
+
 from .models import AIConversation, AIGenerationLog, AIMessage, AIProvider
 
 
 @admin.register(AIProvider)
-class AIProviderAdmin(admin.ModelAdmin):
+class AIProviderAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "name",
         "provider",
@@ -22,7 +24,7 @@ class AIProviderAdmin(admin.ModelAdmin):
 
 
 @admin.register(AIConversation)
-class AIConversationAdmin(admin.ModelAdmin):
+class AIConversationAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "title",
         "organization",
@@ -39,7 +41,7 @@ class AIConversationAdmin(admin.ModelAdmin):
 
 
 @admin.register(AIMessage)
-class AIMessageAdmin(admin.ModelAdmin):
+class AIMessageAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["conversation", "role", "content_preview", "tokens_used", "created_at"]
     list_filter = ["role"]
     search_fields = ["content", "conversation__title"]
@@ -52,7 +54,7 @@ class AIMessageAdmin(admin.ModelAdmin):
 
 
 @admin.register(AIGenerationLog)
-class AIGenerationLogAdmin(admin.ModelAdmin):
+class AIGenerationLogAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "task_type",
         "user",

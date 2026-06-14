@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class Customer(UUIDModel, TimeStampedModel):
     """Customer linked to a store, optionally linked to a User account."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     organization = models.ForeignKey(
         "organizations.Organization",

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
@@ -37,6 +38,9 @@ class Plan(UUIDModel, TimeStampedModel):
 
 class Subscription(UUIDModel, TimeStampedModel):
     """Organization subscription to a plan."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     class Status(models.TextChoices):
         TRIALING = "trialing", "Trialing"
@@ -73,6 +77,9 @@ class Subscription(UUIDModel, TimeStampedModel):
 
 class Invoice(UUIDModel, TimeStampedModel):
     """Invoice for subscription payments."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
@@ -114,6 +121,9 @@ class Invoice(UUIDModel, TimeStampedModel):
 
 class PaymentMethod(UUIDModel, TimeStampedModel):
     """Saved payment method for an organization."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     class MethodType(models.TextChoices):
         CARD = "card", "Card"

@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin, TenantTabularInline
+
 from .models import Category, Collection, Product, ProductImage, ProductVariant
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["name", "store", "parent", "is_active", "sort_order", "created_at"]
     list_filter = ["is_active", "store"]
     search_fields = ["name", "slug", "description"]
@@ -12,7 +14,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Collection)
-class CollectionAdmin(admin.ModelAdmin):
+class CollectionAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["name", "store", "is_active", "sort_order", "created_at"]
     list_filter = ["is_active", "store"]
     search_fields = ["name", "slug", "description"]
@@ -21,7 +23,7 @@ class CollectionAdmin(admin.ModelAdmin):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "title",
         "store",
@@ -40,7 +42,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductVariant)
-class ProductVariantAdmin(admin.ModelAdmin):
+class ProductVariantAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "title",
         "product",
@@ -57,7 +59,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductImage)
-class ProductImageAdmin(admin.ModelAdmin):
+class ProductImageAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["product", "position", "is_primary", "alt_text", "created_at"]
     list_filter = ["is_primary", "product"]
     search_fields = ["alt_text", "url"]

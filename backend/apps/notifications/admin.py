@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin
+
 from .models import Notification, NotificationPreference
 
 
 @admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
+class NotificationAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "title",
         "notification_type",

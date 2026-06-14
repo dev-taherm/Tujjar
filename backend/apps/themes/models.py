@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class Theme(UUIDModel, TimeStampedModel):
     """Theme model with configuration for colors, typography, spacing, etc."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     organization = models.ForeignKey(
         "organizations.Organization",

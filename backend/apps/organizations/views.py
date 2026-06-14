@@ -192,6 +192,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
                 {"detail": "Cannot remove the owner."},
                 status=status.HTTP_403_FORBIDDEN,
             )
+        log_action(
+            action="organization.member.remove",
+            resource_type="organization",
+            resource_id=pk,
+            organization_id=pk,
+            user=request.user,
+            old_value={"user_id": user_id, "role": membership.role.slug},
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         membership.delete()
         return Response({"message": "Member removed"})
 
@@ -208,7 +218,51 @@ class RoleViewSet(viewsets.ModelViewSet):
         ).distinct()
 
     def perform_create(self, serializer):
-        serializer.save(organization_id=self.kwargs["org_pk"])
+        org = serializer.save()
+        log_action(
+            action="role.create",
+            resource_type="role",
+            resource_id=org.id,
+            organization=org,
+            user=self.request.user,
+            new_value=RoleSerializer(org).data if hasattr(org, 'role_permissions') else {"name": org.name},
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
+        )
+
+    def perform_update(self, serializer):
+        if serializer.instance and serializer.instance.is_system:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("System roles cannot be modified.")
+        old_data = RoleSerializer(serializer.instance).data
+        role = serializer.save()
+        log_action(
+            action="role.update",
+            resource_type="role",
+            resource_id=role.id,
+            organization_id=self.kwargs.get("org_pk"),
+            user=self.request.user,
+            old_value=old_data,
+            new_value=RoleSerializer(role).data,
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
+        )
+
+    def perform_destroy(self, instance):
+        if instance.is_system:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("System roles cannot be deleted.")
+        log_action(
+            action="role.delete",
+            resource_type="role",
+            resource_id=instance.id,
+            organization_id=self.kwargs.get("org_pk"),
+            user=self.request.user,
+            old_value=RoleSerializer(instance).data,
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
+        )
+        instance.delete()
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):

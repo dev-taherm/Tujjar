@@ -5,11 +5,15 @@ import secrets
 from django.conf import settings
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class Store(UUIDModel, TimeStampedModel):
     """Store model. Each organization can have multiple stores."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     organization = models.ForeignKey(
         "organizations.Organization",

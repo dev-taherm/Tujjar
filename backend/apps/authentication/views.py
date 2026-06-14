@@ -7,6 +7,8 @@ from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.audit.models import log_action
+
 from .models import User
 from .serializers import (
     ChangePasswordSerializer,
@@ -40,6 +42,15 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         tokens = RefreshToken.for_user(user)
+        log_action(
+            action="user.register",
+            resource_type="user",
+            resource_id=user.id,
+            user=user,
+            new_value={"email": user.email},
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(
             {
                 "user": UserSerializer(user).data,
@@ -98,6 +109,16 @@ class TwoFactorSetupView(APIView):
         serializer = TwoFactorSetupSerializer(data={}, context={"request": request})
         serializer.is_valid(raise_exception=True)
         result = serializer.save()
+        log_action(
+            action="user.2fa.setup",
+            resource_type="user",
+            resource_id=request.user.id,
+            user=request.user,
+            organization_id=getattr(request, "org_id", None),
+            new_value={"2fa_enabled": True},
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(result)
 
 
@@ -108,6 +129,16 @@ class TwoFactorVerifyView(APIView):
         serializer = TwoFactorVerifySerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        log_action(
+            action="user.2fa.enable",
+            resource_type="user",
+            resource_id=request.user.id,
+            user=request.user,
+            organization_id=getattr(request, "org_id", None),
+            new_value={"2fa_enabled": True},
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response({"message": "2FA enabled successfully"})
 
 
@@ -130,6 +161,16 @@ class TwoFactorDisableView(APIView):
         user.two_factor_enabled = False
         user.two_factor_secret = ""
         user.save(update_fields=["two_factor_enabled", "two_factor_secret"])
+        log_action(
+            action="user.2fa.disable",
+            resource_type="user",
+            resource_id=user.id,
+            user=user,
+            organization_id=getattr(request, "org_id", None),
+            new_value={"2fa_enabled": False},
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response({"message": "2FA disabled successfully"})
 
 
@@ -187,6 +228,15 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        log_action(
+            action="user.password.change",
+            resource_type="user",
+            resource_id=request.user.id,
+            user=request.user,
+            organization_id=getattr(request, "org_id", None),
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response({"message": "Password changed successfully"})
 
 
@@ -233,4 +283,14 @@ def logout_view(request):
         pass
     except Exception:
         pass
+    if request.user and request.user.is_authenticated:
+        log_action(
+            action="user.logout",
+            resource_type="user",
+            resource_id=request.user.id,
+            user=request.user,
+            organization_id=getattr(request, "org_id", None),
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
     return Response({"message": "Logged out successfully"})

@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.models import log_action
+from apps.core.viewsets import TenantViewSet
 
 from .models import Theme, ThemePreset
 from .serializers import (
@@ -16,10 +17,11 @@ from .serializers import (
 )
 
 
-class ThemeViewSet(viewsets.ModelViewSet):
+class ThemeViewSet(TenantViewSet):
     """Theme CRUD and management."""
 
     serializer_class = ThemeSerializer
+    required_permission = "themes.manage"
 
     def get_queryset(self):
         return Theme.objects.filter(
@@ -120,10 +122,11 @@ class ThemeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ThemePresetViewSet(viewsets.ModelViewSet):
+class ThemePresetViewSet(TenantViewSet):
     """Preset management within a theme."""
 
     serializer_class = ThemePresetSerializer
+    required_permission = "themes.manage"
 
     def get_queryset(self):
         return ThemePreset.objects.filter(theme_id=self.kwargs["theme_pk"])

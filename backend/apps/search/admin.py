@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin
+
 from .models import SearchIndex, SearchQuery
 
 
 @admin.register(SearchIndex)
-class SearchIndexAdmin(admin.ModelAdmin):
+class SearchIndexAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["title", "entity_type", "entity_id", "store", "boost", "created_at"]
     list_filter = ["entity_type", "store"]
     search_fields = ["title", "description"]
@@ -12,7 +14,7 @@ class SearchIndexAdmin(admin.ModelAdmin):
 
 
 @admin.register(SearchQuery)
-class SearchQueryAdmin(admin.ModelAdmin):
+class SearchQueryAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "query",
         "store",

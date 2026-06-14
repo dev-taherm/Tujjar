@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.models import log_action
+from apps.core.viewsets import TenantViewSet
 
 from .models import Template
 from .serializers import (
@@ -19,8 +20,10 @@ from .serializers import (
 )
 
 
-class TemplateViewSet(viewsets.ModelViewSet):
+class TemplateViewSet(TenantViewSet):
     """Template CRUD with install/export/import actions."""
+
+    required_permission = "pages.create"
 
     def get_serializer_class(self):
         if self.action == "list":

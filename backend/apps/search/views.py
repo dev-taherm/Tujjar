@@ -12,6 +12,7 @@ from apps.search.serializers import (
     SearchQuerySerializer,
     SearchRequestSerializer,
 )
+from apps.core.viewsets import TenantReadOnlyViewSet
 
 # Trigram requires pg_trgm extension (PostgreSQL only)
 USE_TRIGRAM = "postgresql" in settings.DATABASES.get("default", {}).get("ENGINE", "")
@@ -20,7 +21,7 @@ if USE_TRIGRAM:
     from django.contrib.postgres.search import TrigramSimilarity
     from django.db.models import Value, FloatField
     from django.db.models.functions import Greatest
-class SearchIndexViewSet(viewsets.ModelViewSet):
+class SearchIndexViewSet(TenantReadOnlyViewSet):
     serializer_class = SearchIndexSerializer
 
     def get_queryset(self):
@@ -102,7 +103,7 @@ class SearchIndexViewSet(viewsets.ModelViewSet):
         return Response({"suggestions": list(qs)})
 
 
-class SearchQueryViewSet(viewsets.ReadOnlyModelViewSet):
+class SearchQueryViewSet(TenantReadOnlyViewSet):
     serializer_class = SearchQuerySerializer
 
     def get_queryset(self):

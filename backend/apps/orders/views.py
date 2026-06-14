@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.models import log_action
+from apps.core.viewsets import TenantViewSet
 from apps.products.models import Product, ProductVariant
 
 from .models import Cart, CartItem, Order, OrderItem, OrderTransitionError
@@ -20,7 +21,7 @@ from .serializers import (
 )
 
 
-class CartViewSet(viewsets.ModelViewSet):
+class CartViewSet(TenantViewSet):
     """Cart management."""
 
     serializer_class = CartSerializer
@@ -201,8 +202,10 @@ class CartViewSet(viewsets.ModelViewSet):
         return Response(OrderDetailSerializer(order).data, status=status.HTTP_201_CREATED)
 
 
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderViewSet(TenantViewSet):
     """Order management with filtering."""
+
+    required_permission = "orders.manage"
 
     def get_serializer_class(self):
         if self.action in ("retrieve", "update", "partial_update"):
@@ -235,23 +238,47 @@ class OrderViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def update_status(self, request, pk=None):
         order = self.get_object()
+        old_status = order.status
         new_status = request.data.get("status")
         notes = request.data.get("notes", "")
         try:
             order.transition_status(new_status, changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        log_action(
+            action="order.status.update",
+            resource_type="order",
+            resource_id=order.id,
+            organization_id=self.request.org_id,
+            user=self.request.user,
+            old_value={"status": old_status},
+            new_value={"status": new_status, "notes": notes},
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
     def update_payment_status(self, request, pk=None):
         order = self.get_object()
+        old_payment_status = order.payment_status
         new_status = request.data.get("payment_status")
         valid = [c[0] for c in Order.PAYMENT_STATUS_CHOICES]
         if new_status not in valid:
             return Response({"detail": f"Invalid payment status. Must be one of: {valid}"}, status=status.HTTP_400_BAD_REQUEST)
         order.payment_status = new_status
         order.save(update_fields=["payment_status", "updated_at"])
+        log_action(
+            action="order.payment_status.update",
+            resource_type="order",
+            resource_id=order.id,
+            organization_id=self.request.org_id,
+            user=self.request.user,
+            old_value={"payment_status": old_payment_status},
+            new_value={"payment_status": new_status},
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -265,30 +292,66 @@ class OrderViewSet(viewsets.ModelViewSet):
         if tracking_url:
             order.tracking_url = tracking_url
         order.save(update_fields=["tracking_number", "tracking_url", "updated_at"])
+        old_status = order.status
         try:
             order.transition_status("shipped", changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        log_action(
+            action="order.ship",
+            resource_type="order",
+            resource_id=order.id,
+            organization_id=self.request.org_id,
+            user=self.request.user,
+            old_value={"status": old_status},
+            new_value={"status": "shipped", "tracking_number": tracking_number},
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
     def deliver(self, request, pk=None):
         order = self.get_object()
         notes = request.data.get("notes", "")
+        old_status = order.status
         try:
             order.transition_status("delivered", changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        log_action(
+            action="order.deliver",
+            resource_type="order",
+            resource_id=order.id,
+            organization_id=self.request.org_id,
+            user=self.request.user,
+            old_value={"status": old_status},
+            new_value={"status": "delivered"},
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         order = self.get_object()
         notes = request.data.get("notes", "")
+        old_status = order.status
         try:
             order.cancel(changed_by=request.user, notes=notes)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        log_action(
+            action="order.cancel",
+            resource_type="order",
+            resource_id=order.id,
+            organization_id=self.request.org_id,
+            user=self.request.user,
+            old_value={"status": old_status},
+            new_value={"status": "cancelled", "notes": notes},
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["get"])

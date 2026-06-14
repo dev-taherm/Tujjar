@@ -5,16 +5,18 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.models import log_action
+from apps.core.viewsets import TenantViewSet
 
 from .models import Page, PageVersion
 from .section_registry import create_section, get_section_types
 from .serializers import PageSerializer, PageVersionSerializer, SectionTypeSerializer
 
 
-class PageViewSet(viewsets.ModelViewSet):
+class PageViewSet(TenantViewSet):
     """Page CRUD with content_schema management."""
 
     serializer_class = PageSerializer
+    required_permission = "pages.create"
 
     def get_queryset(self):
         qs = Page.objects.select_related("store").filter(organization_id=self.request.org_id)

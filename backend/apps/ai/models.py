@@ -6,6 +6,7 @@ import hashlib
 from django.conf import settings
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
@@ -19,6 +20,9 @@ def _get_fernet():
 
 class AIProvider(UUIDModel, TimeStampedModel):
     """Configured AI provider for an organization."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     PROVIDER_CHOICES = [
         ("openai", "OpenAI"),
@@ -72,6 +76,9 @@ class AIProvider(UUIDModel, TimeStampedModel):
 
 class AIConversation(UUIDModel, TimeStampedModel):
     """AI chat conversation."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     organization = models.ForeignKey(
         "organizations.Organization",
@@ -146,6 +153,9 @@ class AIMessage(UUIDModel, TimeStampedModel):
 
 class AIGenerationLog(UUIDModel, TimeStampedModel):
     """Log of AI content generation requests."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     TASK_CHOICES = [
         ("product_description", "Product Description"),

@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin
+
 from .models import Invoice, PaymentMethod, Plan, Subscription
 
 
@@ -24,7 +26,7 @@ class PlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
+class SubscriptionAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "organization",
         "plan",
@@ -40,7 +42,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 
 @admin.register(Invoice)
-class InvoiceAdmin(admin.ModelAdmin):
+class InvoiceAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "invoice_number",
         "organization",
@@ -58,7 +60,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 
 
 @admin.register(PaymentMethod)
-class PaymentMethodAdmin(admin.ModelAdmin):
+class PaymentMethodAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "organization",
         "method_type",

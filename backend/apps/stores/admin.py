@@ -1,15 +1,17 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin, TenantTabularInline
+
 from .models import Store, StoreDomain
 
 
-class StoreDomainInline(admin.TabularInline):
+class StoreDomainInline(TenantTabularInline):
     model = StoreDomain
     extra = 0
 
 
 @admin.register(Store)
-class StoreAdmin(admin.ModelAdmin):
+class StoreAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["name", "slug", "organization", "is_active", "created_at"]
     list_filter = ["is_active"]
     search_fields = ["name", "slug"]
@@ -18,7 +20,7 @@ class StoreAdmin(admin.ModelAdmin):
 
 
 @admin.register(StoreDomain)
-class StoreDomainAdmin(admin.ModelAdmin):
+class StoreDomainAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["domain", "store", "is_primary", "verified"]
     list_filter = ["is_primary", "verified"]
     search_fields = ["domain"]

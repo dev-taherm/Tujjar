@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin
+
 from .models import DailyStats, Event
 
 
 @admin.register(Event)
-class EventAdmin(admin.ModelAdmin):
+class EventAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "event_type",
         "entity_type",
@@ -19,7 +21,7 @@ class EventAdmin(admin.ModelAdmin):
 
 
 @admin.register(DailyStats)
-class DailyStatsAdmin(admin.ModelAdmin):
+class DailyStatsAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "store",
         "date",

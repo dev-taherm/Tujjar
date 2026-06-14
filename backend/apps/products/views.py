@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.models import log_action
+from apps.core.viewsets import TenantViewSet
 
 from .models import Category, Collection, Product, ProductImage, ProductVariant
 from .serializers import (
@@ -20,10 +21,11 @@ from .serializers import (
 )
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(TenantViewSet):
     """Category CRUD with hierarchy support."""
 
     serializer_class = CategorySerializer
+    required_permission = "products.create"
 
     def get_queryset(self):
         qs = Category.objects.prefetch_related("children", "products").filter(
@@ -53,8 +55,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
         )
 
 
-class CollectionViewSet(viewsets.ModelViewSet):
+class CollectionViewSet(TenantViewSet):
     """Collection CRUD with product management."""
+
+    required_permission = "products.create"
 
     def get_serializer_class(self):
         if self.action in ("retrieve", "update", "partial_update"):
@@ -82,8 +86,10 @@ class CollectionViewSet(viewsets.ModelViewSet):
         )
 
 
-class ProductViewSet(viewsets.ModelViewSet):
+class ProductViewSet(TenantViewSet):
     """Product CRUD with filtering, search, and inventory management."""
+
+    required_permission = "products.create"
 
     def get_serializer_class(self):
         if self.action in ("create", "retrieve", "update", "partial_update"):
@@ -238,10 +244,11 @@ class ProductViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ProductImageViewSet(viewsets.ModelViewSet):
+class ProductImageViewSet(TenantViewSet):
     """Product image management."""
 
     serializer_class = ProductImageSerializer
+    required_permission = "products.update"
 
     def get_queryset(self):
         return ProductImage.objects.filter(
@@ -266,10 +273,11 @@ class ProductImageViewSet(viewsets.ModelViewSet):
         return Response(ProductImageSerializer(image).data)
 
 
-class ProductVariantViewSet(viewsets.ModelViewSet):
+class ProductVariantViewSet(TenantViewSet):
     """Product variant management."""
 
     serializer_class = ProductVariantSerializer
+    required_permission = "products.update"
 
     def get_queryset(self):
         return ProductVariant.objects.filter(

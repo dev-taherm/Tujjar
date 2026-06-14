@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin
+
 from .models import MediaAsset, MediaFolder
 
 
 @admin.register(MediaFolder)
-class MediaFolderAdmin(admin.ModelAdmin):
+class MediaFolderAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["name", "store", "parent", "path", "created_at"]
     list_filter = ["store"]
     search_fields = ["name", "path"]
@@ -12,7 +14,7 @@ class MediaFolderAdmin(admin.ModelAdmin):
 
 
 @admin.register(MediaAsset)
-class MediaAssetAdmin(admin.ModelAdmin):
+class MediaAssetAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = [
         "filename",
         "title",

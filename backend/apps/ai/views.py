@@ -4,6 +4,8 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.viewsets import TenantViewSet
+
 
 from .models import AIGenerationLog, AIProvider, AIConversation, AIMessage
 from .serializers import (
@@ -40,10 +42,11 @@ def _get_active_provider(organization_id) -> dict | None:
     }
 
 
-class AIProviderViewSet(viewsets.ModelViewSet):
+class AIProviderViewSet(TenantViewSet):
     """AI provider configuration."""
 
     serializer_class = AIProviderSerializer
+    required_permission = "ai.use"
 
     def get_queryset(self):
         return AIProvider.objects.filter(organization_id=self.request.org_id)
@@ -52,8 +55,10 @@ class AIProviderViewSet(viewsets.ModelViewSet):
         serializer.save(organization_id=self.request.org_id)
 
 
-class AIConversationViewSet(viewsets.ModelViewSet):
+class AIConversationViewSet(TenantViewSet):
     """AI chat conversations."""
+
+    required_permission = "ai.use"
 
     def get_serializer_class(self):
         if self.action == "list":

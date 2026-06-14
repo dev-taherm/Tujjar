@@ -13,8 +13,11 @@ from apps.analytics.serializers import (
     EventSerializer,
     EventCreateSerializer,
 )
-class EventViewSet(viewsets.ModelViewSet):
+from apps.core.viewsets import TenantViewSet
+
+class EventViewSet(TenantViewSet):
     serializer_class = EventSerializer
+    required_permission = "analytics.view"
 
     def get_queryset(self):
         return Event.objects.filter(organization_id=self.request.org_id)

@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.models import log_action
+from apps.core.viewsets import TenantViewSet
 from apps.organizations.models import Organization
 
 from .models import Store, StoreDomain
@@ -18,10 +19,11 @@ def _serialize_store(store):
     return json.loads(json.dumps(StoreSerializer(store).data, default=str))
 
 
-class StoreViewSet(viewsets.ModelViewSet):
+class StoreViewSet(TenantViewSet):
     """Store CRUD scoped to the current organization."""
 
     serializer_class = StoreSerializer
+    required_permission = "settings.manage"
 
     def get_queryset(self):
         return Store.objects.filter(
@@ -94,10 +96,11 @@ class StoreViewSet(viewsets.ModelViewSet):
         return Response(StoreSerializer(store).data)
 
 
-class StoreDomainViewSet(viewsets.ModelViewSet):
+class StoreDomainViewSet(TenantViewSet):
     """Domain management for a store."""
 
     serializer_class = StoreDomainSerializer
+    required_permission = "settings.manage"
 
     def get_queryset(self):
         from rest_framework.exceptions import PermissionDenied

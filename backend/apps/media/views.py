@@ -8,6 +8,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
 from apps.audit.models import log_action
+from apps.core.viewsets import TenantViewSet
 
 from .models import MediaAsset, MediaFolder
 from .serializers import (
@@ -18,10 +19,11 @@ from .serializers import (
 from .services import storage_service
 
 
-class MediaFolderViewSet(viewsets.ModelViewSet):
+class MediaFolderViewSet(TenantViewSet):
     """Folder management for organizing media."""
 
     serializer_class = MediaFolderSerializer
+    required_permission = "media.upload"
 
     def get_queryset(self):
         qs = MediaFolder.objects.select_related("store", "parent").filter(organization_id=self.request.org_id)
@@ -39,11 +41,12 @@ class MediaFolderViewSet(viewsets.ModelViewSet):
         serializer.save(organization_id=self.request.org_id)
 
 
-class MediaAssetViewSet(viewsets.ModelViewSet):
+class MediaAssetViewSet(TenantViewSet):
     """Media asset management with upload support."""
 
     serializer_class = MediaAssetSerializer
     parser_classes = [MultiPartParser, FormParser]
+    required_permission = "media.upload"
 
     def get_queryset(self):
         qs = MediaAsset.objects.select_related("store", "folder").filter(organization_id=self.request.org_id)

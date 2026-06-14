@@ -4,11 +4,15 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class Notification(UUIDModel, TimeStampedModel):
     """In-app notification for a user."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     class NotificationType(models.TextChoices):
         ORDER = "order", "Order"

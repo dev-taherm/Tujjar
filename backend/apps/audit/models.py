@@ -5,6 +5,9 @@ from typing import Any
 from django.db import models
 
 
+from apps.core.managers import TenantManager, UnscopedManager
+
+
 class AuditLogManager(models.Manager):
     def get_for_org(self, organization_id: str, **kwargs):
         return self.filter(organization_id=organization_id, **kwargs)
@@ -12,6 +15,9 @@ class AuditLogManager(models.Manager):
 
 class AuditLog(models.Model):
     """Audit log for tracking all important actions."""
+
+    objects = AuditLogManager()
+    unscoped = UnscopedManager()
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organization = models.ForeignKey(

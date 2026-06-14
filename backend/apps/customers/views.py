@@ -4,15 +4,17 @@ from django.db.models import Q
 from rest_framework import viewsets
 
 from apps.audit.models import log_action
+from apps.core.viewsets import TenantViewSet
 
 from .models import Customer
 from .serializers import CustomerSerializer
 
 
-class CustomerViewSet(viewsets.ModelViewSet):
+class CustomerViewSet(TenantViewSet):
     """Customer CRUD with search."""
 
     serializer_class = CustomerSerializer
+    required_permission = "customers.manage"
 
     def get_queryset(self):
         qs = Customer.objects.select_related("store").filter(organization_id=self.request.org_id)

@@ -1,15 +1,17 @@
 from django.contrib import admin
 
+from apps.core.admin import TenantAdminMixin, TenantTabularInline
+
 from .models import Theme, ThemePreset
 
 
-class ThemePresetInline(admin.TabularInline):
+class ThemePresetInline(TenantTabularInline):
     model = ThemePreset
     extra = 0
 
 
 @admin.register(Theme)
-class ThemeAdmin(admin.ModelAdmin):
+class ThemeAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["name", "slug", "version", "is_system", "is_active", "created_at"]
     list_filter = ["is_system", "is_active"]
     search_fields = ["name", "slug"]
@@ -18,7 +20,7 @@ class ThemeAdmin(admin.ModelAdmin):
 
 
 @admin.register(ThemePreset)
-class ThemePresetAdmin(admin.ModelAdmin):
+class ThemePresetAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["name", "theme", "created_at"]
     list_filter = ["theme"]
     search_fields = ["name"]

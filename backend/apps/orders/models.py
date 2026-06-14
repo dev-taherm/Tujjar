@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from django.utils import timezone
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
@@ -29,6 +30,9 @@ VALID_ORDER_TRANSITIONS = {
 
 class Cart(UUIDModel, TimeStampedModel):
     """Shopping cart for a customer/session."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     organization = models.ForeignKey(
         "organizations.Organization",
@@ -117,6 +121,9 @@ class CartItem(UUIDModel, TimeStampedModel):
 
 class Order(UUIDModel, TimeStampedModel):
     """Customer order."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     ORDER_STATUS_CHOICES = [
         ("pending", "Pending"),

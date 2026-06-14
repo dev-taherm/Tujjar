@@ -4,11 +4,15 @@ from __future__ import annotations
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class Category(UUIDModel, TimeStampedModel):
     """Hierarchical product category."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     organization = models.ForeignKey(
         "organizations.Organization",
@@ -49,6 +53,9 @@ class Category(UUIDModel, TimeStampedModel):
 class Collection(UUIDModel, TimeStampedModel):
     """Curated group of products."""
 
+    objects = TenantManager()
+    unscoped = UnscopedManager()
+
     organization = models.ForeignKey(
         "organizations.Organization",
         on_delete=models.CASCADE,
@@ -85,6 +92,9 @@ class Collection(UUIDModel, TimeStampedModel):
 
 class Product(UUIDModel, TimeStampedModel):
     """Core product model."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     PRODUCT_TYPE_CHOICES = [
         ("physical", "Physical"),

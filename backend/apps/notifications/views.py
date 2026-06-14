@@ -4,12 +4,14 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.viewsets import TenantReadOnlyViewSet
 from apps.notifications.models import Notification, NotificationPreference
 from apps.notifications.serializers import (
     NotificationSerializer,
     NotificationPreferenceSerializer,
 )
-class NotificationViewSet(viewsets.ModelViewSet):
+
+class NotificationViewSet(TenantReadOnlyViewSet):
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
@@ -34,7 +36,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
         return Response({"count": count})
 
 
-class NotificationPreferenceViewSet(viewsets.ModelViewSet):
+class NotificationPreferenceViewSet(TenantReadOnlyViewSet):
     serializer_class = NotificationPreferenceSerializer
 
     def get_queryset(self):

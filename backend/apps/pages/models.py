@@ -5,11 +5,15 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
+from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
 
 
 class Page(UUIDModel, TimeStampedModel):
     """Page model. content_schema JSONB is the source of truth for the page builder."""
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
 
     PAGE_TYPE_CHOICES = [
         ("homepage", "Homepage"),
