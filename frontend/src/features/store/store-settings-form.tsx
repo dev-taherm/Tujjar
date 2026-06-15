@@ -189,7 +189,7 @@ function GeneralTab({ store }: { store: Store }) {
 
   const storeUrl = store.custom_domain
     ? `https://${store.custom_domain}`
-    : `https://${store.slug}.tujjar.com`;
+    : `http://${store.domain}`;
 
   const copyUrl = () => {
     navigator.clipboard.writeText(storeUrl);
@@ -230,7 +230,7 @@ function GeneralTab({ store }: { store: Store }) {
                   }}
                   className="flex-1 font-mono text-sm"
                 />
-                <span className="text-sm text-gray-500">.tujjar.com</span>
+                <span className="text-sm text-gray-500">.{process.env.NEXT_PUBLIC_STORE_DOMAIN || "localhost"}</span>
               </div>
               {slugAvailable === true && (
                 <p className="text-xs text-green-600">Slug is available</p>
