@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const LOCALES = ["en", "ar"];
 const DEFAULT_LOCALE = "en";
-const EXCLUDED_PREFIXES = ["/api", "/_next", "/favicon.ico"];
+const EXCLUDED_PREFIXES = ["/api", "/_next", "/favicon.ico", "/media"];
 
 function getSubdomain(host: string): string | null {
   const hostname = host.split(":")[0];
