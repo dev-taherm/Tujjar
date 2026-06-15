@@ -47,38 +47,8 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
     },
   });
 
-  if (isLoading) {
-    return (
-      <div className="space-y-16">
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-primary-50">
-          <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-            <div className="max-w-2xl animate-pulse">
-              <div className="h-12 w-3/4 rounded bg-gray-200" />
-              <div className="mt-6 h-6 w-1/2 rounded bg-gray-200" />
-            </div>
-          </div>
-        </section>
-      </div>
-    );
-  }
+  const store = data?.store;
 
-  if (!data) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24">
-        <h1 className="text-2xl font-bold text-gray-900">{tNotFound("title")}</h1>
-        <p className="mt-2 text-gray-500">{tNotFound("description")}</p>
-        <Link href={`/${locale}`} className="mt-6">
-          <Button>{tNotFound("goToTujjar")}</Button>
-        </Link>
-      </div>
-    );
-  }
-
-  const store = data.store;
-  const sections = data.homepage?.content_schema?.sections;
-  const featuredProducts = data.featured_products || [];
-
-  // Apply page-level SEO
   useEffect(() => {
     if (store) {
       const title = store.seo_title || store.name;
@@ -107,6 +77,36 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
       }
     }
   }, [store]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-16">
+        <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-primary-50">
+          <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+            <div className="max-w-2xl animate-pulse">
+              <div className="h-12 w-3/4 rounded bg-gray-200" />
+              <div className="mt-6 h-6 w-1/2 rounded bg-gray-200" />
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24">
+        <h1 className="text-2xl font-bold text-gray-900">{tNotFound("title")}</h1>
+        <p className="mt-2 text-gray-500">{tNotFound("description")}</p>
+        <Link href={`/${locale}`} className="mt-6">
+          <Button>{tNotFound("goToTujjar")}</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const sections = data.homepage?.content_schema?.sections;
+  const featuredProducts = data.featured_products || [];
 
   if (sections && sections.length > 0) {
     return (
@@ -137,7 +137,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              {store.name}
+              {store!.name}
             </h1>
             <p className="mt-6 text-lg text-gray-600">
               {t("discoverProducts")}
