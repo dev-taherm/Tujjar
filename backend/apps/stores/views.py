@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import logging
 
-from rest_framework import status
+from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.viewsets import TenantViewSet
+from apps.core.permissions import HasOrganizationPermission
+from apps.core.viewsets import AuditLogMixin, TenantViewSet
 
 from .models import Store, StoreDomain
 from .serializers import SlugCheckSerializer, StoreDomainSerializer, StoreSerializer, StoreSettingsSerializer, StoreWizardSerializer
@@ -138,3 +139,93 @@ class StoreDomainViewSet(TenantViewSet):
     def perform_destroy(self, instance):
         self._log_audit(action="store.domain.delete", resource_type="store_domain", resource_id=instance.id, old_value={"domain": instance.domain})
         instance.delete()
+
+
+class StoreDomainVerifyView(AuditLogMixin, generics.GenericAPIView):
+    """Verify a domain by checking DNS records."""
+
+    permission_classes = [permissions.IsAuthenticated, HasOrganizationPermission]
+    required_permission = "settings.manage"
+
+    def post(self, request, pk, domain_pk):
+        store = Store.objects.filter(id=pk, organization_id=request.org_id).first()
+        if not store:
+            return Response({"error": "Store not found"}, status=404)
+
+        domain = StoreDomain.objects.filter(id=domain_pk, store_id=pk).first()
+        if not domain:
+            return Response({"error": "Domain not found"}, status=404)
+
+        import socket
+        try:
+            socket.getaddrinfo(domain.domain, 80, socket.AF_INET)
+            domain.verified = True
+            domain.save(update_fields=["verified", "updated_at"])
+            self._log_audit(action="store.domain.verify", resource_type="store_domain", resource_id=domain.id, new_value={"domain": domain.domain, "verified": True})
+            return Response({"verified": True, "domain": domain.domain})
+        except (socket.gaierror, OSError):
+            return Response({"verified": False, "domain": domain.domain, "message": "DNS record not found. Make sure the CNAME or A record points to your store."})
+
+
+class StoreDomainInstructionsView(generics.GenericAPIView):
+    """Get DNS setup instructions for a domain."""
+
+    permission_classes = [permissions.IsAuthenticated, HasOrganizationPermission]
+    required_permission = "settings.manage"
+
+    def get(self, request, pk, domain_pk):
+        store = Store.objects.filter(id=pk, organization_id=request.org_id).first()
+        if not store:
+            return Response({"error": "Store not found"}, status=404)
+
+        domain = StoreDomain.objects.filter(id=domain_pk, store_id=pk).first()
+        if not domain:
+            return Response({"error": "Domain not found"}, status=404)
+
+        from django.conf import settings as django_settings
+        target_cname = f"{store.slug}.{django_settings.STORE_DOMAIN}"
+
+        return Response({
+            "domain": domain.domain,
+            "verification_token": domain.verification_token,
+            "instructions": {
+                "cname": {
+                    "type": "CNAME",
+                    "host": domain.domain,
+                    "value": target_cname,
+                    "description": "Point your domain to your Tujjar store",
+                },
+                "verification": {
+                    "type": "TXT",
+                    "host": f"_tujjar-verify.{domain.domain}",
+                    "value": domain.verification_token,
+                    "description": "Verify domain ownership",
+                },
+            },
+            "verified": domain.verified,
+        })
+
+
+class StoreDomainPrimaryView(AuditLogMixin, generics.GenericAPIView):
+    """Set a domain as the primary domain for a store."""
+
+    permission_classes = [permissions.IsAuthenticated, HasOrganizationPermission]
+    required_permission = "settings.manage"
+
+    def post(self, request, pk, domain_pk):
+        store = Store.objects.filter(id=pk, organization_id=request.org_id).first()
+        if not store:
+            return Response({"error": "Store not found"}, status=404)
+
+        domain = StoreDomain.objects.filter(id=domain_pk, store_id=pk).first()
+        if not domain:
+            return Response({"error": "Domain not found"}, status=404)
+
+        # Unset other primary domains
+        StoreDomain.objects.filter(store_id=pk, is_primary=True).update(is_primary=False)
+        domain.is_primary = True
+        domain.save(update_fields=["is_primary", "updated_at"])
+
+        self._log_audit(action="store.domain.set_primary", resource_type="store_domain", resource_id=domain.id, new_value={"domain": domain.domain, "is_primary": True})
+
+        return Response({"domain": domain.domain, "is_primary": True})

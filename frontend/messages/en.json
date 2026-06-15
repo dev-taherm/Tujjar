@@ -347,7 +347,13 @@
       "title": "Domain Management",
       "description": "Connect your own domain to this store",
       "placeholder": "store.yourdomain.com",
-      "noDomains": "No custom domains configured."
+      "noDomains": "No custom domains configured.",
+      "verify": "Verify",
+      "verifyFailed": "DNS record not found. Check your DNS settings.",
+      "setPrimary": "Set Primary",
+      "primarySet": "Primary domain updated",
+      "dnsInstructions": "DNS",
+      "setupInstructions": "DNS Setup Instructions"
     },
     "themes": {
       "noThemesInstalled": "No themes installed",

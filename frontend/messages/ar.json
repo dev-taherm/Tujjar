@@ -347,7 +347,13 @@
       "title": "إدارة النطاقات",
       "description": "اربط نطاقك الخاص بهذا المتجر",
       "placeholder": "store.yourdomain.com",
-      "noDomains": "لم يتم تكوين نطاقات مخصصة."
+      "noDomains": "لم يتم تكوين نطاقات مخصصة.",
+      "verify": "تحقق",
+      "verifyFailed": "لم يتم العثور على سجل DNS. تحقق من إعدادات DNS.",
+      "setPrimary": "تعيين كرئيسي",
+      "primarySet": "تم تحديث النطاق الرئيسي",
+      "dnsInstructions": "DNS",
+      "setupInstructions": "تعليمات إعداد DNS"
     },
     "themes": {
       "noThemesInstalled": "لم يتم تثبيت أي سمات",

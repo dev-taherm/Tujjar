@@ -22,6 +22,21 @@ urlpatterns = [
         name="store-domain-detail",
     ),
     path(
+        "<uuid:pk>/domains/<uuid:domain_pk>/verify/",
+        views.StoreDomainVerifyView.as_view(),
+        name="store-domain-verify",
+    ),
+    path(
+        "<uuid:pk>/domains/<uuid:domain_pk>/instructions/",
+        views.StoreDomainInstructionsView.as_view(),
+        name="store-domain-instructions",
+    ),
+    path(
+        "<uuid:pk>/domains/<uuid:domain_pk>/primary/",
+        views.StoreDomainPrimaryView.as_view(),
+        name="store-domain-primary",
+    ),
+    path(
         "<uuid:pk>/update-settings/",
         views.StoreViewSet.as_view({"patch": "update_settings"}),
         name="store-update-settings",
