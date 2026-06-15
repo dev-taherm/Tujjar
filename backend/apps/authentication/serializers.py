@@ -55,12 +55,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         validated_data.pop("password_confirm")
         user = User.objects.create_user(**validated_data)
-        # Generate verification token and store hash
+        # Generate verification token and store hash with expiry
         from .crypto import generate_verification_token
 
         token, _ = generate_verification_token()
         user.set_verification_token(token)
-        user.save(update_fields=["verification_token", "verification_token_hash"])
+        user.verification_token_expires = timezone.now() + timezone.timedelta(hours=24)
+        user.save(update_fields=["verification_token", "verification_token_hash", "verification_token_expires"])
         # Auto-create organization for the user
         org_name = f"{user.first_name or user.email}'s Organization"
         org = Organization.objects.create(
@@ -195,6 +196,9 @@ class RequestPasswordResetSerializer(serializers.Serializer):
         user = self.user
         from .crypto import generate_password_reset_token
 
+        # Invalidate any existing reset tokens
+        user.password_reset_token_hash = ""
+        user.password_reset_expires = None
         token, _ = generate_password_reset_token()
         user.set_password_reset_token(token)
         user.password_reset_expires = timezone.now() + timezone.timedelta(hours=1)
@@ -253,21 +257,56 @@ class VerifyEmailSerializer(serializers.Serializer):
     token = serializers.CharField()
 
     def validate_token(self, value):
-        from .crypto import hash_token
+        from .crypto import hash_token, token_is_expired
 
         token_hash = hash_token(value)
         try:
             self.user = User.objects.get(verification_token_hash=token_hash, is_active=True)
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid verification token")
+        if token_is_expired(self.user.verification_token_expires):
+            raise serializers.ValidationError("Verification token has expired")
         return value
 
     def save(self, **kwargs):
         self.user.is_verified = True
         self.user.verification_token = ""
         self.user.verification_token_hash = ""
-        self.user.save(update_fields=["is_verified", "verification_token", "verification_token_hash"])
+        self.user.verification_token_expires = None
+        self.user.save(update_fields=["is_verified", "verification_token", "verification_token_hash", "verification_token_expires"])
         return self.user
+
+
+class ResendVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            self.user = User.objects.get(email=value, is_active=True)
+        except User.DoesNotExist:
+            self.user = None
+        return value
+
+    def save(self, **kwargs):
+        if self.user is None or self.user.is_verified:
+            return
+        from .crypto import generate_verification_token
+
+        token, _ = generate_verification_token()
+        self.user.set_verification_token(token)
+        self.user.verification_token_expires = timezone.now() + timezone.timedelta(hours=24)
+        self.user.save(update_fields=["verification_token", "verification_token_hash", "verification_token_expires"])
+        try:
+            verify_url = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
+            send_mail(
+                subject="Verify your Tujjar account",
+                message=f"Click the link to verify your account: {verify_url}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[self.user.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
 
 
 class TwoFactorSetupSerializer(serializers.Serializer):
@@ -366,3 +405,76 @@ class TwoFactorLoginSerializer(serializers.Serializer):
                 "refresh": str(tokens),
             },
         }
+
+
+class TwoFactorBackupLoginSerializer(serializers.Serializer):
+    """Complete 2FA verification using a backup code during login."""
+
+    two_factor_session_token = serializers.CharField()
+    backup_code = serializers.CharField()
+
+    def validate(self, attrs):
+        from django.core.cache import cache
+
+        session_token = attrs["two_factor_session_token"]
+        cache_key = f"2fa_pending:{session_token}"
+        user_id = cache.get(cache_key)
+
+        if not user_id:
+            raise serializers.ValidationError({"two_factor_session_token": "Invalid or expired session"})
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"two_factor_session_token": "Invalid session"})
+
+        if not user.two_factor_secret:
+            raise serializers.ValidationError("2FA is not set up")
+
+        from .crypto import verify_backup_code
+
+        if not verify_backup_code(attrs["backup_code"], list(user.backup_codes)):
+            raise serializers.ValidationError({"backup_code": "Invalid backup code"})
+
+        # Save the updated backup codes (with the used one removed)
+        user.save(update_fields=["backup_codes"])
+        cache.delete(cache_key)
+        attrs["user"] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.validated_data["user"]
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        tokens = RefreshToken.for_user(user)
+        membership = user.memberships.filter(is_accepted=True).select_related("organization").first()
+        if membership:
+            tokens["org_id"] = str(membership.organization.id)
+        return {
+            "user": UserSerializer(user).data,
+            "tokens": {
+                "access": str(tokens.access_token),
+                "refresh": str(tokens),
+            },
+        }
+
+
+class BackupCodesSerializer(serializers.Serializer):
+    """Generate or list backup codes."""
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        if not user.two_factor_enabled:
+            raise serializers.ValidationError("2FA must be enabled to manage backup codes")
+        return attrs
+
+    def generate(self):
+        from .crypto import generate_backup_codes
+
+        user = self.context["request"].user
+        plaintext_codes = generate_backup_codes(8)
+        from .crypto import hash_backup_code
+
+        user.backup_codes = [hash_backup_code(c) for c in plaintext_codes]
+        user.save(update_fields=["backup_codes"])
+        return {"backup_codes": plaintext_codes, "count": len(plaintext_codes)}

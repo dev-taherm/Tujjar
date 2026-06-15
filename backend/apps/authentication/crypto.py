@@ -4,6 +4,7 @@ import hashlib
 import secrets
 
 from django.conf import settings
+from django.utils import timezone
 
 
 def _get_fernet():
@@ -48,3 +49,29 @@ def generate_password_reset_token() -> tuple[str, str]:
     """Generate a password reset token and its hash. Returns (token, hash)."""
     token = secrets.token_urlsafe(48)
     return token, hash_token(token)
+
+
+def generate_backup_codes(count: int = 8) -> list[str]:
+    """Generate plaintext backup codes. Returns list of 10-char codes."""
+    return [secrets.token_urlsafe(8) for _ in range(count)]
+
+
+def hash_backup_code(code: str) -> str:
+    """Hash a backup code for secure storage."""
+    return hashlib.sha256(code.encode()).hexdigest()
+
+
+def verify_backup_code(plaintext: str, hashed_codes: list[str]) -> bool:
+    """Check if plaintext matches any stored hashed backup codes. Returns True if found and removes it."""
+    code_hash = hash_backup_code(plaintext)
+    if code_hash in hashed_codes:
+        hashed_codes.remove(code_hash)
+        return True
+    return False
+
+
+def token_is_expired(expires_at) -> bool:
+    """Check if a token expiry datetime has passed."""
+    if expires_at is None:
+        return False
+    return timezone.now() > expires_at

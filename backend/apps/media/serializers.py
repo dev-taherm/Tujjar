@@ -44,7 +44,7 @@ class MediaAssetSerializer(serializers.ModelSerializer):
 
 
 ALLOWED_UPLOAD_MIME_TYPES = {
-    "image": ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"],
+    "image": ["image/jpeg", "image/png", "image/gif", "image/webp"],
     "video": ["video/mp4", "video/webm", "video/ogg"],
     "document": [
         "application/pdf",
@@ -62,6 +62,7 @@ BLOCKED_EXTENSIONS = {
     ".js", ".vbs", ".vbe", ".wsf", ".wsc",
     ".scr", ".pif", ".hta", ".cpl",
     ".jar", ".class",
+    ".svg", ".svgz",
 }
 
 MAX_UPLOAD_SIZE_MB = 50
@@ -98,5 +99,23 @@ class MediaUploadSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     f"File type '{content_type}' is not allowed."
                 )
+
+        # Server-side MIME sniffing to verify actual file content
+        try:
+            import magic
+
+            value.seek(0)
+            header = value.read(2048)
+            value.seek(0)
+            detected_mime = magic.from_buffer(header, mime=True)
+            allowed_all = []
+            for mime_list in ALLOWED_UPLOAD_MIME_TYPES.values():
+                allowed_all.extend(mime_list)
+            if detected_mime not in allowed_all and not detected_mime.startswith("text/"):
+                raise serializers.ValidationError(
+                    f"File content does not match allowed types (detected: {detected_mime})."
+                )
+        except ImportError:
+            pass
 
         return value

@@ -15,7 +15,9 @@ export default function DashboardError({
       <div className="text-center">
         <h2 className="text-lg font-semibold text-gray-900">{t("title")}</h2>
         <p className="mt-2 text-sm text-gray-600">
-          {error.message || t("defaultMessage")}
+          {process.env.NODE_ENV === "production"
+            ? t("defaultMessage")
+            : error.message || t("defaultMessage")}
         </p>
         <button
           onClick={reset}

@@ -337,3 +337,10 @@ CSRF_COOKIE_HTTPONLY = True
 # Throttle rates for auth endpoints
 AUTH_THROTTLE_RATE = "5/minute"
 AUTH_THROTTLE_ANON_RATE = "20/hour"
+
+# Per-endpoint auth throttle rates (overridable in testing.py)
+AUTH_LOGIN_THROTTLE_RATE = "10/minute"
+AUTH_REGISTER_THROTTLE_RATE = "5/hour"
+AUTH_PASSWORD_RESET_THROTTLE_RATE = "5/hour"
+AUTH_TOTP_THROTTLE_RATE = "5/minute"
+AUTH_ANON_THROTTLE_RATE = "20/hour"

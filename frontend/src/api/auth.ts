@@ -3,8 +3,11 @@ import { apiClient, setTokens, clearTokens } from "./client";
 import type { AuthTokens, User } from "@/shared/types";
 
 export const authApi = {
-  login: async (email: string, password: string): Promise<{ user: User; tokens: AuthTokens }> => {
+  login: async (email: string, password: string): Promise<{ user: User; tokens: AuthTokens; requires_2fa?: boolean; two_factor_session_token?: string }> => {
     const { data } = await apiClient.post("/auth/login/", { email, password });
+    if (data.requires_2fa) {
+      return { user: data.user, tokens: { access: "", refresh: "" }, requires_2fa: true, two_factor_session_token: data.two_factor_session_token };
+    }
     const tokens = data.tokens || { access: data.access, refresh: data.refresh };
     setTokens(tokens.access, tokens.refresh);
     return { user: data.user, tokens };
@@ -44,6 +47,11 @@ export const authApi = {
     return data;
   },
 
+  resendVerification: async (email: string) => {
+    const { data } = await apiClient.post("/auth/verify-email/resend/", { email });
+    return data;
+  },
+
   requestPasswordReset: async (email: string) => {
     const { data } = await apiClient.post("/auth/password-reset/request/", { email });
     return data;
@@ -55,6 +63,47 @@ export const authApi = {
       password,
       password_confirm: passwordConfirm,
     });
+    return data;
+  },
+
+  // 2FA methods
+  setup2FA: async (): Promise<{ secret: string; provisioning_uri: string }> => {
+    const { data } = await apiClient.post("/auth/2fa/setup/");
+    return data;
+  },
+
+  verify2FA: async (code: string) => {
+    const { data } = await apiClient.post("/auth/2fa/verify/", { code });
+    return data;
+  },
+
+  disable2FA: async (password: string) => {
+    const { data } = await apiClient.post("/auth/2fa/disable/", { password });
+    return data;
+  },
+
+  login2FA: async (sessionToken: string, code: string): Promise<{ user: User; tokens: AuthTokens }> => {
+    const { data } = await apiClient.post("/auth/2fa/login/", {
+      two_factor_session_token: sessionToken,
+      code,
+    });
+    const tokens = data.tokens || { access: data.access, refresh: data.refresh };
+    setTokens(tokens.access, tokens.refresh);
+    return { user: data.user, tokens };
+  },
+
+  login2FAWithBackup: async (sessionToken: string, backupCode: string): Promise<{ user: User; tokens: AuthTokens }> => {
+    const { data } = await apiClient.post("/auth/2fa/login/backup/", {
+      two_factor_session_token: sessionToken,
+      backup_code: backupCode,
+    });
+    const tokens = data.tokens || { access: data.access, refresh: data.refresh };
+    setTokens(tokens.access, tokens.refresh);
+    return { user: data.user, tokens };
+  },
+
+  generateBackupCodes: async (): Promise<{ backup_codes: string[]; count: number }> => {
+    const { data } = await apiClient.post("/auth/2fa/backup-codes/");
     return data;
   },
 };

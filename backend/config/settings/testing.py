@@ -40,3 +40,10 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 # Disable rate limiting in tests
 REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []  # noqa: F405
 REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {}  # noqa: F405
+
+# Set very high auth throttle rates for tests
+AUTH_LOGIN_THROTTLE_RATE = "10000/hour"
+AUTH_REGISTER_THROTTLE_RATE = "10000/hour"
+AUTH_PASSWORD_RESET_THROTTLE_RATE = "10000/hour"
+AUTH_TOTP_THROTTLE_RATE = "10000/hour"
+AUTH_ANON_THROTTLE_RATE = "10000/hour"

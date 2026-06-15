@@ -9,6 +9,67 @@ if TYPE_CHECKING:
 SUPPORTED_LOCALES = ["en", "ar"]
 DEFAULT_LOCALE = "en"
 
+# Safe HTML tags allowed in user content
+ALLOWED_HTML_TAGS = {
+    "p", "br", "strong", "b", "em", "i", "u", "s", "del", "ins",
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "ul", "ol", "li",
+    "a", "img", "figure", "figcaption",
+    "blockquote", "pre", "code",
+    "table", "thead", "tbody", "tr", "th", "td",
+    "div", "span",
+    "hr",
+}
+
+ALLOWED_HTML_ATTRS = {
+    "a": ["href", "title", "target", "rel"],
+    "img": ["src", "alt", "width", "height", "title"],
+    "div": ["class", "id"],
+    "span": ["class", "id"],
+    "p": ["class"],
+    "td": ["colspan", "rowspan"],
+    "th": ["colspan", "rowspan"],
+}
+
+# Protocols allowed in URLs
+ALLOWED_URL_PROTOCOLS = {"http", "https", "mailto", "tel"}
+
+
+def sanitize_html(raw_html: str | None) -> str:
+    """Strip dangerous HTML tags and attributes from user content.
+
+    Uses bleach to allow only safe tags. Removes <script>, <iframe>,
+    event handlers, and disallowed URL protocols.
+    """
+    if not raw_html:
+        return raw_html or ""
+
+    import bleach
+
+    cleaned = bleach.clean(
+        raw_html,
+        tags=ALLOWED_HTML_TAGS,
+        attributes=ALLOWED_HTML_ATTRS,
+        protocols=ALLOWED_URL_PROTOCOLS,
+        strip=True,
+    )
+    return cleaned
+
+
+def validate_url_protocols(url: str | None) -> str | None:
+    """Validate that a URL uses only safe protocols (http, https, mailto, tel).
+
+    Raises ValueError for javascript:, data:, vbscript: etc.
+    """
+    if not url:
+        return url
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    if parsed.scheme and parsed.scheme.lower() not in ALLOWED_URL_PROTOCOLS:
+        raise ValueError(f"URL protocol '{parsed.scheme}' is not allowed")
+    return url
+
 
 def resolve_organization(org_id: str | None) -> Organization | None:
     """Resolve an organization ID to an Organization instance."""

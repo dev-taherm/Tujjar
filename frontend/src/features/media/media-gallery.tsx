@@ -6,6 +6,7 @@ import { Button, Input, Badge } from "@/shared/ui";
 import { Upload, Image, Film, FileText, FolderPlus, Trash2, Search, Grid, List, ArrowLeft, Folder, Eye } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 type ViewMode = "grid" | "list";
 
@@ -31,10 +32,35 @@ export function MediaGallery() {
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
 
+  const ALLOWED_MIME_TYPES = [
+    "image/jpeg", "image/png", "image/gif", "image/webp",
+    "video/mp4", "video/webm", "video/ogg",
+    "application/pdf", "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain", "text/csv",
+  ];
+  const BLOCKED_EXTENSIONS = [".php", ".exe", ".bat", ".sh", ".js", ".vbs", ".svg", ".svgz"];
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+  const validateFile = (file: File): string | null => {
+    if (file.size > MAX_FILE_SIZE) return `File "${file.name}" exceeds 50MB limit`;
+    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    if (BLOCKED_EXTENSIONS.includes(ext)) return `File type "${ext}" is not allowed`;
+    if (!ALLOWED_MIME_TYPES.includes(file.type) && !file.type.startsWith("text/")) {
+      return `File type "${file.type}" is not allowed`;
+    }
+    return null;
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     for (const file of Array.from(files)) {
+      const error = validateFile(file);
+      if (error) {
+        toast.error(error);
+        continue;
+      }
       await uploadMedia.mutateAsync({ file, folder: currentFolder });
     }
     if (fileInputRef.current) fileInputRef.current.value = "";

@@ -12,7 +12,9 @@ export default function GlobalError({
       <div className="text-center">
         <h2 className="text-lg font-semibold text-gray-900">Something went wrong</h2>
         <p className="mt-2 text-sm text-gray-600">
-          {error.message || "An unexpected error occurred"}
+          {process.env.NODE_ENV === "production"
+            ? "An unexpected error occurred. Please try again."
+            : error.message || "An unexpected error occurred"}
         </p>
         <button
           onClick={reset}

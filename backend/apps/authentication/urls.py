@@ -13,6 +13,7 @@ urlpatterns = [
     # Public endpoints
     path("register/", views.RegisterView.as_view(), name="register"),
     path("verify-email/", views.VerifyEmailView.as_view(), name="verify-email"),
+    path("verify-email/resend/", views.ResendVerificationView.as_view(), name="resend-verification"),
     path(
         "password-reset/request/",
         views.RequestPasswordResetView.as_view(),
@@ -29,9 +30,11 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     # 2FA
     path("2fa/login/", views.TwoFactorLoginView.as_view(), name="2fa-login"),
+    path("2fa/login/backup/", views.TwoFactorBackupLoginView.as_view(), name="2fa-login-backup"),
     path("2fa/setup/", views.TwoFactorSetupView.as_view(), name="2fa-setup"),
     path("2fa/verify/", views.TwoFactorVerifyView.as_view(), name="2fa-verify"),
     path("2fa/disable/", views.TwoFactorDisableView.as_view(), name="2fa-disable"),
+    path("2fa/backup-codes/", views.BackupCodesView.as_view(), name="2fa-backup-codes"),
     # User routes
     path("", include(router.urls)),
 ]

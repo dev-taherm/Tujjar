@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -11,9 +13,12 @@ from apps.audit.models import log_action
 
 from .models import User
 from .serializers import (
+    BackupCodesSerializer,
     ChangePasswordSerializer,
-    ResetPasswordSerializer,
     RequestPasswordResetSerializer,
+    ResetPasswordSerializer,
+    ResendVerificationSerializer,
+    TwoFactorBackupLoginSerializer,
     TwoFactorLoginSerializer,
     TwoFactorSetupSerializer,
     TwoFactorVerifySerializer,
@@ -22,9 +27,30 @@ from .serializers import (
     VerifyEmailSerializer,
 )
 
+logger = logging.getLogger(__name__)
+
+
+from django.conf import settings
+
+
+class LoginThrottle(AnonRateThrottle):
+    rate = getattr(settings, "AUTH_LOGIN_THROTTLE_RATE", "10/minute")
+
+
+class RegisterThrottle(AnonRateThrottle):
+    rate = getattr(settings, "AUTH_REGISTER_THROTTLE_RATE", "5/hour")
+
+
+class PasswordResetThrottle(AnonRateThrottle):
+    rate = getattr(settings, "AUTH_PASSWORD_RESET_THROTTLE_RATE", "5/hour")
+
+
+class TOTPVerifyThrottle(AnonRateThrottle):
+    rate = getattr(settings, "AUTH_TOTP_THROTTLE_RATE", "5/minute")
+
 
 class AuthAnonThrottle(AnonRateThrottle):
-    rate = "100/hour"
+    rate = getattr(settings, "AUTH_ANON_THROTTLE_RATE", "20/hour")
 
 
 class AuthUserThrottle(UserRateThrottle):
@@ -35,7 +61,7 @@ class RegisterView(APIView):
     """Register a new user."""
 
     permission_classes = [permissions.AllowAny]
-    throttle_classes = [AuthAnonThrottle]
+    throttle_classes = [RegisterThrottle]
 
     def post(self, request):
         serializer = UserCreateSerializer(data=request.data)
@@ -80,7 +106,7 @@ class RequestPasswordResetView(APIView):
     """Request password reset email."""
 
     permission_classes = [permissions.AllowAny]
-    throttle_classes = [AuthAnonThrottle]
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request):
         serializer = RequestPasswordResetSerializer(data=request.data)
@@ -93,7 +119,7 @@ class ResetPasswordView(APIView):
     """Reset password with token."""
 
     permission_classes = [permissions.AllowAny]
-    throttle_classes = [AuthAnonThrottle]
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
@@ -124,6 +150,8 @@ class TwoFactorSetupView(APIView):
 
 class TwoFactorVerifyView(APIView):
     """Verify 2FA code and enable it."""
+
+    throttle_classes = [TOTPVerifyThrottle]
 
     def post(self, request):
         serializer = TwoFactorVerifySerializer(data=request.data, context={"request": request})
@@ -178,12 +206,58 @@ class TwoFactorLoginView(APIView):
     """Complete 2FA verification during login flow."""
 
     permission_classes = [permissions.AllowAny]
-    throttle_classes = [AuthAnonThrottle]
+    throttle_classes = [TOTPVerifyThrottle]
 
     def post(self, request):
         serializer = TwoFactorLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = serializer.save()
+        return Response(result)
+
+
+class TwoFactorBackupLoginView(APIView):
+    """Complete 2FA verification using a backup code during login."""
+
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [TOTPVerifyThrottle]
+
+    def post(self, request):
+        serializer = TwoFactorBackupLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        return Response(result)
+
+
+class ResendVerificationView(APIView):
+    """Resend email verification link."""
+
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [PasswordResetThrottle]
+
+    def post(self, request):
+        serializer = ResendVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "If the email exists and is unverified, a new link has been sent"})
+
+
+class BackupCodesView(APIView):
+    """Generate new backup codes for 2FA."""
+
+    def post(self, request):
+        serializer = BackupCodesSerializer(data={}, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        result = serializer.generate()
+        log_action(
+            action="user.2fa.backup_codes.generate",
+            resource_type="user",
+            resource_id=request.user.id,
+            user=request.user,
+            organization_id=getattr(request, "org_id", None),
+            new_value={"count": result["count"]},
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(result)
 
 
@@ -244,7 +318,7 @@ class ThrottledLoginView(APIView):
     """Login endpoint with per-view rate limiting."""
 
     permission_classes = [permissions.AllowAny]
-    throttle_classes = [AuthAnonThrottle]
+    throttle_classes = [LoginThrottle]
 
     def post(self, request):
         from rest_framework_simplejwt.views import TokenObtainPairView
@@ -280,9 +354,9 @@ def logout_view(request):
             token = RefreshToken(refresh_token)
             token.blacklist()
     except TokenError:
-        pass
-    except Exception:
-        pass
+        logger.info("Logout attempted with invalid or already-blacklisted token")
+    except Exception as e:
+        logger.warning("Error blacklisting token during logout: %s", e)
     if request.user and request.user.is_authenticated:
         log_action(
             action="user.logout",

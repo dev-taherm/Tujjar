@@ -39,6 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_verified = models.BooleanField(default=False)
     verification_token = models.CharField(max_length=255, blank=True, default="")
     verification_token_hash = models.CharField(max_length=64, blank=True, default="", db_index=True)
+    verification_token_expires = models.DateTimeField(null=True, blank=True)
     password_reset_token = models.CharField(max_length=255, blank=True, default="")
     password_reset_token_hash = models.CharField(max_length=64, blank=True, default="", db_index=True)
     password_reset_expires = models.DateTimeField(null=True, blank=True)
@@ -46,6 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     # 2FA fields — secret is encrypted at rest with Fernet
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_secret = models.CharField(max_length=255, blank=True, default="")
+    backup_codes = models.JSONField(default=list, blank=True)
 
     # OAuth fields
     provider = models.CharField(max_length=50, blank=True, default="")

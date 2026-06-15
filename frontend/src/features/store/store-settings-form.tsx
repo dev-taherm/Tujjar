@@ -13,6 +13,16 @@ import { useUpdateStore } from "@/api/queries";
 import { usePages } from "@/api/pages";
 import { TemplateBrowser } from "@/features/templates/template-browser";
 import type { Store } from "@/shared/types";
+
+const BLOCKED_URL_PROTOCOLS = ["javascript:", "data:", "vbscript:"];
+function validateUrl(url: string): boolean {
+  const lower = url.toLowerCase().trim();
+  for (const proto of BLOCKED_URL_PROTOCOLS) {
+    if (lower.startsWith(proto)) return false;
+  }
+  return true;
+}
+
 import {
   Settings,
   LayoutTemplate,
@@ -358,6 +368,13 @@ function NavigationTab({ store }: { store: Store }) {
   };
 
   const handleSaveNav = async () => {
+    const allLinks = [...(navData.links || []), ...(navData.cta_button?.url ? [{ url: navData.cta_button.url }] : [])];
+    for (const link of allLinks) {
+      if (link.url && !validateUrl(link.url)) {
+        alert("URLs containing javascript:, data:, or vbscript: are not allowed");
+        return;
+      }
+    }
     await updateStore.mutateAsync({
       id: store.id,
       navigation: {
@@ -373,6 +390,14 @@ function NavigationTab({ store }: { store: Store }) {
   };
 
   const handleSaveFooter = async () => {
+    for (const col of footerData.columns || []) {
+      for (const link of col.links || []) {
+        if (link.url && !validateUrl(link.url)) {
+          alert("URLs containing javascript:, data:, or vbscript: are not allowed");
+          return;
+        }
+      }
+    }
     await updateStore.mutateAsync({
       id: store.id,
       footer_config: {
