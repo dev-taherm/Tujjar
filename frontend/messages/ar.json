@@ -125,7 +125,10 @@
       "totalRevenue": "إجمالي الإيرادات",
       "totalOrders": "إجمالي الطلبات",
       "customers": "العملاء",
-      "products": "المنتجات"
+      "products": "المنتجات",
+      "stores": "المتاجر",
+      "storeSettings": "إعدادات المتجر",
+      "storeNotFound": "المتجر غير موجود"
     },
     "products": {
       "searchPlaceholder": "بحث في المنتجات...",
@@ -193,6 +196,7 @@
       "sold": "مباع",
       "sale": "تخفيض",
       "outOfStockBadge": "نفذ من المخزون",
+      "categoryHelp": "نظّم منتجاتك في فئات لمساعدة الزبائن في العثور على ما يبحثون عنه.",
       "tabs": { "products": "المنتجات", "categories": "الفئات", "collections": "المجموعات" },
       "title": "المنتجات",
       "selectCategory": "اختر فئة لإدارة منتجاتها، أو أنشئ فئة جديدة لتنظيم كتالوجك.",
@@ -693,6 +697,17 @@
     }
   },
   "storeSettings": {
+    "noStores": "لا توجد متاجر بعد",
+    "createFirstStore": "أنشئ متجرك الأول للبدء.",
+    "createStore": "إنشاء متجر",
+    "yourStores": "متاجرك",
+    "storeCount": "متجر",
+    "storeCountPlural": "متاجر",
+    "noDescription": "بدون وصف",
+    "visitStore": "زيارة المتجر",
+    "editStore": "تعديل المتجر",
+    "deleteStore": "حذف المتجر",
+    "deleteConfirm": "هل أنت متأكد؟",
     "tabs": {
       "general": "عام",
       "navigation": "التنقل",

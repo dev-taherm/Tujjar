@@ -125,7 +125,10 @@
       "totalRevenue": "Total Revenue",
       "totalOrders": "Total Orders",
       "customers": "Customers",
-      "products": "Products"
+      "products": "Products",
+      "stores": "Stores",
+      "storeSettings": "Store Settings",
+      "storeNotFound": "Store not found"
     },
     "products": {
       "searchPlaceholder": "Search products...",
@@ -193,6 +196,7 @@
       "sold": "sold",
       "sale": "Sale",
       "outOfStockBadge": "Out of Stock",
+      "categoryHelp": "Organize your products into categories to help customers find what they need.",
       "tabs": { "products": "Products", "categories": "Categories", "collections": "Collections" },
       "title": "Products",
       "selectCategory": "Select a category to manage its products, or create a new category to organize your catalog.",
@@ -702,8 +706,8 @@
     "createFirstStore": "Create your first store to get started.",
     "createStore": "Create Store",
     "yourStores": "Your Stores",
-    "storeCount": "{count} store",
-    "storeCountPlural": "{count} stores",
+      "storeCount": "store",
+      "storeCountPlural": "stores",
     "storeName": "Store Name",
     "slug": "Slug (URL)",
     "slugPlaceholder": "my-store",

@@ -14,9 +14,9 @@ export default function ProductsPage() {
   const [tab, setTab] = useState<Tab>("products");
 
   const tabs = [
-    { key: "products" as Tab, label: t("tabProducts"), icon: Package },
-    { key: "categories" as Tab, label: t("tabCategories"), icon: FolderTree },
-    { key: "collections" as Tab, label: t("tabCollections"), icon: Layers },
+    { key: "products" as Tab, label: t("tabs.products"), icon: Package },
+    { key: "categories" as Tab, label: t("tabs.categories"), icon: FolderTree },
+    { key: "collections" as Tab, label: t("tabs.collections"), icon: Layers },
   ];
 
   return (
