@@ -6,6 +6,7 @@ from decimal import Decimal
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.billing.models import Plan, Subscription, Invoice, PaymentMethod
@@ -45,6 +46,7 @@ def check_plan_limits(organization, resource_type: str) -> dict:
 class PlanViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Plan.objects.filter(is_active=True)
     serializer_class = PlanSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Plan.objects.filter(is_active=True)
