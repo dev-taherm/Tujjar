@@ -12,6 +12,11 @@ urlpatterns = [
     path("check-slug/", views.SlugCheckView.as_view(), name="store-check-slug"),
     path("wizard/", views.StoreWizardView.as_view(), name="store-wizard"),
     path(
+        "<uuid:pk>/change-slug/",
+        views.StoreSlugChangeView.as_view(),
+        name="store-change-slug",
+    ),
+    path(
         "<uuid:pk>/domains/",
         views.StoreDomainViewSet.as_view({"get": "list", "post": "create"}),
         name="store-domain-list",

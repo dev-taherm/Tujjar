@@ -768,6 +768,8 @@
       "storeName": "اسم المتجر",
       "storeUrl": "رابط المتجر",
       "storeUrlDescription": "العنوان العام لمتجرك",
+      "changeSubdomain": "تغيير",
+      "slugChanged": "تم تحديث النطاق الفرعي بنجاح",
       "description": "الوصف",
       "descriptionPlaceholder": "وصف مختصر لمتجرك",
       "seoTitle": "عنوان SEO",

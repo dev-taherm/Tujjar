@@ -38,6 +38,52 @@ class SlugCheckView(APIView):
         })
 
 
+class StoreSlugChangeView(AuditLogMixin, APIView):
+    """Change a store's subdomain slug."""
+
+    permission_classes = [IsAuthenticated, HasOrganizationPermission]
+    required_permission = "settings.manage"
+
+    def post(self, request, pk):
+        store = Store.objects.filter(
+            id=pk, organization_id=request.org_id
+        ).first()
+        if not store:
+            return Response({"error": "Store not found"}, status=404)
+
+        new_slug = request.data.get("slug", "").strip()
+        if not new_slug:
+            return Response({"error": "Slug is required"}, status=400)
+
+        serializer = SlugCheckSerializer(data={"slug": new_slug})
+        serializer.is_valid(raise_exception=True)
+        clean_slug = serializer.validated_data["slug"]
+
+        if clean_slug == store.slug:
+            return Response({"error": "New slug is the same as current slug"}, status=400)
+
+        if Store.objects.filter(slug=clean_slug).exclude(id=store.id).exists():
+            return Response({"error": "This slug is already taken"}, status=400)
+
+        old_slug = store.slug
+        store.slug = clean_slug
+        store.save(update_fields=["slug", "updated_at"])
+
+        self._log_audit(
+            action="store.slug_change",
+            resource_type="store",
+            resource_id=store.id,
+            old_value={"slug": old_slug},
+            new_value={"slug": clean_slug},
+        )
+
+        return Response({
+            "slug": clean_slug,
+            "domain": store.domain,
+            "message": "Store slug updated successfully",
+        })
+
+
 class StoreWizardView(APIView):
     """Multi-step store creation wizard."""
 

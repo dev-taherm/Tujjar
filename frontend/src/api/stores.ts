@@ -68,6 +68,11 @@ export const storesApi = {
   removeDomain: async (storeId: string, domainId: string) => {
     await apiClient.delete(`/stores/${storeId}/domains/${domainId}/`);
   },
+
+  changeSlug: async (id: string, slug: string): Promise<{ slug: string; domain: string }> => {
+    const { data } = await apiClient.post(`/stores/${id}/change-slug/`, { slug });
+    return data;
+  },
 };
 
 export function useStores() {
@@ -141,6 +146,18 @@ export function useDeleteStore() {
     mutationFn: storesApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });
+    },
+  });
+}
+
+export function useChangeSlug() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, slug }: { id: string; slug: string }) =>
+      storesApi.changeSlug(id, slug),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      queryClient.invalidateQueries({ queryKey: ["stores", variables.id] });
     },
   });
 }

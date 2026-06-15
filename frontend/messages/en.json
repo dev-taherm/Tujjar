@@ -770,6 +770,8 @@
       "storeName": "Store Name",
       "storeUrl": "Store URL",
       "storeUrlDescription": "Your store's public address",
+      "changeSubdomain": "Change",
+      "slugChanged": "Subdomain updated successfully",
       "description": "Description",
       "descriptionPlaceholder": "A brief description of your store",
       "seoTitle": "SEO Title",

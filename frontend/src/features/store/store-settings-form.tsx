@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
-import { useUpdateStore, useDeleteStore } from "@/api/queries";
+import { useUpdateStore, useDeleteStore, useChangeSlug, useCheckSlug } from "@/api/queries";
 import { usePages } from "@/api/pages";
 import { TemplateBrowser } from "@/features/templates/template-browser";
 import { StoreDomains } from "./store-domains";
@@ -121,8 +121,13 @@ function GeneralTab({ store }: { store: Store }) {
   const t = useTranslations("storeSettings.general");
   const tc = useTranslations("common");
   const updateStore = useUpdateStore();
+  const changeSlug = useChangeSlug();
+  const checkSlug = useCheckSlug();
   const [editLocale, setEditLocale] = useState("en");
   const [copied, setCopied] = useState(false);
+  const [editingSlug, setEditingSlug] = useState(false);
+  const [newSlug, setNewSlug] = useState(store.slug);
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
 
   const getTranslation = (field: string) => {
     if (editLocale === "en") return "";
@@ -203,20 +208,72 @@ function GeneralTab({ store }: { store: Store }) {
           <CardTitle>{t("storeUrl") || "Store URL"}</CardTitle>
           <CardDescription>{t("storeUrlDescription") || "Your store's public address"}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 font-mono text-sm text-gray-700">
-              {storeUrl}
+        <CardContent className="space-y-3">
+          {editingSlug ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  value={newSlug}
+                  onChange={(e) => {
+                    setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+                    if (e.target.value.length >= 3) {
+                      const timer = setTimeout(() => {
+                        checkSlug.mutate(e.target.value, {
+                          onSuccess: (data) => setSlugAvailable(data.available),
+                          onError: () => setSlugAvailable(null),
+                        });
+                      }, 500);
+                      return () => clearTimeout(timer);
+                    }
+                    setSlugAvailable(null);
+                  }}
+                  className="flex-1 font-mono text-sm"
+                />
+                <span className="text-sm text-gray-500">.tujjar.com</span>
+              </div>
+              {slugAvailable === true && (
+                <p className="text-xs text-green-600">Slug is available</p>
+              )}
+              {slugAvailable === false && (
+                <p className="text-xs text-red-600">Slug is already taken</p>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    if (slugAvailable !== true) return;
+                    await changeSlug.mutateAsync({ id: store.id, slug: newSlug });
+                    setEditingSlug(false);
+                    toast.success(t("slugChanged") || "Subdomain updated");
+                  }}
+                  disabled={slugAvailable !== true}
+                  isLoading={changeSlug.isPending}
+                >
+                  {tc("save")}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => { setEditingSlug(false); setNewSlug(store.slug); }}>
+                  {tc("cancel")}
+                </Button>
+              </div>
             </div>
-            <Button variant="outline" size="sm" onClick={copyUrl}>
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-            <a href={storeUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="sm">
-                <ExternalLink className="h-4 w-4" />
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 font-mono text-sm text-gray-700">
+                {storeUrl}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setEditingSlug(true)}>
+                {t("changeSubdomain") || "Change"}
               </Button>
-            </a>
-          </div>
+              <Button variant="outline" size="sm" onClick={copyUrl}>
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+              <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="sm">
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+          )}
         </CardContent>
       </Card>
 
