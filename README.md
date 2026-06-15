@@ -1,12 +1,16 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/🚀-Tujjar-FF6B35?style=for-the-badge&labelColor=1a1a2e" alt="Tujjar Banner"/>
+  <img src="frontend/public/logo.png" alt="Tujjar" width="120"/>
 </p>
 
-<h1 align="center">Tujjar — AI-Powered Marketplace SaaS Platform</h1>
+<h1 align="center">Tujjar</h1>
 
 <p align="center">
-  <strong>The open-source Shopify alternative with AI, drag-and-drop page builder, and multi-tenant architecture.</strong><br/>
-  Build, customize, and scale your own e-commerce marketplace — self-hosted or in the cloud.
+  <em>Connect — Operate — Grow</em>
+</p>
+
+<p align="center">
+  <strong>The open-source, AI-powered marketplace platform.</strong><br/>
+  Build, customize, and scale your own e-commerce store — self-hosted or in the cloud.
 </p>
 
 <p align="center">
@@ -81,7 +85,7 @@ Tujjar is a **complete, self-hosted marketplace platform** built with modern tec
 - Undo/redo history (20+ steps)
 - Real-time preview with theme inheritance
 - Page versioning and publish workflow
-- 3 built-in themes (Minimalist, Modern, Luxury)
+- 8 built-in themes (Minimalist, Modern, Luxury, FreshMarket, TechVolt, StyleHaus, FitForge, Bloom & Co)
 
 ### 📦 Product System
 - Product variants with custom attributes

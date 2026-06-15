@@ -1,12 +1,16 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/🚀-Tujjar-FF6B35?style=for-the-badge&labelColor=1a1a2e" alt="Tujjar Banner"/>
+  <img src="frontend/public/logo.png" alt="Tujjar" width="120"/>
 </p>
 
-<h1 align="center">تججر — منصة سوق SaaS مدعومة بالذكاء الاصطناعي</h1>
+<h1 align="center">تججر</h1>
 
 <p align="center">
-  <strong>البديل المفتوح المصدر لـ Shopify مع الذكاء الاصطناعي، ومحرر السحب والإفلات، والبنية متعددة المستأجرين.</strong><br/>
-  ابنِ وخصّص ووسّع سوقك الإلكتروني — استضافة ذاتية أو سحابية.
+  <em>اتصل — شغّل — انمُ</em>
+</p>
+
+<p align="center">
+  <strong>منصة سوق مفتوحة المصدر مدعومة بالذكاء الاصطناعي.</strong><br/>
+  ابنِ وخصّص ووسّع متجرك الإلكتروني — استضافة ذاتية أو سحابية.
 </p>
 
 <p align="center">
@@ -81,7 +85,7 @@
 - تاريخ التراجع/الإعادة (20+ خطوة)
 - معاينة فورية مع وراثة السمة
 - إصدارات الصفحة وسير عمل النشر
-- 3سمات مدمجة ( بسيط، عصري، فاخر)
+- 8سمات مدمجة (بسيط، عصري، فاخر، FreshMarket، TechVolt، StyleHaus، FitForge، Bloom & Co)
 
 ### 📦 نظام المنتجات
 - متغيرات المنتج بسمات مخصصة
