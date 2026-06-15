@@ -87,7 +87,7 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
                   {domain.verified ? (
                     <Badge variant="success"><CheckCircle className="me-1 h-3 w-3" />{t("verified")}</Badge>
                   ) : (
-                    <Badge variant="warning"><XCircle className="me-1 h-3 w-3" />{tc("pending")}</Badge>
+                    <Badge variant="warning"><XCircle className="me-1 h-3 w-3" />{t("pending")}</Badge>
                   )}
                   {domain.is_primary && <Badge>{t("primary")}</Badge>}
                 </div>

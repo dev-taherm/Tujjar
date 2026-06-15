@@ -79,7 +79,7 @@ export function OrderList() {
               <tr className="border-b border-gray-200 bg-gray-50">
                 <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("order")}</th>
                 <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("customer")}</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{tc("status")}</th>
+                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("statusLabel")}</th>
                 <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("payment")}</th>
                 <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">{t("total")}</th>
                 <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">{t("date")}</th>

@@ -14,9 +14,9 @@ export default function AIPage() {
   const [tab, setTab] = useState<Tab>("assistant");
 
   const tabs = [
-    { key: "assistant" as Tab, label: t("tabAssistant"), icon: Bot },
-    { key: "generator" as Tab, label: t("tabGenerator"), icon: Sparkles },
-    { key: "providers" as Tab, label: t("tabProviders"), icon: Settings },
+    { key: "assistant" as Tab, label: t("tabs.assistant"), icon: Bot },
+    { key: "generator" as Tab, label: t("tabs.generator"), icon: Sparkles },
+    { key: "providers" as Tab, label: t("tabs.providers"), icon: Settings },
   ];
 
   return (

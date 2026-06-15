@@ -49,7 +49,7 @@ export default function OrderDetailPage() {
   }
 
   if (!order) {
-    return <div className="flex h-96 items-center justify-center"><p className="text-gray-500">{t("orderNotFound")}</p></div>;
+    return <div className="flex h-96 items-center justify-center"><p className="text-gray-500">{t("notFound")}</p></div>;
   }
 
   const handleShip = async () => {
@@ -117,21 +117,21 @@ export default function OrderDetailPage() {
             <CardHeader><CardTitle>{t("actions")}</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <Select
-                label={t("status")}
+                label={t("statusLabel")}
                 options={[
-                  { value: "pending", label: t("statusPending") },
-                  { value: "confirmed", label: t("statusConfirmed") },
-                  { value: "processing", label: t("statusProcessing") },
-                  { value: "shipped", label: t("statusShipped") },
-                  { value: "delivered", label: t("statusDelivered") },
-                  { value: "cancelled", label: t("statusCancelled") },
+                  { value: "pending", label: t("pending") },
+                  { value: "confirmed", label: t("confirmed") },
+                  { value: "processing", label: t("processing") },
+                  { value: "shipped", label: t("shipped") },
+                  { value: "delivered", label: t("delivered") },
+                  { value: "cancelled", label: t("cancelled") },
                 ]}
                 value={order.status}
                 onChange={(e) => updateStatus.mutateAsync({ id: orderId, status: e.target.value })}
               />
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setShipShow(!shipShow)}><Truck className="me-1 h-4 w-4" /> {tc("ship")}</Button>
-                <Button variant="outline" size="sm" onClick={() => deliverOrder.mutateAsync(orderId)}><CheckCircle className="me-1 h-4 w-4" /> {tc("deliver")}</Button>
+                <Button variant="outline" size="sm" onClick={() => setShipShow(!shipShow)}><Truck className="me-1 h-4 w-4" /> {t("ship")}</Button>
+                <Button variant="outline" size="sm" onClick={() => deliverOrder.mutateAsync(orderId)}><CheckCircle className="me-1 h-4 w-4" /> {t("deliver")}</Button>
                 <Button variant="outline" size="sm" onClick={() => cancelOrder.mutateAsync(orderId)}><XCircle className="me-1 h-4 w-4" /> {tc("cancel")}</Button>
               </div>
               {shipShow && (

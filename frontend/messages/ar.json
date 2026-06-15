@@ -290,6 +290,8 @@
       }
     },
     "customer": {
+      "title": "العملاء",
+      "description": "إدارة بيانات عملائك",
       "searchPlaceholder": "بحث في العملاء...",
       "noCustomers": "لا يوجد عملاء بعد",
       "customerDataWillAppear": "ستظهر بيانات العملاء مع وضع الطلبات.",
@@ -608,6 +610,7 @@
       "themes": "السمات",
       "templates": "القوالب",
       "noThemesAvailable": "لا توجد سمات متاحة",
+      "noTemplatesFound": "لم يتم العثور على قوالب",
       "installTheme": "تثبيت السمة",
       "installing": "جارٍ التثبيت..."
     },

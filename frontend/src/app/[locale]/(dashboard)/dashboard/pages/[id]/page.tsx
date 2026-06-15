@@ -40,7 +40,7 @@ export default function PageDetailPage() {
   if (error || !page) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <p className="text-gray-500">{t("pageNotFound")}</p>
+        <p className="text-gray-500">{t("notFound")}</p>
       </div>
     );
   }

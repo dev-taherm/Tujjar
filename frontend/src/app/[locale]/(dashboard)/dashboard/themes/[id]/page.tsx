@@ -28,7 +28,7 @@ export default function ThemeDetailPage() {
   }
 
   if (!theme) {
-    return <div>{t("themeNotFound")}</div>;
+    return <div>{t("notFound")}</div>;
   }
 
   const activeConfig = (config as any) || theme.config;

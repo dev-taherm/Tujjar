@@ -72,7 +72,7 @@ export default function CustomerDetailPage() {
   };
 
   if (isLoading) return <div className="h-[400px] animate-pulse rounded-xl bg-gray-200" />;
-  if (!customer) return <div className="flex h-96 items-center justify-center"><p className="text-gray-500">{t("customerNotFound")}</p></div>;
+  if (!customer) return <div className="flex h-96 items-center justify-center"><p className="text-gray-500">{t("notFound")}</p></div>;
 
   return (
     <div className="space-y-6">

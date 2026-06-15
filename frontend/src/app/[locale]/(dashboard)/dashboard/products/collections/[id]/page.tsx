@@ -82,7 +82,7 @@ export default function CollectionDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => router.back()} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"><ArrowLeft className="h-5 w-5 rtl:rotate-180" /></button>
-          <h1 className="text-2xl font-bold text-gray-900">{t("editCollection")}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t("edit")}</h1>
           <LocaleToggle value={editLocale} onChange={handleLocaleChange} />
         </div>
         <Button onClick={handleSave} isLoading={updateCollection.isPending}>

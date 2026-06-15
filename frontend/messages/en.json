@@ -290,6 +290,8 @@
       }
     },
     "customer": {
+      "title": "Customers",
+      "description": "Manage your customer data",
       "searchPlaceholder": "Search customers...",
       "noCustomers": "No customers yet",
       "customerDataWillAppear": "Customer data will appear as orders are placed.",
@@ -608,6 +610,7 @@
       "themes": "Themes",
       "templates": "Templates",
       "noThemesAvailable": "No themes available",
+      "noTemplatesFound": "No templates found",
       "installTheme": "Install Theme",
       "installing": "Installing..."
     },
@@ -681,11 +684,6 @@
       "confirmNewPassword": "Confirm New Password",
       "passwordsNoMatch": "Passwords do not match.",
       "passwordMin": "Password must be at least 8 characters."
-    },
-    "error": {
-      "title": "Dashboard Error",
-      "description": "Failed to load dashboard",
-      "tryAgain": "Try again"
     }
   },
   "admin": {

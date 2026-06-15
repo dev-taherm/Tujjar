@@ -126,18 +126,18 @@ export default function SettingsPage() {
             <Button
               onClick={() => {
                 if (newPassword !== confirmPassword) {
-                  setMessage({ type: "error", text: t("passwordsDoNotMatch") });
+                  setMessage({ type: "error", text: t("passwordsNoMatch") });
                   return;
                 }
                 if (newPassword.length < 8) {
-                  setMessage({ type: "error", text: t("passwordTooShort") });
+                  setMessage({ type: "error", text: t("passwordMin") });
                   return;
                 }
                 changePassword.mutate();
               }}
               isLoading={changePassword.isPending}
             >
-              {tc("changePassword")}
+              {t("changePassword")}
             </Button>
           </CardContent>
         </Card>
