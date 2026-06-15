@@ -7,10 +7,12 @@ interface AuthStore {
   user: User | null;
   tokens: AuthTokens | null;
   organization: Organization | null;
+  role: string | null;
   isAuthenticated: boolean;
   setUser: (user: User | null) => void;
   setTokens: (tokens: AuthTokens | null) => void;
   setOrganization: (org: Organization | null) => void;
+  setRole: (role: string | null) => void;
   logout: () => void;
 }
 
@@ -20,6 +22,7 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       tokens: null,
       organization: null,
+      role: null,
       isAuthenticated: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setTokens: (tokens) => {
@@ -29,12 +32,14 @@ export const useAuthStore = create<AuthStore>()(
         set({ tokens });
       },
       setOrganization: (organization) => set({ organization }),
+      setRole: (role) => set({ role }),
       logout: () => {
         clearApiTokens();
         set({
           user: null,
           tokens: null,
           organization: null,
+          role: null,
           isAuthenticated: false,
         });
       },
@@ -45,6 +50,7 @@ export const useAuthStore = create<AuthStore>()(
         tokens: state.tokens,
         user: state.user,
         organization: state.organization,
+        role: state.role,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {

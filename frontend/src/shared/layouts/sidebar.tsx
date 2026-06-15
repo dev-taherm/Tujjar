@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   Shield,
   LayoutTemplate,
+  ScrollText,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
@@ -41,6 +42,8 @@ const navigation = [
   { nameKey: "ai", href: "/dashboard/ai", icon: Bot },
   { nameKey: "notifications", href: "/dashboard/notifications", icon: Bell },
   { nameKey: "billing", href: "/dashboard/billing", icon: CreditCard },
+  { nameKey: "team", href: "/dashboard/team", icon: Users },
+  { nameKey: "auditLog", href: "/dashboard/audit", icon: ScrollText },
   { nameKey: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 

@@ -4,11 +4,10 @@ import copy
 import uuid as _uuid
 
 from django.db import transaction
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.audit.models import log_action
 from apps.core.viewsets import TenantViewSet
 
 from .models import Template
@@ -168,20 +167,7 @@ class TemplateViewSet(TenantViewSet):
                 )
 
             # Audit log
-            log_action(
-                action="template.install",
-                resource_type="template",
-                resource_id=template.id,
-                organization_id=request.org_id,
-                user=request.user,
-                new_value={
-                    "template": template.name,
-                    "store": store.name,
-                    "pages_created": len(created_pages),
-                },
-                ip_address=request.META.get("REMOTE_ADDR"),
-                user_agent=request.META.get("HTTP_USER_AGENT", ""),
-            )
+            self._log_audit(action="template.install", resource_type="template", resource_id=template.id, new_value={"template": template.name, "store": store.name, "pages_created": len(created_pages)})
 
         return Response(
             {

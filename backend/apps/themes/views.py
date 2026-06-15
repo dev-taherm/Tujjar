@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from django.db import models
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.audit.models import log_action
 from apps.core.viewsets import TenantViewSet
 
 from .models import Theme, ThemePreset
@@ -30,46 +29,18 @@ class ThemeViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         theme = serializer.save()
-        log_action(
-            action="theme.create",
-            resource_type="theme",
-            resource_id=theme.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            new_value=ThemeSerializer(theme).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="theme.create", resource_type="theme", resource_id=theme.id, new_value=ThemeSerializer(theme).data)
 
     def perform_update(self, serializer):
         old_data = ThemeSerializer(serializer.instance).data
         theme = serializer.save()
-        log_action(
-            action="theme.update",
-            resource_type="theme",
-            resource_id=theme.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value=old_data,
-            new_value=ThemeSerializer(theme).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="theme.update", resource_type="theme", resource_id=theme.id, old_value=old_data, new_value=ThemeSerializer(theme).data)
 
     def perform_destroy(self, instance):
         if instance.is_system:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("System themes cannot be deleted.")
-        log_action(
-            action="theme.delete",
-            resource_type="theme",
-            resource_id=instance.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value=ThemeSerializer(instance).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="theme.delete", resource_type="theme", resource_id=instance.id, old_value=ThemeSerializer(instance).data)
         instance.delete()
 
     @action(detail=True, methods=["post"])
@@ -129,7 +100,10 @@ class ThemePresetViewSet(TenantViewSet):
     required_permission = "themes.manage"
 
     def get_queryset(self):
-        return ThemePreset.objects.filter(theme_id=self.kwargs["theme_pk"])
+        return ThemePreset.objects.filter(
+            theme_id=self.kwargs["theme_pk"],
+            theme__organization_id=self.request.org_id,
+        )
 
     def perform_create(self, serializer):
         serializer.save(theme_id=self.kwargs["theme_pk"])

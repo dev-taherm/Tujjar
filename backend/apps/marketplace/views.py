@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.db.models import F, Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.marketplace.models import MarketplaceListing, MarketplaceOrder
@@ -16,6 +17,7 @@ from apps.marketplace.serializers import (
 class MarketplaceListingViewSet(viewsets.ModelViewSet):
     queryset = MarketplaceListing.objects.filter(status=MarketplaceListing.Status.APPROVED)
     serializer_class = MarketplaceListingSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         qs = MarketplaceListing.objects.filter(status=MarketplaceListing.Status.APPROVED)
@@ -65,6 +67,7 @@ class MarketplaceListingViewSet(viewsets.ModelViewSet):
 
 class MyListingsViewSet(viewsets.ModelViewSet):
     serializer_class = MarketplaceListingSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return MarketplaceListing.objects.filter(developer=self.request.user)
@@ -72,6 +75,7 @@ class MyListingsViewSet(viewsets.ModelViewSet):
 
 class MarketplaceOrderViewSet(viewsets.ModelViewSet):
     serializer_class = MarketplaceOrderSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return MarketplaceOrder.objects.filter(buyer=self.request.user)

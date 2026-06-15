@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from django.db.models import Q
-from rest_framework import viewsets
 
-from apps.audit.models import log_action
 from apps.core.viewsets import TenantViewSet
 
 from .models import Customer
@@ -33,13 +31,13 @@ class CustomerViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         customer = serializer.save(organization_id=self.request.org_id)
-        log_action(
-            action="customer.create",
-            resource_type="customer",
-            resource_id=customer.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            new_value=CustomerSerializer(customer).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="customer.create", resource_type="customer", resource_id=customer.id, new_value=CustomerSerializer(customer).data)
+
+    def perform_update(self, serializer):
+        old_data = CustomerSerializer(serializer.instance).data
+        customer = serializer.save()
+        self._log_audit(action="customer.update", resource_type="customer", resource_id=customer.id, old_value=old_data, new_value=CustomerSerializer(customer).data)
+
+    def perform_destroy(self, instance):
+        self._log_audit(action="customer.delete", resource_type="customer", resource_id=instance.id, old_value=CustomerSerializer(instance).data)
+        instance.delete()

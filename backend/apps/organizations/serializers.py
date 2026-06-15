@@ -92,6 +92,7 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source="user.email", read_only=True)
     user_name = serializers.SerializerMethodField()
     role_name = serializers.CharField(source="role.name", read_only=True)
+    role_permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = OrganizationMembership
@@ -102,6 +103,7 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
             "user_name",
             "role",
             "role_name",
+            "role_permissions",
             "is_accepted",
             "invited_at",
             "accepted_at",
@@ -110,6 +112,11 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
 
     def get_user_name(self, obj) -> str:
         return obj.user.full_name or obj.user.email
+
+    def get_role_permissions(self, obj) -> list[str]:
+        return list(
+            obj.role.role_permissions.values_list("permission__codename", flat=True)
+        )
 
 
 class InviteMemberSerializer(serializers.Serializer):

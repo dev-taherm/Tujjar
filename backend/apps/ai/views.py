@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.viewsets import TenantViewSet
@@ -119,6 +120,7 @@ class AIConversationViewSet(TenantViewSet):
 
 class AIGenerationViewSet(viewsets.GenericViewSet):
     """AI content generation endpoints."""
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=["post"])
     def generate_content(self, request):

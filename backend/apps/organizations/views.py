@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from django.utils import timezone
 from django.db import models
 from django.db.models import Prefetch
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.audit.models import log_action
+from apps.core.viewsets import AuditLogMixin
 
 from .models import Organization, OrganizationMembership, Permission, Role
 from .serializers import (
@@ -19,10 +20,11 @@ from .serializers import (
 )
 
 
-class OrganizationViewSet(viewsets.ModelViewSet):
+class OrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """Organization CRUD and management."""
 
     serializer_class = OrganizationSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Organization.objects.prefetch_related(
@@ -51,38 +53,19 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             is_accepted=True,
             accepted_at=timezone.now(),
         )
-        log_action(
-            action="organization.create",
-            resource_type="organization",
-            resource_id=org.id,
-            organization=org,
-            user=self.request.user,
-            new_value=serializer.data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="organization.create", resource_type="organization", resource_id=org.id, new_value=serializer.data)
 
     def perform_update(self, serializer):
         old_data = OrganizationSerializer(serializer.instance).data
         org = serializer.save()
-        log_action(
-            action="organization.update",
-            resource_type="organization",
-            resource_id=org.id,
-            organization=org,
-            user=self.request.user,
-            old_value=old_data,
-            new_value=serializer.data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="organization.update", resource_type="organization", resource_id=org.id, old_value=old_data, new_value=serializer.data)
 
     @action(detail=True, methods=["get"])
     def members(self, request, pk=None):
         org = self.get_object()
         memberships = OrganizationMembership.objects.filter(
             organization=org, is_accepted=True
-        ).select_related("user", "role")
+        ).select_related("user", "role").prefetch_related("role__role_permissions__permission")
         serializer = OrganizationMembershipSerializer(memberships, many=True)
         return Response(serializer.data)
 
@@ -110,16 +93,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        log_action(
-            action="organization.member.invite",
-            resource_type="organization",
-            resource_id=org.id,
-            organization=org,
-            user=request.user,
-            new_value={"email": user.email, "role": role.slug},
-            ip_address=request.META.get("REMOTE_ADDR"),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="organization.member.invite", resource_type="organization", resource_id=org.id, new_value={"email": user.email, "role": role.slug})
 
         # Notify the invited user
         from apps.notifications.models import Notification
@@ -136,8 +110,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
 
         # Send invitation email
         try:
-            from django.core.mail import send_mail
             from django.conf import settings
+            from django.core.mail import send_mail
 
             send_mail(
                 subject=f"You're invited to join {org.name}",
@@ -192,24 +166,16 @@ class OrganizationViewSet(viewsets.ModelViewSet):
                 {"detail": "Cannot remove the owner."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        log_action(
-            action="organization.member.remove",
-            resource_type="organization",
-            resource_id=pk,
-            organization_id=pk,
-            user=request.user,
-            old_value={"user_id": user_id, "role": membership.role.slug},
-            ip_address=request.META.get("REMOTE_ADDR"),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="organization.member.remove", resource_type="organization", resource_id=pk, old_value={"user_id": user_id, "role": membership.role.slug})
         membership.delete()
         return Response({"message": "Member removed"})
 
 
-class RoleViewSet(viewsets.ModelViewSet):
+class RoleViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """Role management within an organization."""
 
     serializer_class = RoleSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         org_id = self.kwargs.get("org_pk")
@@ -219,16 +185,7 @@ class RoleViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         org = serializer.save()
-        log_action(
-            action="role.create",
-            resource_type="role",
-            resource_id=org.id,
-            organization=org,
-            user=self.request.user,
-            new_value=RoleSerializer(org).data if hasattr(org, 'role_permissions') else {"name": org.name},
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="role.create", resource_type="role", resource_id=org.id, new_value=RoleSerializer(org).data if hasattr(org, 'role_permissions') else {"name": org.name})
 
     def perform_update(self, serializer):
         if serializer.instance and serializer.instance.is_system:
@@ -236,32 +193,13 @@ class RoleViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("System roles cannot be modified.")
         old_data = RoleSerializer(serializer.instance).data
         role = serializer.save()
-        log_action(
-            action="role.update",
-            resource_type="role",
-            resource_id=role.id,
-            organization_id=self.kwargs.get("org_pk"),
-            user=self.request.user,
-            old_value=old_data,
-            new_value=RoleSerializer(role).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="role.update", resource_type="role", resource_id=role.id, old_value=old_data, new_value=RoleSerializer(role).data)
 
     def perform_destroy(self, instance):
         if instance.is_system:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("System roles cannot be deleted.")
-        log_action(
-            action="role.delete",
-            resource_type="role",
-            resource_id=instance.id,
-            organization_id=self.kwargs.get("org_pk"),
-            user=self.request.user,
-            old_value=RoleSerializer(instance).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="role.delete", resource_type="role", resource_id=instance.id, old_value=RoleSerializer(instance).data)
         instance.delete()
 
 
@@ -269,4 +207,5 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     """List all available permissions."""
 
     serializer_class = PermissionSerializer
+    permission_classes = [IsAuthenticated]
     queryset = Permission.objects.all()

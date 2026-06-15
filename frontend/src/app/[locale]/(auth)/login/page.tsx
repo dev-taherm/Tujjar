@@ -39,6 +39,19 @@ export default function LoginPage() {
       const result = await authApi.login(data.email, data.password);
       useAuthStore.getState().setUser(result.user);
       useAuthStore.getState().setTokens(result.tokens);
+      try {
+        const { data: orgs } = await import("@/api/client").then(m => m.apiClient.get("/organizations/"));
+        const orgList = Array.isArray(orgs) ? orgs : orgs?.results || [];
+        if (orgList.length > 0) {
+          useAuthStore.getState().setOrganization(orgList[0]);
+          const { data: members } = await import("@/api/client").then(m => m.apiClient.get(`/organizations/${orgList[0].id}/members/`));
+          const memberList = Array.isArray(members) ? members : [];
+          const myMembership = memberList.find((m: any) => m.user === result.user.id);
+          if (myMembership) {
+            useAuthStore.getState().setRole(myMembership.role_name);
+          }
+        }
+      } catch {}
       toast.success(t("welcomeBack"));
       if (result.user.is_staff || result.user.is_superuser) {
         router.push(`/${locale}/admin`);

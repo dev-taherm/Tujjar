@@ -88,6 +88,12 @@ class SubscriptionViewSet(TenantViewSet):
                 invoice_number=f"INV-{uuid.uuid4().hex[:8].upper()}",
                 due_date=timezone.now().date(),
             )
+        self._log_audit(
+            action="subscription.checkout",
+            resource_type="subscription",
+            resource_id=sub.id,
+            new_value={"plan": plan.slug, "status": sub.status, "created": created},
+        )
         return Response({
             "checkout_url": serializer.validated_data["success_url"],
             "subscription_id": str(sub.id),
@@ -102,10 +108,18 @@ class SubscriptionViewSet(TenantViewSet):
         ).first()
         if not sub:
             return Response({"error": "No active subscription"}, status=400)
+        old_status = sub.status
         sub.status = Subscription.Status.CANCELED
         sub.canceled_at = timezone.now()
         sub.cancel_at = sub.current_period_end
         sub.save(update_fields=["status", "canceled_at", "cancel_at", "updated_at"])
+        self._log_audit(
+            action="subscription.cancel",
+            resource_type="subscription",
+            resource_id=sub.id,
+            old_value={"status": old_status},
+            new_value={"status": "canceled", "cancel_at": str(sub.cancel_at)},
+        )
         return Response({"status": "canceled", "cancel_at": sub.cancel_at})
 
 
@@ -136,4 +150,10 @@ class PaymentMethodViewSet(TenantViewSet):
         PaymentMethod.objects.filter(organization=pm.organization, is_default=True).update(is_default=False)
         pm.is_default = True
         pm.save(update_fields=["is_default"])
+        self._log_audit(
+            action="payment_method.set_default",
+            resource_type="payment_method",
+            resource_id=pm.id,
+            new_value={"is_default": True},
+        )
         return Response({"status": "ok"})

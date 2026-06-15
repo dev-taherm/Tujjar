@@ -787,3 +787,32 @@ export interface MarketplaceReview {
   user_name: string;
   created_at: string;
 }
+
+// Membership & Team Types
+export interface Membership {
+  id: UUID;
+  user: UUID;
+  user_email: string;
+  user_name: string;
+  role: UUID;
+  role_name: string;
+  role_permissions: string[];
+  is_accepted: boolean;
+  invited_at: string;
+  accepted_at: string | null;
+}
+
+export interface AuditLogEntry {
+  id: UUID;
+  user: UUID | null;
+  user_email: string | null;
+  action: string;
+  resource_type: string;
+  resource_id: string;
+  old_value: Record<string, unknown> | null;
+  new_value: Record<string, unknown> | null;
+  ip_address: string | null;
+  user_agent: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
