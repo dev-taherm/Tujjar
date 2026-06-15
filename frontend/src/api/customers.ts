@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { Customer } from "@/shared/types";
 
 export const customersApi = {
@@ -9,7 +10,7 @@ export const customersApi = {
     if (params?.search) searchParams.set("search", params.search);
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/customers/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Customer> => {

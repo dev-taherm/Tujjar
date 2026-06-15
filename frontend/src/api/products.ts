@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { Product, Category, Collection, ProductImage, ProductVariant } from "@/shared/types";
 
 export const productsApi = {
@@ -12,7 +13,7 @@ export const productsApi = {
     if (params?.collection) searchParams.set("collection", params.collection);
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/products/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Product> => {
@@ -46,7 +47,7 @@ export const productsApi = {
 
   lowStock: async (): Promise<Product[]> => {
     const { data } = await apiClient.get("/products/low-stock/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   addImage: async (productId: string, payload: { url: string; alt_text?: string; is_primary?: boolean }): Promise<ProductImage> => {
@@ -85,7 +86,7 @@ export const categoriesApi = {
     if (params?.parent !== undefined) searchParams.set("parent", params.parent);
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/categories/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Category> => {
@@ -112,7 +113,7 @@ export const collectionsApi = {
   list: async (params?: { store?: string }): Promise<Collection[]> => {
     const qs = params?.store ? `?store=${params.store}` : "";
     const { data } = await apiClient.get(`/collections/${qs}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Collection> => {

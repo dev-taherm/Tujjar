@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/shared/ui";
+import { Button, EmptyState } from "@/shared/ui";
 import { useStores } from "@/api/queries";
 import { StoreCard } from "./store-card";
 import { StoreCreateDialog } from "./store-create-dialog";
@@ -26,15 +26,12 @@ export function StoreList() {
 
   if (!stores?.length) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
-        <Store className="mb-4 h-12 w-12 text-gray-400" />
-        <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noStores")}</h3>
-        <p className="mb-6 text-sm text-gray-500">{t("createFirstStore")}</p>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="me-2 h-4 w-4" />
-          {t("createStore")}
-        </Button>
-      </div>
+      <EmptyState
+        icon={Store}
+        title={t("noStores")}
+        description={t("createFirstStore")}
+        action={<Button onClick={() => setShowCreate(true)}><Plus className="me-2 h-4 w-4" />{t("createStore")}</Button>}
+      />
     );
   }
 

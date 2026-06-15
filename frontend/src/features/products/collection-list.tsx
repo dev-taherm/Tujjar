@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input } from "@/shared/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Dialog, Input, EmptyState } from "@/shared/ui";
+import { slugify } from "@/lib/utils";
 import { useCollections, useCreateCollection, useDeleteCollection } from "@/api/queries";
 import { Plus, Layers, Trash2, Edit } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
@@ -48,14 +49,12 @@ export function CollectionList() {
       </div>
 
       {!collections?.length ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
-          <Layers className="mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noCollections")}</h3>
-          <p className="mb-6 text-sm text-gray-500">{t("createCollectionsToGroup")}</p>
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus className="me-2 h-4 w-4" /> {t("addCollection")}
-          </Button>
-        </div>
+        <EmptyState
+          icon={Layers}
+          title={t("noCollections")}
+          description={t("createCollectionsToGroup")}
+          action={<Button onClick={() => setShowCreate(true)}><Plus className="me-2 h-4 w-4" /> {t("addCollection")}</Button>}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collections.map((col) => (
@@ -82,23 +81,16 @@ export function CollectionList() {
         </div>
       )}
 
-      {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-6">
-              <h2 className="mb-4 text-lg font-semibold">{t("createCollection")}</h2>
-              <div className="space-y-4">
-                <Input label={tc("add")} value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} />
-                <Input label={t("slug")} value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
-              </div>
-              <div className="mt-6 flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setShowCreate(false)}>{tc("cancel")}</Button>
-                <Button onClick={handleCreate} isLoading={createCollection.isPending}>{tc("create")}</Button>
-              </div>
-            </CardContent>
-          </Card>
+      <Dialog open={showCreate} onClose={() => setShowCreate(false)} title={t("createCollection")}>
+        <div className="space-y-4">
+          <Input label={tc("add")} value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(slugify(e.target.value)); }} />
+          <Input label={t("slug")} value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
         </div>
-      )}
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="outline" onClick={() => setShowCreate(false)}>{tc("cancel")}</Button>
+          <Button onClick={handleCreate} isLoading={createCollection.isPending}>{tc("create")}</Button>
+        </div>
+      </Dialog>
     </>
   );
 }

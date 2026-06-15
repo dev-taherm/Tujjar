@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { SearchResult, SearchQueryLog } from "@/shared/types";
 
 export const searchApi = {
@@ -18,7 +19,7 @@ export const searchApi = {
     if (params?.store) searchParams.set("store", params.store);
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/search/queries/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 };
 

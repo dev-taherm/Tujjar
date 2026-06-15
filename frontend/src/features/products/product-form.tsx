@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Textarea, Select, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useCreateProduct, useUpdateProduct, useCategories, useStores } from "@/api/queries";
 import type { Product } from "@/shared/types";
 import { Save, ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import { slugify } from "@/lib/utils";
 
 interface ProductFormProps {
   product?: Product;
@@ -80,7 +82,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
   useEffect(() => {
     if (!product && title && !slug) {
-      setSlug(title.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, ""));
+      setSlug(slugify(title));
     }
   }, [title, product, slug]);
 
@@ -236,22 +238,14 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                 <Input label={t("sku")} value={sku} onChange={(e) => setSku(e.target.value)} placeholder={t("stockKeepingUnit")} />
                 <Input label={t("barcode")} value={barcode} onChange={(e) => setBarcode(e.target.value)} placeholder="UPC, EAN, etc." />
               </div>
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">{t("trackInventory")}</label>
-                <button type="button" onClick={() => setTrackInventory(!trackInventory)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${trackInventory ? "bg-blue-600" : "bg-gray-200"}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${trackInventory ? "translate-x-6" : "translate-x-1"}`} />
-                </button>
-              </div>
+              <Toggle label={t("trackInventory")} enabled={trackInventory} onToggle={() => setTrackInventory(!trackInventory)} />
               {trackInventory && (
                 <>
                   <Input label={t("inventoryQuantity")} type="number" value={inventoryQuantity} onChange={(e) => setInventoryQuantity(e.target.value)} />
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Input label={t("lowStockThreshold")} type="number" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} />
-                    <div className="flex items-center justify-between pt-6">
-                      <label className="text-sm font-medium text-gray-700">{t("allowBackorder")}</label>
-                      <button type="button" onClick={() => setAllowBackorder(!allowBackorder)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${allowBackorder ? "bg-blue-600" : "bg-gray-200"}`}>
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${allowBackorder ? "translate-x-6" : "translate-x-1"}`} />
-                      </button>
+                    <div className="pt-6">
+                      <Toggle label={t("allowBackorder")} enabled={allowBackorder} onToggle={() => setAllowBackorder(!allowBackorder)} />
                     </div>
                   </div>
                 </>
@@ -292,18 +286,8 @@ export function ProductForm({ product, mode }: ProductFormProps) {
             <CardHeader><CardTitle>{t("shipping")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <Input label={t("weight")} type="number" step="0.01" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={t("optional")} />
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">{t("requiresShipping")}</label>
-                <button type="button" onClick={() => setRequiresShipping(!requiresShipping)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${requiresShipping ? "bg-blue-600" : "bg-gray-200"}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${requiresShipping ? "translate-x-6" : "translate-x-1"}`} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">{t("taxable")}</label>
-                <button type="button" onClick={() => setIsTaxable(!isTaxable)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isTaxable ? "bg-blue-600" : "bg-gray-200"}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isTaxable ? "translate-x-6" : "translate-x-1"}`} />
-                </button>
-              </div>
+              <Toggle label={t("requiresShipping")} enabled={requiresShipping} onToggle={() => setRequiresShipping(!requiresShipping)} />
+              <Toggle label={t("taxable")} enabled={isTaxable} onToggle={() => setIsTaxable(!isTaxable)} />
             </CardContent>
           </Card>
 

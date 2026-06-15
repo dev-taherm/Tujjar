@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.audit.models import log_action
 from apps.core.viewsets import TenantViewSet
 
 from .models import Page, PageVersion
@@ -27,43 +26,15 @@ class PageViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         page = serializer.save()
-        log_action(
-            action="page.create",
-            resource_type="page",
-            resource_id=page.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            new_value=PageSerializer(page).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="page.create", resource_type="page", resource_id=page.id, new_value=PageSerializer(page).data)
 
     def perform_update(self, serializer):
         old_data = PageSerializer(serializer.instance).data
         page = serializer.save()
-        log_action(
-            action="page.update",
-            resource_type="page",
-            resource_id=page.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value=old_data,
-            new_value=PageSerializer(page).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="page.update", resource_type="page", resource_id=page.id, old_value=old_data, new_value=PageSerializer(page).data)
 
     def perform_destroy(self, instance):
-        log_action(
-            action="page.delete",
-            resource_type="page",
-            resource_id=instance.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value=PageSerializer(instance).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="page.delete", resource_type="page", resource_id=instance.id, old_value=PageSerializer(instance).data)
         instance.delete()
 
     @action(detail=True, methods=["post"])

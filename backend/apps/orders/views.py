@@ -4,11 +4,11 @@ from decimal import Decimal
 
 from django.db import transaction
 from django.db.models import F, Q
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.audit.models import log_action
 from apps.core.viewsets import TenantViewSet
 from apps.products.models import Product, ProductVariant
 
@@ -25,6 +25,9 @@ class CartViewSet(TenantViewSet):
     """Cart management."""
 
     serializer_class = CartSerializer
+
+    def get_permissions(self):
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         qs = Cart.objects.filter(organization_id=self.request.org_id)
@@ -169,16 +172,7 @@ class CartViewSet(TenantViewSet):
             cart.status = "converted"
             cart.save(update_fields=["status"])
 
-        log_action(
-            action="order.create",
-            resource_type="order",
-            resource_id=order.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            new_value=OrderDetailSerializer(order).data,
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="order.create", resource_type="order", resource_id=order.id, new_value=OrderDetailSerializer(order).data)
 
         # Send notification to store owner
         from apps.notifications.models import Notification
@@ -245,17 +239,7 @@ class OrderViewSet(TenantViewSet):
             order.transition_status(new_status, changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        log_action(
-            action="order.status.update",
-            resource_type="order",
-            resource_id=order.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value={"status": old_status},
-            new_value={"status": new_status, "notes": notes},
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="order.status.update", resource_type="order", resource_id=order.id, old_value={"status": old_status}, new_value={"status": new_status, "notes": notes})
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -268,17 +252,7 @@ class OrderViewSet(TenantViewSet):
             return Response({"detail": f"Invalid payment status. Must be one of: {valid}"}, status=status.HTTP_400_BAD_REQUEST)
         order.payment_status = new_status
         order.save(update_fields=["payment_status", "updated_at"])
-        log_action(
-            action="order.payment_status.update",
-            resource_type="order",
-            resource_id=order.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value={"payment_status": old_payment_status},
-            new_value={"payment_status": new_status},
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="order.payment_status.update", resource_type="order", resource_id=order.id, old_value={"payment_status": old_payment_status}, new_value={"payment_status": new_status})
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -297,17 +271,7 @@ class OrderViewSet(TenantViewSet):
             order.transition_status("shipped", changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        log_action(
-            action="order.ship",
-            resource_type="order",
-            resource_id=order.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value={"status": old_status},
-            new_value={"status": "shipped", "tracking_number": tracking_number},
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="order.ship", resource_type="order", resource_id=order.id, old_value={"status": old_status}, new_value={"status": "shipped", "tracking_number": tracking_number})
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -319,17 +283,7 @@ class OrderViewSet(TenantViewSet):
             order.transition_status("delivered", changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        log_action(
-            action="order.deliver",
-            resource_type="order",
-            resource_id=order.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value={"status": old_status},
-            new_value={"status": "delivered"},
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="order.deliver", resource_type="order", resource_id=order.id, old_value={"status": old_status}, new_value={"status": "delivered"})
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -341,17 +295,7 @@ class OrderViewSet(TenantViewSet):
             order.cancel(changed_by=request.user, notes=notes)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        log_action(
-            action="order.cancel",
-            resource_type="order",
-            resource_id=order.id,
-            organization_id=self.request.org_id,
-            user=self.request.user,
-            old_value={"status": old_status},
-            new_value={"status": "cancelled", "notes": notes},
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="order.cancel", resource_type="order", resource_id=order.id, old_value={"status": old_status}, new_value={"status": "cancelled", "notes": notes})
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["get"])

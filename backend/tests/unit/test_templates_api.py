@@ -1,20 +1,15 @@
 import pytest
 from rest_framework import status
 
+from tests.factories import create_org_with_owner_and_store
+
 pytestmark = pytest.mark.django_db
 
 
-def _setup(api_client, email="tmpl-test@example.com"):
-    from apps.authentication.models import User
-    from apps.organizations.models import Organization, OrganizationMembership, Role
-    from apps.stores.models import Store
+def _setup(email="tmpl-test@example.com"):
     from apps.templates.models import Template
 
-    user = User.objects.create_user(email=email, password="testpass123", is_verified=True)
-    org = Organization.objects.create(name="Tmpl Org", slug=f"org-{email.split('@')[0]}")
-    role, _ = Role.objects.get_or_create(slug="owner", organization=None, defaults={"name": "Owner", "is_system": True})
-    OrganizationMembership.objects.create(user=user, organization=org, role=role, is_accepted=True)
-    store = Store.objects.create(organization=org, name="Tmpl Store", slug=f"store-{email.split('@')[0]}")
+    user, org, store, token = create_org_with_owner_and_store(email)
 
     # Seed a template for testing
     template = Template.objects.create(
@@ -61,13 +56,12 @@ def _setup(api_client, email="tmpl-test@example.com"):
         },
     )
 
-    response = api_client.post("/api/v1/auth/login/", {"email": email, "password": "testpass123"})
-    return response.data["access"], org, store, template
+    return token, org, store, template
 
 
 class TestTemplateCRUD:
     def test_list_templates(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-list@example.com")
+        token, org, store, template = _setup("tmpl-list@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get("/api/v1/templates/")
         assert response.status_code == status.HTTP_200_OK
@@ -75,7 +69,7 @@ class TestTemplateCRUD:
         assert len(results) >= 1
 
     def test_get_template_detail(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-detail@example.com")
+        token, org, store, template = _setup("tmpl-detail@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get(f"/api/v1/templates/{template.id}/")
         assert response.status_code == status.HTTP_200_OK
@@ -83,7 +77,7 @@ class TestTemplateCRUD:
         assert len(response.data["pages"]) == 3
 
     def test_marketplace_endpoint(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-market@example.com")
+        token, org, store, template = _setup("tmpl-market@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get("/api/v1/templates/marketplace/")
         assert response.status_code == status.HTTP_200_OK
@@ -91,13 +85,13 @@ class TestTemplateCRUD:
         assert len(results) >= 1
 
     def test_filter_by_category(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-filter@example.com")
+        token, org, store, template = _setup("tmpl-filter@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get("/api/v1/templates/", {"category": "fashion"})
         assert response.status_code == status.HTTP_200_OK
 
     def test_preview_endpoint(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-preview@example.com")
+        token, org, store, template = _setup("tmpl-preview@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get(f"/api/v1/templates/{template.id}/preview/")
         assert response.status_code == status.HTTP_200_OK
@@ -105,7 +99,7 @@ class TestTemplateCRUD:
         assert "pages" in response.data
 
     def test_export_endpoint(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-export@example.com")
+        token, org, store, template = _setup("tmpl-export@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get(f"/api/v1/templates/{template.id}/export/")
         assert response.status_code == status.HTTP_200_OK
@@ -115,7 +109,7 @@ class TestTemplateCRUD:
 
 class TestTemplateInstall:
     def test_install_creates_theme_and_pages(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-install@example.com")
+        token, org, store, template = _setup("tmpl-install@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(f"/api/v1/templates/{template.id}/install/", {
             "store_id": str(store.id),
@@ -135,13 +129,13 @@ class TestTemplateInstall:
         assert store.theme is not None
 
     def test_install_requires_store_id(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-nostore@example.com")
+        token, org, store, template = _setup("tmpl-nostore@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(f"/api/v1/templates/{template.id}/install/", {}, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_install_creates_collections_and_categories(self, api_client):
-        token, org, store, template = _setup(api_client, "tmpl-colls@example.com")
+        token, org, store, template = _setup("tmpl-colls@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         api_client.post(f"/api/v1/templates/{template.id}/install/", {
             "store_id": str(store.id),

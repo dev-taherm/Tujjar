@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useThemes } from "@/api/queries";
 import { ThemeCard } from "./theme-card";
 import { Palette, ExternalLink } from "lucide-react";
-import { Button } from "@/shared/ui";
+import { Button, EmptyState } from "@/shared/ui";
 import { useTranslations, useLocale } from "next-intl";
 
 export function ThemeList() {
@@ -28,17 +28,12 @@ export function ThemeList() {
   return (
     <div>
       {!installedThemes.length ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
-          <Palette className="mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noThemesInstalled")}</h3>
-          <p className="mb-6 text-sm text-gray-500">{t("browseMarketplaceToInstall")}</p>
-          <Link href={`/${locale}/dashboard/marketplace`}>
-            <Button>
-              <ExternalLink className="me-2 h-4 w-4" />
-              {t("browseMarketplace")}
-            </Button>
-          </Link>
-        </div>
+        <EmptyState
+          icon={Palette}
+          title={t("noThemesInstalled")}
+          description={t("browseMarketplaceToInstall")}
+          action={<Link href={`/${locale}/dashboard/marketplace`}><Button><ExternalLink className="me-2 h-4 w-4" />{t("browseMarketplace")}</Button></Link>}
+        />
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {installedThemes.map((theme) => (

@@ -3,9 +3,11 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { Button, Input, Textarea, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useCollection, useUpdateCollection } from "@/api/queries";
 import { ArrowLeft, Save } from "lucide-react";
+import { slugify } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 export default function CollectionDetailPage() {
@@ -98,16 +100,11 @@ export default function CollectionDetailPage() {
         <Card>
           <CardHeader><CardTitle>{t("details")}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <Input label={t("name")} value={name} onChange={(e) => { setName(e.target.value); if (editLocale === "en") setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} />
+            <Input label={t("name")} value={name} onChange={(e) => { setName(e.target.value); if (editLocale === "en") setSlug(slugify(e.target.value)); }} />
             {editLocale === "en" && <Input label={t("slug")} value={slug} onChange={(e) => setSlug(e.target.value)} />}
             <Textarea label={t("description")} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
             {editLocale === "en" && (
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">{t("active")}</label>
-                <button onClick={() => setIsActive(!isActive)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isActive ? "bg-blue-600" : "bg-gray-200"}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isActive ? "translate-x-6" : "translate-x-1"}`} />
-                </button>
-              </div>
+              <Toggle label={t("active")} enabled={isActive} onToggle={() => setIsActive(!isActive)} />
             )}
           </CardContent>
         </Card>

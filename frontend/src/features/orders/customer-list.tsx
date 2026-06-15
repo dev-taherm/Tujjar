@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/shared/ui";
+import { Button, Input, SearchInput, EmptyState } from "@/shared/ui";
 import { useCustomers, useDeleteCustomer } from "@/api/queries";
 import { formatCurrency, formatDateTime, getInitials } from "@/lib/utils";
-import { Search, Users, Trash2 } from "lucide-react";
+import { Users, Trash2 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 
 export function CustomerList() {
@@ -30,24 +30,15 @@ export function CustomerList() {
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder={t("searchPlaceholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 py-2 ps-10 pe-4 text-sm focus:border-blue-500 focus:outline-none"
-          />
-        </div>
+        <SearchInput value={search} onChange={setSearch} placeholder={t("searchPlaceholder")} />
       </div>
 
       {!customers?.length ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 py-16">
-          <Users className="mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-lg font-medium text-gray-900">{t("noCustomers")}</h3>
-          <p className="text-sm text-gray-500">{t("customerDataWillAppear")}</p>
-        </div>
+        <EmptyState
+          icon={Users}
+          title={t("noCustomers")}
+          description={t("customerDataWillAppear")}
+        />
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
           <table className="w-full">

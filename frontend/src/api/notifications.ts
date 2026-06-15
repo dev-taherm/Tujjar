@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { Notification, NotificationPreference } from "@/shared/types";
 
 export const notificationsApi = {
@@ -8,7 +9,7 @@ export const notificationsApi = {
     if (params?.is_read !== undefined) searchParams.set("is_read", String(params.is_read));
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/notifications/notifications/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   getUnreadCount: async (): Promise<{ count: number }> => {

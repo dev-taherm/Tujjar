@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { Order, Cart } from "@/shared/types";
 
 export const ordersApi = {
@@ -10,7 +11,7 @@ export const ordersApi = {
     if (params?.search) searchParams.set("search", params.search);
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/orders/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Order> => {
@@ -56,7 +57,7 @@ export const cartsApi = {
     if (params?.status) searchParams.set("status", params.status);
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/carts/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Cart> => {

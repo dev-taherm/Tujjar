@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { Button } from "@/shared/ui";
+import { Toggle } from "@/shared/components/toggle";
 import { useState, useEffect } from "react";
 
 interface ConfigItem {
@@ -89,39 +90,19 @@ export default function AdminSettingsPage() {
         <div className="border-t border-gray-200 pt-6">
           <h2 className="text-lg font-semibold text-gray-900">Access Control</h2>
           <div className="mt-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Public Registration</p>
-                <p className="text-xs text-gray-500">Allow new users to sign up</p>
-              </div>
-              <button
-                onClick={() => toggleSetting("registration_enabled", Boolean(configs.registration_enabled?.value ?? true))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  configs.registration_enabled?.value !== false ? "bg-primary-600" : "bg-gray-300"
-                }`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  configs.registration_enabled?.value !== false ? "translate-x-6" : "translate-x-1"
-                }`} />
-              </button>
-            </div>
+            <Toggle
+                label="Public Registration"
+                description="Allow new users to sign up"
+                enabled={configs.registration_enabled?.value !== false}
+                onToggle={() => toggleSetting("registration_enabled", Boolean(configs.registration_enabled?.value ?? true))}
+              />
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Maintenance Mode</p>
-                <p className="text-xs text-gray-500">Temporarily disable access to the platform</p>
-              </div>
-              <button
-                onClick={() => toggleSetting("maintenance_mode", Boolean(configs.maintenance_mode?.value ?? false))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  configs.maintenance_mode?.value ? "bg-red-600" : "bg-gray-300"
-                }`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  configs.maintenance_mode?.value ? "translate-x-6" : "translate-x-1"
-                }`} />
-              </button>
-            </div>
+            <Toggle
+                label="Maintenance Mode"
+                description="Temporarily disable access to the platform"
+                enabled={!!configs.maintenance_mode?.value}
+                onToggle={() => toggleSetting("maintenance_mode", Boolean(configs.maintenance_mode?.value ?? false))}
+              />
           </div>
         </div>
 

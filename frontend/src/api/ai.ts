@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { AIProvider, AIConversation, AIGenerationLog, AIGenerateResult, AIProductGenerateResult } from "@/shared/types";
 
 export const aiApi = {
   getProviders: async (): Promise<AIProvider[]> => {
     const { data } = await apiClient.get("/ai/providers/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   createProvider: async (payload: Partial<AIProvider>): Promise<AIProvider> => {
@@ -24,7 +25,7 @@ export const aiApi = {
 
   getConversations: async (): Promise<AIConversation[]> => {
     const { data } = await apiClient.get("/ai/conversations/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   getConversation: async (id: string): Promise<AIConversation> => {

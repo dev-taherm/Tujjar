@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { MediaAsset, MediaFolder, MediaStats } from "@/shared/types";
 
 export const mediaApi = {
@@ -11,7 +12,7 @@ export const mediaApi = {
     if (params?.search) searchParams.set("search", params.search);
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/media/assets/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   getAsset: async (id: string): Promise<MediaAsset> => {
@@ -52,7 +53,7 @@ export const mediaApi = {
     if (params?.parent) searchParams.set("parent", params.parent);
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/media/folders/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   createFolder: async (payload: { name: string; parent?: string; store?: string }): Promise<MediaFolder> => {

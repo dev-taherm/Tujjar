@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
+import { slugify } from "@/lib/utils";
 import { useCategories, useCreateCategory, useDeleteCategory } from "@/api/queries";
 import type { Category } from "@/shared/types";
 import { Plus, ChevronRight, ChevronDown, FolderTree, Trash2, Edit } from "lucide-react";
@@ -106,7 +107,7 @@ export function CategoryTree() {
 
         {showCreate && (
           <div className="mt-4 space-y-3 rounded-lg border border-gray-200 p-4">
-            <Input label={tc("add")} value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} />
+            <Input label={tc("add")} value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(slugify(e.target.value)); }} />
             <Input label={t("slug")} value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={() => setShowCreate(false)}>{tc("cancel")}</Button>

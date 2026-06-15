@@ -1,17 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { Plan, Subscription, Invoice, PaymentMethod } from "@/shared/types";
 
 export const billingApi = {
   getPlans: async (): Promise<Plan[]> => {
     const { data } = await apiClient.get("/billing/plans/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   getSubscription: async (): Promise<Subscription | null> => {
     try {
       const { data } = await apiClient.get("/billing/subscription/");
-      const results = data.results || data;
+      const results = unwrapResults(data);
       return Array.isArray(results) ? results[0] || null : results;
     } catch {
       return null;
@@ -32,12 +33,12 @@ export const billingApi = {
 
   getInvoices: async (): Promise<Invoice[]> => {
     const { data } = await apiClient.get("/billing/invoices/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   getPaymentMethods: async (): Promise<PaymentMethod[]> => {
     const { data } = await apiClient.get("/billing/payment-methods/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   setDefaultPaymentMethod: async (id: string) => {

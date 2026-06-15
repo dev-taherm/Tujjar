@@ -2,43 +2,14 @@ import pytest
 from decimal import Decimal
 from rest_framework import status
 
+from tests.factories import create_org_with_owner_and_store
+
 pytestmark = pytest.mark.django_db
 
 
-def _ensure_owner_role():
-    from apps.organizations.models import Role
-
-    role, _ = Role.objects.get_or_create(
-        slug="owner", organization=None,
-        defaults={"name": "Owner", "is_system": True},
-    )
-    return role
-
-
 class TestProductCRUD:
-    def _get_auth_token(self, api_client, email="test@example.com", password="testpass123"):
-        from apps.authentication.models import User
-        from apps.organizations.models import Organization, OrganizationMembership
-
-        user = User.objects.create_user(
-            email=email, password=password, is_verified=True,
-        )
-        org = Organization.objects.create(name="Test Org", slug=f"org-{email.split('@')[0]}")
-        role = _ensure_owner_role()
-        OrganizationMembership.objects.create(
-            user=user, organization=org, role=role, is_accepted=True,
-        )
-        response = api_client.post(
-            "/api/v1/auth/login/",
-            {"email": email, "password": password},
-        )
-        return response.data["access"], org
-
     def test_create_product(self, api_client):
-        from apps.stores.models import Store
-
-        token, org = self._get_auth_token(api_client, "owner1@example.com")
-        store = Store.objects.create(organization=org, name="Store", slug="store-1")
+        user, org, store, token = create_org_with_owner_and_store("owner1@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(
             "/api/v1/products/",
@@ -60,10 +31,8 @@ class TestProductCRUD:
 
     def test_list_products(self, api_client):
         from apps.products.models import Product
-        from apps.stores.models import Store
 
-        token, org = self._get_auth_token(api_client, "list@example.com")
-        store = Store.objects.create(organization=org, name="LStore", slug="lstore-1")
+        user, org, store, token = create_org_with_owner_and_store("list@example.com")
         Product.objects.create(
             organization=org, store=store,
             title="Listed Product", slug="listed-product",
@@ -77,10 +46,8 @@ class TestProductCRUD:
 
     def test_retrieve_product(self, api_client):
         from apps.products.models import Product
-        from apps.stores.models import Store
 
-        token, org = self._get_auth_token(api_client, "retrieve@example.com")
-        store = Store.objects.create(organization=org, name="RStore", slug="rstore-1")
+        user, org, store, token = create_org_with_owner_and_store("retrieve@example.com")
         product = Product.objects.create(
             organization=org, store=store,
             title="Retrieved Product", slug="retrieved-product",
@@ -93,10 +60,8 @@ class TestProductCRUD:
 
     def test_update_product(self, api_client):
         from apps.products.models import Product
-        from apps.stores.models import Store
 
-        token, org = self._get_auth_token(api_client, "update@example.com")
-        store = Store.objects.create(organization=org, name="UStore", slug="ustore-1")
+        user, org, store, token = create_org_with_owner_and_store("update@example.com")
         product = Product.objects.create(
             organization=org, store=store,
             title="Old Title", slug="update-product",
@@ -113,10 +78,8 @@ class TestProductCRUD:
 
     def test_delete_product(self, api_client):
         from apps.products.models import Product
-        from apps.stores.models import Store
 
-        token, org = self._get_auth_token(api_client, "delete@example.com")
-        store = Store.objects.create(organization=org, name="DStore", slug="dstore-1")
+        user, org, store, token = create_org_with_owner_and_store("delete@example.com")
         product = Product.objects.create(
             organization=org, store=store,
             title="Doomed Product", slug="delete-product",
@@ -132,21 +95,10 @@ class TestProductCRUD:
 
 
 class TestProductFiltering:
-    def _setup(self, api_client, email):
-        from apps.authentication.models import User
-        from apps.organizations.models import Organization, OrganizationMembership
-        from apps.stores.models import Store
+    def _setup(self, email):
         from apps.products.models import Product
 
-        user = User.objects.create_user(
-            email=email, password="testpass123", is_verified=True,
-        )
-        org = Organization.objects.create(name="Filter Org", slug=f"filter-{email.split('@')[0]}")
-        role = _ensure_owner_role()
-        OrganizationMembership.objects.create(
-            user=user, organization=org, role=role, is_accepted=True,
-        )
-        store = Store.objects.create(organization=org, name="Filter Store", slug=f"filter-store-{email.split('@')[0]}")
+        user, org, store, token = create_org_with_owner_and_store(email)
         Product.objects.create(
             organization=org, store=store,
             title="Active Product", slug=f"active-product-{email.split('@')[0]}",
@@ -157,15 +109,10 @@ class TestProductFiltering:
             title="Draft Product", slug=f"draft-product-{email.split('@')[0]}",
             status="draft", price=Decimal("20.00"), sku=f"DP-{email[:3]}",
         )
-
-        response = api_client.post(
-            "/api/v1/auth/login/",
-            {"email": email, "password": "testpass123"},
-        )
-        return response.data["access"], org
+        return token, org
 
     def test_filter_by_status(self, api_client):
-        token, _ = self._setup(api_client, "filter1@example.com")
+        token, _ = self._setup("filter1@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get("/api/v1/products/", {"status": "active"})
         assert response.status_code == status.HTTP_200_OK
@@ -173,7 +120,7 @@ class TestProductFiltering:
         assert all(p["status"] == "active" for p in results)
 
     def test_search_products(self, api_client):
-        token, _ = self._setup(api_client, "filter2@example.com")
+        token, _ = self._setup("filter2@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get("/api/v1/products/", {"search": "Active"})
         assert response.status_code == status.HTTP_200_OK
@@ -182,28 +129,8 @@ class TestProductFiltering:
 
 
 class TestCategoryCRUD:
-    def _get_auth_token(self, api_client, email):
-        from apps.authentication.models import User
-        from apps.organizations.models import Organization, OrganizationMembership
-        from apps.stores.models import Store
-
-        user = User.objects.create_user(
-            email=email, password="testpass123", is_verified=True,
-        )
-        org = Organization.objects.create(name="Cat Org", slug=f"cat-{email.split('@')[0]}")
-        role = _ensure_owner_role()
-        OrganizationMembership.objects.create(
-            user=user, organization=org, role=role, is_accepted=True,
-        )
-        store = Store.objects.create(organization=org, name="Cat Store", slug=f"cat-store-{email.split('@')[0]}")
-        response = api_client.post(
-            "/api/v1/auth/login/",
-            {"email": email, "password": "testpass123"},
-        )
-        return response.data["access"], org, store
-
     def test_create_category(self, api_client):
-        token, org, store = self._get_auth_token(api_client, "cat1@example.com")
+        user, org, store, token = create_org_with_owner_and_store("cat1@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(
             "/api/v1/products/categories/",
@@ -218,7 +145,7 @@ class TestCategoryCRUD:
         assert response.data["name"] == "Electronics"
 
     def test_list_categories(self, api_client):
-        token, org, store = self._get_auth_token(api_client, "cat2@example.com")
+        user, org, store, token = create_org_with_owner_and_store("cat2@example.com")
         from apps.products.models import Category
 
         Category.objects.create(

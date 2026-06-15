@@ -2,29 +2,16 @@ import pytest
 from decimal import Decimal
 from rest_framework import status
 
+from tests.factories import create_org_with_owner_and_store
+
 pytestmark = pytest.mark.django_db
-
-
-def _get_auth_token(client, email="order-test@example.com"):
-    from apps.authentication.models import User
-    from apps.organizations.models import Organization, OrganizationMembership, Role
-    from apps.stores.models import Store
-
-    user = User.objects.create_user(email=email, password="testpass123", is_verified=True)
-    org = Organization.objects.create(name="Order Test Org", slug=f"org-{email.split('@')[0]}")
-    role, _ = Role.objects.get_or_create(slug="owner", organization=None, defaults={"name": "Owner", "is_system": True})
-    OrganizationMembership.objects.create(user=user, organization=org, role=role, is_accepted=True)
-    store = Store.objects.create(organization=org, name="Test Store", slug=f"store-{email.split('@')[0]}")
-
-    response = client.post("/api/v1/auth/login/", {"email": email, "password": "testpass123"})
-    return response.data["access"], org, store
 
 
 class TestOrderStatusTransition:
     def test_valid_transition_pending_to_confirmed(self, api_client):
         from apps.orders.models import Order
 
-        token, org, store = _get_auth_token(api_client, "trans1@example.com")
+        user, org, store, token = create_org_with_owner_and_store("trans1@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         order = Order.objects.create(
             organization=org, store=store, customer_email="c@test.com",
@@ -38,7 +25,7 @@ class TestOrderStatusTransition:
     def test_invalid_transition_delivered_to_pending(self, api_client):
         from apps.orders.models import Order
 
-        token, org, store = _get_auth_token(api_client, "trans2@example.com")
+        user, org, store, token = create_org_with_owner_and_store("trans2@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         order = Order.objects.create(
             organization=org, store=store, customer_email="c@test.com",
@@ -50,7 +37,7 @@ class TestOrderStatusTransition:
     def test_timeline_endpoint(self, api_client):
         from apps.orders.models import Order, OrderStatusHistory
 
-        token, org, store = _get_auth_token(api_client, "trans3@example.com")
+        user, org, store, token = create_org_with_owner_and_store("trans3@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         order = Order.objects.create(
             organization=org, store=store, customer_email="c@test.com",
@@ -69,7 +56,7 @@ class TestOrderCancelRestoresInventory:
         from apps.orders.models import Order, OrderItem
         from apps.products.models import Product
 
-        token, org, store = _get_auth_token(api_client, "cancel1@example.com")
+        user, org, store, token = create_org_with_owner_and_store("cancel1@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         product = Product.objects.create(
             organization=org, store=store, title="Test Product",

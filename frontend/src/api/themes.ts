@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { Theme, ThemePreset } from "@/shared/types";
 
 export const themesApi = {
   list: async (): Promise<Theme[]> => {
     const { data } = await apiClient.get("/themes/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Theme> => {
@@ -44,12 +45,12 @@ export const themesApi = {
 
   marketplace: async (): Promise<Theme[]> => {
     const { data } = await apiClient.get("/themes/marketplace/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   getPresets: async (themeId: string): Promise<ThemePreset[]> => {
     const { data } = await apiClient.get(`/themes/${themeId}/presets/`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   createPreset: async (themeId: string, payload: { name: string; config: Record<string, unknown> }): Promise<ThemePreset> => {

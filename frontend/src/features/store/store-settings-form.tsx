@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, Input, Card, CardHeader, CardTitle, CardContent, Badge } from "@/shared/ui";
+import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useUpdateStore } from "@/api/queries";
 import { usePages } from "@/api/pages";
@@ -470,27 +471,12 @@ function NavigationTab({ store }: { store: Store }) {
           <CardTitle>Call-to-Action Button</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Enabled</label>
-            <button
-              type="button"
-              onClick={() =>
+          <Toggle label="Enabled" enabled={!!navData.cta_button?.enabled} onToggle={() =>
                 setNavData((prev) => ({
                   ...prev,
                   cta_button: { ...prev.cta_button!, enabled: !prev.cta_button?.enabled },
                 }))
-              }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                navData.cta_button?.enabled ? "bg-blue-600" : "bg-gray-200"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  navData.cta_button?.enabled ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </div>
+              } />
           {navData.cta_button?.enabled && (
             <div className="flex gap-2">
               <Input

@@ -7,18 +7,10 @@ import type { Template } from "@/api/templates";
 import { TemplateCard } from "./template-card";
 import { TemplatePreview } from "./template-preview";
 import { StoreSelectorDialog } from "./store-selector-dialog";
+import { TEMPLATE_CATEGORIES } from "@/lib/constants";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-
-const CATEGORIES = [
-  { value: "", label: "All" },
-  { value: "fashion", label: "Fashion" },
-  { value: "electronics", label: "Electronics" },
-  { value: "restaurant", label: "Restaurant" },
-  { value: "pharmacy", label: "Pharmacy" },
-  { value: "furniture", label: "Furniture" },
-];
 
 interface TemplateBrowserProps {
   storeId?: string;
@@ -130,7 +122,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
         {/* Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-1">
-            {CATEGORIES.map((cat) => (
+            {TEMPLATE_CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
                 onClick={() => setCategory(cat.value)}

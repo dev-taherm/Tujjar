@@ -7,3 +7,6 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export { Badge } from "./badge";
 export { Skeleton } from "./skeleton";
 export { Select } from "./select";
+export { EmptyState } from "./empty-state";
+export { SearchInput } from "./search-input";
+export { Dialog } from "./dialog";

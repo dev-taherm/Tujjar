@@ -2,20 +2,11 @@ import pytest
 from decimal import Decimal
 from rest_framework import status
 
-from apps.authentication.models import User
-from apps.organizations.models import Organization, OrganizationMembership, Role
 from apps.products.models import Product, Category
 from apps.stores.models import Store
+from tests.factories import create_org_with_owner
 
 pytestmark = pytest.mark.django_db
-
-
-def _ensure_owner_role():
-    role, _ = Role.objects.get_or_create(
-        slug="owner", organization=None,
-        defaults={"name": "Owner", "is_system": True},
-    )
-    return role
 
 
 @pytest.fixture
@@ -23,14 +14,7 @@ def storefront_data(db):
     from django.core.cache import cache
 
     cache.clear()
-    user = User.objects.create_user(
-        email="storeowner@example.com", password="testpass123", is_verified=True,
-    )
-    org = Organization.objects.create(name="Storefront Org", slug="sf-org")
-    role = _ensure_owner_role()
-    OrganizationMembership.objects.create(
-        user=user, organization=org, role=role, is_accepted=True,
-    )
+    user, org, token = create_org_with_owner("storeowner@example.com")
     store = Store.objects.create(
         organization=org, name="My Store", slug="my-store",
     )

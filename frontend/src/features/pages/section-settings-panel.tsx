@@ -1,6 +1,7 @@
 "use client";
 
 import { Input, Textarea, Select, Label } from "@/shared/ui";
+import { Toggle } from "@/shared/components/toggle";
 import type { Section, SettingField } from "@/shared/types";
 import { getRegistryEntry } from "@/builder/sections/registry";
 import { useTranslations } from "next-intl";
@@ -74,22 +75,7 @@ export function SectionSettingsPanel({ section, onUpdate }: SectionSettingsPanel
             </div>
           )}
           {field.type === "toggle" && (
-            <div className="flex items-center justify-between">
-              <Label>{field.label}</Label>
-              <button
-                type="button"
-                onClick={() => handleChange(field.key, !section.settings[field.key])}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  section.settings[field.key] ? "bg-blue-600" : "bg-gray-200"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    section.settings[field.key] ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
+            <Toggle label={field.label} enabled={!!section.settings[field.key]} onToggle={() => handleChange(field.key, !section.settings[field.key])} />
           )}
         </div>
       ))}

@@ -5,6 +5,7 @@ import { useThemeMarketplace, useInstallTheme, useTemplateMarketplace, useInstal
 import { Badge, Button } from "@/shared/ui";
 import { Palette, LayoutTemplate, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TEMPLATE_CATEGORIES } from "@/lib/constants";
 import { TemplateCard } from "@/features/templates/template-card";
 import type { Template } from "@/api/templates";
 import type { Theme } from "@/shared/types";
@@ -15,15 +16,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 type Tab = "themes" | "templates";
-
-const TEMPLATE_CATEGORIES = [
-  { value: "", label: "All" },
-  { value: "fashion", label: "Fashion" },
-  { value: "electronics", label: "Electronics" },
-  { value: "restaurant", label: "Restaurant" },
-  { value: "pharmacy", label: "Pharmacy" },
-  { value: "furniture", label: "Furniture" },
-];
 
 /* ── Theme Card ────────────────────────────────────────────────────── */
 

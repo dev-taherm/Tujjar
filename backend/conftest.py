@@ -76,3 +76,15 @@ def store(organization, db):
     return Store.objects.create(
         organization=organization, name="Test Store", slug="test-store",
     )
+
+
+@pytest.fixture
+def product(db, organization, store):
+    from apps.products.models import Product
+    from decimal import Decimal
+    return Product.objects.create(
+        organization=organization, store=store,
+        title="Test Product", slug="test-product",
+        description="A test product", product_type="physical",
+        status="active", price=Decimal("29.99"), sku="TST-001",
+    )

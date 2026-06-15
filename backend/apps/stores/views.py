@@ -1,22 +1,13 @@
 from __future__ import annotations
 
-import json
-
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.audit.models import log_action
 from apps.core.viewsets import TenantViewSet
-from apps.organizations.models import Organization
 
 from .models import Store, StoreDomain
 from .serializers import StoreDomainSerializer, StoreSerializer, StoreSettingsSerializer
-
-
-def _serialize_store(store):
-    """Make serializer data JSON-safe for audit log."""
-    return json.loads(json.dumps(StoreSerializer(store).data, default=str))
 
 
 class StoreViewSet(TenantViewSet):
@@ -32,46 +23,15 @@ class StoreViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         store = serializer.save()
-        org = Organization.objects.filter(id=self.request.org_id).first()
-        log_action(
-            action="store.create",
-            resource_type="store",
-            resource_id=store.id,
-            organization=org,
-            user=self.request.user,
-            new_value=_serialize_store(store),
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="store.create", resource_type="store", resource_id=store.id, new_value=StoreSerializer(store).data)
 
     def perform_update(self, serializer):
-        old_data = _serialize_store(serializer.instance)
+        old_data = StoreSerializer(serializer.instance).data
         store = serializer.save()
-        org = Organization.objects.filter(id=self.request.org_id).first()
-        log_action(
-            action="store.update",
-            resource_type="store",
-            resource_id=store.id,
-            organization=org,
-            user=self.request.user,
-            old_value=old_data,
-            new_value=_serialize_store(store),
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="store.update", resource_type="store", resource_id=store.id, old_value=old_data, new_value=StoreSerializer(store).data)
 
     def perform_destroy(self, instance):
-        org = Organization.objects.filter(id=self.request.org_id).first()
-        log_action(
-            action="store.delete",
-            resource_type="store",
-            resource_id=instance.id,
-            organization=org,
-            user=self.request.user,
-            old_value=_serialize_store(instance),
-            ip_address=self.request.META.get("REMOTE_ADDR"),
-            user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="store.delete", resource_type="store", resource_id=instance.id, old_value=StoreSerializer(instance).data)
         instance.delete()
 
     @action(detail=False, methods=["get"])
@@ -122,7 +82,9 @@ class StoreDomainViewSet(TenantViewSet):
         ).first()
         if not store:
             raise PermissionDenied("Store not found or access denied.")
-        serializer.save(store_id=self.kwargs["pk"])
+        domain = serializer.save(store_id=self.kwargs["pk"])
+        self._log_audit(action="store.domain.create", resource_type="store_domain", resource_id=domain.id, new_value={"domain": domain.domain, "store_id": str(store.id)})
 
     def perform_destroy(self, instance):
+        self._log_audit(action="store.domain.delete", resource_type="store_domain", resource_id=instance.id, old_value={"domain": instance.domain})
         instance.delete()

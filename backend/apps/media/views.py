@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-
 from django.db.models import Count, Q, Sum
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
-from apps.audit.models import log_action
 from apps.core.viewsets import TenantViewSet
 
 from .models import MediaAsset, MediaFolder
@@ -109,16 +107,7 @@ class MediaAssetViewSet(TenantViewSet):
             alt_text=alt_text,
         )
 
-        log_action(
-            action="media.upload",
-            resource_type="media",
-            resource_id=asset.id,
-            organization_id=request.org_id,
-            user=request.user,
-            new_value=MediaAssetSerializer(asset).data,
-            ip_address=request.META.get("REMOTE_ADDR"),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        )
+        self._log_audit(action="media.upload", resource_type="media", resource_id=asset.id, new_value=MediaAssetSerializer(asset).data)
 
         return Response(MediaAssetSerializer(asset).data, status=status.HTTP_201_CREATED)
 

@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { Page, PageVersion, SectionDefinition } from "@/shared/types";
 
 export const pagesApi = {
   list: async (storeId?: string): Promise<Page[]> => {
     const params = storeId ? `?store=${storeId}` : "";
     const { data } = await apiClient.get(`/pages/${params}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Page> => {

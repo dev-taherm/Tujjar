@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { MarketplaceListing, MarketplaceReview } from "@/shared/types";
 
 export const marketplaceApi = {
@@ -11,7 +12,7 @@ export const marketplaceApi = {
     if (params?.featured) searchParams.set("featured", "true");
     const qs = searchParams.toString();
     const { data } = await apiClient.get(`/marketplace/listings/${qs ? `?${qs}` : ""}`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   getListing: async (id: string): Promise<MarketplaceListing> => {

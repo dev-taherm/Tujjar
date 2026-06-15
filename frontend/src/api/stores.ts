@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
+import { unwrapResults } from "./helpers";
 import type { Store, StoreDomain } from "@/shared/types";
 
 export const storesApi = {
   list: async (): Promise<Store[]> => {
     const { data } = await apiClient.get("/stores/");
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Store> => {
@@ -39,7 +40,7 @@ export const storesApi = {
 
   getDomains: async (storeId: string): Promise<StoreDomain[]> => {
     const { data } = await apiClient.get(`/stores/${storeId}/domains/`);
-    return data.results || data;
+    return unwrapResults(data);
   },
 
   addDomain: async (storeId: string, domain: string): Promise<StoreDomain> => {

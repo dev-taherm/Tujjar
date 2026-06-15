@@ -4,7 +4,7 @@ import { useState } from "react";
 import { getAllSectionTypes } from "@/builder/sections/registry";
 import type { SectionDefinition } from "@/shared/types";
 import * as Icons from "lucide-react";
-import { X, Search } from "lucide-react";
+import { Dialog, SearchInput } from "@/shared/ui";
 import { useTranslations } from "next-intl";
 
 interface SectionTypePickerProps {
@@ -40,74 +40,56 @@ export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-2xl rounded-xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-200 p-4">
-          <h2 className="text-lg font-semibold">{t("addSection")}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="h-5 w-5" />
+    <Dialog open={true} onClose={onClose} title={t("addSection")}>
+      <div className="border-b border-gray-200 -mx-6 px-6 -mt-2 pt-0 pb-4">
+        <SearchInput value={search} onChange={setSearch} placeholder={t("searchSections")} />
+        <div className="mt-3 flex gap-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveCategory("all")}
+            className={`rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${
+              activeCategory === "all" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {t("all")}
           </button>
-        </div>
-
-        <div className="border-b border-gray-200 p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t("searchSections")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 ps-10 pe-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto">
+          {categories.map((cat) => (
             <button
-              onClick={() => setActiveCategory("all")}
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
               className={`rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${
-                activeCategory === "all" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                activeCategory === cat ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              {t("all")}
+              {categoryLabels[cat] || cat}
             </button>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${
-                  activeCategory === cat ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {categoryLabels[cat] || cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="max-h-96 overflow-y-auto p-4">
-          {filtered.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-500">{t("noSectionsFound")}</p>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {filtered.map((def: SectionDefinition) => {
-                const Icon = getIcon(def.icon);
-                return (
-                  <button
-                    key={def.type}
-                    onClick={() => { onSelect(def.type); onClose(); }}
-                    className="group flex flex-col items-center gap-2 rounded-lg border border-gray-200 p-4 text-center transition-colors hover:border-blue-300 hover:bg-blue-50"
-                  >
-                    <Icon className="h-8 w-8 text-gray-400 group-hover:text-blue-600" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{def.label}</p>
-                      <p className="text-xs text-gray-500 capitalize">{def.category}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          ))}
         </div>
       </div>
-    </div>
+
+      <div className="max-h-96 overflow-y-auto -mx-6 px-6">
+        {filtered.length === 0 ? (
+          <p className="py-8 text-center text-sm text-gray-500">{t("noSectionsFound")}</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {filtered.map((def: SectionDefinition) => {
+              const Icon = getIcon(def.icon);
+              return (
+                <button
+                  key={def.type}
+                  onClick={() => { onSelect(def.type); onClose(); }}
+                  className="group flex flex-col items-center gap-2 rounded-lg border border-gray-200 p-4 text-center transition-colors hover:border-blue-300 hover:bg-blue-50"
+                >
+                  <Icon className="h-8 w-8 text-gray-400 group-hover:text-blue-600" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{def.label}</p>
+                    <p className="text-xs text-gray-500 capitalize">{def.category}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </Dialog>
   );
 }
