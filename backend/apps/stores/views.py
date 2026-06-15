@@ -1,13 +1,63 @@
 from __future__ import annotations
 
+import logging
+
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.core.viewsets import TenantViewSet
 
 from .models import Store, StoreDomain
-from .serializers import StoreDomainSerializer, StoreSerializer, StoreSettingsSerializer
+from .serializers import SlugCheckSerializer, StoreDomainSerializer, StoreSerializer, StoreSettingsSerializer, StoreWizardSerializer
+
+logger = logging.getLogger(__name__)
+
+
+class SlugCheckView(APIView):
+    """Check if a store slug is available."""
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = []
+
+    def get(self, request):
+        slug = request.query_params.get("slug", "")
+        serializer = SlugCheckSerializer(data={"slug": slug})
+        serializer.is_valid(raise_exception=True)
+        clean_slug = serializer.validated_data["slug"]
+        org_id = getattr(request, "org_id", None)
+        exists = Store.objects.filter(slug=clean_slug)
+        if org_id:
+            exists = exists.filter(organization_id=org_id)
+        return Response({
+            "slug": clean_slug,
+            "available": not exists.exists(),
+        })
+
+
+class StoreWizardView(APIView):
+    """Multi-step store creation wizard."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = StoreWizardSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        store = serializer.save()
+        from apps.audit.models import log_action
+        log_action(
+            action="store.wizard_create",
+            resource_type="store",
+            resource_id=store.id,
+            user=request.user,
+            organization_id=getattr(request, "org_id", None),
+            new_value=StoreSerializer(store).data,
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+        return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
 
 
 class StoreViewSet(TenantViewSet):

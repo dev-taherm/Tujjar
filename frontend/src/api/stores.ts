@@ -19,6 +19,23 @@ export const storesApi = {
     return data;
   },
 
+  createWizard: async (payload: {
+    name: string;
+    slug?: string;
+    description?: string;
+    template_id?: string | null;
+    logo_id?: string | null;
+    custom_domain?: string;
+  }): Promise<Store> => {
+    const { data } = await apiClient.post("/stores/wizard/", payload);
+    return data;
+  },
+
+  checkSlug: async (slug: string): Promise<{ slug: string; available: boolean }> => {
+    const { data } = await apiClient.get(`/stores/check-slug/?slug=${encodeURIComponent(slug)}`);
+    return data;
+  },
+
   update: async (id: string, payload: Partial<Store>): Promise<Store> => {
     const { data } = await apiClient.patch(`/stores/${id}/`, payload);
     return data;
@@ -75,6 +92,22 @@ export function useCreateStore() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });
     },
+  });
+}
+
+export function useCreateStoreWizard() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: storesApi.createWizard,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
+    },
+  });
+}
+
+export function useCheckSlug() {
+  return useMutation({
+    mutationFn: storesApi.checkSlug,
   });
 }
 

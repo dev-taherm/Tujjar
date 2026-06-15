@@ -9,6 +9,8 @@ router.register(r"", views.StoreViewSet, basename="store")
 app_name = "stores"
 
 urlpatterns = [
+    path("check-slug/", views.SlugCheckView.as_view(), name="store-check-slug"),
+    path("wizard/", views.StoreWizardView.as_view(), name="store-wizard"),
     path(
         "<uuid:pk>/domains/",
         views.StoreDomainViewSet.as_view({"get": "list", "post": "create"}),
