@@ -101,16 +101,49 @@ def _resolve_store(store: Store, locale: str) -> dict:
         seo_title = locale_data.get("seo_title") or seo_title
         seo_description = locale_data.get("seo_description") or seo_description
 
+    logo_url = None
+    if store.logo_id:
+        try:
+            logo_url = store.logo.file_url
+        except Exception:
+            pass
+
+    favicon_url = None
+    if store.favicon_id:
+        try:
+            favicon_url = store.favicon.file_url
+        except Exception:
+            pass
+
+    theme_config = None
+    if store.theme_id:
+        try:
+            theme_config = store.theme.effective_config
+        except Exception:
+            pass
+
+    og_image_url = None
+    if store.og_image_id:
+        try:
+            og_image_url = store.og_image.file_url
+        except Exception:
+            pass
+
     return {
         "name": name,
         "slug": store.slug,
         "description": description,
-        "logo": store.logo.url if store.logo else None,
+        "logo_url": logo_url,
+        "favicon_url": favicon_url,
         "settings": store.settings,
+        "theme_config": theme_config,
         "navigation": resolve_navigation_locale(store.navigation, locale) or {},
         "footer_config": resolve_footer_locale(store.footer_config, locale) or {},
         "seo_title": seo_title,
         "seo_description": seo_description,
+        "og_image": og_image_url,
+        "twitter_card": store.twitter_card,
+        "domain": store.domain,
     }
 
 

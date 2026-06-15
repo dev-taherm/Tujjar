@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StorefrontProductCard } from "@/features/storefront/product-card";
 import { StorefrontSectionRenderer } from "@/features/storefront/section-renderer";
@@ -15,6 +15,12 @@ interface StorefrontData {
     name: string;
     slug: string;
     description: string;
+    logo_url: string | null;
+    favicon_url: string | null;
+    seo_title: string;
+    seo_description: string;
+    og_image: string | null;
+    twitter_card: string;
     navigation: Record<string, unknown>;
     footer_config: Record<string, unknown>;
   };
@@ -71,6 +77,36 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
   const store = data.store;
   const sections = data.homepage?.content_schema?.sections;
   const featuredProducts = data.featured_products || [];
+
+  // Apply page-level SEO
+  useEffect(() => {
+    if (store) {
+      const title = store.seo_title || store.name;
+      document.title = title;
+      const setMeta = (name: string, content: string) => {
+        let el = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`) as HTMLMetaElement;
+        if (!el) {
+          el = document.createElement("meta");
+          if (name.startsWith("og:")) {
+            el.setAttribute("property", name);
+          } else {
+            el.setAttribute("name", name);
+          }
+          document.head.appendChild(el);
+        }
+        el.setAttribute("content", content);
+      };
+      if (store.seo_description) {
+        setMeta("description", store.seo_description);
+      }
+      if (store.og_image) {
+        setMeta("og:image", store.og_image);
+      }
+      if (store.twitter_card) {
+        setMeta("twitter:card", store.twitter_card);
+      }
+    }
+  }, [store]);
 
   if (sections && sections.length > 0) {
     return (

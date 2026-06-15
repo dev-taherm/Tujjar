@@ -12,6 +12,7 @@ import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardConten
 import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useUpdateStore, useDeleteStore, useChangeSlug, useCheckSlug } from "@/api/queries";
+import { mediaApi } from "@/api/media";
 import { usePages } from "@/api/pages";
 import { TemplateBrowser } from "@/features/templates/template-browser";
 import { StoreDomains } from "./store-domains";
@@ -395,12 +396,9 @@ function BrandingTab({ store }: { store: Store }) {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
     try {
-      const { apiClient } = await import("@/api/client");
-      const { data } = await apiClient.post("/media/upload/", formData);
-      await updateStore.mutateAsync({ id: store.id, [field]: data.url || data.file });
+      const asset = await mediaApi.upload(file, undefined, file.name, `${field} for store`, store.id);
+      await updateStore.mutateAsync({ id: store.id, [field]: asset.id });
       toast.success(tc("saved"));
     } catch {
       toast.error("Upload failed");
@@ -439,8 +437,8 @@ function BrandingTab({ store }: { store: Store }) {
               <label className="mb-2 block text-sm font-medium text-gray-700">{t("storeLogo") || "Store Logo"}</label>
               <div className="flex items-center gap-4">
                 <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden">
-                  {store.logo ? (
-                    <img src={store.logo} alt="Logo" className="h-full w-full object-contain p-2" />
+                  {store.logo_url ? (
+                    <img src={store.logo_url} alt="Logo" className="h-full w-full object-contain p-2" />
                   ) : (
                     <Image className="h-8 w-8 text-gray-400" />
                   )}
@@ -468,8 +466,8 @@ function BrandingTab({ store }: { store: Store }) {
               <label className="mb-2 block text-sm font-medium text-gray-700">{t("favicon") || "Favicon"}</label>
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden">
-                  {store.favicon ? (
-                    <img src={store.favicon} alt="Favicon" className="h-full w-full object-contain p-1" />
+                  {store.favicon_url ? (
+                    <img src={store.favicon_url} alt="Favicon" className="h-full w-full object-contain p-1" />
                   ) : (
                     <Image className="h-6 w-6 text-gray-400" />
                   )}

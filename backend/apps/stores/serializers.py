@@ -38,6 +38,8 @@ class StoreDomainSerializer(serializers.ModelSerializer):
 class StoreSerializer(serializers.ModelSerializer):
     domain = serializers.ReadOnlyField()
     domains = StoreDomainSerializer(many=True, read_only=True)
+    logo_url = serializers.SerializerMethodField()
+    favicon_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Store
@@ -50,6 +52,8 @@ class StoreSerializer(serializers.ModelSerializer):
             "description",
             "logo",
             "favicon",
+            "logo_url",
+            "favicon_url",
             "theme",
             "template",
             "settings",
@@ -67,6 +71,22 @@ class StoreSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
+
+    def get_logo_url(self, obj):
+        if obj.logo_id:
+            try:
+                return obj.logo.file_url
+            except Exception:
+                return None
+        return None
+
+    def get_favicon_url(self, obj):
+        if obj.favicon_id:
+            try:
+                return obj.favicon.file_url
+            except Exception:
+                return None
+        return None
 
     def validate_slug(self, value):
         slug = slugify(value)

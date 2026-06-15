@@ -93,6 +93,8 @@ export interface Store {
   description: string;
   logo: string | null;
   favicon: string | null;
+  logo_url: string | null;
+  favicon_url: string | null;
   theme: UUID | null;
   template: UUID | null;
   navigation: {

@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { use } from "react";
+import { use, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
-import { ShoppingCart, User, Search } from "lucide-react";
+import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 
 interface NavLink {
@@ -31,6 +31,35 @@ interface FooterConfig {
   social_links?: Record<string, string>;
 }
 
+interface StorefrontStore {
+  name: string;
+  slug: string;
+  description: string;
+  logo_url: string | null;
+  favicon_url: string | null;
+  navigation: Navigation;
+  footer_config: FooterConfig;
+  seo_title: string;
+  seo_description: string;
+  og_image: string | null;
+  twitter_card: string;
+  domain: string;
+  theme_config: {
+    colors?: Record<string, string>;
+    borderRadius?: Record<string, number>;
+    typography?: Record<string, unknown>;
+    darkMode?: { enabled: boolean; default: boolean; toggle: boolean };
+  } | null;
+}
+
+const SOCIAL_ICONS: Record<string, typeof Facebook> = {
+  facebook: Facebook,
+  twitter: Twitter,
+  instagram: Instagram,
+  youtube: Youtube,
+  linkedin: Linkedin,
+};
+
 export default function StorefrontLayout({
   children,
 }: {
@@ -41,7 +70,7 @@ export default function StorefrontLayout({
   const locale = useLocale();
   const tNav = useTranslations("storefront.header");
 
-  const { data } = useQuery({
+  const { data } = useQuery<{ store: StorefrontStore }>({
     queryKey: ["storefront", slug, locale],
     queryFn: async () => {
       const res = await fetch(`/api/v1/store/${slug}/?locale=${locale}`);
@@ -51,9 +80,78 @@ export default function StorefrontLayout({
     staleTime: 5 * 60 * 1000,
   });
 
-  const store = data?.store;
+  const store: StorefrontStore | undefined = data?.store;
   const navigation: Navigation = store?.navigation || {};
   const footerConfig: FooterConfig = store?.footer_config || {};
+
+  // Apply favicon
+  useEffect(() => {
+    if (store?.favicon_url) {
+      let link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      link.href = store.favicon_url;
+    }
+  }, [store?.favicon_url]);
+
+  // Apply SEO metadata
+  useEffect(() => {
+    if (store) {
+      document.title = store.seo_title || store.name;
+      const setMeta = (name: string, content: string) => {
+        let el = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`) as HTMLMetaElement;
+        if (!el) {
+          el = document.createElement("meta");
+          if (name.startsWith("og:")) {
+            el.setAttribute("property", name);
+          } else {
+            el.setAttribute("name", name);
+          }
+          document.head.appendChild(el);
+        }
+        el.setAttribute("content", content);
+      };
+      if (store.seo_description) {
+        setMeta("description", store.seo_description);
+      }
+      if (store.og_image) {
+        setMeta("og:image", store.og_image);
+      }
+      if (store.twitter_card) {
+        setMeta("twitter:card", store.twitter_card);
+      }
+    }
+  }, [store]);
+
+  // Apply theme CSS variables
+  useEffect(() => {
+    const theme = store?.theme_config;
+    if (!theme?.colors) return;
+    const root = document.documentElement;
+    const colorMap: Record<string, string> = {
+      primary: "--color-primary",
+      secondary: "--color-secondary",
+      accent: "--color-accent",
+      background: "--color-bg",
+      surface: "--color-surface",
+      text: "--color-text",
+      textSecondary: "--color-text-secondary",
+      border: "--color-border",
+    };
+    for (const [key, cssVar] of Object.entries(colorMap)) {
+      if (theme.colors[key]) {
+        root.style.setProperty(cssVar, theme.colors[key]);
+      }
+    }
+    if (theme.borderRadius) {
+      root.style.setProperty("--radius-sm", `${theme.borderRadius.small || 4}px`);
+      root.style.setProperty("--radius-md", `${theme.borderRadius.medium || 8}px`);
+      root.style.setProperty("--radius-lg", `${theme.borderRadius.large || 12}px`);
+    }
+  }, [store?.theme_config]);
 
   const prefixLink = (url: string) =>
     url.startsWith("http") ? url : `/${locale}/shop/${slug}${url}`;
@@ -115,7 +213,10 @@ export default function StorefrontLayout({
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-200">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href={`/${locale}/shop/${slug}`} className="text-xl font-bold text-gray-900">
+          <Link href={`/${locale}/shop/${slug}`} className="flex items-center gap-2 text-xl font-bold text-gray-900">
+            {store?.logo_url ? (
+              <img src={store.logo_url} alt={store.name} className="h-8 w-auto object-contain" />
+            ) : null}
             {logoText}
           </Link>
           <nav className="hidden gap-6 md:flex">
@@ -175,6 +276,26 @@ export default function StorefrontLayout({
               </div>
             ))}
           </div>
+          {/* Social Links */}
+          {footerConfig.social_links && Object.keys(footerConfig.social_links).length > 0 && (
+            <div className="mt-6 flex items-center gap-4">
+              {Object.entries(footerConfig.social_links).map(([platform, url]) => {
+                if (!url) return null;
+                const Icon = SOCIAL_ICONS[platform];
+                return (
+                  <a
+                    key={platform}
+                    href={url as string}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    {Icon ? <Icon className="h-5 w-5" /> : <span className="text-xs">{platform}</span>}
+                  </a>
+                );
+              })}
+            </div>
+          )}
           <div className="mt-8 border-t border-gray-200 pt-4 text-center text-xs text-gray-400">
             {copyrightText}
           </div>
