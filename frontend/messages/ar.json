@@ -750,14 +750,18 @@
     "storeCreated": "تم إنشاء المتجر بنجاح!",
     "tabs": {
       "general": "عام",
+      "branding": "العلامة التجارية",
       "navigation": "التنقل",
       "template": "القالب",
       "theme": "السمة",
+      "domains": "النطاقات",
       "pages": "الصفحات"
     },
     "general": {
       "title": "الإعدادات العامة",
       "storeName": "اسم المتجر",
+      "storeUrl": "رابط المتجر",
+      "storeUrlDescription": "العنوان العام لمتجرك",
       "description": "الوصف",
       "descriptionPlaceholder": "وصف مختصر لمتجرك",
       "seoTitle": "عنوان SEO",
@@ -766,6 +770,16 @@
       "seoDescriptionPlaceholder": "وصف الصفحة لمحركات البحث",
       "saveChanges": "حفظ التغييرات"
     },
+    "branding": {
+      "logoAndFavicon": "الشعار والأيقونة",
+      "logoDescription": "ارفع شعار متجرك وأيقونته",
+      "storeLogo": "شعار المتجر",
+      "favicon": "الأيقونة",
+      "uploadLogo": "رفع الشعار",
+      "uploadFavicon": "رفع",
+      "socialLinks": "روابط التواصل الاجتماعي",
+      "socialLinksDescription": "أضف روابط حساباتك على وسائل التواصل الاجتماعي"
+    },
     "template": {
       "title": "القالب الحالي",
       "description": "هذا المتجر يستخدم قالباً مخصصاً. قم بتثبيت قالب جديد من الأسفل لاستبداله."
@@ -773,7 +787,26 @@
     "theme": {
       "title": "السمة",
       "description": "إدارة المظهر البصري لمتجرك.",
-      "noTheme": "لم يتم تطبيق سمة بعد. قم بتثبيت قالب من تبويب القالب لإعداد سمتك."
+      "noTheme": "لم يتم تطبيق سمة بعد. قم بتثبيت قالب من تبويب القالب لإعداد سمتك.",
+      "colors": "الألوان",
+      "colorsDescription": "تخصيص لوحة ألوان متجرك",
+      "borderRadius": "نصف قطر الحدود",
+      "behavior": "السلوك",
+      "enableAnimations": "تفعيل الحركة",
+      "enableDarkMode": "تفعيل وضع الأظلام",
+      "darkModeDefault": "الوضع الافتراضي أظلام",
+      "showDarkModeToggle": "إظهار زر تبديل الظلام في الرأس"
+    },
+    "dangerZone": {
+      "title": "منطقة الخطر",
+      "description": "حذف هذا المتجر وجميع بياناته نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+      "deleteStore": "حذف المتجر",
+      "storeDeleted": "تم حذف المتجر بنجاح",
+      "deleteFailed": "فشل حذف المتجر",
+      "deleteWarning": "سيؤدي هذا إلى الحذف الدائم لجميع المنتجات والطلبات والعملاء والصفحات والإعدادات.",
+      "confirmSlugHint": "اكتب",
+      "confirmSlugHintEnd": "للتأكيد:",
+      "confirmDelete": "نعم، حذف المتجر"
     },
     "pages": {
       "title": "الصفحات",

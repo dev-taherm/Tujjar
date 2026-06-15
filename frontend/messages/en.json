@@ -752,14 +752,18 @@
     "visitStore": "Visit Store",
     "tabs": {
       "general": "General",
+      "branding": "Branding",
       "navigation": "Navigation",
       "template": "Template",
       "theme": "Theme",
+      "domains": "Domains",
       "pages": "Pages"
     },
     "general": {
       "title": "General Settings",
       "storeName": "Store Name",
+      "storeUrl": "Store URL",
+      "storeUrlDescription": "Your store's public address",
       "description": "Description",
       "descriptionPlaceholder": "A brief description of your store",
       "seoTitle": "SEO Title",
@@ -768,6 +772,16 @@
       "seoDescriptionPlaceholder": "Page description for search engines",
       "saveChanges": "Save Changes"
     },
+    "branding": {
+      "logoAndFavicon": "Logo & Favicon",
+      "logoDescription": "Upload your store logo and favicon",
+      "storeLogo": "Store Logo",
+      "favicon": "Favicon",
+      "uploadLogo": "Upload Logo",
+      "uploadFavicon": "Upload",
+      "socialLinks": "Social Links",
+      "socialLinksDescription": "Add links to your social media profiles"
+    },
     "template": {
       "title": "Current Template",
       "description": "This store uses a custom template. Install a new one below to replace it."
@@ -775,7 +789,26 @@
     "theme": {
       "title": "Theme",
       "description": "Manage your store's visual theme.",
-      "noTheme": "No theme applied yet. Install a template from the Template tab to set up your theme."
+      "noTheme": "No theme applied yet. Install a template from the Template tab to set up your theme.",
+      "colors": "Colors",
+      "colorsDescription": "Customize your store's color palette",
+      "borderRadius": "Border Radius",
+      "behavior": "Behavior",
+      "enableAnimations": "Enable Animations",
+      "enableDarkMode": "Enable Dark Mode Toggle",
+      "darkModeDefault": "Default to Dark Mode",
+      "showDarkModeToggle": "Show Dark Mode Toggle in Header"
+    },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "description": "Permanently delete this store and all its data. This action cannot be undone.",
+      "deleteStore": "Delete Store",
+      "storeDeleted": "Store deleted successfully",
+      "deleteFailed": "Failed to delete store",
+      "deleteWarning": "This will permanently delete all products, orders, customers, pages, and settings.",
+      "confirmSlugHint": "Type",
+      "confirmSlugHintEnd": "to confirm:",
+      "confirmDelete": "Yes, Delete Store"
     },
     "pages": {
       "title": "Pages",

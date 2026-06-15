@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button, Input, Card, CardHeader, CardTitle, CardContent, Badge } from "@/shared/ui";
+import { toast } from "sonner";
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
-import { useUpdateStore } from "@/api/queries";
+import { useUpdateStore, useDeleteStore } from "@/api/queries";
 import { usePages } from "@/api/pages";
 import { TemplateBrowser } from "@/features/templates/template-browser";
-import type { Store } from "@/shared/types";
+import { StoreDomains } from "./store-domains";
+import type { Store, ThemeConfig } from "@/shared/types";
 
 const BLOCKED_URL_PROTOCOLS = ["javascript:", "data:", "vbscript:"];
 function validateUrl(url: string): boolean {
@@ -34,6 +37,13 @@ import {
   Trash2,
   GripVertical,
   Navigation,
+  Image,
+  LinkIcon,
+  Upload,
+  Copy,
+  AlertTriangle,
+  Check,
+  X,
 } from "lucide-react";
 
 const settingsSchema = z.object({
@@ -45,7 +55,7 @@ const settingsSchema = z.object({
 
 type SettingsForm = z.infer<typeof settingsSchema>;
 
-type TabId = "general" | "navigation" | "template" | "theme" | "pages";
+type TabId = "general" | "branding" | "navigation" | "template" | "theme" | "domains" | "pages";
 
 interface StoreSettingsFormProps {
   store: Store;
@@ -58,23 +68,25 @@ export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
 
   const TABS: { id: TabId; label: string; icon: typeof Settings }[] = [
     { id: "general", label: t("tabs.general"), icon: Settings },
+    { id: "branding", label: t("tabs.branding") || "Branding", icon: Image },
     { id: "navigation", label: t("tabs.navigation") || "Navigation", icon: Navigation },
     { id: "template", label: t("tabs.template"), icon: LayoutTemplate },
     { id: "theme", label: t("tabs.theme"), icon: Palette },
+    { id: "domains", label: t("tabs.domains") || "Domains", icon: Globe },
     { id: "pages", label: t("tabs.pages"), icon: FileText },
   ];
 
   return (
     <div className="space-y-6">
       <div className="border-b border-gray-200">
-        <nav className="-mb-px flex gap-6">
+        <nav className="-mb-px flex gap-6 overflow-x-auto">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? "border-blue-600 text-blue-600"
                     : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -89,10 +101,14 @@ export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
       </div>
 
       {activeTab === "general" && <GeneralTab store={store} />}
+      {activeTab === "branding" && <BrandingTab store={store} />}
       {activeTab === "navigation" && <NavigationTab store={store} />}
       {activeTab === "template" && <TemplateTab store={store} />}
       {activeTab === "theme" && <ThemeTab store={store} />}
+      {activeTab === "domains" && <DomainsTab store={store} />}
       {activeTab === "pages" && <PagesTab store={store} locale={locale} />}
+
+      <DangerZone store={store} />
     </div>
   );
 }
@@ -101,8 +117,10 @@ export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
 
 function GeneralTab({ store }: { store: Store }) {
   const t = useTranslations("storeSettings.general");
+  const tc = useTranslations("common");
   const updateStore = useUpdateStore();
   const [editLocale, setEditLocale] = useState("en");
+  const [copied, setCopied] = useState(false);
 
   const getTranslation = (field: string) => {
     if (editLocale === "en") return "";
@@ -158,6 +176,17 @@ function GeneralTab({ store }: { store: Store }) {
         },
       });
     }
+    toast.success(tc("saved"));
+  };
+
+  const storeUrl = store.custom_domain
+    ? `https://${store.custom_domain}`
+    : `https://${store.slug}.tujjar.com`;
+
+  const copyUrl = () => {
+    navigator.clipboard.writeText(storeUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const descriptionPlaceholder = editLocale === "en"
@@ -165,48 +194,253 @@ function GeneralTab({ store }: { store: Store }) {
     : `Enter ${editLocale === "ar" ? "Arabic" : editLocale} description...`;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <div className="space-y-6">
+      {/* Store URL */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>{t("title")}</CardTitle>
-            <LocaleToggle value={editLocale} onChange={handleLocaleChange} />
-          </div>
+          <CardTitle>{t("storeUrl") || "Store URL"}</CardTitle>
+          <CardDescription>{t("storeUrlDescription") || "Your store's public address"}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {editLocale !== "en" && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
-              Editing {editLocale === "ar" ? "Arabic" : editLocale} translations. English values are used as fallback.
+        <CardContent>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 font-mono text-sm text-gray-700">
+              {storeUrl}
             </div>
-          )}
-          <Input
-            label={t("storeName")}
-            error={errors.name?.message}
-            {...register("name")}
-          />
-          <Input
-            label={t("description")}
-            placeholder={descriptionPlaceholder}
-            {...register("description")}
-          />
-          <Input
-            label={t("seoTitle")}
-            placeholder={editLocale !== "en" ? `SEO title in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoTitlePlaceholder")}
-            {...register("seo_title")}
-          />
-          <Input
-            label={t("seoDescription")}
-            placeholder={editLocale !== "en" ? `SEO description in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoDescriptionPlaceholder")}
-            {...register("seo_description")}
-          />
-          <div className="flex justify-end">
-            <Button type="submit" isLoading={isSubmitting} disabled={!isDirty}>
-              {t("saveChanges")}
+            <Button variant="outline" size="sm" onClick={copyUrl}>
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
+            <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm">
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </a>
           </div>
         </CardContent>
       </Card>
-    </form>
+
+      {/* General Details */}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>{t("title")}</CardTitle>
+              <LocaleToggle value={editLocale} onChange={handleLocaleChange} />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {editLocale !== "en" && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+                Editing {editLocale === "ar" ? "Arabic" : editLocale} translations. English values are used as fallback.
+              </div>
+            )}
+            <Input
+              label={t("storeName")}
+              error={errors.name?.message}
+              {...register("name")}
+            />
+            <Input
+              label={t("description")}
+              placeholder={descriptionPlaceholder}
+              {...register("description")}
+            />
+            <Input
+              label={t("seoTitle")}
+              placeholder={editLocale !== "en" ? `SEO title in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoTitlePlaceholder")}
+              {...register("seo_title")}
+            />
+            <Input
+              label={t("seoDescription")}
+              placeholder={editLocale !== "en" ? `SEO description in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoDescriptionPlaceholder")}
+              {...register("seo_description")}
+            />
+            <div className="flex justify-end">
+              <Button type="submit" isLoading={isSubmitting} disabled={!isDirty}>
+                {t("saveChanges")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+    </div>
+  );
+}
+
+/* ── Branding Tab ─────────────────────────────────────────────────────── */
+
+function BrandingTab({ store }: { store: Store }) {
+  const t = useTranslations("storeSettings.branding");
+  const tc = useTranslations("common");
+  const updateStore = useUpdateStore();
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>(
+    store.footer_config?.social_links || {}
+  );
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
+
+  const SOCIAL_PLATFORMS = [
+    { key: "facebook", label: "Facebook", placeholder: "https://facebook.com/..." },
+    { key: "twitter", label: "Twitter / X", placeholder: "https://x.com/..." },
+    { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/..." },
+    { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/..." },
+    { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/..." },
+    { key: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/..." },
+    { key: "pinterest", label: "Pinterest", placeholder: "https://pinterest.com/..." },
+  ];
+
+  const handleFileUpload = async (file: File, field: "logo" | "favicon") => {
+    const BLOCKED = [".php", ".exe", ".bat", ".sh", ".js", ".vbs", ".svg", ".svgz"];
+    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    if (BLOCKED.includes(ext)) {
+      toast.error(`File type "${ext}" is not allowed`);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File exceeds 5MB limit");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const { apiClient } = await import("@/api/client");
+      const { data } = await apiClient.post("/media/upload/", formData);
+      await updateStore.mutateAsync({ id: store.id, [field]: data.url || data.file });
+      toast.success(tc("saved"));
+    } catch {
+      toast.error("Upload failed");
+    }
+  };
+
+  const handleSaveSocialLinks = async () => {
+    for (const [, url] of Object.entries(socialLinks)) {
+      if (url && !validateUrl(url)) {
+        toast.error("URLs containing javascript:, data:, or vbscript: are not allowed");
+        return;
+      }
+    }
+    await updateStore.mutateAsync({
+      id: store.id,
+      footer_config: {
+        ...(store.footer_config || {}),
+        social_links: socialLinks,
+      } as Store["footer_config"],
+    });
+    toast.success(tc("saved"));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Logo & Favicon */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("logoAndFavicon") || "Logo & Favicon"}</CardTitle>
+          <CardDescription>{t("logoDescription") || "Upload your store logo and favicon"}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-6">
+            {/* Logo */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">{t("storeLogo") || "Store Logo"}</label>
+              <div className="flex items-center gap-4">
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden">
+                  {store.logo ? (
+                    <img src={store.logo} alt="Logo" className="h-full w-full object-contain p-2" />
+                  ) : (
+                    <Image className="h-8 w-8 text-gray-400" />
+                  )}
+                </div>
+                <div>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file, "logo");
+                    }}
+                  />
+                  <Button variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
+                    <Upload className="me-1 h-4 w-4" /> {t("uploadLogo") || "Upload Logo"}
+                  </Button>
+                  <p className="mt-1 text-xs text-gray-500">PNG, JPG, WebP. Max 5MB.</p>
+                </div>
+              </div>
+            </div>
+            {/* Favicon */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">{t("favicon") || "Favicon"}</label>
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden">
+                  {store.favicon ? (
+                    <img src={store.favicon} alt="Favicon" className="h-full w-full object-contain p-1" />
+                  ) : (
+                    <Image className="h-6 w-6 text-gray-400" />
+                  )}
+                </div>
+                <div>
+                  <input
+                    ref={faviconInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file, "favicon");
+                    }}
+                  />
+                  <Button variant="outline" size="sm" onClick={() => faviconInputRef.current?.click()}>
+                    <Upload className="me-1 h-4 w-4" /> {t("uploadFavicon") || "Upload"}
+                  </Button>
+                  <p className="mt-1 text-xs text-gray-500">32x32 or 64x64. Max 5MB.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Social Links */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>{t("socialLinks") || "Social Links"}</CardTitle>
+              <CardDescription>{t("socialLinksDescription") || "Add links to your social media profiles"}</CardDescription>
+            </div>
+            <Button onClick={handleSaveSocialLinks} isLoading={updateStore.isPending}>
+              {tc("save")}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {SOCIAL_PLATFORMS.map(({ key, label, placeholder }) => (
+            <div key={key} className="flex items-center gap-2">
+              <span className="w-24 text-sm font-medium text-gray-600">{label}</span>
+              <Input
+                placeholder={placeholder}
+                value={socialLinks[key] || ""}
+                onChange={(e) => setSocialLinks((prev) => ({ ...prev, [key]: e.target.value }))}
+                className="flex-1"
+              />
+              {socialLinks[key] && (
+                <button
+                  type="button"
+                  onClick={() => setSocialLinks((prev) => {
+                    const next = { ...prev };
+                    delete next[key];
+                    return next;
+                  })}
+                  className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -237,6 +471,7 @@ interface FooterData {
 
 function NavigationTab({ store }: { store: Store }) {
   const t = useTranslations("storeSettings");
+  const tc = useTranslations("common");
   const updateStore = useUpdateStore();
   const [editLocale, setEditLocale] = useState("en");
 
@@ -371,7 +606,7 @@ function NavigationTab({ store }: { store: Store }) {
     const allLinks = [...(navData.links || []), ...(navData.cta_button?.url ? [{ url: navData.cta_button.url }] : [])];
     for (const link of allLinks) {
       if (link.url && !validateUrl(link.url)) {
-        alert("URLs containing javascript:, data:, or vbscript: are not allowed");
+        toast.error("URLs containing javascript:, data:, or vbscript: are not allowed");
         return;
       }
     }
@@ -387,13 +622,14 @@ function NavigationTab({ store }: { store: Store }) {
         cta_button: navData.cta_button,
       } as Store["navigation"],
     });
+    toast.success(tc("saved"));
   };
 
   const handleSaveFooter = async () => {
     for (const col of footerData.columns || []) {
       for (const link of col.links || []) {
         if (link.url && !validateUrl(link.url)) {
-          alert("URLs containing javascript:, data:, or vbscript: are not allowed");
+          toast.error("URLs containing javascript:, data:, or vbscript: are not allowed");
           return;
         }
       }
@@ -412,6 +648,7 @@ function NavigationTab({ store }: { store: Store }) {
         social_links: footerData.social_links || {},
       } as Store["footer_config"],
     });
+    toast.success(tc("saved"));
   };
 
   return (
@@ -653,19 +890,151 @@ function TemplateTab({ store }: { store: Store }) {
 
 function ThemeTab({ store }: { store: Store }) {
   const t = useTranslations("storeSettings.theme");
+  const tc = useTranslations("common");
+  const updateStore = useUpdateStore();
+
+  const theme = (store.theme as unknown as { config?: ThemeConfig })?.config || {} as ThemeConfig;
+  const colors = theme.colors || ({} as ThemeConfig["colors"]);
+  const borderRadius = theme.borderRadius || ({} as ThemeConfig["borderRadius"]);
+  const animations = theme.animations || { enabled: true, duration: "0.3s", easing: "ease" };
+  const darkMode = theme.darkMode || { enabled: false, default: false, toggle: true };
+
+  const [themeColors, setThemeColors] = useState(colors);
+  const [themeRadius, setThemeRadius] = useState(borderRadius);
+  const [themeAnimations, setThemeAnimations] = useState(animations);
+  const [themeDarkMode, setThemeDarkMode] = useState(darkMode);
+
+  const COLOR_FIELDS = [
+    { key: "primary" as const, label: "Primary" },
+    { key: "secondary" as const, label: "Secondary" },
+    { key: "accent" as const, label: "Accent" },
+    { key: "background" as const, label: "Background" },
+    { key: "surface" as const, label: "Surface" },
+    { key: "text" as const, label: "Text" },
+    { key: "textSecondary" as const, label: "Text Secondary" },
+    { key: "border" as const, label: "Border" },
+    { key: "error" as const, label: "Error" },
+    { key: "success" as const, label: "Success" },
+    { key: "warning" as const, label: "Warning" },
+  ];
+
+  const handleSaveTheme = async () => {
+    await updateStore.mutateAsync({
+      id: store.id,
+      settings: {
+        ...((store.settings || {}) as Record<string, unknown>),
+        theme: {
+          colors: themeColors,
+          borderRadius: themeRadius,
+          animations: themeAnimations,
+          darkMode: themeDarkMode,
+        },
+      },
+    });
+    toast.success(tc("saved"));
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-500">
-          {store.theme ? t("description") : t("noTheme")}
-        </p>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      {/* Colors */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("colors") || "Colors"}</CardTitle>
+          <CardDescription>{t("colorsDescription") || "Customize your store's color palette"}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            {COLOR_FIELDS.map(({ key, label }) => (
+              <div key={key} className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={themeColors[key] || "#000000"}
+                  onChange={(e) => setThemeColors((prev) => ({ ...prev, [key]: e.target.value }))}
+                  className="h-8 w-8 cursor-pointer rounded border border-gray-200"
+                />
+                <div>
+                  <p className="text-xs font-medium text-gray-700">{label}</p>
+                  <p className="text-xs text-gray-400 font-mono">{themeColors[key] || "#000000"}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Border Radius */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("borderRadius") || "Border Radius"}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {(["small", "medium", "large", "full"] as const).map((key) => (
+              <div key={key}>
+                <label className="mb-1 block text-sm font-medium text-gray-700 capitalize">{key}</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max="32"
+                    value={themeRadius[key] || 0}
+                    onChange={(e) => setThemeRadius((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
+                    className="flex-1"
+                  />
+                  <span className="w-8 text-right text-xs text-gray-500">{themeRadius[key] || 0}px</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Animations & Dark Mode */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("behavior") || "Behavior"}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Toggle
+            label={t("enableAnimations") || "Enable Animations"}
+            enabled={themeAnimations.enabled}
+            onToggle={() => setThemeAnimations((prev) => ({ ...prev, enabled: !prev.enabled }))}
+          />
+          <Toggle
+            label={t("enableDarkMode") || "Enable Dark Mode Toggle"}
+            enabled={themeDarkMode.enabled}
+            onToggle={() => setThemeDarkMode((prev) => ({ ...prev, enabled: !prev.enabled }))}
+          />
+          {themeDarkMode.enabled && (
+            <Toggle
+              label={t("darkModeDefault") || "Default to Dark Mode"}
+              enabled={themeDarkMode.default}
+              onToggle={() => setThemeDarkMode((prev) => ({ ...prev, default: !prev.default }))}
+            />
+          )}
+          {themeDarkMode.enabled && (
+            <Toggle
+              label={t("showDarkModeToggle") || "Show Dark Mode Toggle in Header"}
+              enabled={themeDarkMode.toggle}
+              onToggle={() => setThemeDarkMode((prev) => ({ ...prev, toggle: !prev.toggle }))}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSaveTheme} isLoading={updateStore.isPending}>
+          {tc("save")}
+        </Button>
+      </div>
+    </div>
   );
+}
+
+/* ── Domains Tab ─────────────────────────────────────────────────────── */
+
+function DomainsTab({ store }: { store: Store }) {
+  return <StoreDomains storeId={store.id} />;
 }
 
 /* ── Pages Tab ───────────────────────────────────────────────────────── */
@@ -745,6 +1114,72 @@ function PagesTab({ store, locale }: { store: Store; locale: string }) {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ── Danger Zone ─────────────────────────────────────────────────────── */
+
+function DangerZone({ store }: { store: Store }) {
+  const t = useTranslations("storeSettings.dangerZone");
+  const tc = useTranslations("common");
+  const router = useRouter();
+  const deleteStore = useDeleteStore();
+  const [confirmSlug, setConfirmSlug] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleDelete = async () => {
+    if (confirmSlug !== store.slug) return;
+    try {
+      await deleteStore.mutateAsync(store.id);
+      toast.success(t("storeDeleted") || "Store deleted");
+      router.push("/");
+    } catch {
+      toast.error(t("deleteFailed") || "Failed to delete store");
+    }
+  };
+
+  return (
+    <Card className="border-red-200">
+      <CardHeader>
+        <CardTitle className="text-red-600">{t("title") || "Danger Zone"}</CardTitle>
+        <CardDescription>{t("description") || "Permanently delete this store and all its data. This action cannot be undone."}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!showConfirm ? (
+          <Button variant="destructive" onClick={() => setShowConfirm(true)}>
+            <Trash2 className="me-1 h-4 w-4" /> {t("deleteStore") || "Delete Store"}
+          </Button>
+        ) : (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <AlertTriangle className="mb-1 inline h-4 w-4" /> {t("deleteWarning") || "This will permanently delete all products, orders, customers, pages, and settings."}
+            </div>
+            <p className="text-sm text-gray-600">
+              {t("confirmSlugHint") || "Type"} <span className="font-mono font-bold">{store.slug}</span> {t("confirmSlugHintEnd") || "to confirm:"}
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder={store.slug}
+                value={confirmSlug}
+                onChange={(e) => setConfirmSlug(e.target.value)}
+                className="max-w-xs"
+              />
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={confirmSlug !== store.slug}
+                isLoading={deleteStore.isPending}
+              >
+                {t("confirmDelete") || "Yes, Delete Store"}
+              </Button>
+              <Button variant="outline" onClick={() => { setShowConfirm(false); setConfirmSlug(""); }}>
+                {tc("cancel")}
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>
