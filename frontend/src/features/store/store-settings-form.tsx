@@ -51,6 +51,8 @@ const settingsSchema = z.object({
   description: z.string().optional(),
   seo_title: z.string().optional(),
   seo_description: z.string().optional(),
+  og_image: z.string().optional(),
+  twitter_card: z.enum(["summary", "summary_large_image"]).optional(),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -253,6 +255,26 @@ function GeneralTab({ store }: { store: Store }) {
               placeholder={editLocale !== "en" ? `SEO description in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoDescriptionPlaceholder")}
               {...register("seo_description")}
             />
+
+            {/* Twitter Card Type */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{t("twitterCard") || "Twitter Card Type"}</label>
+              <select
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                {...register("twitter_card")}
+              >
+                <option value="summary_large_image">Summary Large Image</option>
+                <option value="summary">Summary</option>
+              </select>
+            </div>
+
+            {/* SEO Preview */}
+            <SeoPreview
+              title={watch("seo_title") || watch("name") || store.name}
+              description={watch("seo_description") || store.description}
+              url={storeUrl}
+            />
+
             <div className="flex justify-end">
               <Button type="submit" isLoading={isSubmitting} disabled={!isDirty}>
                 {t("saveChanges")}
@@ -261,6 +283,23 @@ function GeneralTab({ store }: { store: Store }) {
           </CardContent>
         </Card>
       </form>
+    </div>
+  );
+}
+
+/* ── SEO Preview ─────────────────────────────────────────────────────── */
+
+function SeoPreview({ title, description, url }: { title: string; description: string; url: string }) {
+  const t = useTranslations("storeSettings.general");
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <p className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{t("seoPreview") || "Search Engine Preview"}</p>
+      <div className="space-y-1">
+        <p className="text-[15px] font-medium text-blue-700 leading-snug truncate">{title || "Page Title"}</p>
+        <p className="text-xs text-green-700 truncate">{url}</p>
+        <p className="text-xs text-gray-500 line-clamp-2">{description || "Page description will appear here in search results..."}</p>
+      </div>
     </div>
   );
 }

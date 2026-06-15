@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from django.db.models import Q
 from django.core.cache import cache
+from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -286,3 +288,86 @@ class StorefrontPageView(generics.RetrieveAPIView):
         page = self.get_object()
         locale = _get_locale(request)
         return Response(_resolve_page(page, locale))
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def robots_txt(request, subdomain=None):
+    """Generate robots.txt for a store."""
+    store = get_store_by_slug(subdomain)
+    if not store:
+        return HttpResponse("User-agent: *\nDisallow: /", content_type="text/plain", status=404)
+
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "",
+    ]
+    pages = Page.objects.filter(
+        organization=store.organization,
+        store=store,
+        is_published=True,
+    ).values_list("slug", flat=True)
+    for slug in pages:
+        lines.append(f"Disallow: /{slug}/" if slug != "home" else "")
+    lines.append("")
+    lines.append(f"Sitemap: https://{store.domain}/sitemap.xml")
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def sitemap_xml(request, subdomain=None):
+    """Generate sitemap.xml for a store."""
+    store = get_store_by_slug(subdomain)
+    if not store:
+        return HttpResponse('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>', content_type="application/xml", status=404)
+
+    now = timezone.now().strftime("%Y-%m-%d")
+    base_url = f"https://{store.domain}"
+
+    urls = []
+
+    # Homepage
+    urls.append(f"""  <url>
+    <loc>{base_url}/</loc>
+    <lastmod>{now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>""")
+
+    # Products
+    products = Product.objects.filter(
+        organization=store.organization,
+        status="active",
+    ).values_list("slug", "updated_at")
+    for slug, updated_at in products:
+        lastmod = (updated_at or now).strftime("%Y-%m-%d") if hasattr(updated_at, "strftime") else now
+        urls.append(f"""  <url>
+    <loc>{base_url}/products/{slug}/</loc>
+    <lastmod>{lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>""")
+
+    # Pages
+    pages = Page.objects.filter(
+        organization=store.organization,
+        store=store,
+        is_published=True,
+    ).values_list("slug", "updated_at")
+    for slug, updated_at in pages:
+        lastmod = (updated_at or now).strftime("%Y-%m-%d") if hasattr(updated_at, "strftime") else now
+        urls.append(f"""  <url>
+    <loc>{base_url}/{slug}/</loc>
+    <lastmod>{lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>""")
+
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{chr(10).join(urls)}
+</urlset>"""
+
+    return HttpResponse(xml, content_type="application/xml")

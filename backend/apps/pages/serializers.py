@@ -42,6 +42,8 @@ class PageSerializer(serializers.ModelSerializer):
             "theme_override",
             "seo_title",
             "seo_description",
+            "og_image",
+            "twitter_card",
             "translations",
             "is_published",
             "published_at",

@@ -108,6 +108,8 @@ export interface Store {
   settings: Record<string, unknown>;
   seo_title: string;
   seo_description: string;
+  og_image: string | null;
+  twitter_card: "summary" | "summary_large_image";
   is_active: boolean;
   translations?: Record<string, { name?: string; description?: string; seo_title?: string; seo_description?: string }>;
   domain: string;

@@ -768,6 +768,8 @@
       "seoDescription": "وصف SEO",
       "seoTitlePlaceholder": "عنوان الصفحة لمحركات البحث",
       "seoDescriptionPlaceholder": "وصف الصفحة لمحركات البحث",
+      "seoPreview": "معاينة محرك البحث",
+      "twitterCard": "نوع بطاقة تويتر",
       "saveChanges": "حفظ التغييرات"
     },
     "branding": {

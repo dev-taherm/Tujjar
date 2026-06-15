@@ -7,11 +7,15 @@ from apps.storefront.views import (
     StorefrontCategoryListView,
     StorefrontCollectionListView,
     StorefrontPageView,
+    robots_txt,
+    sitemap_xml,
 )
 
 app_name = "storefront"
 
 urlpatterns = [
+    path("<str:subdomain>/robots.txt", robots_txt, name="storefront-robots"),
+    path("<str:subdomain>/sitemap.xml", sitemap_xml, name="storefront-sitemap"),
     path("<str:subdomain>/", storefront_home, name="storefront-home"),
     path("<str:subdomain>/products/", StorefrontProductListView.as_view(), name="storefront-products"),
     path("<str:subdomain>/products/<slug:slug>/", StorefrontProductDetailView.as_view(), name="storefront-product-detail"),

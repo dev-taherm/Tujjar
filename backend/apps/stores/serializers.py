@@ -55,6 +55,8 @@ class StoreSerializer(serializers.ModelSerializer):
             "settings",
             "seo_title",
             "seo_description",
+            "og_image",
+            "twitter_card",
             "is_active",
             "navigation",
             "footer_config",

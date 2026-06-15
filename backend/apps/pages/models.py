@@ -50,6 +50,21 @@ class Page(UUIDModel, TimeStampedModel):
     )
     seo_title = models.CharField(max_length=255, blank=True, default="")
     seo_description = models.TextField(blank=True, default="")
+    og_image = models.ForeignKey(
+        "media.MediaAsset",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="page_og_images",
+    )
+    twitter_card = models.CharField(
+        max_length=20,
+        choices=[
+            ("summary", "Summary"),
+            ("summary_large_image", "Summary Large Image"),
+        ],
+        default="summary_large_image",
+    )
     translations = models.JSONField(
         default=dict, blank=True,
         help_text='Per-locale translations, e.g. {"ar": {"title": "...", "content_schema": {...}}}',

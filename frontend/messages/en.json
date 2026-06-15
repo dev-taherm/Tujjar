@@ -770,6 +770,8 @@
       "seoDescription": "SEO Description",
       "seoTitlePlaceholder": "Page title for search engines",
       "seoDescriptionPlaceholder": "Page description for search engines",
+      "seoPreview": "Search Engine Preview",
+      "twitterCard": "Twitter Card Type",
       "saveChanges": "Save Changes"
     },
     "branding": {
