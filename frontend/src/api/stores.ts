@@ -128,18 +128,6 @@ export function useUpdateStore() {
   });
 }
 
-export function useUpdateStoreSettings() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, settings }: { id: string; settings: Record<string, unknown> }) =>
-      storesApi.updateSettings(id, settings),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["stores"] });
-      queryClient.invalidateQueries({ queryKey: ["stores", variables.id] });
-    },
-  });
-}
-
 export function useDeleteStore() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import copy
+import uuid as _uuid
+
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.utils.text import slugify
@@ -35,11 +38,51 @@ class StoreDomainSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "verified", "created_at"]
 
 
+DEFAULT_NAVIGATION = {
+    "logo_text": "",
+    "links": [
+        {"label": "Home", "url": "/", "order": 0},
+        {"label": "Shop", "url": "/shop", "order": 1},
+    ],
+    "cta_button": {"label": "Shop Now", "url": "/shop", "enabled": True},
+}
+
+DEFAULT_FOOTER = {
+    "columns": [
+        {
+            "title": "Shop",
+            "links": [
+                {"label": "All Products", "url": "/shop"},
+                {"label": "Collections", "url": "/shop/collections"},
+            ],
+        },
+        {
+            "title": "Help",
+            "links": [
+                {"label": "FAQ", "url": "/faq"},
+                {"label": "Shipping", "url": "/shipping"},
+                {"label": "Returns", "url": "/returns"},
+            ],
+        },
+        {
+            "title": "Company",
+            "links": [
+                {"label": "About Us", "url": "/about"},
+                {"label": "Contact", "url": "/contact"},
+            ],
+        },
+    ],
+    "copyright": "",
+    "social_links": {},
+}
+
+
 class StoreSerializer(serializers.ModelSerializer):
     domain = serializers.ReadOnlyField()
     domains = StoreDomainSerializer(many=True, read_only=True)
     logo_url = serializers.SerializerMethodField()
     favicon_url = serializers.SerializerMethodField()
+    og_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Store
@@ -60,6 +103,7 @@ class StoreSerializer(serializers.ModelSerializer):
             "seo_title",
             "seo_description",
             "og_image",
+            "og_image_url",
             "twitter_card",
             "is_active",
             "navigation",
@@ -70,7 +114,7 @@ class StoreSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "organization", "created_at", "updated_at"]
+        read_only_fields = ["id", "organization", "slug", "custom_domain", "created_at", "updated_at"]
 
     def get_logo_url(self, obj):
         if obj.logo_id:
@@ -84,6 +128,14 @@ class StoreSerializer(serializers.ModelSerializer):
         if obj.favicon_id:
             try:
                 return obj.favicon.file_url
+            except Exception:
+                return None
+        return None
+
+    def get_og_image_url(self, obj):
+        if obj.og_image_id:
+            try:
+                return obj.og_image.file_url
             except Exception:
                 return None
         return None
@@ -199,6 +251,11 @@ class StoreWizardSerializer(serializers.Serializer):
             except MediaAsset.DoesNotExist:
                 pass
 
+        if not validated_data.get("navigation"):
+            validated_data["navigation"] = copy.deepcopy(DEFAULT_NAVIGATION)
+        if not validated_data.get("footer_config"):
+            validated_data["footer_config"] = copy.deepcopy(DEFAULT_FOOTER)
+
         store = Store.objects.create(**validated_data)
 
         if template_id:
@@ -212,34 +269,87 @@ class StoreWizardSerializer(serializers.Serializer):
 
     def _install_template(self, store, template):
         """Apply template to store (theme, navigation, footer, pages, etc.)."""
-        from apps.themes.models import Theme
+        from apps.themes.models import Theme, ThemePreset
 
         if template.config:
+            theme_slug = f"{template.slug}-theme-{store.organization_id}"
+            Theme.objects.filter(slug=theme_slug).delete()
             theme = Theme.objects.create(
-                name=f"{store.name} Theme",
+                name=f"{template.name} Theme",
+                slug=theme_slug,
                 organization=store.organization,
-                config=template.config,
+                config=copy.deepcopy(template.config),
             )
             store.theme = theme
 
+            for preset_data in (template.presets or []):
+                ThemePreset.objects.create(
+                    theme=theme,
+                    name=preset_data["name"],
+                    config=preset_data.get("config", {}),
+                )
+
         if template.navigation:
-            store.navigation = template.navigation
+            store.navigation = copy.deepcopy(template.navigation)
         if template.footer:
-            store.footer_config = template.footer
+            store.footer_config = copy.deepcopy(template.footer)
         if template.store_settings:
             store.settings = template.store_settings
 
         store.template = template
+
+        if template.seo_defaults:
+            store.seo_title = template.seo_defaults.get("title_pattern", "")
+            store.seo_description = template.seo_defaults.get("description_pattern", "")
+
         store.save()
 
         if template.pages:
             from apps.pages.models import Page
-            for page_data in template.pages:
-                if isinstance(page_data, dict):
+            for page_def in template.pages:
+                if isinstance(page_def, dict):
+                    sections = copy.deepcopy(page_def.get("sections", []))
+                    for section in sections:
+                        if "id" not in section:
+                            section["id"] = str(_uuid.uuid4())
+
                     Page.objects.create(
+                        organization_id=store.organization_id,
                         store=store,
-                        title=page_data.get("title", "Page"),
-                        slug=page_data.get("slug", "page"),
-                        content_schema=page_data.get("content_schema", {}),
-                        is_published=page_data.get("is_published", True),
+                        title=page_def.get("title", "Page"),
+                        slug=page_def.get("slug", ""),
+                        page_type=page_def.get("page_type", "custom"),
+                        content_schema={"sections": sections},
+                        seo_title=page_def.get("seo_title", "").replace(
+                            "{{store_name}}", store.name
+                        ),
+                        seo_description=page_def.get("seo_description", "").replace(
+                            "{{store_description}}", store.description or ""
+                        ),
+                        is_published=page_def.get("is_published", True),
                     )
+
+        if template.demo_content:
+            from apps.products.models import Collection, Category
+            for coll_data in template.demo_content.get("collections", []):
+                Collection.objects.get_or_create(
+                    organization_id=store.organization_id,
+                    store=store,
+                    slug=coll_data["slug"],
+                    defaults={
+                        "name": coll_data["name"],
+                        "description": coll_data.get("description", ""),
+                        "translations": coll_data.get("translations", {}),
+                    },
+                )
+            for cat_data in template.demo_content.get("categories", []):
+                Category.objects.get_or_create(
+                    organization_id=store.organization_id,
+                    store=store,
+                    slug=cat_data["slug"],
+                    defaults={
+                        "name": cat_data["name"],
+                        "description": cat_data.get("description", ""),
+                        "translations": cat_data.get("translations", {}),
+                    },
+                )

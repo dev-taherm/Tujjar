@@ -1,10 +1,9 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui";
 import { ShoppingCart, Heart, Minus, Plus } from "lucide-react";
-import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 
 interface StorefrontVariant {
@@ -33,6 +32,32 @@ export default function StorefrontProductDetailPage({
       return res.json();
     },
   });
+
+  useEffect(() => {
+    if (product) {
+      document.title = product.seo_title || product.title || "";
+      const setMeta = (name: string, content: string) => {
+        let el = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`) as HTMLMetaElement;
+        if (!el) {
+          el = document.createElement("meta");
+          if (name.startsWith("og:")) {
+            el.setAttribute("property", name);
+          } else {
+            el.setAttribute("name", name);
+          }
+          document.head.appendChild(el);
+        }
+        el.setAttribute("content", content);
+      };
+      if (product.seo_description || product.description) {
+        setMeta("description", product.seo_description || product.description);
+      }
+      if (product.primary_image?.url) {
+        setMeta("og:image", product.primary_image.url);
+      }
+      setMeta("og:title", product.seo_title || product.title || "");
+    }
+  }, [product]);
 
   if (isLoading) {
     return (

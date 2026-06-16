@@ -31,6 +31,26 @@ interface FooterConfig {
   social_links?: Record<string, string>;
 }
 
+interface ThemeConfig {
+  colors?: Record<string, string>;
+  borderRadius?: Record<string, number>;
+  typography?: {
+    headingFont?: string;
+    bodyFont?: string;
+    baseFontSize?: number;
+    scale?: number;
+    lineHeight?: number;
+  };
+  spacing?: {
+    sectionPaddingY?: number;
+    sectionPaddingX?: number;
+    containerMaxWidth?: number;
+    gridGap?: number;
+  };
+  animations?: { enabled: boolean; duration: string; easing: string };
+  darkMode?: { enabled: boolean; default: boolean; toggle: boolean };
+}
+
 interface StorefrontStore {
   name: string;
   slug: string;
@@ -44,12 +64,7 @@ interface StorefrontStore {
   og_image: string | null;
   twitter_card: string;
   domain: string;
-  theme_config: {
-    colors?: Record<string, string>;
-    borderRadius?: Record<string, number>;
-    typography?: Record<string, unknown>;
-    darkMode?: { enabled: boolean; default: boolean; toggle: boolean };
-  } | null;
+  theme_config: ThemeConfig | null;
 }
 
 const SOCIAL_ICONS: Record<string, typeof Facebook> = {
@@ -129,27 +144,61 @@ export default function StorefrontLayout({
   // Apply theme CSS variables
   useEffect(() => {
     const theme = store?.theme_config;
-    if (!theme?.colors) return;
+    if (!theme) return;
     const root = document.documentElement;
-    const colorMap: Record<string, string> = {
-      primary: "--color-primary",
-      secondary: "--color-secondary",
-      accent: "--color-accent",
-      background: "--color-bg",
-      surface: "--color-surface",
-      text: "--color-text",
-      textSecondary: "--color-text-secondary",
-      border: "--color-border",
-    };
-    for (const [key, cssVar] of Object.entries(colorMap)) {
-      if (theme.colors[key]) {
-        root.style.setProperty(cssVar, theme.colors[key]);
+
+    if (theme.colors) {
+      const colorMap: Record<string, string> = {
+        primary: "--color-primary",
+        secondary: "--color-secondary",
+        accent: "--color-accent",
+        background: "--color-bg",
+        surface: "--color-surface",
+        text: "--color-text",
+        textSecondary: "--color-text-secondary",
+        border: "--color-border",
+        error: "--color-error",
+        success: "--color-success",
+        warning: "--color-warning",
+      };
+      for (const [key, cssVar] of Object.entries(colorMap)) {
+        if (theme.colors[key]) {
+          root.style.setProperty(cssVar, theme.colors[key]);
+        }
       }
     }
+
     if (theme.borderRadius) {
-      root.style.setProperty("--radius-sm", `${theme.borderRadius.small || 4}px`);
-      root.style.setProperty("--radius-md", `${theme.borderRadius.medium || 8}px`);
-      root.style.setProperty("--radius-lg", `${theme.borderRadius.large || 12}px`);
+      root.style.setProperty("--radius-sm", `${theme.borderRadius.small ?? 4}px`);
+      root.style.setProperty("--radius-md", `${theme.borderRadius.medium ?? 8}px`);
+      root.style.setProperty("--radius-lg", `${theme.borderRadius.large ?? 12}px`);
+      root.style.setProperty("--radius-full", `${theme.borderRadius.full ?? 9999}px`);
+    }
+
+    if (theme.typography) {
+      if (theme.typography.headingFont) root.style.setProperty("--font-heading", theme.typography.headingFont);
+      if (theme.typography.bodyFont) root.style.setProperty("--font-body", theme.typography.bodyFont);
+      if (theme.typography.baseFontSize) root.style.setProperty("--font-size-base", `${theme.typography.baseFontSize}px`);
+      if (theme.typography.scale) root.style.setProperty("--font-scale", `${theme.typography.scale}`);
+      if (theme.typography.lineHeight) root.style.setProperty("--line-height-base", `${theme.typography.lineHeight}`);
+    }
+
+    if (theme.spacing) {
+      if (theme.spacing.sectionPaddingY) root.style.setProperty("--section-padding-y", `${theme.spacing.sectionPaddingY}px`);
+      if (theme.spacing.sectionPaddingX) root.style.setProperty("--section-padding-x", `${theme.spacing.sectionPaddingX}px`);
+      if (theme.spacing.containerMaxWidth) root.style.setProperty("--container-max-width", `${theme.spacing.containerMaxWidth}px`);
+      if (theme.spacing.gridGap) root.style.setProperty("--grid-gap", `${theme.spacing.gridGap}px`);
+    }
+
+    if (theme.animations) {
+      root.style.setProperty("--transition-duration", theme.animations.enabled ? (theme.animations.duration || "0.3s") : "0s");
+      root.style.setProperty("--transition-easing", theme.animations.easing || "ease");
+    }
+
+    if (theme.darkMode?.enabled) {
+      root.classList.toggle("dark", theme.darkMode.default);
+    } else {
+      root.classList.remove("dark");
     }
   }, [store?.theme_config]);
 

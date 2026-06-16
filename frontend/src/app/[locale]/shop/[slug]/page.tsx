@@ -139,9 +139,16 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
               {store!.name}
             </h1>
-            <p className="mt-6 text-lg text-gray-600">
-              {t("discoverProducts")}
-            </p>
+            {store!.description && (
+              <p className="mt-6 text-lg text-gray-600">
+                {store!.description}
+              </p>
+            )}
+            {!store!.description && (
+              <p className="mt-6 text-lg text-gray-600">
+                {t("discoverProducts")}
+              </p>
+            )}
             <div className="mt-8 flex gap-4">
               <Link href={`/${locale}/shop/${slug}/shop`}>
                 <Button size="lg">

@@ -12,6 +12,7 @@ import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardConten
 import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useUpdateStore, useDeleteStore, useChangeSlug, useCheckSlug } from "@/api/queries";
+import { useQueryClient } from "@tanstack/react-query";
 import { mediaApi } from "@/api/media";
 import { usePages } from "@/api/pages";
 import { TemplateBrowser } from "@/features/templates/template-browser";
@@ -368,11 +369,13 @@ function BrandingTab({ store }: { store: Store }) {
   const t = useTranslations("storeSettings.branding");
   const tc = useTranslations("common");
   const updateStore = useUpdateStore();
+  const queryClient = useQueryClient();
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>(
     store.footer_config?.social_links || {}
   );
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const ogImageInputRef = useRef<HTMLInputElement>(null);
 
   const SOCIAL_PLATFORMS = [
     { key: "facebook", label: "Facebook", placeholder: "https://facebook.com/..." },
@@ -405,6 +408,27 @@ function BrandingTab({ store }: { store: Store }) {
     }
   };
 
+  const handleOgImageUpload = async (file: File) => {
+    const BLOCKED = [".php", ".exe", ".bat", ".sh", ".js", ".vbs", ".svg", ".svgz"];
+    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    if (BLOCKED.includes(ext)) {
+      toast.error(`File type "${ext}" is not allowed`);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File exceeds 5MB limit");
+      return;
+    }
+
+    try {
+      const asset = await mediaApi.upload(file, undefined, file.name, "og_image for store", store.id);
+      await updateStore.mutateAsync({ id: store.id, og_image: asset.id } as Partial<Store> & { id: string });
+      toast.success(tc("saved"));
+    } catch {
+      toast.error("Upload failed");
+    }
+  };
+
   const handleSaveSocialLinks = async () => {
     for (const [, url] of Object.entries(socialLinks)) {
       if (url && !validateUrl(url)) {
@@ -412,10 +436,11 @@ function BrandingTab({ store }: { store: Store }) {
         return;
       }
     }
+    const latestStore = queryClient.getQueryData<Store>(["stores", store.id]) || store;
     await updateStore.mutateAsync({
       id: store.id,
       footer_config: {
-        ...(store.footer_config || {}),
+        ...(latestStore.footer_config || {}),
         social_links: socialLinks,
       } as Store["footer_config"],
     });
@@ -494,6 +519,44 @@ function BrandingTab({ store }: { store: Store }) {
         </CardContent>
       </Card>
 
+      {/* OG Image */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("ogImage") || "Social Share Image"}</CardTitle>
+          <CardDescription>{t("ogImageDescription") || "Image shown when your store link is shared on social media (1200x630 recommended)"}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="flex h-32 w-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden">
+              {store.og_image_url ? (
+                <img src={store.og_image_url} alt="OG Image" className="h-full w-full object-cover" />
+              ) : (
+                <div className="text-center">
+                  <Image className="mx-auto h-8 w-8 text-gray-400" />
+                  <p className="mt-1 text-xs text-gray-400">1200 x 630</p>
+                </div>
+              )}
+            </div>
+            <div>
+              <input
+                ref={ogImageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleOgImageUpload(file);
+                }}
+              />
+              <Button variant="outline" size="sm" onClick={() => ogImageInputRef.current?.click()}>
+                <Upload className="me-1 h-4 w-4" /> {t("uploadOgImage") || "Upload Image"}
+              </Button>
+              <p className="mt-1 text-xs text-gray-500">PNG, JPG, WebP. Max 5MB.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Social Links */}
       <Card>
         <CardHeader>
@@ -567,6 +630,7 @@ function NavigationTab({ store }: { store: Store }) {
   const t = useTranslations("storeSettings");
   const tc = useTranslations("common");
   const updateStore = useUpdateStore();
+  const queryClient = useQueryClient();
   const [editLocale, setEditLocale] = useState("en");
 
   const nav: NavigationData = store.navigation || {};
@@ -728,6 +792,8 @@ function NavigationTab({ store }: { store: Store }) {
         }
       }
     }
+    const latestStore = queryClient.getQueryData<Store>(["stores", store.id]) || store;
+    const latestSocialLinks = latestStore.footer_config?.social_links || {};
     await updateStore.mutateAsync({
       id: store.id,
       footer_config: {
@@ -739,7 +805,7 @@ function NavigationTab({ store }: { store: Store }) {
           })),
         })),
         copyright: footerData.copyright || "",
-        social_links: footerData.social_links || {},
+        social_links: latestSocialLinks,
       } as Store["footer_config"],
     });
     toast.success(tc("saved"));
