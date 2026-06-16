@@ -201,6 +201,13 @@ class StoreWizardSerializer(serializers.Serializer):
     template_id = serializers.UUIDField(required=False, allow_null=True)
     logo_id = serializers.UUIDField(required=False, allow_null=True)
     custom_domain = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    home_page = serializers.ChoiceField(
+        choices=["/", "/shop", "/shop/blog"],
+        default="/",
+        required=False,
+    )
+    enable_shop = serializers.BooleanField(default=True, required=False)
+    enable_blog = serializers.BooleanField(default=False, required=False)
 
     def validate_slug(self, value):
         if value:
@@ -260,10 +267,38 @@ class StoreWizardSerializer(serializers.Serializer):
             except MediaAsset.DoesNotExist:
                 pass
 
-        if not validated_data.get("navigation"):
-            validated_data["navigation"] = copy.deepcopy(DEFAULT_NAVIGATION)
+        home_page = validated_data.pop("home_page", "/")
+        enable_shop = validated_data.pop("enable_shop", True)
+        enable_blog = validated_data.pop("enable_blog", False)
+
+        if home_page == "/shop":
+            enable_shop = True
+        if home_page == "/shop/blog":
+            enable_blog = True
+
+        links = [{"label": "Home", "url": home_page, "order": 0}]
+        order = 1
+        if enable_shop and home_page != "/shop":
+            links.append({"label": "Shop", "url": "/shop", "order": order})
+            order += 1
+        if enable_blog and home_page != "/shop/blog":
+            links.append({"label": "Blog", "url": "/shop/blog", "order": order})
+            order += 1
+
+        validated_data["navigation"] = {
+            "logo_text": "",
+            "links": links,
+            "cta_button": {
+                "label": "Shop Now",
+                "url": "/shop",
+                "enabled": enable_shop,
+            },
+        }
+
         if not validated_data.get("footer_config"):
             validated_data["footer_config"] = copy.deepcopy(DEFAULT_FOOTER)
+
+        user_navigation = copy.deepcopy(validated_data["navigation"])
 
         with transaction.atomic():
             store = Store.objects.create(**validated_data)
@@ -274,6 +309,9 @@ class StoreWizardSerializer(serializers.Serializer):
                     self._install_template(store, template)
                 except Template.DoesNotExist:
                     pass
+
+            store.navigation = user_navigation
+            store.save(update_fields=["navigation", "updated_at"])
 
         return store
 

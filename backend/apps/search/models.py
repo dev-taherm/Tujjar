@@ -21,6 +21,7 @@ class SearchIndex(UUIDModel, TimeStampedModel):
         COLLECTION = "collection", "Collection"
         CATEGORY = "category", "Category"
         CUSTOMER = "customer", "Customer"
+        BLOG_POST = "blog_post", "Blog Post"
 
     organization = models.ForeignKey(
         "organizations.Organization",

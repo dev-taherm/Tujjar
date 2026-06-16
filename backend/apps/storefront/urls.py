@@ -9,6 +9,11 @@ from apps.storefront.views import (
     StorefrontPageView,
     robots_txt,
     sitemap_xml,
+    storefront_blog_list,
+    storefront_blog_post,
+    storefront_blog_categories,
+    storefront_blog_subscribe,
+    storefront_blog_rss,
 )
 
 app_name = "storefront"
@@ -22,4 +27,9 @@ urlpatterns = [
     path("<str:subdomain>/categories/", StorefrontCategoryListView.as_view(), name="storefront-categories"),
     path("<str:subdomain>/collections/", StorefrontCollectionListView.as_view(), name="storefront-collections"),
     path("<str:subdomain>/pages/<slug:slug>/", StorefrontPageView.as_view(), name="storefront-page"),
+    path("<str:subdomain>/blog/", storefront_blog_list, name="storefront-blog-list"),
+    path("<str:subdomain>/blog/categories/", storefront_blog_categories, name="storefront-blog-categories"),
+    path("<str:subdomain>/blog/subscribe/", storefront_blog_subscribe, name="storefront-blog-subscribe"),
+    path("<str:subdomain>/blog/rss/", storefront_blog_rss, name="storefront-blog-rss"),
+    path("<str:subdomain>/blog/<slug:slug>/", storefront_blog_post, name="storefront-blog-post"),
 ]

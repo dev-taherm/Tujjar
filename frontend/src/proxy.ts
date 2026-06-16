@@ -44,7 +44,12 @@ export function proxy(request: NextRequest) {
     const shopPrefix = `/shop/${slug}`;
     const cleanRest = rest.startsWith(shopPrefix) ? rest.slice(shopPrefix.length) : rest;
 
-    const newPath = `/shop/${slug}${cleanRest === "/" ? "" : cleanRest}`;
+    let pathSuffix = cleanRest === "/" ? "" : cleanRest;
+    if (pathSuffix.startsWith("/blog")) {
+      pathSuffix = `/shop${pathSuffix}`;
+    }
+
+    const newPath = `/shop/${slug}${pathSuffix}`;
     return NextResponse.rewrite(new URL(`/${locale}${newPath}`, request.url));
   }
 

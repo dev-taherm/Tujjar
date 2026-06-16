@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "apps.marketplace",
     "apps.storefront",
     "apps.templates",
+    "apps.blog",
 ]
 
 MIDDLEWARE = [

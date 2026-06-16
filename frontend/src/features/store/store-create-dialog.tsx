@@ -9,9 +9,9 @@ import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardConten
 import { useCreateStoreWizard, useCheckSlug } from "@/api/queries";
 import { useTemplates } from "@/api/templates";
 import { useTranslations } from "next-intl";
-import { Check, ArrowRight, ArrowLeft } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft, Store, PenTool } from "lucide-react";
 
-const STEPS = ["details", "template", "domain"] as const;
+const STEPS = ["details", "template", "features", "domain"] as const;
 type Step = (typeof STEPS)[number];
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -50,6 +50,10 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [customDomain, setCustomDomain] = useState("");
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+
+  const [homePage, setHomePage] = useState<string>("/");
+  const [enableShop, setEnableShop] = useState(true);
+  const [enableBlog, setEnableBlog] = useState(false);
 
   const {
     register,
@@ -94,6 +98,15 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
     setSlugAvailable(null);
   }, [watchSlug, checkSlug]);
 
+  useEffect(() => {
+    if (homePage === "/shop") {
+      setEnableShop(true);
+    }
+    if (homePage === "/shop/blog") {
+      setEnableBlog(true);
+    }
+  }, [homePage]);
+
   const stepIndex = STEPS.indexOf(step);
 
   const handleNext = () => {
@@ -123,6 +136,9 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
         description: data.description,
         template_id: selectedTemplateId,
         custom_domain: customDomain || undefined,
+        home_page: homePage,
+        enable_shop: enableShop,
+        enable_blog: enableBlog,
       });
       toast.success(t("storeCreated"));
       onClose();
@@ -162,6 +178,7 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
           <CardDescription>
             {step === "details" && t("wizardStepDetails")}
             {step === "template" && t("wizardStepTemplate")}
+            {step === "features" && t("wizardStepFeatures")}
             {step === "domain" && t("wizardStepDomain")}
           </CardDescription>
         </CardHeader>
@@ -208,6 +225,49 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
             </div>
           )}
 
+          {step === "features" && (
+            <div className="space-y-6">
+              <p className="text-sm text-gray-600">{t("wizardFeaturesHint")}</p>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">{t("homePage")}</label>
+                <select
+                  value={homePage}
+                  onChange={(e) => setHomePage(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="/">{t("homePageHomepage")}</option>
+                  <option value="/shop">{t("homePageShop")}</option>
+                  <option value="/shop/blog">{t("homePageBlog")}</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-500">{t("homePageHint")}</p>
+              </div>
+
+              <div className="space-y-3">
+                <FeatureToggle
+                  icon={<Store className="h-5 w-5" />}
+                  label={t("enableShop")}
+                  description={t("enableShopDescription")}
+                  enabled={enableShop}
+                  onChange={setEnableShop}
+                  disabled={homePage === "/shop"}
+                />
+                <FeatureToggle
+                  icon={<PenTool className="h-5 w-5" />}
+                  label={t("enableBlog")}
+                  description={t("enableBlogDescription")}
+                  enabled={enableBlog}
+                  onChange={setEnableBlog}
+                  disabled={homePage === "/shop/blog"}
+                />
+              </div>
+
+              {!enableShop && (
+                <p className="text-xs text-amber-600">{t("ctaDisabledHint")}</p>
+              )}
+            </div>
+          )}
+
           {step === "domain" && (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">{t("wizardDomainHint")}</p>
@@ -248,6 +308,60 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
           )}
         </CardFooter>
       </Card>
+    </div>
+  );
+}
+
+function FeatureToggle({
+  icon,
+  label,
+  description,
+  enabled,
+  onChange,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  enabled: boolean;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div
+      className={`flex items-center justify-between rounded-xl border p-4 transition-colors ${
+        disabled
+          ? "border-gray-100 bg-gray-50 opacity-60"
+          : enabled
+          ? "border-blue-200 bg-blue-50"
+          : "border-gray-200 bg-white hover:border-gray-300"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+          enabled ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-500"
+        }`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-900">{label}</p>
+          <p className="text-xs text-gray-500">{description}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => !disabled && onChange(!enabled)}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+          enabled ? "bg-blue-600" : "bg-gray-300"
+        } ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            enabled ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
     </div>
   );
 }

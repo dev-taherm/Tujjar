@@ -23,6 +23,7 @@ import {
   Shield,
   LayoutTemplate,
   ScrollText,
+  PenTool,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
@@ -34,6 +35,7 @@ const navigation = [
   { nameKey: "orders", href: "/dashboard/orders", icon: ShoppingCart },
   { nameKey: "customers", href: "/dashboard/customers", icon: Users },
   { nameKey: "pages", href: "/dashboard/pages", icon: FileText },
+  { nameKey: "blog", href: "/dashboard/blog", icon: PenTool },
   { nameKey: "themes", href: "/dashboard/themes", icon: Palette },
   { nameKey: "templates", href: "/dashboard/templates", icon: LayoutTemplate },
   { nameKey: "marketplace", href: "/dashboard/marketplace", icon: Palette },

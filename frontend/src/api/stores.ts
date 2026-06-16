@@ -26,6 +26,9 @@ export const storesApi = {
     template_id?: string | null;
     logo_id?: string | null;
     custom_domain?: string;
+    home_page?: string;
+    enable_shop?: boolean;
+    enable_blog?: boolean;
   }): Promise<Store> => {
     const { data } = await apiClient.post("/stores/wizard/", payload);
     return data;

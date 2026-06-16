@@ -64,6 +64,7 @@ urlpatterns = [
     path("api/v1/templates/", include("apps.templates.urls")),
     path("api/v1/audit/", include("apps.audit.urls")),
     path("api/v1/store/", include("apps.storefront.urls")),
+    path("api/v1/blog/", include("apps.blog.urls")),
 ]
 
 # API documentation — only available in debug mode (not in production)
