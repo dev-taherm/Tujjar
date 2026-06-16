@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import logging
+import subprocess
 
+from django.conf import settings as django_settings
 from django.core.cache import cache
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
@@ -87,25 +89,21 @@ class StoreSlugChangeView(AuditLogMixin, APIView):
         })
 
 
-class StoreWizardView(APIView):
+class StoreWizardView(AuditLogMixin, APIView):
     """Multi-step store creation wizard."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasOrganizationPermission]
+    required_permission = "settings.manage"
 
     def post(self, request):
         serializer = StoreWizardSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         store = serializer.save()
-        from apps.audit.models import log_action
-        log_action(
+        self._log_audit(
             action="store.wizard_create",
             resource_type="store",
             resource_id=store.id,
-            user=request.user,
-            organization_id=getattr(request, "org_id", None),
             new_value=StoreSerializer(store).data,
-            ip_address=request.META.get("REMOTE_ADDR"),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
         return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
 
@@ -155,10 +153,18 @@ class StoreViewSet(TenantViewSet):
     @action(detail=True, methods=["patch"], url_path="update-settings")
     def update_settings(self, request, pk=None):
         store = self.get_object()
+        old_settings = store.settings
         serializer = StoreSettingsSerializer(store, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         cache.delete(f"storefront:store:{store.slug}")
+        self._log_audit(
+            action="store.update_settings",
+            resource_type="store",
+            resource_id=store.id,
+            old_value={"settings": old_settings},
+            new_value={"settings": store.settings},
+        )
         return Response(StoreSerializer(store).data)
 
 
@@ -169,35 +175,73 @@ class StoreDomainViewSet(TenantViewSet):
     required_permission = "settings.manage"
 
     def get_queryset(self):
-        from rest_framework.exceptions import PermissionDenied
-
-        store = Store.objects.filter(
-            id=self.kwargs["pk"],
-            organization_id=self.request.org_id,
-        ).first()
-        if not store:
-            raise PermissionDenied("Store not found or access denied.")
         return StoreDomain.objects.filter(store_id=self.kwargs["pk"])
 
-    def perform_create(self, serializer):
-        from rest_framework.exceptions import PermissionDenied
-
+    def get_object(self):
         store = Store.objects.filter(
             id=self.kwargs["pk"],
             organization_id=self.request.org_id,
         ).first()
         if not store:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Store not found.")
+        domain = StoreDomain.objects.filter(
+            id=self.kwargs["domain_pk"],
+            store_id=self.kwargs["pk"],
+        ).first()
+        if not domain:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Domain not found.")
+        return domain
+
+    def perform_create(self, serializer):
+        store = Store.objects.filter(
+            id=self.kwargs["pk"],
+            organization_id=self.request.org_id,
+        ).first()
+        if not store:
+            from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Store not found or access denied.")
         domain = serializer.save(store_id=self.kwargs["pk"])
-        self._log_audit(action="store.domain.create", resource_type="store_domain", resource_id=domain.id, new_value={"domain": domain.domain, "store_id": str(store.id)})
+        self._log_audit(
+            action="store.domain.create",
+            resource_type="store_domain",
+            resource_id=domain.id,
+            new_value={"domain": domain.domain, "store_id": str(store.id)},
+        )
+
+    def perform_update(self, serializer):
+        domain = serializer.save()
+        self._log_audit(
+            action="store.domain.update",
+            resource_type="store_domain",
+            resource_id=domain.id,
+            new_value={"domain": domain.domain, "is_primary": domain.is_primary},
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="store.domain.delete", resource_type="store_domain", resource_id=instance.id, old_value={"domain": instance.domain})
+        self._log_audit(
+            action="store.domain.delete",
+            resource_type="store_domain",
+            resource_id=instance.id,
+            old_value={"domain": instance.domain},
+        )
+        was_primary = instance.is_primary
         instance.delete()
+        if was_primary:
+            store = Store.objects.filter(id=self.kwargs["pk"]).first()
+            if store:
+                remaining = StoreDomain.objects.filter(store_id=store.id).first()
+                if remaining:
+                    store.custom_domain = remaining.domain
+                else:
+                    store.custom_domain = ""
+                store.save(update_fields=["custom_domain", "updated_at"])
+                cache.delete(f"storefront:store:{store.slug}")
 
 
 class StoreDomainVerifyView(AuditLogMixin, generics.GenericAPIView):
-    """Verify a domain by checking DNS records."""
+    """Verify a domain by checking DNS records (CNAME/A + TXT verification token)."""
 
     permission_classes = [permissions.IsAuthenticated, HasOrganizationPermission]
     required_permission = "settings.manage"
@@ -211,15 +255,69 @@ class StoreDomainVerifyView(AuditLogMixin, generics.GenericAPIView):
         if not domain:
             return Response({"error": "Domain not found"}, status=404)
 
-        import socket
-        try:
-            socket.getaddrinfo(domain.domain, 80, socket.AF_INET)
+        cname_ok = self._check_cname_a(domain.domain)
+        txt_ok = self._check_txt(domain.domain, domain.verification_token)
+
+        if cname_ok and txt_ok:
             domain.verified = True
             domain.save(update_fields=["verified", "updated_at"])
-            self._log_audit(action="store.domain.verify", resource_type="store_domain", resource_id=domain.id, new_value={"domain": domain.domain, "verified": True})
+            self._log_audit(
+                action="store.domain.verify",
+                resource_type="store_domain",
+                resource_id=domain.id,
+                new_value={"domain": domain.domain, "verified": True},
+            )
             return Response({"verified": True, "domain": domain.domain})
-        except (socket.gaierror, OSError):
-            return Response({"verified": False, "domain": domain.domain, "message": "DNS record not found. Make sure the CNAME or A record points to your store."})
+
+        errors = []
+        if not cname_ok:
+            errors.append("CNAME or A record not found. Point your domain to the target CNAME.")
+        if not txt_ok:
+            errors.append("TXT verification record not found. Add the verification token as a TXT record.")
+        return Response({
+            "verified": False,
+            "domain": domain.domain,
+            "message": " ".join(errors),
+            "details": {"cname": cname_ok, "txt": txt_ok},
+        })
+
+    def _check_cname_a(self, domain_name: str) -> bool:
+        try:
+            socket_result = subprocess.run(
+                ["dig", "+short", domain_name, "A"],
+                capture_output=True, text=True, timeout=10,
+            )
+            if socket_result.stdout.strip():
+                return True
+            socket_result = subprocess.run(
+                ["dig", "+short", domain_name, "CNAME"],
+                capture_output=True, text=True, timeout=10,
+            )
+            return bool(socket_result.stdout.strip())
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            import socket
+            try:
+                socket.getaddrinfo(domain_name, 80, socket.AF_INET)
+                return True
+            except (socket.gaierror, OSError):
+                return False
+
+    def _check_txt(self, domain_name: str, expected_token: str) -> bool:
+        try:
+            result = subprocess.run(
+                ["dig", "+short", f"_tujjar-verify.{domain_name}", "TXT"],
+                capture_output=True, text=True, timeout=10,
+            )
+            output = result.stdout.strip()
+            if not output:
+                return False
+            for line in output.splitlines():
+                cleaned = line.strip('"').strip("'")
+                if expected_token in cleaned:
+                    return True
+            return False
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            return False
 
 
 class StoreDomainInstructionsView(generics.GenericAPIView):
@@ -276,11 +374,19 @@ class StoreDomainPrimaryView(AuditLogMixin, generics.GenericAPIView):
         if not domain:
             return Response({"error": "Domain not found"}, status=404)
 
-        # Unset other primary domains
         StoreDomain.objects.filter(store_id=pk, is_primary=True).update(is_primary=False)
         domain.is_primary = True
         domain.save(update_fields=["is_primary", "updated_at"])
 
-        self._log_audit(action="store.domain.set_primary", resource_type="store_domain", resource_id=domain.id, new_value={"domain": domain.domain, "is_primary": True})
+        store.custom_domain = domain.domain
+        store.save(update_fields=["custom_domain", "updated_at"])
+        cache.delete(f"storefront:store:{store.slug}")
+
+        self._log_audit(
+            action="store.domain.set_primary",
+            resource_type="store_domain",
+            resource_id=domain.id,
+            new_value={"domain": domain.domain, "is_primary": True},
+        )
 
         return Response({"domain": domain.domain, "is_primary": True})

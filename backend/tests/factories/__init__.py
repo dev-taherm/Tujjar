@@ -51,6 +51,14 @@ class StoreFactory(factory.django.DjangoModelFactory):
     slug = factory.Sequence(lambda n: f"store-{n}")
 
 
+class StoreDomainFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "stores.StoreDomain"
+
+    store = factory.SubFactory(StoreFactory)
+    domain = factory.Sequence(lambda n: f"domain{n}.example.com")
+
+
 def get_auth_token(user):
     """Return JWT access token for a user, with org_id embedded for TenantMiddleware."""
     refresh = RefreshToken.for_user(user)

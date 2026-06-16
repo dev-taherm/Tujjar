@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -68,7 +68,20 @@ interface StoreSettingsFormProps {
 export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
   const t = useTranslations("storeSettings");
   const locale = useLocale();
-  const [activeTab, setActiveTab] = useState<TabId>("general");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const validTabs: TabId[] = ["general", "branding", "navigation", "template", "theme", "domains", "pages"];
+  const [activeTab, setActiveTab] = useState<TabId>(
+    tabParam && validTabs.includes(tabParam as TabId) ? (tabParam as TabId) : "general"
+  );
+
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   const TABS: { id: TabId; label: string; icon: typeof Settings }[] = [
     { id: "general", label: t("tabs.general"), icon: Settings },
@@ -89,7 +102,7 @@ export function StoreSettingsForm({ store }: StoreSettingsFormProps) {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? "border-blue-600 text-blue-600"
@@ -130,6 +143,26 @@ function GeneralTab({ store }: { store: Store }) {
   const [editingSlug, setEditingSlug] = useState(false);
   const [newSlug, setNewSlug] = useState(store.slug);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (slugTimerRef.current) {
+      clearTimeout(slugTimerRef.current);
+    }
+    if (editingSlug && newSlug.length >= 3 && newSlug !== store.slug) {
+      slugTimerRef.current = setTimeout(() => {
+        checkSlug.mutate(newSlug, {
+          onSuccess: (data) => setSlugAvailable(data.available),
+          onError: () => setSlugAvailable(null),
+        });
+      }, 500);
+    } else {
+      setSlugAvailable(null);
+    }
+    return () => {
+      if (slugTimerRef.current) clearTimeout(slugTimerRef.current);
+    };
+  }, [newSlug, editingSlug, store.slug, checkSlug]);
 
   const getTranslation = (field: string) => {
     if (editLocale === "en") return "";
@@ -213,21 +246,15 @@ function GeneralTab({ store }: { store: Store }) {
         <CardContent className="space-y-3">
           {editingSlug ? (
             <div className="space-y-2">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                <AlertTriangle className="me-1 inline h-4 w-4" />
+                {"Changing your subdomain will break existing links and bookmarks. Old URLs will no longer work."}
+              </div>
               <div className="flex items-center gap-2">
                 <Input
                   value={newSlug}
                   onChange={(e) => {
                     setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
-                    if (e.target.value.length >= 3) {
-                      const timer = setTimeout(() => {
-                        checkSlug.mutate(e.target.value, {
-                          onSuccess: (data) => setSlugAvailable(data.available),
-                          onError: () => setSlugAvailable(null),
-                        });
-                      }, 500);
-                      return () => clearTimeout(timer);
-                    }
-                    setSlugAvailable(null);
                   }}
                   className="flex-1 font-mono text-sm"
                 />
@@ -304,16 +331,36 @@ function GeneralTab({ store }: { store: Store }) {
               placeholder={descriptionPlaceholder}
               {...register("description")}
             />
-            <Input
-              label={t("seoTitle")}
-              placeholder={editLocale !== "en" ? `SEO title in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoTitlePlaceholder")}
-              {...register("seo_title")}
-            />
-            <Input
-              label={t("seoDescription")}
-              placeholder={editLocale !== "en" ? `SEO description in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoDescriptionPlaceholder")}
-              {...register("seo_description")}
-            />
+            <div>
+              <Input
+                label={t("seoTitle")}
+                placeholder={editLocale !== "en" ? `SEO title in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoTitlePlaceholder")}
+                {...register("seo_title")}
+              />
+              <div className="mt-1 flex items-center gap-2">
+                <span className={`text-xs ${(watch("seo_title") || "").length > 60 ? "text-amber-600" : "text-gray-400"}`}>
+                  {(watch("seo_title") || "").length}/60 characters
+                </span>
+                {(watch("seo_title") || "").length > 60 && (
+                  <span className="text-xs text-amber-600">May be truncated in search results</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <Input
+                label={t("seoDescription")}
+                placeholder={editLocale !== "en" ? `SEO description in ${editLocale === "ar" ? "Arabic" : editLocale}...` : t("seoDescriptionPlaceholder")}
+                {...register("seo_description")}
+              />
+              <div className="mt-1 flex items-center gap-2">
+                <span className={`text-xs ${(watch("seo_description") || "").length > 160 ? "text-amber-600" : "text-gray-400"}`}>
+                  {(watch("seo_description") || "").length}/160 characters
+                </span>
+                {(watch("seo_description") || "").length > 160 && (
+                  <span className="text-xs text-amber-600">May be truncated in search results</span>
+                )}
+              </div>
+            </div>
 
             {/* Twitter Card Type */}
             <div>
@@ -371,7 +418,7 @@ function BrandingTab({ store }: { store: Store }) {
   const updateStore = useUpdateStore();
   const queryClient = useQueryClient();
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>(
-    store.footer_config?.social_links || {}
+    (store.settings as Record<string, unknown>)?.social_links as Record<string, string> || {}
   );
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -387,11 +434,17 @@ function BrandingTab({ store }: { store: Store }) {
     { key: "pinterest", label: "Pinterest", placeholder: "https://pinterest.com/..." },
   ];
 
+  const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
   const handleFileUpload = async (file: File, field: "logo" | "favicon") => {
     const BLOCKED = [".php", ".exe", ".bat", ".sh", ".js", ".vbs", ".svg", ".svgz"];
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
     if (BLOCKED.includes(ext)) {
       toast.error(`File type "${ext}" is not allowed`);
+      return;
+    }
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error("Only PNG, JPG, and WebP images are allowed");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -413,6 +466,10 @@ function BrandingTab({ store }: { store: Store }) {
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
     if (BLOCKED.includes(ext)) {
       toast.error(`File type "${ext}" is not allowed`);
+      return;
+    }
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error("Only PNG, JPG, and WebP images are allowed");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -437,12 +494,13 @@ function BrandingTab({ store }: { store: Store }) {
       }
     }
     const latestStore = queryClient.getQueryData<Store>(["stores", store.id]) || store;
+    const latestSettings = (latestStore.settings || {}) as Record<string, unknown>;
     await updateStore.mutateAsync({
       id: store.id,
-      footer_config: {
-        ...(latestStore.footer_config || {}),
+      settings: {
+        ...latestSettings,
         social_links: socialLinks,
-      } as Store["footer_config"],
+      },
     });
     toast.success(tc("saved"));
   };
@@ -472,7 +530,7 @@ function BrandingTab({ store }: { store: Store }) {
                   <input
                     ref={logoInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -501,7 +559,7 @@ function BrandingTab({ store }: { store: Store }) {
                   <input
                     ref={faviconInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -541,7 +599,7 @@ function BrandingTab({ store }: { store: Store }) {
               <input
                 ref={ogImageInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp"
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -645,7 +703,6 @@ function NavigationTab({ store }: { store: Store }) {
   const [footerData, setFooterData] = useState<FooterData>({
     columns: footer.columns || [],
     copyright: footer.copyright || "",
-    social_links: footer.social_links || {},
   });
 
   const getNavLabel = (label: string | Record<string, string>) => {
@@ -792,8 +849,6 @@ function NavigationTab({ store }: { store: Store }) {
         }
       }
     }
-    const latestStore = queryClient.getQueryData<Store>(["stores", store.id]) || store;
-    const latestSocialLinks = latestStore.footer_config?.social_links || {};
     await updateStore.mutateAsync({
       id: store.id,
       footer_config: {
@@ -805,7 +860,6 @@ function NavigationTab({ store }: { store: Store }) {
           })),
         })),
         copyright: footerData.copyright || "",
-        social_links: latestSocialLinks,
       } as Store["footer_config"],
     });
     toast.success(tc("saved"));

@@ -9,6 +9,8 @@ import type { StoreDomain } from "@/shared/types";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
+const DOMAIN_REGEX = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
 interface StoreDomainsProps {
   storeId: string;
 }
@@ -28,6 +30,7 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
   const tc = useTranslations("common");
   const queryClient = useQueryClient();
   const [newDomain, setNewDomain] = useState("");
+  const [domainError, setDomainError] = useState<string | null>(null);
 
   const { data: domains, isLoading } = useQuery({
     queryKey: ["stores", storeId, "domains"],
@@ -45,6 +48,14 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stores", storeId, "domains"] });
       setNewDomain("");
+      setDomainError(null);
+    },
+    onError: (error: unknown) => {
+      const msg = (error && typeof error === "object" && "response" in error)
+        ? (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.error
+          || (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.detail
+        : undefined;
+      toast.error(msg || "Failed to add domain");
     },
   });
 
@@ -55,6 +66,13 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stores", storeId, "domains"] });
     },
+    onError: (error: unknown) => {
+      const msg = (error && typeof error === "object" && "response" in error)
+        ? (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.error
+          || (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.detail
+        : undefined;
+      toast.error(msg || "Failed to remove domain");
+    },
   });
 
   const setPrimary = useMutation({
@@ -64,7 +82,15 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stores", storeId, "domains"] });
+      queryClient.invalidateQueries({ queryKey: ["stores", storeId] });
       toast.success(t("primarySet") || "Primary domain updated");
+    },
+    onError: (error: unknown) => {
+      const msg = (error && typeof error === "object" && "response" in error)
+        ? (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.error
+          || (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.detail
+        : undefined;
+      toast.error(msg || "Failed to set primary domain");
     },
   });
 
@@ -78,10 +104,23 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
       if (data.verified) {
         toast.success(t("verified") || "Domain verified successfully!");
       } else {
-        toast.error(t("verifyFailed") || "DNS record not found. Check your DNS settings.");
+        toast.error(data.message || t("verifyFailed") || "DNS record not found. Check your DNS settings.");
       }
     },
+    onError: () => {
+      toast.error(t("verifyFailed") || "Verification failed. Please try again.");
+    },
   });
+
+  const handleAddDomain = () => {
+    if (!newDomain) return;
+    if (!DOMAIN_REGEX.test(newDomain)) {
+      setDomainError("Please enter a valid domain (e.g. store.yourdomain.com)");
+      return;
+    }
+    setDomainError(null);
+    addDomain.mutate(newDomain);
+  };
 
   return (
     <Card>
@@ -91,13 +130,16 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
-          <Input
-            placeholder="store.yourdomain.com"
-            value={newDomain}
-            onChange={(e) => setNewDomain(e.target.value)}
-          />
+          <div className="flex-1">
+            <Input
+              placeholder="store.yourdomain.com"
+              value={newDomain}
+              onChange={(e) => { setNewDomain(e.target.value); setDomainError(null); }}
+              error={domainError || undefined}
+            />
+          </div>
           <Button
-            onClick={() => addDomain.mutate(newDomain)}
+            onClick={handleAddDomain}
             disabled={!newDomain}
             isLoading={addDomain.isPending}
           >
@@ -120,7 +162,11 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
                 storeId={storeId}
                 onVerify={() => verifyDomain.mutate(domain.id)}
                 onSetPrimary={() => setPrimary.mutate(domain.id)}
-                onRemove={() => removeDomain.mutate(domain.id)}
+                onRemove={() => {
+                  if (window.confirm(`Remove domain ${domain.domain}? This cannot be undone.`)) {
+                    removeDomain.mutate(domain.id);
+                  }
+                }}
                 isVerifying={verifyDomain.isPending}
               />
             ))}
@@ -151,7 +197,7 @@ function DomainItem({
   const t = useTranslations("dashboard.domains");
   const [showInstructions, setShowInstructions] = useState(false);
 
-  const { data: instructions } = useQuery({
+  const { data: instructions, isLoading: instructionsLoading } = useQuery({
     queryKey: ["stores", storeId, "domains", domain.id, "instructions"],
     queryFn: async (): Promise<DnsInstructions> => {
       const { data } = await apiClient.get(`/stores/${storeId}/domains/${domain.id}/instructions/`);
@@ -200,21 +246,27 @@ function DomainItem({
         </div>
       </div>
 
-      {showInstructions && instructions && (
+      {showInstructions && (
         <div className="border-t border-gray-100 bg-gray-50 p-3">
-          <p className="mb-2 text-xs font-medium text-gray-600">{t("setupInstructions") || "DNS Setup Instructions"}</p>
-          <div className="space-y-2">
-            <DnsRecord
-              label="CNAME"
-              host={instructions.instructions.cname.host}
-              value={instructions.instructions.cname.value}
-            />
-            <DnsRecord
-              label="TXT (Verification)"
-              host={instructions.instructions.verification.host}
-              value={instructions.instructions.verification.value}
-            />
-          </div>
+          {instructionsLoading ? (
+            <div className="h-16 animate-pulse rounded bg-gray-100" />
+          ) : instructions ? (
+            <>
+              <p className="mb-2 text-xs font-medium text-gray-600">{t("setupInstructions") || "DNS Setup Instructions"}</p>
+              <div className="space-y-2">
+                <DnsRecord
+                  label="CNAME"
+                  host={instructions.instructions.cname.host}
+                  value={instructions.instructions.cname.value}
+                />
+                <DnsRecord
+                  label="TXT (Verification)"
+                  host={instructions.instructions.verification.host}
+                  value={instructions.instructions.verification.value}
+                />
+              </div>
+            </>
+          ) : null}
         </div>
       )}
     </div>

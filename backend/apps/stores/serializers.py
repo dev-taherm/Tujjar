@@ -140,19 +140,27 @@ class StoreSerializer(serializers.ModelSerializer):
                 return None
         return None
 
-    def validate_slug(self, value):
-        slug = slugify(value)
-        if not slug:
-            raise serializers.ValidationError("Invalid slug.")
-        if slug in RESERVED_SLUGS:
-            raise serializers.ValidationError(f'"{slug}" is a reserved word and cannot be used as a slug.')
-        instance = self.instance
-        qs = Store.objects.filter(slug=slug)
-        if instance:
-            qs = qs.exclude(pk=instance.pk)
-        if qs.exists():
-            raise serializers.ValidationError("This slug is already taken.")
-        return slug
+    def _validate_media_ownership(self, media_id, field_name):
+        if media_id is None:
+            return
+        from apps.media.models import MediaAsset
+        org_id = self.context["request"].org_id
+        if not MediaAsset.objects.filter(id=media_id, organization_id=org_id).exists():
+            raise serializers.ValidationError(
+                {field_name: "Media asset not found or does not belong to your organization."}
+            )
+
+    def validate_logo(self, value):
+        self._validate_media_ownership(value, "logo")
+        return value
+
+    def validate_favicon(self, value):
+        self._validate_media_ownership(value, "favicon")
+        return value
+
+    def validate_og_image(self, value):
+        self._validate_media_ownership(value, "og_image")
+        return value
 
     def create(self, validated_data):
         org_id = self.context["request"].org_id
@@ -225,6 +233,7 @@ class StoreWizardSerializer(serializers.Serializer):
         return attrs
 
     def create(self, validated_data):
+        from django.db import transaction
         from apps.templates.models import Template
 
         org_id = self.context["request"].org_id
@@ -256,14 +265,15 @@ class StoreWizardSerializer(serializers.Serializer):
         if not validated_data.get("footer_config"):
             validated_data["footer_config"] = copy.deepcopy(DEFAULT_FOOTER)
 
-        store = Store.objects.create(**validated_data)
+        with transaction.atomic():
+            store = Store.objects.create(**validated_data)
 
-        if template_id:
-            try:
-                template = Template.objects.get(id=template_id)
-                self._install_template(store, template)
-            except Template.DoesNotExist:
-                pass
+            if template_id:
+                try:
+                    template = Template.objects.get(id=template_id)
+                    self._install_template(store, template)
+                except Template.DoesNotExist:
+                    pass
 
         return store
 

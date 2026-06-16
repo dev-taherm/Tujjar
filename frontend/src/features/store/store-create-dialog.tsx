@@ -23,6 +23,8 @@ const CATEGORY_ICONS: Record<string, string> = {
   general: "🏪",
 };
 
+const DOMAIN_REGEX = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
 const storeDetailsSchema = z.object({
   name: z.string().min(1, "Store name is required").max(255),
   slug: z.string().min(3, "Slug must be at least 3 characters").regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens"),
@@ -106,7 +108,14 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
     }
   };
 
+  const [domainError, setDomainError] = useState<string | null>(null);
+
   const handleFinalSubmit = async (data: StoreDetailsForm) => {
+    if (customDomain && !DOMAIN_REGEX.test(customDomain)) {
+      setDomainError("Please enter a valid domain (e.g. www.mystore.com)");
+      return;
+    }
+    setDomainError(null);
     try {
       await createStore.mutateAsync({
         name: data.name,
@@ -118,8 +127,14 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
       toast.success(t("storeCreated"));
       onClose();
       onSuccess?.();
-    } catch {
-      // Error handled by React Query
+    } catch (error: unknown) {
+      const message =
+        (error && typeof error === "object" && "response" in error)
+          ? (error as { response?: { data?: { error?: string; detail?: string; slug?: string } } })?.response?.data?.error
+            || (error as { response?: { data?: { error?: string; detail?: string; slug?: string } } })?.response?.data?.detail
+            || (error as { response?: { data?: { error?: string; detail?: string; slug?: string } } })?.response?.data?.slug
+          : undefined;
+      toast.error(message || "Failed to create store. Please try again.");
     }
   };
 
@@ -200,7 +215,8 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
                 label={t("customDomain")}
                 placeholder="www.mystore.com"
                 value={customDomain}
-                onChange={(e) => setCustomDomain(e.target.value)}
+                onChange={(e) => { setCustomDomain(e.target.value); setDomainError(null); }}
+                error={domainError || undefined}
               />
               <p className="text-xs text-gray-500">{t("customDomainHelp")}</p>
             </div>
