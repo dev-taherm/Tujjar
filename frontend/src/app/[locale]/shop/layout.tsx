@@ -92,7 +92,7 @@ export default function StorefrontLayout({
       if (!res.ok) return null;
       return res.json();
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
   });
 
   const store: StorefrontStore | undefined = data?.store;
@@ -251,7 +251,7 @@ export default function StorefrontLayout({
   };
 
   const navLinks = navigation.links?.length
-    ? navigation.links.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    ? [...navigation.links].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     : defaultNavLinks;
 
   const footerColumns = footerConfig.columns?.length
