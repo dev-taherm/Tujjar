@@ -88,11 +88,21 @@ export default function StorefrontLayout({
   const { data } = useQuery<{ store: StorefrontStore }>({
     queryKey: ["storefront", slug, locale],
     queryFn: async () => {
+      if (!slug) return null;
       const res = await fetch(`/api/v1/store/${slug}/?locale=${locale}`);
-      if (!res.ok) return null;
-      return res.json();
+      if (!res.ok) {
+        console.error(`[Storefront] Fetch failed: ${res.status} ${res.statusText} for slug="${slug}" locale="${locale}"`);
+        return null;
+      }
+      const json = await res.json();
+      if (!json?.store?.navigation?.links?.length) {
+        console.warn("[Storefront] Store returned no navigation links:", json?.store?.navigation);
+      }
+      return json;
     },
     staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+    retry: 1,
   });
 
   const store: StorefrontStore | undefined = data?.store;
