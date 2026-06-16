@@ -156,7 +156,13 @@ apiClient.interceptors.response.use(
         ? String((data as { detail: unknown }).detail)
         : null) ||
       (typeof data === "object" && data !== null && "error" in data
-        ? String((data as { error: unknown }).error)
+        ? (() => {
+            const err = (data as { error: unknown }).error;
+            if (typeof err === "object" && err !== null && "message" in err) {
+              return String((err as { message: unknown }).message);
+            }
+            return String(err);
+          })()
         : null);
     // Sanitize: only show messages that look like user-facing text, not stack traces or paths
     const message = rawMessage && !rawMessage.includes("/") && !rawMessage.includes("\\") && rawMessage.length < 200

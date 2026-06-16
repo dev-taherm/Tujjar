@@ -9,7 +9,7 @@ export default function BlogPostDetailPage() {
   const params = useParams();
   const t = useTranslations("dashboard.blog");
   const id = params.id as string;
-  const { data: post, isLoading } = useBlogPost(id);
+  const { data: post, isLoading } = useBlogPost(id === "new" ? "" : id);
 
   if (isLoading) {
     return (

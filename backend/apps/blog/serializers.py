@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
 
@@ -197,7 +198,15 @@ class BlogPostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["organization"] = resolve_organization(self.context["request"].org_id)
+        if validated_data.get("status") == BlogPost.Status.PUBLISHED and not validated_data.get("published_at"):
+            validated_data["published_at"] = timezone.now()
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        new_status = validated_data.get("status", instance.status)
+        if new_status == BlogPost.Status.PUBLISHED and not instance.published_at:
+            validated_data["published_at"] = timezone.now()
+        return super().update(instance, validated_data)
 
 
 class BlogPostListSerializer(serializers.ModelSerializer):

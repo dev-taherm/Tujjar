@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Plus, Search, FileText, Calendar, Eye, MessageSquare, MoreHorizontal, Star, Archive, Trash2 } from "lucide-react";
@@ -13,13 +13,19 @@ export function BlogPostList() {
   const router = useRouter();
   const locale = useLocale();
   const { data: stores } = useStores();
-  const store = stores?.[0];
+  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (stores?.length && !selectedStoreId) {
+      setSelectedStoreId(stores[0].id);
+    }
+  }, [stores, selectedStoreId]);
+
   const { data: posts, isLoading } = useBlogPosts({
-    store: store?.id,
+    store: selectedStoreId || undefined,
     status: statusFilter || undefined,
     search: search || undefined,
   });
@@ -56,6 +62,17 @@ export function BlogPostList() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          {stores && stores.length > 1 && (
+            <select
+              value={selectedStoreId}
+              onChange={(e) => setSelectedStoreId(e.target.value)}
+              className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm focus:border-blue-500 focus:outline-none"
+            >
+              {stores.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          )}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Save, Eye, ArrowLeft, Calendar, Settings } from "lucide-react";
+import { toast } from "sonner";
 import { useBlogPost, useCreateBlogPost, useUpdateBlogPost, useAutoSaveBlogPost } from "@/api/blog";
 import { useStores } from "@/api/queries";
 import { Button } from "@/shared/ui";
@@ -18,7 +19,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const router = useRouter();
   const locale = useLocale();
   const { data: stores } = useStores();
-  const store = stores?.[0];
+  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
+  const store = stores?.find((s) => s.id === selectedStoreId) || stores?.[0];
   const isNew = !postId || postId === "new";
 
   const { data: existingPost, isLoading } = useBlogPost(isNew ? "" : postId || "");
@@ -30,14 +32,23 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
-  const [status, setStatus] = useState<string>("draft");
+  const [status, setStatus] = useState<"draft" | "published" | "scheduled" | "archived">("draft");
   const [showSettings, setShowSettings] = useState(false);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
+    if (stores?.length && !selectedStoreId) {
+      setSelectedStoreId(stores[0].id);
+    }
+  }, [stores, selectedStoreId]);
+
+  useEffect(() => {
     if (existingPost) {
+      if (existingPost.store && stores?.length) {
+        setSelectedStoreId(existingPost.store as string);
+      }
       setTitle(existingPost.title);
       setSlug(existingPost.slug);
       setExcerpt(existingPost.excerpt);
@@ -46,7 +57,7 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
       setSeoTitle(existingPost.seo_title);
       setSeoDescription(existingPost.seo_description);
     }
-  }, [existingPost]);
+  }, [existingPost, stores]);
 
   useEffect(() => {
     if (isNew) return;
@@ -76,10 +87,15 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
 
   const handleSave = async () => {
     if (!store?.id) return;
+    if (!title.trim()) {
+      toast.error("Title is required.");
+      return;
+    }
     const payload = {
       store: store.id,
       title,
-      slug,
+      slug: slug || generateSlug(title),
+      status,
       excerpt,
       content,
       seo_title: seoTitle,
@@ -147,6 +163,27 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
       </div>
 
       <div className="w-80 space-y-4">
+        {stores && stores.length > 1 && (
+          <div className="rounded-xl border border-gray-200 bg-white p-4">
+            <label className="mb-2 block text-sm font-semibold text-gray-900">Store</label>
+            <select
+              value={selectedStoreId}
+              onChange={(e) => setSelectedStoreId(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            >
+              {stores.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {!store && stores && stores.length === 0 && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm text-amber-700">You need to create a store before writing blog posts.</p>
+          </div>
+        )}
+
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-900">Actions</h3>
@@ -154,7 +191,7 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
           <div className="space-y-2">
             <Button
               onClick={handleSave}
-              disabled={createPost.isPending || updatePost.isPending}
+              disabled={createPost.isPending || updatePost.isPending || !store}
               className="w-full"
             >
               <Save className="me-2 h-4 w-4" />
@@ -170,7 +207,7 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Status</h3>
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => setStatus(e.target.value as "draft" | "published" | "scheduled" | "archived")}
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           >
             <option value="draft">Draft</option>
