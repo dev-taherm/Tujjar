@@ -202,35 +202,38 @@ export default function StorefrontLayout({
     }
   }, [store?.theme_config]);
 
-  const prefixLink = (url: string) =>
-    url.startsWith("http") ? url : `/${locale}/shop/${slug}${url}`;
+  const prefixLink = (url: string) => {
+    if (url.startsWith("http")) return url;
+    if (slug) return `/${locale}/shop/${slug}${url}`;
+    return url;
+  };
 
   const defaultNavLinks: NavLink[] = [
-    { label: "Home", url: `/${locale}` },
-    { label: "Shop", url: `/${locale}/shop` },
+    { label: "Home", url: "/" },
+    { label: "Shop", url: "/shop" },
   ];
 
   const defaultFooterColumns: FooterColumn[] = [
     {
       title: "Shop",
       links: [
-        { label: "All Products", url: `/${locale}/shop` },
-        { label: "Collections", url: `/${locale}/shop/collections` },
+        { label: "All Products", url: "/shop" },
+        { label: "Collections", url: "/shop/collections" },
       ],
     },
     {
       title: "Help",
       links: [
-        { label: "FAQ", url: `/${locale}/faq` },
-        { label: "Shipping", url: `/${locale}/shipping` },
-        { label: "Returns", url: `/${locale}/returns` },
+        { label: "FAQ", url: "/faq" },
+        { label: "Shipping", url: "/shipping" },
+        { label: "Returns", url: "/returns" },
       ],
     },
     {
       title: "Company",
       links: [
-        { label: "About Us", url: `/${locale}/about` },
-        { label: "Contact", url: `/${locale}/contact` },
+        { label: "About Us", url: "/about" },
+        { label: "Contact", url: "/contact" },
       ],
     },
   ];
@@ -262,7 +265,7 @@ export default function StorefrontLayout({
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-200">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href={`/${locale}/shop/${slug}`} className="flex items-center gap-2 text-xl font-bold text-gray-900">
+          <Link href={slug ? `/${locale}/shop/${slug}` : "#"} className="flex items-center gap-2 text-xl font-bold text-gray-900">
             {store?.logo_url ? (
               <img src={store.logo_url} alt={store.name} className="h-8 w-auto object-contain" />
             ) : null}
@@ -292,7 +295,7 @@ export default function StorefrontLayout({
             <button className="rounded-lg p-2 text-gray-500 hover:bg-gray-100">
               <Search className="h-5 w-5" />
             </button>
-            <Link href={`/${locale}/shop/${slug}/shop/cart`} className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100">
+            <Link href={slug ? `/${locale}/shop/${slug}/shop/cart` : "#"} className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100">
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-[10px] text-white">
                 0
