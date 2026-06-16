@@ -790,6 +790,9 @@
       "favicon": "Favicon",
       "uploadLogo": "Upload Logo",
       "uploadFavicon": "Upload",
+      "ogImage": "Social Share Image",
+      "ogImageDescription": "Image shown when your store link is shared on social media (1200x630 recommended)",
+      "uploadOgImage": "Upload Image",
       "socialLinks": "Social Links",
       "socialLinksDescription": "Add links to your social media profiles"
     },
