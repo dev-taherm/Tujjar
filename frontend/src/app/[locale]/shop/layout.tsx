@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
 import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
@@ -81,24 +81,29 @@ export default function StorefrontLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const slug = pathname.split("/")[3] || "";
+  const pathSlug = pathname.split("/")[3] || "";
   const locale = useLocale();
   const tNav = useTranslations("storefront.header");
+
+  const [subdomainSlug, setSubdomainSlug] = useState("");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+    if (parts.length >= 2 && parts[parts.length - 1] === "localhost") {
+      setSubdomainSlug(parts[0]);
+    }
+  }, []);
+
+  const slug = subdomainSlug || pathSlug;
 
   const { data } = useQuery<{ store: StorefrontStore }>({
     queryKey: ["storefront", slug, locale],
     queryFn: async () => {
       if (!slug) return null;
       const res = await fetch(`/api/v1/store/${slug}/?locale=${locale}`);
-      if (!res.ok) {
-        console.error(`[Storefront] Fetch failed: ${res.status} ${res.statusText} for slug="${slug}" locale="${locale}"`);
-        return null;
-      }
-      const json = await res.json();
-      if (!json?.store?.navigation?.links?.length) {
-        console.warn("[Storefront] Store returned no navigation links:", json?.store?.navigation);
-      }
-      return json;
+      if (!res.ok) return null;
+      return res.json();
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
@@ -214,7 +219,8 @@ export default function StorefrontLayout({
 
   const prefixLink = (url: string) => {
     if (url.startsWith("http")) return url;
-    if (slug) return `/${locale}/shop/${slug}${url}`;
+    if (subdomainSlug) return `/${locale}${url}`;
+    if (pathSlug) return `/${locale}/shop/${pathSlug}${url}`;
     return url;
   };
 
@@ -248,6 +254,10 @@ export default function StorefrontLayout({
     },
   ];
 
+  const navLinks = navigation.links?.length
+    ? [...navigation.links].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    : defaultNavLinks;
+
   const resolveLabel = (label: string | Record<string, string> | undefined): string => {
     if (!label) return "";
     if (typeof label === "string") return label;
@@ -260,10 +270,6 @@ export default function StorefrontLayout({
     return field[locale] || field.en || fallback;
   };
 
-  const navLinks = navigation.links?.length
-    ? [...navigation.links].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    : defaultNavLinks;
-
   const footerColumns = footerConfig.columns?.length
     ? footerConfig.columns
     : defaultFooterColumns;
@@ -275,7 +281,7 @@ export default function StorefrontLayout({
     <div className="min-h-screen bg-white">
       <header className="border-b border-gray-200">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href={slug ? `/${locale}/shop/${slug}` : "#"} className="flex items-center gap-2 text-xl font-bold text-gray-900">
+          <Link href={slug ? (subdomainSlug ? `/${locale}` : `/${locale}/shop/${slug}`) : "#"} className="flex items-center gap-2 text-xl font-bold text-gray-900">
             {store?.logo_url ? (
               <img src={store.logo_url} alt={store.name} className="h-8 w-auto object-contain" />
             ) : null}
@@ -305,7 +311,7 @@ export default function StorefrontLayout({
             <button className="rounded-lg p-2 text-gray-500 hover:bg-gray-100">
               <Search className="h-5 w-5" />
             </button>
-            <Link href={slug ? `/${locale}/shop/${slug}/shop/cart` : "#"} className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100">
+            <Link href={slug ? (subdomainSlug ? `/${locale}/shop/cart` : `/${locale}/shop/${slug}/shop/cart`) : "#"} className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100">
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-[10px] text-white">
                 0
@@ -325,9 +331,9 @@ export default function StorefrontLayout({
               <div key={column.title}>
                 <h4 className="mb-3 font-semibold text-gray-900">{resolveLabel(column.title)}</h4>
                 <div className="space-y-2">
-                  {column.links.map((link) => (
+                   {column.links.map((link) => (
                     <Link
-                      key={link.url}
+                      key={`${column.title}-${link.label}`}
                       href={prefixLink(link.url)}
                       className="block hover:text-gray-900"
                     >
