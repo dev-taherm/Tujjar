@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 
+from django.core.cache import cache
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -68,6 +69,8 @@ class StoreSlugChangeView(AuditLogMixin, APIView):
         old_slug = store.slug
         store.slug = clean_slug
         store.save(update_fields=["slug", "updated_at"])
+        cache.delete(f"storefront:store:{old_slug}")
+        cache.delete(f"storefront:store:{clean_slug}")
 
         self._log_audit(
             action="store.slug_change",
@@ -124,11 +127,16 @@ class StoreViewSet(TenantViewSet):
 
     def perform_update(self, serializer):
         old_data = StoreSerializer(serializer.instance).data
+        old_slug = serializer.instance.slug
         store = serializer.save()
         self._log_audit(action="store.update", resource_type="store", resource_id=store.id, old_value=old_data, new_value=StoreSerializer(store).data)
+        cache.delete(f"storefront:store:{old_slug}")
+        if store.slug != old_slug:
+            cache.delete(f"storefront:store:{store.slug}")
 
     def perform_destroy(self, instance):
         self._log_audit(action="store.delete", resource_type="store", resource_id=instance.id, old_value=StoreSerializer(instance).data)
+        cache.delete(f"storefront:store:{instance.slug}")
         instance.delete()
 
     @action(detail=False, methods=["get"])
@@ -150,6 +158,7 @@ class StoreViewSet(TenantViewSet):
         serializer = StoreSettingsSerializer(store, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        cache.delete(f"storefront:store:{store.slug}")
         return Response(StoreSerializer(store).data)
 
 

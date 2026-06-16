@@ -124,6 +124,7 @@ export function useUpdateStore() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });
       queryClient.invalidateQueries({ queryKey: ["stores", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["storefront"] });
     },
   });
 }
