@@ -137,7 +137,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="space-y-16">
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-primary-50">
+      <section className="relative overflow-hidden" style={{ background: "linear-gradient(to bottom right, var(--color-surface), var(--color-bg), var(--color-surface))" }}>
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl" style={{ color: "var(--color-text)" }}>
