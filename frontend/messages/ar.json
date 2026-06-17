@@ -523,6 +523,7 @@
       "restore": "استعادة",
       "cancel": "إلغاء",
       "export": "تصدير",
+      "selectStore": "اختر متجرًا لتطبيق هذه السمة عليه:",
       "duplicateTheme": "تكرار السمة",
       "duplicateThemeName": "اسم السمة الجديدة",
       "duplicateThemeDescription": "أدخل اسماً للسمة المكررة"

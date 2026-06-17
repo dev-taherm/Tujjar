@@ -518,6 +518,7 @@
       "duplicateThemeName": "New theme name",
       "duplicateThemeDescription": "Enter a name for the duplicated theme.",
       "export": "Export",
+      "selectStore": "Select a store to apply this theme to:",
       "versionHistory": "Version History",
       "restoreVersion": "Restore Version",
       "restoreVersionConfirm": "Are you sure you want to restore to version {version}? The current state will be saved as a checkpoint first.",

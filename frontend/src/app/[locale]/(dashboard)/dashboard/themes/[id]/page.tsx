@@ -11,7 +11,7 @@ import { ThemeSpacingEditor } from "@/features/themes/theme-spacing-editor";
 import { ThemeBorderRadiusEditor } from "@/features/themes/theme-border-radius-editor";
 import { ThemeAnimationsEditor } from "@/features/themes/theme-animations-editor";
 import { ThemeDarkModeEditor } from "@/features/themes/theme-darkmode-editor";
-import { Button, Card, CardHeader, CardTitle, CardContent, Skeleton } from "@/shared/ui";
+import { Button, Card, CardHeader, CardTitle, CardContent, Skeleton, Dialog } from "@/shared/ui";
 import { Save, Eye, Paintbrush, Monitor, Tablet, Smartphone, History } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -31,11 +31,13 @@ export default function ThemeDetailPage() {
   const updateTheme = useUpdateTheme();
   const setTheme = useSetTheme();
   const { data: stores } = useStores();
-  const activeStore = stores?.[0];
+  const previewStore = stores?.[0];
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
   const [activeTab, setActiveTab] = useState<EditorTab>("colors");
   const [previewDevice, setPreviewDevice] = useState<DeviceSize>("desktop");
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showApplyDialog, setShowApplyDialog] = useState(false);
+  const [selectedStoreId, setSelectedStoreId] = useState<string>("");
 
   if (isLoading) {
     return (
@@ -61,17 +63,17 @@ export default function ThemeDetailPage() {
   };
 
   const handleApplyToStore = async () => {
-    if (!activeStore) return;
-    await setTheme.mutateAsync({ storeId: activeStore.id, themeId: theme.id });
+    if (!selectedStoreId) return;
+    await setTheme.mutateAsync({ storeId: selectedStoreId, themeId: theme.id });
     toast.success(t("themeApplied") || "Theme applied to store");
+    setShowApplyDialog(false);
+    setSelectedStoreId("");
   };
 
   const handlePreview = () => {
-    if (!activeStore) return;
-    window.open(`/${activeStore.slug}/shop/?preview_theme=${theme.id}`, "_blank");
+    if (!previewStore) return;
+    window.open(`/${previewStore.slug}/shop/?preview_theme=${theme.id}`, "_blank");
   };
-
-  const isApplied = activeStore?.theme === theme.id;
 
   const EDITOR_TABS: { id: EditorTab; label: string }[] = [
     { id: "colors", label: t("colors") },
@@ -103,12 +105,6 @@ export default function ThemeDetailPage() {
             <Eye className="me-2 h-4 w-4" />
             {tc("preview")}
           </Button>
-          {activeStore && !isApplied && (
-            <Button variant="outline" onClick={handleApplyToStore} isLoading={setTheme.isPending}>
-              <Paintbrush className="me-2 h-4 w-4" />
-              {t("applyToStore") || "Apply to Store"}
-            </Button>
-          )}
           <Button onClick={handleSave} isLoading={updateTheme.isPending} disabled={!config}>
             <Save className="me-2 h-4 w-4" />
             {tc("saveChanges")}
@@ -213,13 +209,13 @@ export default function ThemeDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {activeStore ? (
+                {previewStore ? (
                   <div
                     className="mx-auto overflow-hidden rounded-lg border border-gray-200 transition-all duration-300"
                     style={{ maxWidth: DEVICE_WIDTHS[previewDevice] }}
                   >
                     <iframe
-                      src={`/${activeStore.slug}/shop/?preview_theme=${theme.id}`}
+                      src={`/${previewStore.slug}/shop/?preview_theme=${theme.id}`}
                       className="h-[400px] w-full border-0"
                       title="Theme Preview"
                     />
@@ -262,6 +258,14 @@ export default function ThemeDetailPage() {
                     />
                   ))}
                 </div>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowApplyDialog(true)}
+                >
+                  <Paintbrush className="me-2 h-4 w-4" />
+                  {t("applyToStore") || "Apply to Store"}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -270,6 +274,61 @@ export default function ThemeDetailPage() {
 
       {showVersionHistory && (
         <ThemeVersionHistory themeId={theme.id} onClose={() => setShowVersionHistory(false)} />
+      )}
+
+      {showApplyDialog && (
+        <Dialog
+          open={true}
+          onClose={() => setShowApplyDialog(false)}
+          title={t("applyToStore") || "Apply to Store"}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">{t("selectStore") || "Select a store to apply this theme to:"}</p>
+            <div className="space-y-2">
+              {stores?.map((store) => (
+                <label
+                  key={store.id}
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                    selectedStoreId === store.id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="store"
+                    value={store.id}
+                    checked={selectedStoreId === store.id}
+                    onChange={() => setSelectedStoreId(store.id)}
+                    className="h-4 w-4 text-blue-600"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{store.name}</p>
+                    <p className="text-xs text-gray-500">{store.slug}</p>
+                  </div>
+                  {store.theme === theme.id && (
+                    <span className="ms-auto rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                      {t("active") || "Active"}
+                    </span>
+                  )}
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowApplyDialog(false)}>
+                {tc("cancel")}
+              </Button>
+              <Button
+                onClick={handleApplyToStore}
+                disabled={!selectedStoreId}
+                isLoading={setTheme.isPending}
+              >
+                <Paintbrush className="me-1 h-4 w-4" />
+                {t("applyToStore") || "Apply to Store"}
+              </Button>
+            </div>
+          </div>
+        </Dialog>
       )}
     </div>
   );
