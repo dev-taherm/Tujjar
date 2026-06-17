@@ -4,22 +4,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pages', '0001_initial'),
+        ("pages", "0001_initial"),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='page',
-            index=models.Index(fields=['organization', 'store', 'is_published'], name='pages_page_organiz_d9e6af_idx'),
+            model_name="page",
+            index=models.Index(
+                fields=["organization", "store", "is_published"],
+                name="pages_page_organiz_d9e6af_idx",
+            ),
         ),
         migrations.AddIndex(
-            model_name='page',
-            index=models.Index(fields=['organization', 'store', 'page_type'], name='pages_page_organiz_25ba1f_idx'),
+            model_name="page",
+            index=models.Index(
+                fields=["organization", "store", "page_type"], name="pages_page_organiz_25ba1f_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='page',
-            index=models.Index(fields=['is_published'], name='pages_page_is_publ_95f2e1_idx'),
+            model_name="page",
+            index=models.Index(fields=["is_published"], name="pages_page_is_publ_95f2e1_idx"),
         ),
     ]

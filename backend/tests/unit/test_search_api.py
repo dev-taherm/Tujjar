@@ -13,13 +13,20 @@ class TestSearchAPI:
         user, org, store, token = create_org_with_owner_and_store("search-global@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         SearchIndex.objects.create(
-            organization=org, store=store,
-            entity_type="product", entity_id="00000000-0000-0000-0000-000000000001",
-            title="Wireless Mouse", description="A wireless bluetooth mouse",
+            organization=org,
+            store=store,
+            entity_type="product",
+            entity_id="00000000-0000-0000-0000-000000000001",
+            title="Wireless Mouse",
+            description="A wireless bluetooth mouse",
         )
-        response = api_client.post("/api/v1/search/index/search/", {
-            "q": "mouse",
-        }, format="json")
+        response = api_client.post(
+            "/api/v1/search/index/search/",
+            {
+                "q": "mouse",
+            },
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
         assert "results" in response.data
 
@@ -29,9 +36,12 @@ class TestSearchAPI:
         user, org, store, token = create_org_with_owner_and_store("search-suggest@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         SearchIndex.objects.create(
-            organization=org, store=store,
-            entity_type="product", entity_id="00000000-0000-0000-0000-000000000002",
-            title="USB Keyboard", description="Mechanical keyboard",
+            organization=org,
+            store=store,
+            entity_type="product",
+            entity_id="00000000-0000-0000-0000-000000000002",
+            title="USB Keyboard",
+            description="Mechanical keyboard",
         )
         response = api_client.get("/api/v1/search/index/search_suggestions/", {"q": "key"})
         assert response.status_code == status.HTTP_200_OK

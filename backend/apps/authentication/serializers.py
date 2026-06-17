@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.mail import send_mail
@@ -31,7 +30,16 @@ class UserSerializer(serializers.ModelSerializer):
             "provider",
             "created_at",
         ]
-        read_only_fields = ["id", "email", "is_verified", "is_staff", "is_superuser", "two_factor_enabled", "provider", "created_at"]
+        read_only_fields = [
+            "id",
+            "email",
+            "is_verified",
+            "is_staff",
+            "is_superuser",
+            "two_factor_enabled",
+            "provider",
+            "created_at",
+        ]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -61,7 +69,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
         token, _ = generate_verification_token()
         user.set_verification_token(token)
         user.verification_token_expires = timezone.now() + timezone.timedelta(hours=24)
-        user.save(update_fields=["verification_token", "verification_token_hash", "verification_token_expires"])
+        user.save(
+            update_fields=[
+                "verification_token",
+                "verification_token_hash",
+                "verification_token_expires",
+            ]
+        )
         # Auto-create organization for the user
         org_name = f"{user.first_name or user.email}'s Organization"
         org = Organization.objects.create(
@@ -109,7 +123,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         if attempts >= 5:
             raise serializers.ValidationError(
-                {"detail": "Account locked due to too many failed attempts. Try again in 15 minutes."}
+                {
+                    "detail": "Account locked due to too many failed attempts. Try again in 15 minutes."
+                }
             )
 
         try:
@@ -150,7 +166,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["is_verified"] = user.is_verified
         token["is_staff"] = user.is_staff
         # Include org_id from user's first organization membership
-        membership = user.memberships.filter(is_accepted=True).select_related("organization").first()
+        membership = (
+            user.memberships.filter(is_accepted=True).select_related("organization").first()
+        )
         if membership:
             token["org_id"] = str(membership.organization.id)
         return token
@@ -202,9 +220,13 @@ class RequestPasswordResetSerializer(serializers.Serializer):
         token, _ = generate_password_reset_token()
         user.set_password_reset_token(token)
         user.password_reset_expires = timezone.now() + timezone.timedelta(hours=1)
-        user.save(update_fields=[
-            "password_reset_token", "password_reset_token_hash", "password_reset_expires",
-        ])
+        user.save(
+            update_fields=[
+                "password_reset_token",
+                "password_reset_token_hash",
+                "password_reset_expires",
+            ]
+        )
         try:
             reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?token={token}"
             send_mail(
@@ -247,9 +269,14 @@ class ResetPasswordSerializer(serializers.Serializer):
         user.password_reset_token = ""
         user.password_reset_token_hash = ""
         user.password_reset_expires = None
-        user.save(update_fields=[
-            "password", "password_reset_token", "password_reset_token_hash", "password_reset_expires",
-        ])
+        user.save(
+            update_fields=[
+                "password",
+                "password_reset_token",
+                "password_reset_token_hash",
+                "password_reset_expires",
+            ]
+        )
         return user
 
 
@@ -273,7 +300,14 @@ class VerifyEmailSerializer(serializers.Serializer):
         self.user.verification_token = ""
         self.user.verification_token_hash = ""
         self.user.verification_token_expires = None
-        self.user.save(update_fields=["is_verified", "verification_token", "verification_token_hash", "verification_token_expires"])
+        self.user.save(
+            update_fields=[
+                "is_verified",
+                "verification_token",
+                "verification_token_hash",
+                "verification_token_expires",
+            ]
+        )
         return self.user
 
 
@@ -295,7 +329,13 @@ class ResendVerificationSerializer(serializers.Serializer):
         token, _ = generate_verification_token()
         self.user.set_verification_token(token)
         self.user.verification_token_expires = timezone.now() + timezone.timedelta(hours=24)
-        self.user.save(update_fields=["verification_token", "verification_token_hash", "verification_token_expires"])
+        self.user.save(
+            update_fields=[
+                "verification_token",
+                "verification_token_hash",
+                "verification_token_expires",
+            ]
+        )
         try:
             verify_url = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
             send_mail(
@@ -326,9 +366,7 @@ class TwoFactorSetupSerializer(serializers.Serializer):
         totp = pyotp.TOTP(secret)
         return {
             "secret": secret,
-            "provisioning_uri": totp.provisioning_uri(
-                name=user.email, issuer_name="Tujjar"
-            ),
+            "provisioning_uri": totp.provisioning_uri(name=user.email, issuer_name="Tujjar"),
         }
 
 
@@ -361,16 +399,17 @@ class TwoFactorLoginSerializer(serializers.Serializer):
     code = serializers.CharField(min_length=6, max_length=6)
 
     def validate(self, attrs):
-        from django.core.cache import cache
-
         import pyotp
+        from django.core.cache import cache
 
         session_token = attrs["two_factor_session_token"]
         cache_key = f"2fa_pending:{session_token}"
         user_id = cache.get(cache_key)
 
         if not user_id:
-            raise serializers.ValidationError({"two_factor_session_token": "Invalid or expired session"})
+            raise serializers.ValidationError(
+                {"two_factor_session_token": "Invalid or expired session"}
+            )
 
         try:
             user = User.objects.get(id=user_id)
@@ -395,7 +434,9 @@ class TwoFactorLoginSerializer(serializers.Serializer):
 
         tokens = RefreshToken.for_user(user)
         # Include org_id in access token
-        membership = user.memberships.filter(is_accepted=True).select_related("organization").first()
+        membership = (
+            user.memberships.filter(is_accepted=True).select_related("organization").first()
+        )
         if membership:
             tokens["org_id"] = str(membership.organization.id)
         return {
@@ -421,7 +462,9 @@ class TwoFactorBackupLoginSerializer(serializers.Serializer):
         user_id = cache.get(cache_key)
 
         if not user_id:
-            raise serializers.ValidationError({"two_factor_session_token": "Invalid or expired session"})
+            raise serializers.ValidationError(
+                {"two_factor_session_token": "Invalid or expired session"}
+            )
 
         try:
             user = User.objects.get(id=user_id)
@@ -447,7 +490,9 @@ class TwoFactorBackupLoginSerializer(serializers.Serializer):
         from rest_framework_simplejwt.tokens import RefreshToken
 
         tokens = RefreshToken.for_user(user)
-        membership = user.memberships.filter(is_accepted=True).select_related("organization").first()
+        membership = (
+            user.memberships.filter(is_accepted=True).select_related("organization").first()
+        )
         if membership:
             tokens["org_id"] = str(membership.organization.id)
         return {

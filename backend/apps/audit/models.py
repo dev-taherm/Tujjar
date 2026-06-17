@@ -4,8 +4,7 @@ from typing import Any
 
 from django.db import models
 
-
-from apps.core.managers import TenantManager, UnscopedManager
+from apps.core.managers import UnscopedManager
 
 
 class AuditLogManager(models.Manager):

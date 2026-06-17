@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('stores', '0002_store_footer_config_store_navigation_store_template'),
+        ("stores", "0002_store_footer_config_store_navigation_store_template"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='store',
-            name='translations',
-            field=models.JSONField(blank=True, default=dict, help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}'),
+            model_name="store",
+            name="translations",
+            field=models.JSONField(
+                blank=True,
+                default=dict,
+                help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
+            ),
         ),
     ]

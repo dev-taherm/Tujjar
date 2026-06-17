@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
-import time
 import logging
-from typing import Any
-
-from apps.products.models import Product
+import time
+from typing import TYPE_CHECKING, Any
 
 from . import AIProviderError, get_provider
+
+if TYPE_CHECKING:
+    from apps.products.models import Product
 
 logger = logging.getLogger("apps.ai")
 
@@ -28,7 +29,9 @@ class ContentGenerator:
     def __init__(self, provider_config: dict[str, Any]):
         self.provider = get_provider(provider_config)
 
-    def generate(self, task_type: str, prompt: str, context: dict | None = None, **kwargs) -> dict[str, Any]:
+    def generate(
+        self, task_type: str, prompt: str, context: dict | None = None, **kwargs
+    ) -> dict[str, Any]:
         system_prompt = self.SYSTEM_PROMPTS.get(task_type, "You are a helpful AI assistant.")
         if context:
             context_str = json.dumps(context, indent=2)
@@ -54,7 +57,9 @@ class ContentGenerator:
                 "error": str(e),
             }
 
-    def generate_product_description(self, product: Product, tone: str = "professional") -> dict[str, Any]:
+    def generate_product_description(
+        self, product: Product, tone: str = "professional"
+    ) -> dict[str, Any]:
         prompt = f"""Generate a compelling product description for:
 Title: {product.title}
 Type: {product.product_type}
@@ -80,12 +85,19 @@ Return as JSON: {{"seo_title": "...", "seo_description": "..."}}"""
         result = self.generate("seo_title", prompt)
         try:
             parsed = json.loads(result["content"])
-            return {"seo_title": parsed.get("seo_title", ""), "seo_description": parsed.get("seo_description", "")}
+            return {
+                "seo_title": parsed.get("seo_title", ""),
+                "seo_description": parsed.get("seo_description", ""),
+            }
         except (json.JSONDecodeError, KeyError):
             return {"seo_title": product.title, "seo_description": product.description[:160]}
 
-    def generate_marketing_email(self, store_name: str, products: list[dict], offer: str = "") -> dict[str, Any]:
-        products_str = "\n".join([f"- {p.get('title', '')}: ${p.get('price', 0)}" for p in products[:5]])
+    def generate_marketing_email(
+        self, store_name: str, products: list[dict], offer: str = ""
+    ) -> dict[str, Any]:
+        products_str = "\n".join(
+            [f"- {p.get('title', '')}: ${p.get('price', 0)}" for p in products[:5]]
+        )
         prompt = f"""Generate a marketing email for store: {store_name}
 Products to feature:
 {products_str}

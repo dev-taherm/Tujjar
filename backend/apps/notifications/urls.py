@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from apps.notifications.views import NotificationViewSet, NotificationPreferenceViewSet
+from apps.notifications.views import NotificationPreferenceViewSet, NotificationViewSet
 
 router = DefaultRouter()
 router.register(r"notifications", NotificationViewSet, basename="notification")

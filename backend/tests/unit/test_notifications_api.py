@@ -12,12 +12,18 @@ def _setup(email="notif-test@example.com"):
     user, org, store, token = create_org_with_owner_and_store(email)
 
     n1 = Notification.objects.create(
-        user=user, organization=org, notification_type="order",
-        title="New Order", message="You have a new order",
+        user=user,
+        organization=org,
+        notification_type="order",
+        title="New Order",
+        message="You have a new order",
     )
     n2 = Notification.objects.create(
-        user=user, organization=org, notification_type="system",
-        title="System Update", message="System maintenance scheduled",
+        user=user,
+        organization=org,
+        notification_type="system",
+        title="System Update",
+        message="System maintenance scheduled",
     )
     return token, org, store, n1, n2
 
@@ -30,7 +36,6 @@ class TestNotificationAPI:
         assert response.status_code == status.HTTP_200_OK
 
     def test_mark_read(self, api_client):
-        from apps.notifications.models import Notification
 
         token, org, store, n1, n2 = _setup("notif-read@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")

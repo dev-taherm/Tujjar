@@ -28,9 +28,11 @@ ORG_MANAGEMENT_ROLES = {"owner", "admin"}
 
 def _check_org_role(user, org_id, allowed_slugs):
     """Raise PermissionDenied if user's role in org is not in allowed_slugs."""
-    membership = OrganizationMembership.objects.filter(
-        user=user, organization_id=org_id, is_accepted=True
-    ).select_related("role").first()
+    membership = (
+        OrganizationMembership.objects.filter(user=user, organization_id=org_id, is_accepted=True)
+        .select_related("role")
+        .first()
+    )
     if not membership:
         raise PermissionDenied("You are not a member of this organization.")
     if membership.role.slug not in allowed_slugs:
@@ -45,15 +47,21 @@ class OrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Organization.objects.prefetch_related(
-            Prefetch(
-                "memberships",
-                queryset=OrganizationMembership.objects.filter(is_accepted=True).select_related("user", "role"),
+        return (
+            Organization.objects.prefetch_related(
+                Prefetch(
+                    "memberships",
+                    queryset=OrganizationMembership.objects.filter(is_accepted=True).select_related(
+                        "user", "role"
+                    ),
+                )
             )
-        ).filter(
-            memberships__user=self.request.user,
-            memberships__is_accepted=True,
-        ).distinct()
+            .filter(
+                memberships__user=self.request.user,
+                memberships__is_accepted=True,
+            )
+            .distinct()
+        )
 
     def perform_create(self, serializer):
         org = serializer.save()
@@ -71,7 +79,12 @@ class OrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
             is_accepted=True,
             accepted_at=timezone.now(),
         )
-        self._log_audit(action="organization.create", resource_type="organization", resource_id=org.id, new_value=serializer.data)
+        self._log_audit(
+            action="organization.create",
+            resource_type="organization",
+            resource_id=org.id,
+            new_value=serializer.data,
+        )
 
     def update(self, request, *args, **kwargs):
         _check_org_role(request.user, kwargs["pk"], ORG_MANAGEMENT_ROLES)
@@ -88,14 +101,22 @@ class OrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     def perform_update(self, serializer):
         old_data = OrganizationSerializer(serializer.instance).data
         org = serializer.save()
-        self._log_audit(action="organization.update", resource_type="organization", resource_id=org.id, old_value=old_data, new_value=serializer.data)
+        self._log_audit(
+            action="organization.update",
+            resource_type="organization",
+            resource_id=org.id,
+            old_value=old_data,
+            new_value=serializer.data,
+        )
 
     @action(detail=True, methods=["get"])
     def members(self, request, pk=None):
         org = self.get_object()
-        memberships = OrganizationMembership.objects.filter(
-            organization=org, is_accepted=True
-        ).select_related("user", "role").prefetch_related("role__role_permissions__permission")
+        memberships = (
+            OrganizationMembership.objects.filter(organization=org, is_accepted=True)
+            .select_related("user", "role")
+            .prefetch_related("role__role_permissions__permission")
+        )
         serializer = OrganizationMembershipSerializer(memberships, many=True)
         return Response(serializer.data)
 
@@ -124,7 +145,12 @@ class OrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        self._log_audit(action="organization.member.invite", resource_type="organization", resource_id=org.id, new_value={"email": user.email, "role": role.slug})
+        self._log_audit(
+            action="organization.member.invite",
+            resource_type="organization",
+            resource_id=org.id,
+            new_value={"email": user.email, "role": role.slug},
+        )
 
         # Notify the invited user
         from apps.notifications.models import Notification
@@ -200,12 +226,21 @@ class OrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
         # Managers can only remove staff-level or lower
-        if caller_membership.role.slug == "manager" and membership.role.slug not in {"staff", "editor", "customer_support"}:
+        if caller_membership.role.slug == "manager" and membership.role.slug not in {
+            "staff",
+            "editor",
+            "customer_support",
+        }:
             return Response(
                 {"detail": "Managers can only remove staff, editors, and customer support."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        self._log_audit(action="organization.member.remove", resource_type="organization", resource_id=pk, old_value={"user_id": user_id, "role": membership.role.slug})
+        self._log_audit(
+            action="organization.member.remove",
+            resource_type="organization",
+            resource_id=pk,
+            old_value={"user_id": user_id, "role": membership.role.slug},
+        )
         membership.delete()
         return Response({"message": "Member removed"})
 
@@ -227,7 +262,14 @@ class RoleViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if org_id:
             _check_org_role(self.request.user, org_id, ORG_MANAGEMENT_ROLES)
         org = serializer.save()
-        self._log_audit(action="role.create", resource_type="role", resource_id=org.id, new_value=RoleSerializer(org).data if hasattr(org, 'role_permissions') else {"name": org.name})
+        self._log_audit(
+            action="role.create",
+            resource_type="role",
+            resource_id=org.id,
+            new_value=RoleSerializer(org).data
+            if hasattr(org, "role_permissions")
+            else {"name": org.name},
+        )
 
     def perform_update(self, serializer):
         if serializer.instance and serializer.instance.is_system:
@@ -237,7 +279,13 @@ class RoleViewSet(AuditLogMixin, viewsets.ModelViewSet):
             _check_org_role(self.request.user, org_id, ORG_MANAGEMENT_ROLES)
         old_data = RoleSerializer(serializer.instance).data
         role = serializer.save()
-        self._log_audit(action="role.update", resource_type="role", resource_id=role.id, old_value=old_data, new_value=RoleSerializer(role).data)
+        self._log_audit(
+            action="role.update",
+            resource_type="role",
+            resource_id=role.id,
+            old_value=old_data,
+            new_value=RoleSerializer(role).data,
+        )
 
     def perform_destroy(self, instance):
         if instance.is_system:
@@ -245,7 +293,12 @@ class RoleViewSet(AuditLogMixin, viewsets.ModelViewSet):
         org_id = self.kwargs.get("org_pk")
         if org_id:
             _check_org_role(self.request.user, org_id, ORG_MANAGEMENT_ROLES)
-        self._log_audit(action="role.delete", resource_type="role", resource_id=instance.id, old_value=RoleSerializer(instance).data)
+        self._log_audit(
+            action="role.delete",
+            resource_type="role",
+            resource_id=instance.id,
+            old_value=RoleSerializer(instance).data,
+        )
         instance.delete()
 
 

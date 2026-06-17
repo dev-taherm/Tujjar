@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('pages', '0002_page_pages_page_organiz_d9e6af_idx_and_more'),
+        ("pages", "0002_page_pages_page_organiz_d9e6af_idx_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='page',
-            name='translations',
-            field=models.JSONField(blank=True, default=dict, help_text='Per-locale translations, e.g. {"ar": {"title": "...", "content_schema": {...}}}'),
+            model_name="page",
+            name="translations",
+            field=models.JSONField(
+                blank=True,
+                default=dict,
+                help_text='Per-locale translations, e.g. {"ar": {"title": "...", "content_schema": {...}}}',
+            ),
         ),
     ]

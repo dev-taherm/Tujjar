@@ -25,6 +25,7 @@ def _update_customer_stats(order):
     if not order.customer_id:
         return
     from django.db.models import Count, Sum
+
     from apps.customers.models import Customer
 
     stats = Order.objects.filter(

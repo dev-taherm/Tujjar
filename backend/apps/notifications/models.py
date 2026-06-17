@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from django.conf import settings
 from django.db import models
 
@@ -68,7 +67,7 @@ class Notification(UUIDModel, TimeStampedModel):
         entity_id=None,
         action_url: str = "",
         metadata: dict | None = None,
-    ) -> "Notification":
+    ) -> Notification:
         """Create a notification and optionally send email asynchronously."""
         if not organization:
             membership = user.memberships.filter(is_accepted=True).first()
@@ -103,6 +102,7 @@ class Notification(UUIDModel, TimeStampedModel):
 
         if pref.email_notifications:
             from apps.notifications.tasks import send_notification_email_task
+
             send_notification_email_task.delay(str(notification.id))
 
         return notification

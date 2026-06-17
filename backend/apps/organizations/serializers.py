@@ -34,6 +34,7 @@ class RoleSerializer(serializers.ModelSerializer):
         role = Role.objects.create(**validated_data)
         if permission_ids:
             from .models import RolePermission
+
             for perm in permission_ids:
                 RolePermission.objects.create(role=role, permission=perm)
         return role
@@ -46,6 +47,7 @@ class RoleSerializer(serializers.ModelSerializer):
         instance.save()
         if permission_ids is not None:
             from .models import RolePermission
+
             instance.role_permissions.all().delete()
             for perm in permission_ids:
                 RolePermission.objects.create(role=instance, permission=perm)
@@ -114,9 +116,7 @@ class OrganizationMembershipSerializer(serializers.ModelSerializer):
         return obj.user.full_name or obj.user.email
 
     def get_role_permissions(self, obj) -> list[str]:
-        return list(
-            obj.role.role_permissions.values_list("permission__codename", flat=True)
-        )
+        return list(obj.role.role_permissions.values_list("permission__codename", flat=True))
 
 
 class InviteMemberSerializer(serializers.Serializer):

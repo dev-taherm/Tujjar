@@ -4,16 +4,16 @@ from datetime import timedelta
 
 from django.db.models import Sum
 from django.utils import timezone
-from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.analytics.models import Event, DailyStats
+from apps.analytics.models import DailyStats, Event
 from apps.analytics.serializers import (
-    EventSerializer,
     EventCreateSerializer,
+    EventSerializer,
 )
 from apps.core.viewsets import TenantViewSet
+
 
 class EventViewSet(TenantViewSet):
     serializer_class = EventSerializer
@@ -46,7 +46,8 @@ class EventViewSet(TenantViewSet):
         prev_start = now - timedelta(days=60)
 
         current_stats = DailyStats.objects.filter(
-            organization_id=org_id, date__gte=period_start.date(),
+            organization_id=org_id,
+            date__gte=period_start.date(),
         ).aggregate(
             revenue=Sum("total_revenue"),
             orders=Sum("total_orders"),
@@ -54,7 +55,8 @@ class EventViewSet(TenantViewSet):
         )
         prev_stats = DailyStats.objects.filter(
             organization_id=org_id,
-            date__gte=prev_start.date(), date__lt=period_start.date(),
+            date__gte=prev_start.date(),
+            date__lt=period_start.date(),
         ).aggregate(
             revenue=Sum("total_revenue"),
             orders=Sum("total_orders"),
@@ -74,7 +76,8 @@ class EventViewSet(TenantViewSet):
         prev_customers = prev_stats["customers"] or 0
 
         recent_orders = Event.objects.filter(
-            organization_id=org_id, event_type="purchase",
+            organization_id=org_id,
+            event_type="purchase",
         ).order_by("-created_at")[:5]
 
         # Last 30 days chart — single bulk query instead of N+1
@@ -82,33 +85,38 @@ class EventViewSet(TenantViewSet):
         chart_stats = {
             s["date"]: s
             for s in DailyStats.objects.filter(
-                organization_id=org_id, date__gte=chart_start,
+                organization_id=org_id,
+                date__gte=chart_start,
             ).values("date", "total_revenue", "total_orders")
         }
         chart = []
         for i in range(30):
             day = (now - timedelta(days=i)).date()
             s = chart_stats.get(day)
-            chart.append({
-                "date": day.isoformat(),
-                "revenue": float(s["total_revenue"]) if s else 0,
-                "orders": s["total_orders"] if s else 0,
-            })
+            chart.append(
+                {
+                    "date": day.isoformat(),
+                    "revenue": float(s["total_revenue"]) if s else 0,
+                    "orders": s["total_orders"] if s else 0,
+                }
+            )
         chart.reverse()
 
-        return Response({
-            "total_revenue": total_revenue,
-            "total_orders": total_orders,
-            "total_customers": total_customers,
-            "total_products_sold": 0,
-            "revenue_change_pct": pct_change(total_revenue, prev_revenue),
-            "orders_change_pct": pct_change(total_orders, prev_orders),
-            "customers_change_pct": pct_change(total_customers, prev_customers),
-            "recent_orders": EventSerializer(recent_orders, many=True).data,
-            "top_products": [],
-            "revenue_chart": chart,
-            "traffic_sources": {},
-        })
+        return Response(
+            {
+                "total_revenue": total_revenue,
+                "total_orders": total_orders,
+                "total_customers": total_customers,
+                "total_products_sold": 0,
+                "revenue_change_pct": pct_change(total_revenue, prev_revenue),
+                "orders_change_pct": pct_change(total_orders, prev_orders),
+                "customers_change_pct": pct_change(total_customers, prev_customers),
+                "recent_orders": EventSerializer(recent_orders, many=True).data,
+                "top_products": [],
+                "revenue_chart": chart,
+                "traffic_sources": {},
+            }
+        )
 
     @action(detail=False, methods=["get"])
     def revenue_chart(self, request):
@@ -118,11 +126,16 @@ class EventViewSet(TenantViewSet):
         start = timezone.now().date() - timedelta(days=days)
 
         stats = DailyStats.objects.filter(
-            organization_id=org_id, date__gte=start,
+            organization_id=org_id,
+            date__gte=start,
         ).order_by("date")
 
         data = [
-            {"date": s.date.isoformat(), "revenue": float(s.total_revenue), "orders": s.total_orders}
+            {
+                "date": s.date.isoformat(),
+                "revenue": float(s.total_revenue),
+                "orders": s.total_orders,
+            }
             for s in stats
         ]
         return Response({"period": period, "data": data})
@@ -132,12 +145,15 @@ class EventViewSet(TenantViewSet):
         org_id = request.org_id
         since = timezone.now() - timedelta(hours=24)
         events = Event.objects.filter(
-            organization_id=org_id, created_at__gte=since,
+            organization_id=org_id,
+            created_at__gte=since,
         )
-        return Response({
-            "total_events": events.count(),
-            "page_views": events.filter(event_type="page_view").count(),
-            "product_views": events.filter(event_type="product_view").count(),
-            "purchases": events.filter(event_type="purchase").count(),
-            "visitors": events.values("visitor_id").distinct().count(),
-        })
+        return Response(
+            {
+                "total_events": events.count(),
+                "page_views": events.filter(event_type="page_view").count(),
+                "product_views": events.filter(event_type="product_view").count(),
+                "purchases": events.filter(event_type="purchase").count(),
+                "visitors": events.values("visitor_id").distinct().count(),
+            }
+        )

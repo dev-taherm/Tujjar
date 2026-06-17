@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.viewsets import TenantReadOnlyViewSet
 from apps.notifications.models import Notification, NotificationPreference
 from apps.notifications.serializers import (
-    NotificationSerializer,
     NotificationPreferenceSerializer,
+    NotificationSerializer,
 )
+
 
 class NotificationViewSet(TenantReadOnlyViewSet):
     serializer_class = NotificationSerializer

@@ -24,11 +24,16 @@ SECTION_TYPES = {
             {"key": "buttonLink", "label": "Button Link", "type": "text"},
             {"key": "backgroundImage", "label": "Background Image", "type": "image"},
             {"key": "overlayOpacity", "label": "Overlay Opacity", "type": "number"},
-            {"key": "alignment", "label": "Alignment", "type": "select", "options": [
-                {"value": "left", "label": "Left"},
-                {"value": "center", "label": "Center"},
-                {"value": "right", "label": "Right"},
-            ]},
+            {
+                "key": "alignment",
+                "label": "Alignment",
+                "type": "select",
+                "options": [
+                    {"value": "left", "label": "Left"},
+                    {"value": "center", "label": "Center"},
+                    {"value": "right", "label": "Right"},
+                ],
+            },
             {"key": "textColor", "label": "Text Color", "type": "color"},
             {"key": "minHeight", "label": "Min Height (px)", "type": "number"},
         ],
@@ -49,17 +54,27 @@ SECTION_TYPES = {
         },
         "settingsSchema": [
             {"key": "title", "label": "Section Title", "type": "text"},
-            {"key": "columns", "label": "Columns", "type": "select", "options": [
-                {"value": "2", "label": "2 Columns"},
-                {"value": "3", "label": "3 Columns"},
-                {"value": "4", "label": "4 Columns"},
-            ]},
+            {
+                "key": "columns",
+                "label": "Columns",
+                "type": "select",
+                "options": [
+                    {"value": "2", "label": "2 Columns"},
+                    {"value": "3", "label": "3 Columns"},
+                    {"value": "4", "label": "4 Columns"},
+                ],
+            },
             {"key": "productsPerPage", "label": "Products Per Page", "type": "number"},
-            {"key": "sortBy", "label": "Sort By", "type": "select", "options": [
-                {"value": "created_at", "label": "Newest"},
-                {"value": "price", "label": "Price"},
-                {"value": "title", "label": "Name"},
-            ]},
+            {
+                "key": "sortBy",
+                "label": "Sort By",
+                "type": "select",
+                "options": [
+                    {"value": "created_at", "label": "Newest"},
+                    {"value": "price", "label": "Price"},
+                    {"value": "title", "label": "Name"},
+                ],
+            },
             {"key": "showPrices", "label": "Show Prices", "type": "toggle"},
             {"key": "showBadges", "label": "Show Badges", "type": "toggle"},
             {"key": "collectionSlug", "label": "Collection Slug", "type": "text"},
@@ -80,17 +95,27 @@ SECTION_TYPES = {
         "settingsSchema": [
             {"key": "title", "label": "Section Title", "type": "text"},
             {"key": "images", "label": "Images", "type": "repeater"},
-            {"key": "columns", "label": "Columns", "type": "select", "options": [
-                {"value": "2", "label": "2 Columns"},
-                {"value": "3", "label": "3 Columns"},
-                {"value": "4", "label": "4 Columns"},
-            ]},
-            {"key": "aspectRatio", "label": "Aspect Ratio", "type": "select", "options": [
-                {"value": "1/1", "label": "Square"},
-                {"value": "4/3", "label": "Landscape"},
-                {"value": "3/4", "label": "Portrait"},
-                {"value": "16/9", "label": "Wide"},
-            ]},
+            {
+                "key": "columns",
+                "label": "Columns",
+                "type": "select",
+                "options": [
+                    {"value": "2", "label": "2 Columns"},
+                    {"value": "3", "label": "3 Columns"},
+                    {"value": "4", "label": "4 Columns"},
+                ],
+            },
+            {
+                "key": "aspectRatio",
+                "label": "Aspect Ratio",
+                "type": "select",
+                "options": [
+                    {"value": "1/1", "label": "Square"},
+                    {"value": "4/3", "label": "Landscape"},
+                    {"value": "3/4", "label": "Portrait"},
+                    {"value": "16/9", "label": "Wide"},
+                ],
+            },
             {"key": "lightbox", "label": "Enable Lightbox", "type": "toggle"},
         ],
     },
@@ -110,10 +135,15 @@ SECTION_TYPES = {
         "settingsSchema": [
             {"key": "title", "label": "Section Title", "type": "text"},
             {"key": "testimonials", "label": "Testimonials", "type": "repeater"},
-            {"key": "layout", "label": "Layout", "type": "select", "options": [
-                {"value": "carousel", "label": "Carousel"},
-                {"value": "grid", "label": "Grid"},
-            ]},
+            {
+                "key": "layout",
+                "label": "Layout",
+                "type": "select",
+                "options": [
+                    {"value": "carousel", "label": "Carousel"},
+                    {"value": "grid", "label": "Grid"},
+                ],
+            },
         ],
     },
     "faq": {
@@ -124,8 +154,14 @@ SECTION_TYPES = {
         "defaultSettings": {
             "title": "Frequently Asked Questions",
             "items": [
-                {"question": "What is your return policy?", "answer": "We offer a 30-day return policy."},
-                {"question": "How long does shipping take?", "answer": "Shipping typically takes 3-5 business days."},
+                {
+                    "question": "What is your return policy?",
+                    "answer": "We offer a 30-day return policy.",
+                },
+                {
+                    "question": "How long does shipping take?",
+                    "answer": "Shipping typically takes 3-5 business days.",
+                },
             ],
         },
         "settingsSchema": [
@@ -141,18 +177,35 @@ SECTION_TYPES = {
         "defaultSettings": {
             "title": "Pricing Plans",
             "plans": [
-                {"name": "Basic", "price": "9.99", "period": "month", "features": ["Feature 1", "Feature 2"], "highlighted": False},
-                {"name": "Pro", "price": "29.99", "period": "month", "features": ["Feature 1", "Feature 2", "Feature 3"], "highlighted": True},
+                {
+                    "name": "Basic",
+                    "price": "9.99",
+                    "period": "month",
+                    "features": ["Feature 1", "Feature 2"],
+                    "highlighted": False,
+                },
+                {
+                    "name": "Pro",
+                    "price": "29.99",
+                    "period": "month",
+                    "features": ["Feature 1", "Feature 2", "Feature 3"],
+                    "highlighted": True,
+                },
             ],
             "columns": 2,
         },
         "settingsSchema": [
             {"key": "title", "label": "Section Title", "type": "text"},
             {"key": "plans", "label": "Plans", "type": "repeater"},
-            {"key": "columns", "label": "Columns", "type": "select", "options": [
-                {"value": "2", "label": "2 Columns"},
-                {"value": "3", "label": "3 Columns"},
-            ]},
+            {
+                "key": "columns",
+                "label": "Columns",
+                "type": "select",
+                "options": [
+                    {"value": "2", "label": "2 Columns"},
+                    {"value": "3", "label": "3 Columns"},
+                ],
+            },
         ],
     },
     "banner": {
@@ -234,11 +287,16 @@ SECTION_TYPES = {
             {"key": "videoUrl", "label": "Video URL", "type": "text"},
             {"key": "autoplay", "label": "Autoplay", "type": "toggle"},
             {"key": "coverImage", "label": "Cover Image", "type": "image"},
-            {"key": "aspectRatio", "label": "Aspect Ratio", "type": "select", "options": [
-                {"value": "16/9", "label": "16:9"},
-                {"value": "4/3", "label": "4:3"},
-                {"value": "1/1", "label": "1:1"},
-            ]},
+            {
+                "key": "aspectRatio",
+                "label": "Aspect Ratio",
+                "type": "select",
+                "options": [
+                    {"value": "16/9", "label": "16:9"},
+                    {"value": "4/3", "label": "4:3"},
+                    {"value": "1/1", "label": "1:1"},
+                ],
+            },
         ],
     },
     "rich-text": {
@@ -254,11 +312,16 @@ SECTION_TYPES = {
         "settingsSchema": [
             {"key": "htmlContent", "label": "HTML Content", "type": "textarea"},
             {"key": "maxWidth", "label": "Max Width (px)", "type": "number"},
-            {"key": "alignment", "label": "Alignment", "type": "select", "options": [
-                {"value": "left", "label": "Left"},
-                {"value": "center", "label": "Center"},
-                {"value": "right", "label": "Right"},
-            ]},
+            {
+                "key": "alignment",
+                "label": "Alignment",
+                "type": "select",
+                "options": [
+                    {"value": "left", "label": "Left"},
+                    {"value": "center", "label": "Center"},
+                    {"value": "right", "label": "Right"},
+                ],
+            },
         ],
     },
     "image": {
@@ -278,11 +341,16 @@ SECTION_TYPES = {
             {"key": "altText", "label": "Alt Text", "type": "text"},
             {"key": "caption", "label": "Caption", "type": "text"},
             {"key": "maxWidth", "label": "Max Width (%)", "type": "number"},
-            {"key": "alignment", "label": "Alignment", "type": "select", "options": [
-                {"value": "left", "label": "Left"},
-                {"value": "center", "label": "Center"},
-                {"value": "right", "label": "Right"},
-            ]},
+            {
+                "key": "alignment",
+                "label": "Alignment",
+                "type": "select",
+                "options": [
+                    {"value": "left", "label": "Left"},
+                    {"value": "center", "label": "Center"},
+                    {"value": "right", "label": "Right"},
+                ],
+            },
         ],
     },
     "countdown": {
@@ -326,7 +394,13 @@ SECTION_TYPES = {
         "icon": "GalleryHorizontalEnd",
         "defaultSettings": {
             "slides": [
-                {"image": "", "title": "Slide 1", "subtitle": "", "buttonText": "", "buttonLink": ""},
+                {
+                    "image": "",
+                    "title": "Slide 1",
+                    "subtitle": "",
+                    "buttonText": "",
+                    "buttonLink": "",
+                },
             ],
             "autoplay": True,
             "interval": 5000,
@@ -344,8 +418,20 @@ SECTION_TYPES = {
         "icon": "PanelBottom",
         "defaultSettings": {
             "columns": [
-                {"title": "Shop", "links": [{"label": "All Products", "url": "/products"}, {"label": "New Arrivals", "url": "/new"}]},
-                {"title": "Help", "links": [{"label": "FAQ", "url": "/faq"}, {"label": "Contact", "url": "/contact"}]},
+                {
+                    "title": "Shop",
+                    "links": [
+                        {"label": "All Products", "url": "/products"},
+                        {"label": "New Arrivals", "url": "/new"},
+                    ],
+                },
+                {
+                    "title": "Help",
+                    "links": [
+                        {"label": "FAQ", "url": "/faq"},
+                        {"label": "Contact", "url": "/contact"},
+                    ],
+                },
             ],
             "copyright": "2024 Your Store. All rights reserved.",
             "socialLinks": {"facebook": "", "twitter": "", "instagram": ""},

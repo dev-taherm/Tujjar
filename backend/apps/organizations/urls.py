@@ -16,7 +16,9 @@ urlpatterns = [
     ),
     path(
         "<uuid:org_pk>/roles/<uuid:pk>/",
-        views.RoleViewSet.as_view({"get": "retrieve", "put": "partial_update", "delete": "destroy"}),
+        views.RoleViewSet.as_view(
+            {"get": "retrieve", "put": "partial_update", "delete": "destroy"}
+        ),
         name="role-detail",
     ),
     path(

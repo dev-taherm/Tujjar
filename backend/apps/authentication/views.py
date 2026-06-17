@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 
+from django.conf import settings
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -16,8 +17,8 @@ from .serializers import (
     BackupCodesSerializer,
     ChangePasswordSerializer,
     RequestPasswordResetSerializer,
-    ResetPasswordSerializer,
     ResendVerificationSerializer,
+    ResetPasswordSerializer,
     TwoFactorBackupLoginSerializer,
     TwoFactorLoginSerializer,
     TwoFactorSetupSerializer,
@@ -28,9 +29,6 @@ from .serializers import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-from django.conf import settings
 
 
 class LoginThrottle(AnonRateThrottle):
@@ -238,7 +236,9 @@ class ResendVerificationView(APIView):
         serializer = ResendVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"message": "If the email exists and is unverified, a new link has been sent"})
+        return Response(
+            {"message": "If the email exists and is unverified, a new link has been sent"}
+        )
 
 
 class BackupCodesView(APIView):

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from celery import shared_task
 from django.utils import timezone
+
+from celery import shared_task
 
 
 @shared_task
@@ -16,6 +17,7 @@ def update_search_index_for_blog_post(post_id: str):
         return
 
     import re
+
     plain_text = re.sub(r"<[^>]+>", " ", post.content or "")
     plain_text = re.sub(r"\s+", " ", plain_text).strip()[:500]
 

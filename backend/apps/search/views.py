@@ -2,25 +2,26 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db.models import Q
-from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.viewsets import TenantReadOnlyViewSet
 from apps.search.models import SearchIndex, SearchQuery
 from apps.search.serializers import (
     SearchIndexSerializer,
     SearchQuerySerializer,
     SearchRequestSerializer,
 )
-from apps.core.viewsets import TenantReadOnlyViewSet
 
 # Trigram requires pg_trgm extension (PostgreSQL only)
 USE_TRIGRAM = "postgresql" in settings.DATABASES.get("default", {}).get("ENGINE", "")
 
 if USE_TRIGRAM:
     from django.contrib.postgres.search import TrigramSimilarity
-    from django.db.models import Value, FloatField
+    from django.db.models import FloatField, Value
     from django.db.models.functions import Greatest
+
+
 class SearchIndexViewSet(TenantReadOnlyViewSet):
     serializer_class = SearchIndexSerializer
 
@@ -42,13 +43,17 @@ class SearchIndexViewSet(TenantReadOnlyViewSet):
             qs = qs.filter(entity_type__in=entity_types)
 
         if USE_TRIGRAM:
-            qs = qs.annotate(
-                similarity=Greatest(
-                    TrigramSimilarity("title", query),
-                    TrigramSimilarity("description", query),
-                    Value(0, output_field=FloatField()),
+            qs = (
+                qs.annotate(
+                    similarity=Greatest(
+                        TrigramSimilarity("title", query),
+                        TrigramSimilarity("description", query),
+                        Value(0, output_field=FloatField()),
+                    )
                 )
-            ).filter(similarity__gt=0.05).order_by("-similarity")[:limit]
+                .filter(similarity__gt=0.05)
+                .order_by("-similarity")[:limit]
+            )
 
             results = [
                 {
@@ -62,9 +67,7 @@ class SearchIndexViewSet(TenantReadOnlyViewSet):
                 for item in qs
             ]
         else:
-            qs = qs.filter(
-                Q(title__icontains=query) | Q(description__icontains=query)
-            )[:limit]
+            qs = qs.filter(Q(title__icontains=query) | Q(description__icontains=query))[:limit]
 
             results = [
                 {
@@ -95,10 +98,14 @@ class SearchIndexViewSet(TenantReadOnlyViewSet):
 
         org_id = getattr(request, "org_id", None)
 
-        qs = SearchIndex.objects.filter(
-            organization_id=org_id,
-            title__icontains=q,
-        ).values_list("title", flat=True).distinct()[:8]
+        qs = (
+            SearchIndex.objects.filter(
+                organization_id=org_id,
+                title__icontains=q,
+            )
+            .values_list("title", flat=True)
+            .distinct()[:8]
+        )
 
         return Response({"suggestions": list(qs)})
 

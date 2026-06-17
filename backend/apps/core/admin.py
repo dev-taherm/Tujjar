@@ -33,14 +33,17 @@ class TenantAdminMixin:
 
 class TenantModelAdmin(TenantAdminMixin, admin.ModelAdmin):
     """Base ModelAdmin with tenant isolation."""
+
     pass
 
 
 class TenantTabularInline(TenantAdminMixin, admin.TabularInline):
     """TabularInline with tenant isolation."""
+
     pass
 
 
 class TenantStackedInline(TenantAdminMixin, admin.StackedInline):
     """StackedInline with tenant isolation."""
+
     pass

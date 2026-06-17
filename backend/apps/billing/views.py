@@ -9,21 +9,21 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.billing.models import Plan, Subscription, Invoice, PaymentMethod
+from apps.billing.models import Invoice, PaymentMethod, Plan, Subscription
 from apps.billing.serializers import (
-    PlanSerializer,
-    SubscriptionSerializer,
+    CreateCheckoutSessionSerializer,
     InvoiceSerializer,
     PaymentMethodSerializer,
-    CreateCheckoutSessionSerializer,
+    PlanSerializer,
+    SubscriptionSerializer,
 )
 from apps.core.viewsets import TenantViewSet
 
 
 def check_plan_limits(organization, resource_type: str) -> dict:
     """Check if organization has exceeded plan limits. Returns dict with limit info."""
-    from apps.products.models import Product
     from apps.orders.models import Order
+    from apps.products.models import Product
 
     try:
         sub = Subscription.objects.select_related("plan").get(organization=organization)
@@ -96,10 +96,12 @@ class SubscriptionViewSet(TenantViewSet):
             resource_id=sub.id,
             new_value={"plan": plan.slug, "status": sub.status, "created": created},
         )
-        return Response({
-            "checkout_url": serializer.validated_data["success_url"],
-            "subscription_id": str(sub.id),
-        })
+        return Response(
+            {
+                "checkout_url": serializer.validated_data["success_url"],
+                "subscription_id": str(sub.id),
+            }
+        )
 
     @action(detail=False, methods=["post"])
     def cancel(self, request):
@@ -149,7 +151,9 @@ class PaymentMethodViewSet(TenantViewSet):
     @action(detail=True, methods=["post"])
     def set_default(self, request, pk=None):
         pm = self.get_object()
-        PaymentMethod.objects.filter(organization=pm.organization, is_default=True).update(is_default=False)
+        PaymentMethod.objects.filter(organization=pm.organization, is_default=True).update(
+            is_default=False
+        )
         pm.is_default = True
         pm.save(update_fields=["is_default"])
         self._log_audit(

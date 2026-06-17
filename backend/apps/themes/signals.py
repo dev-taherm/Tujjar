@@ -3,7 +3,6 @@ from __future__ import annotations
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
-
 # ---------------------------------------------------------------------------
 # Homepage section templates per niche
 # ---------------------------------------------------------------------------
@@ -44,9 +43,21 @@ _MODERN_HOMEPAGE = {
             "settings": {
                 "title": "What Our Customers Say",
                 "testimonials": [
-                    {"name": "Sarah M.", "quote": "Absolutely love the quality! Will definitely shop here again.", "rating": 5},
-                    {"name": "James L.", "quote": "Fast shipping and great customer service.", "rating": 5},
-                    {"name": "Emily R.", "quote": "Best online shopping experience I've had.", "rating": 5},
+                    {
+                        "name": "Sarah M.",
+                        "quote": "Absolutely love the quality! Will definitely shop here again.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "James L.",
+                        "quote": "Fast shipping and great customer service.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Emily R.",
+                        "quote": "Best online shopping experience I've had.",
+                        "rating": 5,
+                    },
                 ],
                 "layout": "carousel",
             },
@@ -101,9 +112,18 @@ _MINIMAL_HOMEPAGE = {
             "settings": {
                 "title": "Common Questions",
                 "items": [
-                    {"question": "What is your return policy?", "answer": "We offer a 30-day return policy on all items."},
-                    {"question": "How long does shipping take?", "answer": "Standard shipping takes 3-5 business days."},
-                    {"question": "Do you ship internationally?", "answer": "Yes, we ship to over 50 countries worldwide."},
+                    {
+                        "question": "What is your return policy?",
+                        "answer": "We offer a 30-day return policy on all items.",
+                    },
+                    {
+                        "question": "How long does shipping take?",
+                        "answer": "Standard shipping takes 3-5 business days.",
+                    },
+                    {
+                        "question": "Do you ship internationally?",
+                        "answer": "Yes, we ship to over 50 countries worldwide.",
+                    },
                 ],
             },
         },
@@ -157,9 +177,21 @@ _LUXURY_HOMEPAGE = {
             "settings": {
                 "title": "Client Stories",
                 "testimonials": [
-                    {"name": "Victoria C.", "quote": "Exceptional quality and attention to detail. Worth every penny.", "rating": 5},
-                    {"name": "Alexander P.", "quote": "A truly luxurious experience from start to finish.", "rating": 5},
-                    {"name": "Isabella M.", "quote": "The craftsmanship is unparalleled. Simply stunning.", "rating": 5},
+                    {
+                        "name": "Victoria C.",
+                        "quote": "Exceptional quality and attention to detail. Worth every penny.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Alexander P.",
+                        "quote": "A truly luxurious experience from start to finish.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Isabella M.",
+                        "quote": "The craftsmanship is unparalleled. Simply stunning.",
+                        "rating": 5,
+                    },
                 ],
                 "layout": "carousel",
             },
@@ -227,9 +259,21 @@ _FRESHMARKET_HOMEPAGE = {
             "settings": {
                 "title": "Happy Customers",
                 "testimonials": [
-                    {"name": "Maria G.", "quote": "The freshest produce I've ever received. You can taste the difference!", "rating": 5},
-                    {"name": "David K.", "quote": "My family loves the weekly organic box. Amazing quality.", "rating": 5},
-                    {"name": "Sophie L.", "quote": "Finally, a grocery service that truly cares about sustainability.", "rating": 5},
+                    {
+                        "name": "Maria G.",
+                        "quote": "The freshest produce I've ever received. You can taste the difference!",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "David K.",
+                        "quote": "My family loves the weekly organic box. Amazing quality.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Sophie L.",
+                        "quote": "Finally, a grocery service that truly cares about sustainability.",
+                        "rating": 5,
+                    },
                 ],
                 "layout": "grid",
             },
@@ -240,9 +284,18 @@ _FRESHMARKET_HOMEPAGE = {
             "settings": {
                 "title": "Questions About Our Products",
                 "items": [
-                    {"question": "Are your products certified organic?", "answer": "Yes, all our products are certified organic by recognized agricultural bodies."},
-                    {"question": "How do you ensure freshness?", "answer": "We harvest and ship within 24 hours to ensure maximum freshness."},
-                    {"question": "Can I customize my weekly box?", "answer": "Absolutely! You can choose exactly what goes into your delivery."},
+                    {
+                        "question": "Are your products certified organic?",
+                        "answer": "Yes, all our products are certified organic by recognized agricultural bodies.",
+                    },
+                    {
+                        "question": "How do you ensure freshness?",
+                        "answer": "We harvest and ship within 24 hours to ensure maximum freshness.",
+                    },
+                    {
+                        "question": "Can I customize my weekly box?",
+                        "answer": "Absolutely! You can choose exactly what goes into your delivery.",
+                    },
                 ],
             },
         },
@@ -309,8 +362,16 @@ _TECHVOLT_HOMEPAGE = {
             "settings": {
                 "title": "Tech Enthusiasts Love Us",
                 "testimonials": [
-                    {"name": "Alex T.", "quote": "Blown away by the specs for the price. Incredible value.", "rating": 5},
-                    {"name": "Jordan P.", "quote": "Fast delivery and the product exceeded expectations.", "rating": 5},
+                    {
+                        "name": "Alex T.",
+                        "quote": "Blown away by the specs for the price. Incredible value.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Jordan P.",
+                        "quote": "Fast delivery and the product exceeded expectations.",
+                        "rating": 5,
+                    },
                     {"name": "Sam W.", "quote": "Best tech store online. Period.", "rating": 5},
                 ],
                 "layout": "carousel",
@@ -377,9 +438,21 @@ _STYLEHAUS_HOMEPAGE = {
             "settings": {
                 "title": "Style Inspo from Our Community",
                 "testimonials": [
-                    {"name": "Olivia N.", "quote": "Absolutely obsessed with every piece. Quality is unmatched.", "rating": 5},
-                    {"name": "Mia R.", "quote": "Finally found my go-to fashion store. Love the aesthetic!", "rating": 5},
-                    {"name": "Charlotte B.", "quote": "Received so many compliments. Will be ordering again!", "rating": 5},
+                    {
+                        "name": "Olivia N.",
+                        "quote": "Absolutely obsessed with every piece. Quality is unmatched.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Mia R.",
+                        "quote": "Finally found my go-to fashion store. Love the aesthetic!",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Charlotte B.",
+                        "quote": "Received so many compliments. Will be ordering again!",
+                        "rating": 5,
+                    },
                 ],
                 "layout": "carousel",
             },
@@ -447,9 +520,21 @@ _FITFORGE_HOMEPAGE = {
             "settings": {
                 "title": "Athletes Trust Us",
                 "testimonials": [
-                    {"name": "Mike D.", "quote": "The supplements are top-notch. Noticed real results in 2 weeks.", "rating": 5},
-                    {"name": "Jessica H.", "quote": "Best gym gear I've owned. Built to last.", "rating": 5},
-                    {"name": "Chris B.", "quote": "Fast shipping and amazing product range. My go-to store.", "rating": 5},
+                    {
+                        "name": "Mike D.",
+                        "quote": "The supplements are top-notch. Noticed real results in 2 weeks.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Jessica H.",
+                        "quote": "Best gym gear I've owned. Built to last.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Chris B.",
+                        "quote": "Fast shipping and amazing product range. My go-to store.",
+                        "rating": 5,
+                    },
                 ],
                 "layout": "carousel",
             },
@@ -460,9 +545,18 @@ _FITFORGE_HOMEPAGE = {
             "settings": {
                 "title": "Frequently Asked Questions",
                 "items": [
-                    {"question": "Are your supplements third-party tested?", "answer": "Yes, all our supplements are independently tested for purity and potency."},
-                    {"question": "What is your return policy?", "answer": "We offer a 60-day satisfaction guarantee on all products."},
-                    {"question": "Do you offer subscription discounts?", "answer": "Yes, save 15% with auto-delivery on any supplement."},
+                    {
+                        "question": "Are your supplements third-party tested?",
+                        "answer": "Yes, all our supplements are independently tested for purity and potency.",
+                    },
+                    {
+                        "question": "What is your return policy?",
+                        "answer": "We offer a 60-day satisfaction guarantee on all products.",
+                    },
+                    {
+                        "question": "Do you offer subscription discounts?",
+                        "answer": "Yes, save 15% with auto-delivery on any supplement.",
+                    },
                 ],
             },
         },
@@ -527,9 +621,21 @@ _BLOOMCO_HOMEPAGE = {
             "settings": {
                 "title": "Real Results",
                 "testimonials": [
-                    {"name": "Aisha K.", "quote": "My skin has never looked better. These products are magical.", "rating": 5},
-                    {"name": "Lauren T.", "quote": "Clean ingredients that actually work. I'm hooked!", "rating": 5},
-                    {"name": "Priya S.", "quote": "The best beauty investment I've made. Absolutely love it.", "rating": 5},
+                    {
+                        "name": "Aisha K.",
+                        "quote": "My skin has never looked better. These products are magical.",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Lauren T.",
+                        "quote": "Clean ingredients that actually work. I'm hooked!",
+                        "rating": 5,
+                    },
+                    {
+                        "name": "Priya S.",
+                        "quote": "The best beauty investment I've made. Absolutely love it.",
+                        "rating": 5,
+                    },
                 ],
                 "layout": "carousel",
             },
@@ -725,7 +831,11 @@ THEMES_DATA = [
                 "gridGap": 28,
             },
             "borderRadius": {"small": 2, "medium": 4, "large": 8, "full": 9999},
-            "animations": {"enabled": True, "duration": "slow", "easing": "cubic-bezier(0.4, 0, 0.2, 1)"},
+            "animations": {
+                "enabled": True,
+                "duration": "slow",
+                "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+            },
             "darkMode": {"enabled": True, "default": False, "toggle": True},
         },
         "presets": [
@@ -910,7 +1020,11 @@ THEMES_DATA = [
                 "gridGap": 28,
             },
             "borderRadius": {"small": 2, "medium": 6, "large": 12, "full": 9999},
-            "animations": {"enabled": True, "duration": "slow", "easing": "cubic-bezier(0.4, 0, 0.2, 1)"},
+            "animations": {
+                "enabled": True,
+                "duration": "slow",
+                "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+            },
             "darkMode": {"enabled": True, "default": False, "toggle": True},
         },
         "presets": [
@@ -972,7 +1086,11 @@ THEMES_DATA = [
                 "gridGap": 24,
             },
             "borderRadius": {"small": 0, "medium": 4, "large": 8, "full": 9999},
-            "animations": {"enabled": True, "duration": "fast", "easing": "cubic-bezier(0.4, 0, 0.2, 1)"},
+            "animations": {
+                "enabled": True,
+                "duration": "fast",
+                "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+            },
             "darkMode": {"enabled": True, "default": True, "toggle": True},
         },
         "presets": [
@@ -1034,7 +1152,11 @@ THEMES_DATA = [
                 "gridGap": 28,
             },
             "borderRadius": {"small": 8, "medium": 16, "large": 24, "full": 9999},
-            "animations": {"enabled": True, "duration": "slow", "easing": "cubic-bezier(0.4, 0, 0.2, 1)"},
+            "animations": {
+                "enabled": True,
+                "duration": "slow",
+                "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+            },
             "darkMode": {"enabled": True, "default": False, "toggle": True},
         },
         "presets": [

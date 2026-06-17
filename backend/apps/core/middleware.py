@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
-from django.http import HttpRequest, HttpResponse
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .threadlocals import clear, set_current_org_id
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +48,6 @@ class TenantMiddleware(MiddlewareMixin):
         if not request.org_id:
             set_current_org_id(None)
 
-    def process_response(
-        self, request: HttpRequest, response: HttpResponse
-    ) -> HttpResponse:
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         clear()
         return response

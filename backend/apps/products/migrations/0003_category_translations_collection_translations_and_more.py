@@ -4,25 +4,36 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('products', '0002_category_products_ca_organiz_078a0f_idx_and_more'),
+        ("products", "0002_category_products_ca_organiz_078a0f_idx_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='category',
-            name='translations',
-            field=models.JSONField(blank=True, default=dict, help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}'),
+            model_name="category",
+            name="translations",
+            field=models.JSONField(
+                blank=True,
+                default=dict,
+                help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
+            ),
         ),
         migrations.AddField(
-            model_name='collection',
-            name='translations',
-            field=models.JSONField(blank=True, default=dict, help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}'),
+            model_name="collection",
+            name="translations",
+            field=models.JSONField(
+                blank=True,
+                default=dict,
+                help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
+            ),
         ),
         migrations.AddField(
-            model_name='product',
-            name='translations',
-            field=models.JSONField(blank=True, default=dict, help_text='Per-locale translations, e.g. {"ar": {"title": "...", "description": "..."}}'),
+            model_name="product",
+            name="translations",
+            field=models.JSONField(
+                blank=True,
+                default=dict,
+                help_text='Per-locale translations, e.g. {"ar": {"title": "...", "description": "..."}}',
+            ),
         ),
     ]

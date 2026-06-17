@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from django.core.management.base import BaseCommand
 
-from apps.themes.signals import HOMEPAGE_TEMPLATES, THEMES_DATA
 from apps.themes.models import Theme, ThemePreset
+from apps.themes.signals import HOMEPAGE_TEMPLATES, THEMES_DATA
 
 
 class Command(BaseCommand):
@@ -43,13 +43,11 @@ class Command(BaseCommand):
                 if homepage:
                     theme.sections_schema = homepage
                     theme.save(update_fields=["sections_schema"])
-                    self.stdout.write(f"    + Homepage template attached")
+                    self.stdout.write("    + Homepage template attached")
             else:
                 skipped_count += 1
                 self.stdout.write(f"  Skipped (exists): {theme.name} ({theme.slug})")
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"\nDone! Created: {created_count}, Skipped: {skipped_count}"
-            )
+            self.style.SUCCESS(f"\nDone! Created: {created_count}, Skipped: {skipped_count}")
         )

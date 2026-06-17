@@ -4,22 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('billing', '0002_initial'),
+        ("billing", "0002_initial"),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='invoice',
-            index=models.Index(fields=['status'], name='billing_inv_status_541249_idx'),
+            model_name="invoice",
+            index=models.Index(fields=["status"], name="billing_inv_status_541249_idx"),
         ),
         migrations.AddIndex(
-            model_name='paymentmethod',
-            index=models.Index(fields=['organization', 'is_default'], name='billing_pay_organiz_ad965b_idx'),
+            model_name="paymentmethod",
+            index=models.Index(
+                fields=["organization", "is_default"], name="billing_pay_organiz_ad965b_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='subscription',
-            index=models.Index(fields=['status'], name='billing_sub_status_948046_idx'),
+            model_name="subscription",
+            index=models.Index(fields=["status"], name="billing_sub_status_948046_idx"),
         ),
     ]

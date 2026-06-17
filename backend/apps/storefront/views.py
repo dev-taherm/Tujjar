@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from django.db.models import Q
+import contextlib
+
 from django.core.cache import cache
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import generics
@@ -11,14 +13,18 @@ from rest_framework.response import Response
 
 from apps.core.utils import (
     DEFAULT_LOCALE,
-    resolve_locale_field,
-    resolve_navigation_locale,
     resolve_footer_locale,
+    resolve_navigation_locale,
 )
-from apps.products.models import Product, Category, Collection
-from apps.products.serializers import ProductListSerializer, ProductDetailSerializer, CategorySerializer, CollectionSerializer
-from apps.stores.models import Store
 from apps.pages.models import Page
+from apps.products.models import Category, Collection, Product
+from apps.products.serializers import (
+    CategorySerializer,
+    CollectionSerializer,
+    ProductDetailSerializer,
+    ProductListSerializer,
+)
+from apps.stores.models import Store
 
 STORE_CACHE_TTL = 300  # 5 minutes
 
@@ -103,31 +109,23 @@ def _resolve_store(store: Store, locale: str) -> dict:
 
     logo_url = None
     if store.logo_id:
-        try:
+        with contextlib.suppress(Exception):
             logo_url = store.logo.file_url
-        except Exception:
-            pass
 
     favicon_url = None
     if store.favicon_id:
-        try:
+        with contextlib.suppress(Exception):
             favicon_url = store.favicon.file_url
-        except Exception:
-            pass
 
     theme_config = None
     if store.theme_id:
-        try:
+        with contextlib.suppress(Exception):
             theme_config = store.theme.effective_config
-        except Exception:
-            pass
 
     og_image_url = None
     if store.og_image_id:
-        try:
+        with contextlib.suppress(Exception):
             og_image_url = store.og_image.file_url
-        except Exception:
-            pass
 
     return {
         "name": name,
@@ -171,16 +169,18 @@ def storefront_home(request, subdomain=None):
 
     serialized_products = ProductListSerializer(featured_products, many=True).data
     if locale != DEFAULT_LOCALE:
-        for product_obj, serialized in zip(featured_products, serialized_products):
+        for product_obj, serialized in zip(featured_products, serialized_products, strict=False):
             locale_data = (getattr(product_obj, "translations", None) or {}).get(locale, {})
             if locale_data.get("title"):
                 serialized["title"] = locale_data["title"]
 
-    return Response({
-        "store": _resolve_store(store, locale),
-        "featured_products": serialized_products,
-        "homepage": _resolve_page(homepage, locale) if homepage else None,
-    })
+    return Response(
+        {
+            "store": _resolve_store(store, locale),
+            "featured_products": serialized_products,
+            "homepage": _resolve_page(homepage, locale) if homepage else None,
+        }
+    )
 
 
 class StorefrontProductListView(generics.ListAPIView):
@@ -243,6 +243,7 @@ class StorefrontProductDetailView(generics.RetrieveAPIView):
         store = get_store_by_slug(subdomain)
         if not store:
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Store not found")
         product = Product.objects.filter(
             organization=store.organization,
@@ -251,6 +252,7 @@ class StorefrontProductDetailView(generics.RetrieveAPIView):
         ).first()
         if not product:
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Product not found")
         return product
 
@@ -299,12 +301,14 @@ class StorefrontCollectionListView(generics.ListAPIView):
 
 class StorefrontPageView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
+
     def get_object(self):
         subdomain = self.kwargs.get("subdomain")
         slug = self.kwargs.get("slug")
         store = get_store_by_slug(subdomain)
         if not store:
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Store not found")
         page = Page.objects.filter(
             organization=store.organization,
@@ -314,6 +318,7 @@ class StorefrontPageView(generics.RetrieveAPIView):
         ).first()
         if not page:
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Page not found")
         return page
 
@@ -354,7 +359,11 @@ def sitemap_xml(request, subdomain=None):
     """Generate sitemap.xml for a store."""
     store = get_store_by_slug(subdomain)
     if not store:
-        return HttpResponse('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>', content_type="application/xml", status=404)
+        return HttpResponse(
+            '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>',
+            content_type="application/xml",
+            status=404,
+        )
 
     now = timezone.now().strftime("%Y-%m-%d")
     base_url = f"https://{store.domain}"
@@ -375,7 +384,9 @@ def sitemap_xml(request, subdomain=None):
         status="active",
     ).values_list("slug", "updated_at")
     for slug, updated_at in products:
-        lastmod = (updated_at or now).strftime("%Y-%m-%d") if hasattr(updated_at, "strftime") else now
+        lastmod = (
+            (updated_at or now).strftime("%Y-%m-%d") if hasattr(updated_at, "strftime") else now
+        )
         urls.append(f"""  <url>
     <loc>{base_url}/products/{slug}/</loc>
     <lastmod>{lastmod}</lastmod>
@@ -390,7 +401,9 @@ def sitemap_xml(request, subdomain=None):
         is_published=True,
     ).values_list("slug", "updated_at")
     for slug, updated_at in pages:
-        lastmod = (updated_at or now).strftime("%Y-%m-%d") if hasattr(updated_at, "strftime") else now
+        lastmod = (
+            (updated_at or now).strftime("%Y-%m-%d") if hasattr(updated_at, "strftime") else now
+        )
         urls.append(f"""  <url>
     <loc>{base_url}/{slug}/</loc>
     <lastmod>{lastmod}</lastmod>
@@ -400,6 +413,7 @@ def sitemap_xml(request, subdomain=None):
 
     # Blog posts
     from apps.blog.models import BlogPost
+
     blog_posts = BlogPost.objects.filter(
         organization=store.organization,
         store=store,
@@ -434,11 +448,15 @@ def storefront_blog_rss(request, subdomain=None):
 
     from apps.blog.models import BlogPost
 
-    posts = BlogPost.objects.filter(
-        organization=store.organization,
-        store=store,
-        status="published",
-    ).select_related("author", "featured_image").order_by("-published_at")[:20]
+    posts = (
+        BlogPost.objects.filter(
+            organization=store.organization,
+            store=store,
+            status="published",
+        )
+        .select_related("author", "featured_image")
+        .order_by("-published_at")[:20]
+    )
 
     base_url = f"https://{store.domain}"
     store_name = store.name
@@ -449,14 +467,14 @@ def storefront_blog_rss(request, subdomain=None):
         locale_data = translations.get(locale, {}) if locale != DEFAULT_LOCALE else {}
         title = locale_data.get("title") or post.title
         excerpt = locale_data.get("excerpt") or post.excerpt
-        pub_date = post.published_at.strftime("%a, %d %b %Y %H:%M:%S +0000") if post.published_at else ""
+        pub_date = (
+            post.published_at.strftime("%a, %d %b %Y %H:%M:%S +0000") if post.published_at else ""
+        )
 
         featured_image_url = ""
         if post.featured_image_id:
-            try:
+            with contextlib.suppress(Exception):
                 featured_image_url = post.featured_image.file_url
-            except Exception:
-                pass
 
         enclosure = ""
         if featured_image_url:
@@ -498,10 +516,8 @@ def _resolve_blog_post(post, locale: str) -> dict:
         author_locale = author_translations.get(locale, {}) if locale != DEFAULT_LOCALE else {}
         author_avatar_url = None
         if post.author.avatar_id:
-            try:
+            with contextlib.suppress(Exception):
                 author_avatar_url = post.author.avatar.file_url
-            except Exception:
-                pass
         author_data = {
             "name": author_locale.get("name") or post.author.name,
             "slug": post.author.slug,
@@ -511,30 +527,32 @@ def _resolve_blog_post(post, locale: str) -> dict:
 
     featured_image_url = None
     if post.featured_image_id:
-        try:
+        with contextlib.suppress(Exception):
             featured_image_url = post.featured_image.file_url
-        except Exception:
-            pass
 
     categories = []
     for pc in post.post_categories.select_related("category").all():
         cat = pc.category
         cat_translations = getattr(cat, "translations", None) or {}
         cat_locale = cat_translations.get(locale, {}) if locale != DEFAULT_LOCALE else {}
-        categories.append({
-            "name": cat_locale.get("name") or cat.name,
-            "slug": cat.slug,
-        })
+        categories.append(
+            {
+                "name": cat_locale.get("name") or cat.name,
+                "slug": cat.slug,
+            }
+        )
 
     tags = []
     for pt in post.post_tags.select_related("tag").all():
         tag = pt.tag
         tag_translations = getattr(tag, "translations", None) or {}
         tag_locale = tag_translations.get(locale, {}) if locale != DEFAULT_LOCALE else {}
-        tags.append({
-            "name": tag_locale.get("name") or tag.name,
-            "slug": tag.slug,
-        })
+        tags.append(
+            {
+                "name": tag_locale.get("name") or tag.name,
+                "slug": tag.slug,
+            }
+        )
 
     return {
         "id": str(post.id),
@@ -566,10 +584,8 @@ def _resolve_blog_list_post(post, locale: str) -> dict:
 
     featured_image_url = None
     if post.featured_image_id:
-        try:
+        with contextlib.suppress(Exception):
             featured_image_url = post.featured_image.file_url
-        except Exception:
-            pass
 
     author_name = ""
     if post.author:
@@ -605,13 +621,16 @@ def storefront_blog_list(request, subdomain=None):
     page_num = int(request.query_params.get("page", 1))
     per_page = int(request.query_params.get("per_page", 12))
 
-    cache_key = f"storefront:blog:{subdomain}:{locale}:{category_slug}:{tag_slug}:{page_num}:{per_page}"
+    cache_key = (
+        f"storefront:blog:{subdomain}:{locale}:{category_slug}:{tag_slug}:{page_num}:{per_page}"
+    )
     cached = cache.get(cache_key)
     if cached:
         return Response(cached)
 
-    from apps.blog.models import BlogPost
     from django.core.paginator import Paginator
+
+    from apps.blog.models import BlogPost
 
     qs = BlogPost.objects.filter(
         organization=store.organization,
@@ -663,16 +682,25 @@ def storefront_blog_post(request, subdomain=None, slug=None):
 
     from apps.blog.models import BlogPost
 
-    post = BlogPost.objects.filter(
-        organization=store.organization,
-        store=store,
-        slug=slug,
-        status="published",
-    ).select_related(
-        "author", "author__avatar", "featured_image", "og_image",
-    ).prefetch_related(
-        "post_categories__category", "post_tags__tag",
-    ).first()
+    post = (
+        BlogPost.objects.filter(
+            organization=store.organization,
+            store=store,
+            slug=slug,
+            status="published",
+        )
+        .select_related(
+            "author",
+            "author__avatar",
+            "featured_image",
+            "og_image",
+        )
+        .prefetch_related(
+            "post_categories__category",
+            "post_tags__tag",
+        )
+        .first()
+    )
 
     if not post:
         return Response({"error": "Post not found"}, status=404)
@@ -706,12 +734,14 @@ def storefront_blog_categories(request, subdomain=None):
     for cat in categories:
         translations = getattr(cat, "translations", None) or {}
         locale_data = translations.get(locale, {}) if locale != DEFAULT_LOCALE else {}
-        result.append({
-            "name": locale_data.get("name") or cat.name,
-            "slug": cat.slug,
-            "description": locale_data.get("description") or cat.description,
-            "post_count": cat.category_posts.filter(post__status="published").count(),
-        })
+        result.append(
+            {
+                "name": locale_data.get("name") or cat.name,
+                "slug": cat.slug,
+                "description": locale_data.get("description") or cat.description,
+                "post_count": cat.category_posts.filter(post__status="published").count(),
+            }
+        )
 
     return Response(result)
 

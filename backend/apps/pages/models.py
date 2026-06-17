@@ -66,7 +66,8 @@ class Page(UUIDModel, TimeStampedModel):
         default="summary_large_image",
     )
     translations = models.JSONField(
-        default=dict, blank=True,
+        default=dict,
+        blank=True,
         help_text='Per-locale translations, e.g. {"ar": {"title": "...", "content_schema": {...}}}',
     )
     is_published = models.BooleanField(default=False)
@@ -180,6 +181,7 @@ class Page(UUIDModel, TimeStampedModel):
         for section in sections:
             if section["id"] == section_id:
                 import copy
+
                 new_section = copy.deepcopy(section)
                 new_section["id"] = str(uuid.uuid4())
                 idx = sections.index(section)

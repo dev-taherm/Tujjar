@@ -11,9 +11,21 @@ class TemplateListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Template
         fields = [
-            "id", "name", "slug", "description", "version", "category",
-            "author", "thumbnail", "preview_images", "tags",
-            "is_system", "is_premium", "page_count", "created_at", "updated_at",
+            "id",
+            "name",
+            "slug",
+            "description",
+            "version",
+            "category",
+            "author",
+            "thumbnail",
+            "preview_images",
+            "tags",
+            "is_system",
+            "is_premium",
+            "page_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = fields
 
@@ -27,12 +39,29 @@ class TemplateDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Template
         fields = [
-            "id", "name", "slug", "description", "version", "category",
-            "author", "thumbnail", "preview_images", "tags",
-            "is_system", "is_premium",
-            "config", "presets", "pages", "navigation", "footer",
-            "seo_defaults", "demo_content", "store_settings",
-            "page_count", "created_at", "updated_at",
+            "id",
+            "name",
+            "slug",
+            "description",
+            "version",
+            "category",
+            "author",
+            "thumbnail",
+            "preview_images",
+            "tags",
+            "is_system",
+            "is_premium",
+            "config",
+            "presets",
+            "pages",
+            "navigation",
+            "footer",
+            "seo_defaults",
+            "demo_content",
+            "store_settings",
+            "page_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = fields
 
@@ -45,7 +74,7 @@ class TemplateInstallSerializer(serializers.Serializer):
 
     def validate_template_id(self, value):
         try:
-            template = Template.objects.get(id=value)
+            Template.objects.get(id=value)
         except Template.DoesNotExist:
             raise serializers.ValidationError("Template not found.")
         return value
@@ -55,9 +84,20 @@ class TemplateExportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Template
         fields = [
-            "name", "slug", "description", "version", "category",
-            "author", "tags", "config", "presets", "pages",
-            "navigation", "footer", "seo_defaults", "demo_content",
+            "name",
+            "slug",
+            "description",
+            "version",
+            "category",
+            "author",
+            "tags",
+            "config",
+            "presets",
+            "pages",
+            "navigation",
+            "footer",
+            "seo_defaults",
+            "demo_content",
             "store_settings",
         ]
 

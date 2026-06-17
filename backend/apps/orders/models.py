@@ -78,9 +78,7 @@ class Cart(UUIDModel, TimeStampedModel):
         """Recalculate cart subtotal from items."""
         from django.db.models import F, Sum
 
-        result = self.items.aggregate(
-            total=Sum(F("quantity") * F("unit_price"))
-        )
+        result = self.items.aggregate(total=Sum(F("quantity") * F("unit_price")))
         self.subtotal = result["total"] or 0
         self.save(update_fields=["subtotal", "updated_at"])
 
@@ -166,9 +164,7 @@ class Order(UUIDModel, TimeStampedModel):
     order_number = models.CharField(max_length=50, unique=True, db_index=True)
 
     # Status
-    status = models.CharField(
-        max_length=20, choices=ORDER_STATUS_CHOICES, default="pending"
-    )
+    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default="pending")
     payment_status = models.CharField(
         max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
     )
@@ -266,9 +262,7 @@ class Order(UUIDModel, TimeStampedModel):
         """Recalculate order totals from items."""
         from django.db.models import F, Sum
 
-        result = self.items.aggregate(
-            items_total=Sum(F("quantity") * F("unit_price"))
-        )
+        result = self.items.aggregate(items_total=Sum(F("quantity") * F("unit_price")))
         self.subtotal = result["items_total"] or 0
         self.total = self.subtotal + self.tax_amount + self.shipping_amount - self.discount_amount
         self.save(update_fields=["subtotal", "total", "updated_at"])

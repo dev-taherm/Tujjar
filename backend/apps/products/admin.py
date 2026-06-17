@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.core.admin import TenantAdminMixin, TenantTabularInline
+from apps.core.admin import TenantAdminMixin
 
 from .models import Category, Collection, Product, ProductImage, ProductVariant
 

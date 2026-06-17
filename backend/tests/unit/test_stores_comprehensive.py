@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+
 from tests.factories import (
+    StoreDomainFactory,
+    StoreFactory,
     create_org_with_owner,
     create_org_with_owner_and_store,
-    StoreFactory,
-    StoreDomainFactory,
 )
 
 pytestmark = pytest.mark.django_db
@@ -113,7 +115,7 @@ class TestStoreCRUD:
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_cross_org_store_access_denied(self, api_client):
-        from tests.factories import UserFactory, OrganizationFactory, OwnerMembershipFactory
+        from tests.factories import OrganizationFactory, OwnerMembershipFactory, UserFactory
 
         user1, org1, token1 = create_org_with_owner("cross-store1@example.com")
         user2 = UserFactory(email="cross-store2@example.com")
@@ -130,9 +132,10 @@ class TestStoreCRUD:
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get("/api/v1/stores/current/")
         assert response.status_code == status.HTTP_200_OK
+
     def test_get_current_store_none(self, api_client):
-        from tests.factories import UserFactory, OrganizationFactory, OwnerMembershipFactory
         from apps.stores.models import Store
+        from tests.factories import OrganizationFactory, OwnerMembershipFactory, UserFactory
 
         user = UserFactory(email="no-store@example.com")
         org = OrganizationFactory(name="NoStore Org", slug="no-store-org")
@@ -191,7 +194,6 @@ class TestSlugChange:
     def test_change_slug(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("slug-change@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        old_slug = store.slug
         response = api_client.post(
             f"/api/v1/stores/{store.id}/change-slug/",
             {"slug": "brand-new-slug"},
@@ -213,7 +215,7 @@ class TestSlugChange:
     def test_change_slug_taken(self, api_client):
         user, org, token = create_org_with_owner("slug-taken-change@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        store1 = StoreFactory(organization=org, name="Store1", slug="store-one")
+        StoreFactory(organization=org, name="Store1", slug="store-one")
         store2 = StoreFactory(organization=org, name="Store2", slug="store-two")
         response = api_client.post(
             f"/api/v1/stores/{store2.id}/change-slug/",
@@ -236,6 +238,7 @@ class TestSlugChange:
         user, org, token = create_org_with_owner("slug-notfound@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         import uuid
+
         response = api_client.post(
             f"/api/v1/stores/{uuid.uuid4()}/change-slug/",
             {"slug": "new-slug"},
@@ -293,14 +296,16 @@ class TestStoreWizard:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_wizard_create_no_permission(self, api_client):
-        from tests.factories import UserFactory, OrganizationFactory, OwnerMembershipFactory
-        from apps.organizations.models import Role
         from rest_framework_simplejwt.tokens import RefreshToken
+
+        from apps.organizations.models import Role
+        from tests.factories import OrganizationFactory, OwnerMembershipFactory, UserFactory
 
         user = UserFactory(email="wizard-noperm@example.com")
         org = OrganizationFactory(name="NoPerm Org", slug="noperm-org")
         viewer_role, _ = Role.objects.get_or_create(
-            slug="viewer", organization=org,
+            slug="viewer",
+            organization=org,
             defaults={"name": "Viewer", "is_system": True},
         )
         OwnerMembershipFactory(user=user, organization=org, role=viewer_role)
@@ -357,7 +362,9 @@ class TestStoreDomains:
     def test_delete_primary_domain_clears_custom_domain(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("domain-delprimary@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        domain = StoreDomainFactory(store=store, domain="primary-delete.example.com", is_primary=True)
+        domain = StoreDomainFactory(
+            store=store, domain="primary-delete.example.com", is_primary=True
+        )
         store.custom_domain = domain.domain
         store.save(update_fields=["custom_domain"])
 
@@ -396,8 +403,11 @@ class TestStoreDomains:
             class Result:
                 def __init__(self, stdout):
                     self.stdout = stdout
+
             if "TXT" in cmd:
-                return Result(f'"v=spf1 include:_spf.google.com ~all" "{domain.verification_token}"')
+                return Result(
+                    f'"v=spf1 include:_spf.google.com ~all" "{domain.verification_token}"'
+                )
             return Result("93.184.216.34")
 
         mock_run.side_effect = side_effect

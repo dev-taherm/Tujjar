@@ -42,15 +42,31 @@ class CategoryViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         category = serializer.save(organization_id=self.request.org_id)
-        self._log_audit(action="category.create", resource_type="category", resource_id=category.id, new_value=CategorySerializer(category).data)
+        self._log_audit(
+            action="category.create",
+            resource_type="category",
+            resource_id=category.id,
+            new_value=CategorySerializer(category).data,
+        )
 
     def perform_update(self, serializer):
         old_data = CategorySerializer(serializer.instance).data
         category = serializer.save()
-        self._log_audit(action="category.update", resource_type="category", resource_id=category.id, old_value=old_data, new_value=CategorySerializer(category).data)
+        self._log_audit(
+            action="category.update",
+            resource_type="category",
+            resource_id=category.id,
+            old_value=old_data,
+            new_value=CategorySerializer(category).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="category.delete", resource_type="category", resource_id=instance.id, old_value=CategorySerializer(instance).data)
+        self._log_audit(
+            action="category.delete",
+            resource_type="category",
+            resource_id=instance.id,
+            old_value=CategorySerializer(instance).data,
+        )
         instance.delete()
 
 
@@ -73,15 +89,31 @@ class CollectionViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         collection = serializer.save(organization_id=self.request.org_id)
-        self._log_audit(action="collection.create", resource_type="collection", resource_id=collection.id, new_value=CollectionSerializer(collection).data)
+        self._log_audit(
+            action="collection.create",
+            resource_type="collection",
+            resource_id=collection.id,
+            new_value=CollectionSerializer(collection).data,
+        )
 
     def perform_update(self, serializer):
         old_data = CollectionDetailSerializer(serializer.instance).data
         collection = serializer.save()
-        self._log_audit(action="collection.update", resource_type="collection", resource_id=collection.id, old_value=old_data, new_value=CollectionDetailSerializer(collection).data)
+        self._log_audit(
+            action="collection.update",
+            resource_type="collection",
+            resource_id=collection.id,
+            old_value=old_data,
+            new_value=CollectionDetailSerializer(collection).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="collection.delete", resource_type="collection", resource_id=instance.id, old_value=CollectionDetailSerializer(instance).data)
+        self._log_audit(
+            action="collection.delete",
+            resource_type="collection",
+            resource_id=instance.id,
+            old_value=CollectionDetailSerializer(instance).data,
+        )
         instance.delete()
 
 
@@ -96,9 +128,11 @@ class ProductViewSet(TenantViewSet):
         return ProductListSerializer
 
     def get_queryset(self):
-        qs = Product.objects.select_related("store").prefetch_related(
-            "categories", "images", "variants"
-        ).filter(organization_id=self.request.org_id)
+        qs = (
+            Product.objects.select_related("store")
+            .prefetch_related("categories", "images", "variants")
+            .filter(organization_id=self.request.org_id)
+        )
 
         store_id = self.request.query_params.get("store")
         if store_id:
@@ -145,15 +179,31 @@ class ProductViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         product = serializer.save(organization_id=self.request.org_id)
-        self._log_audit(action="product.create", resource_type="product", resource_id=product.id, new_value=ProductDetailSerializer(product).data)
+        self._log_audit(
+            action="product.create",
+            resource_type="product",
+            resource_id=product.id,
+            new_value=ProductDetailSerializer(product).data,
+        )
 
     def perform_update(self, serializer):
         old_data = ProductDetailSerializer(serializer.instance).data
         product = serializer.save()
-        self._log_audit(action="product.update", resource_type="product", resource_id=product.id, old_value=old_data, new_value=ProductDetailSerializer(product).data)
+        self._log_audit(
+            action="product.update",
+            resource_type="product",
+            resource_id=product.id,
+            old_value=old_data,
+            new_value=ProductDetailSerializer(product).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="product.delete", resource_type="product", resource_id=instance.id, old_value=ProductDetailSerializer(instance).data)
+        self._log_audit(
+            action="product.delete",
+            resource_type="product",
+            resource_id=instance.id,
+            old_value=ProductDetailSerializer(instance).data,
+        )
         instance.delete()
 
     @action(detail=True, methods=["post"])
@@ -213,7 +263,12 @@ class ProductViewSet(TenantViewSet):
                 sort_order=variant.sort_order,
             )
 
-        self._log_audit(action="product.duplicate", resource_type="product", resource_id=new_product.id, new_value=ProductDetailSerializer(new_product).data)
+        self._log_audit(
+            action="product.duplicate",
+            resource_type="product",
+            resource_id=new_product.id,
+            new_value=ProductDetailSerializer(new_product).data,
+        )
 
         return Response(
             ProductDetailSerializer(new_product).data,
@@ -271,15 +326,31 @@ class ProductImageViewSet(TenantViewSet):
             organization_id=self.request.org_id,
         )
         image = serializer.save(product=product)
-        self._log_audit(action="product_image.create", resource_type="product_image", resource_id=image.id, new_value=ProductImageSerializer(image).data)
+        self._log_audit(
+            action="product_image.create",
+            resource_type="product_image",
+            resource_id=image.id,
+            new_value=ProductImageSerializer(image).data,
+        )
 
     def perform_update(self, serializer):
         old_data = ProductImageSerializer(serializer.instance).data
         image = serializer.save()
-        self._log_audit(action="product_image.update", resource_type="product_image", resource_id=image.id, old_value=old_data, new_value=ProductImageSerializer(image).data)
+        self._log_audit(
+            action="product_image.update",
+            resource_type="product_image",
+            resource_id=image.id,
+            old_value=old_data,
+            new_value=ProductImageSerializer(image).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="product_image.delete", resource_type="product_image", resource_id=instance.id, old_value=ProductImageSerializer(instance).data)
+        self._log_audit(
+            action="product_image.delete",
+            resource_type="product_image",
+            resource_id=instance.id,
+            old_value=ProductImageSerializer(instance).data,
+        )
         instance.delete()
 
     @action(detail=True, methods=["post"])
@@ -289,7 +360,12 @@ class ProductImageViewSet(TenantViewSet):
         ProductImage.objects.filter(product_id=product_pk).update(is_primary=False)
         image.is_primary = True
         image.save(update_fields=["is_primary"])
-        self._log_audit(action="product_image.set_primary", resource_type="product_image", resource_id=image.id, new_value={"is_primary": True})
+        self._log_audit(
+            action="product_image.set_primary",
+            resource_type="product_image",
+            resource_id=image.id,
+            new_value={"is_primary": True},
+        )
         return Response(ProductImageSerializer(image).data)
 
 
@@ -311,13 +387,29 @@ class ProductVariantViewSet(TenantViewSet):
             organization_id=self.request.org_id,
         )
         variant = serializer.save(product=product)
-        self._log_audit(action="product_variant.create", resource_type="product_variant", resource_id=variant.id, new_value=ProductVariantSerializer(variant).data)
+        self._log_audit(
+            action="product_variant.create",
+            resource_type="product_variant",
+            resource_id=variant.id,
+            new_value=ProductVariantSerializer(variant).data,
+        )
 
     def perform_update(self, serializer):
         old_data = ProductVariantSerializer(serializer.instance).data
         variant = serializer.save()
-        self._log_audit(action="product_variant.update", resource_type="product_variant", resource_id=variant.id, old_value=old_data, new_value=ProductVariantSerializer(variant).data)
+        self._log_audit(
+            action="product_variant.update",
+            resource_type="product_variant",
+            resource_id=variant.id,
+            old_value=old_data,
+            new_value=ProductVariantSerializer(variant).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="product_variant.delete", resource_type="product_variant", resource_id=instance.id, old_value=ProductVariantSerializer(instance).data)
+        self._log_audit(
+            action="product_variant.delete",
+            resource_type="product_variant",
+            resource_id=instance.id,
+            old_value=ProductVariantSerializer(instance).data,
+        )
         instance.delete()

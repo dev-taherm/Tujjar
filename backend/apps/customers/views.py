@@ -31,13 +31,29 @@ class CustomerViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         customer = serializer.save(organization_id=self.request.org_id)
-        self._log_audit(action="customer.create", resource_type="customer", resource_id=customer.id, new_value=CustomerSerializer(customer).data)
+        self._log_audit(
+            action="customer.create",
+            resource_type="customer",
+            resource_id=customer.id,
+            new_value=CustomerSerializer(customer).data,
+        )
 
     def perform_update(self, serializer):
         old_data = CustomerSerializer(serializer.instance).data
         customer = serializer.save()
-        self._log_audit(action="customer.update", resource_type="customer", resource_id=customer.id, old_value=old_data, new_value=CustomerSerializer(customer).data)
+        self._log_audit(
+            action="customer.update",
+            resource_type="customer",
+            resource_id=customer.id,
+            old_value=old_data,
+            new_value=CustomerSerializer(customer).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="customer.delete", resource_type="customer", resource_id=instance.id, old_value=CustomerSerializer(instance).data)
+        self._log_audit(
+            action="customer.delete",
+            resource_type="customer",
+            resource_id=instance.id,
+            old_value=CustomerSerializer(instance).data,
+        )
         instance.delete()

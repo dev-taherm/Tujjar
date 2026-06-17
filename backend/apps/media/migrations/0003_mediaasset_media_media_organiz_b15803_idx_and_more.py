@@ -4,18 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('media', '0002_initial'),
+        ("media", "0002_initial"),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='mediaasset',
-            index=models.Index(fields=['organization', 'store'], name='media_media_organiz_b15803_idx'),
+            model_name="mediaasset",
+            index=models.Index(
+                fields=["organization", "store"], name="media_media_organiz_b15803_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='mediaasset',
-            index=models.Index(fields=['organization', 'store', 'file_type'], name='media_media_organiz_51035b_idx'),
+            model_name="mediaasset",
+            index=models.Index(
+                fields=["organization", "store", "file_type"], name="media_media_organiz_51035b_idx"
+            ),
         ),
     ]

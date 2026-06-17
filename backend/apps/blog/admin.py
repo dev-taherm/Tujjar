@@ -51,7 +51,15 @@ class BlogAuthorAdmin(TenantAdminMixin, admin.ModelAdmin):
 
 @admin.register(BlogPost)
 class BlogPostAdmin(TenantAdminMixin, admin.ModelAdmin):
-    list_display = ["title", "store", "author", "status", "published_at", "view_count", "is_featured"]
+    list_display = [
+        "title",
+        "store",
+        "author",
+        "status",
+        "published_at",
+        "view_count",
+        "is_featured",
+    ]
     list_filter = ["status", "is_featured", "store"]
     search_fields = ["title", "slug", "excerpt"]
     prepopulated_fields = {"slug": ("title",)}

@@ -3,9 +3,10 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 
-from celery import shared_task
 from django.db.models import Count, Sum
 from django.utils import timezone
+
+from celery import shared_task
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,9 @@ def aggregate_daily_stats(self, date_str: str | None = None):
     else:
         target_date = (timezone.now() - timedelta(days=1)).date()
 
-    day_start = timezone.datetime.combine(target_date, timezone.datetime.min.time()).replace(tzinfo=timezone.utc)
+    day_start = timezone.datetime.combine(target_date, timezone.datetime.min.time()).replace(
+        tzinfo=timezone.utc
+    )
     day_end = day_start + timedelta(days=1)
 
     stores = (
@@ -36,9 +39,13 @@ def aggregate_daily_stats(self, date_str: str | None = None):
         if not store_id:
             continue
 
-        events = Event.objects.filter(store_id=store_id, created_at__gte=day_start, created_at__lt=day_end)
+        events = Event.objects.filter(
+            store_id=store_id, created_at__gte=day_start, created_at__lt=day_end
+        )
 
-        orders = Order.objects.filter(store_id=store_id, created_at__gte=day_start, created_at__lt=day_end)
+        orders = Order.objects.filter(
+            store_id=store_id, created_at__gte=day_start, created_at__lt=day_end
+        )
         order_stats = orders.aggregate(
             revenue=Sum("total"),
             orders_count=Count("id"),
@@ -68,8 +75,7 @@ def aggregate_daily_stats(self, date_str: str | None = None):
                 "page_views": events.filter(event_type="page_view").count(),
                 "total_products_sold": sum(
                     items["count"]
-                    for items in orders.values("items__product_id")
-                    .annotate(count=Count("id"))
+                    for items in orders.values("items__product_id").annotate(count=Count("id"))
                 ),
                 "top_products": top_products_list,
                 "traffic_sources": {},

@@ -9,8 +9,15 @@ class SearchIndexSerializer(serializers.ModelSerializer):
     class Meta:
         model = SearchIndex
         fields = [
-            "id", "entity_type", "entity_id", "title",
-            "description", "tags", "boost", "created_at", "updated_at",
+            "id",
+            "entity_type",
+            "entity_id",
+            "title",
+            "description",
+            "tags",
+            "boost",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
@@ -19,8 +26,12 @@ class SearchQuerySerializer(serializers.ModelSerializer):
     class Meta:
         model = SearchQuery
         fields = [
-            "id", "query", "results_count", "clicked_entity_type",
-            "clicked_entity_id", "created_at",
+            "id",
+            "query",
+            "results_count",
+            "clicked_entity_type",
+            "clicked_entity_id",
+            "created_at",
         ]
         read_only_fields = ["id", "created_at"]
 

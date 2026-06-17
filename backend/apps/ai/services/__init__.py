@@ -8,6 +8,7 @@ logger = logging.getLogger("apps.ai")
 
 class AIProviderError(Exception):
     """Custom exception for AI provider errors."""
+
     pass
 
 
@@ -39,6 +40,7 @@ class OpenAIProvider(BaseAIProvider):
     def generate(self, messages: list[dict], **kwargs) -> dict[str, Any]:
         try:
             import openai
+
             client = openai.OpenAI(api_key=self.api_key)
             response = client.chat.completions.create(
                 model=self.model_name,
@@ -64,6 +66,7 @@ class AnthropicProvider(BaseAIProvider):
     def generate(self, messages: list[dict], **kwargs) -> dict[str, Any]:
         try:
             import anthropic
+
             client = anthropic.Anthropic(api_key=self.api_key)
             system_msg = ""
             user_messages = []
@@ -80,7 +83,9 @@ class AnthropicProvider(BaseAIProvider):
             )
             return {
                 "content": response.content[0].text if response.content else "",
-                "tokens_used": (response.usage.input_tokens + response.usage.output_tokens) if response.usage else 0,
+                "tokens_used": (response.usage.input_tokens + response.usage.output_tokens)
+                if response.usage
+                else 0,
                 "model": self.model_name,
             }
         except ImportError:
@@ -95,6 +100,7 @@ class OllamaProvider(BaseAIProvider):
     def generate(self, messages: list[dict], **kwargs) -> dict[str, Any]:
         try:
             import requests
+
             base_url = self.config.get("api_base_url", "http://localhost:11434")
             response = requests.post(
                 f"{base_url}/api/chat",
@@ -126,6 +132,7 @@ class GroqProvider(BaseAIProvider):
     def generate(self, messages: list[dict], **kwargs) -> dict[str, Any]:
         try:
             from groq import Groq
+
             client = Groq(api_key=self.api_key)
             response = client.chat.completions.create(
                 model=self.model_name,
@@ -151,6 +158,7 @@ class OpenRouterProvider(BaseAIProvider):
     def generate(self, messages: list[dict], **kwargs) -> dict[str, Any]:
         try:
             import openai
+
             base_url = self.config.get("api_base_url", "https://openrouter.ai/api/v1")
             client = openai.OpenAI(api_key=self.api_key, base_url=base_url)
             response = client.chat.completions.create(

@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-import re
-
 from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.core.permissions import HasOrganizationPermission
-from apps.core.viewsets import AuditLogMixin, TenantViewSet
+from apps.core.viewsets import TenantViewSet
 
 from .models import (
     BlogAuthor,
@@ -172,8 +169,7 @@ class BlogPostViewSet(TenantViewSet):
 
     def get_queryset(self):
         qs = (
-            BlogPost.objects
-            .select_related("author", "featured_image", "og_image")
+            BlogPost.objects.select_related("author", "featured_image", "og_image")
             .prefetch_related("post_categories__category", "post_tags__tag")
             .annotate(_comment_count=Count("comments", filter=Q(comments__status="approved")))
             .filter(organization_id=self.request.org_id)
@@ -279,13 +275,15 @@ class BlogPostViewSet(TenantViewSet):
         """Get post analytics."""
         post = self.get_object()
         comments_qs = post.comments.all()
-        return Response({
-            "view_count": post.view_count,
-            "reading_time": post.reading_time,
-            "comment_count": comments_qs.count(),
-            "approved_comments": comments_qs.filter(status="approved").count(),
-            "pending_comments": comments_qs.filter(status="pending").count(),
-        })
+        return Response(
+            {
+                "view_count": post.view_count,
+                "reading_time": post.reading_time,
+                "comment_count": comments_qs.count(),
+                "approved_comments": comments_qs.filter(status="approved").count(),
+                "pending_comments": comments_qs.filter(status="pending").count(),
+            }
+        )
 
     @action(detail=True, methods=["post"], url_path="auto-save")
     def auto_save(self, request, pk=None):
@@ -297,16 +295,18 @@ class BlogPostViewSet(TenantViewSet):
         post.title = title
         post.calculate_reading_time()
         post.save(update_fields=["title", "content", "reading_time", "updated_at"])
-        return Response({
-            "saved": True,
-            "updated_at": post.updated_at.isoformat(),
-        })
+        return Response(
+            {
+                "saved": True,
+                "updated_at": post.updated_at.isoformat(),
+            }
+        )
 
     @action(detail=False, methods=["post"], url_path="ai/generate")
     def ai_generate(self, request):
         """Generate blog post content using AI."""
-        from apps.ai.views import _get_active_provider
         from apps.ai.services.content import ContentGenerator
+        from apps.ai.views import _get_active_provider
 
         provider_config = _get_active_provider(request.org_id)
         if not provider_config:
@@ -325,7 +325,7 @@ class BlogPostViewSet(TenantViewSet):
         if task_type == "blog_post":
             full_prompt = f"""Write a blog post about: {prompt}
 Tone: {tone}
-Additional context: {context.get('extra', '')}
+Additional context: {context.get("extra", "")}
 
 Generate a complete blog post with:
 1. A compelling title
@@ -339,16 +339,16 @@ Return as JSON: {{"title": "...", "excerpt": "...", "content": "<html>...</html>
         elif task_type == "blog_post_from_topic":
             full_prompt = f"""Write a detailed blog post about: {prompt}
 Tone: {tone}
-Target audience: {context.get('audience', 'general readers')}
-Keywords to include: {context.get('keywords', '')}
+Target audience: {context.get("audience", "general readers")}
+Keywords to include: {context.get("keywords", "")}
 
 Generate a comprehensive blog post with proper HTML formatting including headings (h2, h3), paragraphs, lists, and emphasis.
 
 Return as JSON: {{"title": "...", "excerpt": "...", "content": "<html>..."}}"""
 
         elif task_type == "seo_optimize":
-            existing_content = context.get('content', '')
-            existing_title = context.get('title', '')
+            existing_content = context.get("content", "")
+            existing_title = context.get("title", "")
             full_prompt = f"""Optimize this blog post for SEO:
 
 Title: {existing_title}
@@ -364,7 +364,7 @@ Provide:
 Return as JSON: {{"seo_title": "...", "seo_description": "...", "suggestions": ["..."], "keywords": ["..."]}}"""
 
         elif task_type == "improve_content":
-            existing_content = context.get('content', '')
+            existing_content = context.get("content", "")
             full_prompt = f"""Improve this blog post content:
 
 Existing content: {existing_content[:3000]}
@@ -376,12 +376,12 @@ Improve the content for clarity, engagement, and readability while maintaining t
 Return as JSON: {{"improved_content": "<html>...", "changes_made": ["..."]}}"""
 
         elif task_type == "translate":
-            existing_content = context.get('content', '')
-            target_locale = context.get('locale', 'ar')
+            existing_content = context.get("content", "")
+            target_locale = context.get("locale", "ar")
             full_prompt = f"""Translate this blog post to {target_locale}:
 
-Title: {context.get('title', '')}
-Excerpt: {context.get('excerpt', '')}
+Title: {context.get("title", "")}
+Excerpt: {context.get("excerpt", "")}
 Content: {existing_content[:3000]}
 
 Provide a natural, culturally-appropriate translation.
@@ -391,9 +391,9 @@ Return as JSON: {{"title": "...", "excerpt": "...", "content": "<html>..."}}"""
         elif task_type == "suggest_image":
             full_prompt = f"""Suggest an image for this blog post:
 
-Title: {context.get('title', '')}
-Excerpt: {context.get('excerpt', '')}
-Content summary: {context.get('content', '')[:500]}
+Title: {context.get("title", "")}
+Excerpt: {context.get("excerpt", "")}
+Content summary: {context.get("content", "")[:500]}
 
 Suggest:
 1. Image description for stock photo search
@@ -410,17 +410,19 @@ Return as JSON: {{"image_description": "...", "alt_text": "...", "placement": ".
 
         result = gen.generate(task_type, full_prompt)
 
-        return Response({
-            "content": result.get("content", ""),
-            "tokens_used": result.get("tokens_used", 0),
-            "is_success": result.get("is_success", False),
-        })
+        return Response(
+            {
+                "content": result.get("content", ""),
+                "tokens_used": result.get("tokens_used", 0),
+                "is_success": result.get("is_success", False),
+            }
+        )
 
     @action(detail=True, methods=["post"], url_path="ai/improve")
     def ai_improve(self, request, pk=None):
         """Improve existing post content using AI."""
-        from apps.ai.views import _get_active_provider
         from apps.ai.services.content import ContentGenerator
+        from apps.ai.views import _get_active_provider
 
         provider_config = _get_active_provider(request.org_id)
         if not provider_config:
@@ -436,7 +438,7 @@ Return as JSON: {{"image_description": "...", "alt_text": "...", "placement": ".
 
         prompts = {
             "readability": f"Improve the readability of this blog post:\n\nTitle: {post.title}\nContent: {post.content[:3000]}\n\nMake it more engaging, clear, and easy to read. Return improved HTML content.",
-            "seo": f"Optimize this blog post for SEO:\n\nTitle: {post.title}\nSEO Title: {post.seo_title}\nMeta Description: {post.seo_description}\nContent: {post.content[:3000]}\n\nProvide optimized SEO title, meta description, and content suggestions. Return as JSON: {{\"seo_title\": \"...\", \"seo_description\": \"...\", \"content\": \"<html>...\"}}",
+            "seo": f'Optimize this blog post for SEO:\n\nTitle: {post.title}\nSEO Title: {post.seo_title}\nMeta Description: {post.seo_description}\nContent: {post.content[:3000]}\n\nProvide optimized SEO title, meta description, and content suggestions. Return as JSON: {{"seo_title": "...", "seo_description": "...", "content": "<html>..."}}',
             "engagement": f"Make this blog post more engaging:\n\nTitle: {post.title}\nContent: {post.content[:3000]}\n\nAdd more hooks, stories, questions, and calls-to-action. Return improved HTML content.",
             "grammar": f"Fix all grammar and spelling errors in this blog post:\n\nTitle: {post.title}\nContent: {post.content[:3000]}\n\nReturn the corrected HTML content.",
         }
@@ -444,11 +446,13 @@ Return as JSON: {{"image_description": "...", "alt_text": "...", "placement": ".
         prompt = prompts.get(improvement_type, prompts["readability"])
         result = gen.generate(f"blog_improve_{improvement_type}", prompt)
 
-        return Response({
-            "content": result.get("content", ""),
-            "improvement_type": improvement_type,
-            "tokens_used": result.get("tokens_used", 0),
-        })
+        return Response(
+            {
+                "content": result.get("content", ""),
+                "improvement_type": improvement_type,
+                "tokens_used": result.get("tokens_used", 0),
+            }
+        )
 
 
 class BlogCommentViewSet(TenantViewSet):
@@ -554,6 +558,7 @@ class BlogSubscriberViewSet(TenantViewSet):
 
 class BlogPublicCommentView(generics.CreateAPIView):
     """Public endpoint for creating comments (supports guest comments)."""
+
     serializer_class = BlogCommentSerializer
     permission_classes = [AllowAny]
 
@@ -594,11 +599,12 @@ class BlogPublicCommentView(generics.CreateAPIView):
 
 class BlogPublicSubscribeView(generics.CreateAPIView):
     """Public endpoint for subscribing to the blog newsletter."""
+
     serializer_class = BlogSubscriberSerializer
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-        post_id = kwargs.get("post_id")
+        kwargs.get("post_id")
         store_id = request.data.get("store")
         if not store_id:
             return Response(
@@ -650,7 +656,7 @@ class BlogSettingsViewSet(TenantViewSet):
         return qs
 
     def perform_create(self, serializer):
-        instance = serializer.save()
+        serializer.save()
 
     def perform_update(self, serializer):
-        instance = serializer.save()
+        serializer.save()

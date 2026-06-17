@@ -24,7 +24,9 @@ class MediaFolderViewSet(TenantViewSet):
     required_permission = "media.upload"
 
     def get_queryset(self):
-        qs = MediaFolder.objects.select_related("store", "parent").filter(organization_id=self.request.org_id)
+        qs = MediaFolder.objects.select_related("store", "parent").filter(
+            organization_id=self.request.org_id
+        )
         store_id = self.request.query_params.get("store")
         if store_id:
             qs = qs.filter(store_id=store_id)
@@ -47,7 +49,9 @@ class MediaAssetViewSet(TenantViewSet):
     required_permission = "media.upload"
 
     def get_queryset(self):
-        qs = MediaAsset.objects.select_related("store", "folder").filter(organization_id=self.request.org_id)
+        qs = MediaAsset.objects.select_related("store", "folder").filter(
+            organization_id=self.request.org_id
+        )
         store_id = self.request.query_params.get("store")
         if store_id:
             qs = qs.filter(store_id=store_id)
@@ -107,7 +111,12 @@ class MediaAssetViewSet(TenantViewSet):
             alt_text=alt_text,
         )
 
-        self._log_audit(action="media.upload", resource_type="media", resource_id=asset.id, new_value=MediaAssetSerializer(asset).data)
+        self._log_audit(
+            action="media.upload",
+            resource_type="media",
+            resource_id=asset.id,
+            new_value=MediaAssetSerializer(asset).data,
+        )
 
         return Response(MediaAssetSerializer(asset).data, status=status.HTTP_201_CREATED)
 
@@ -131,10 +140,12 @@ class MediaAssetViewSet(TenantViewSet):
             total_assets=Count("id"),
             total_size=Sum("file_size"),
         )
-        return Response({
-            "total_assets": agg["total_assets"],
-            "total_images": qs.filter(file_type="image").count(),
-            "total_videos": qs.filter(file_type="video").count(),
-            "total_documents": qs.filter(file_type="document").count(),
-            "total_size": agg["total_size"] or 0,
-        })
+        return Response(
+            {
+                "total_assets": agg["total_assets"],
+                "total_images": qs.filter(file_type="image").count(),
+                "total_videos": qs.filter(file_type="video").count(),
+                "total_documents": qs.filter(file_type="document").count(),
+                "total_size": agg["total_size"] or 0,
+            }
+        )

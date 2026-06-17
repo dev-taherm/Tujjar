@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from django.conf import settings
 from django.db import models
 
@@ -41,9 +40,7 @@ class Role(UUIDModel, TimeStampedModel):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100)
     description = models.TextField(blank=True, default="")
-    is_system = models.BooleanField(
-        default=False, help_text="System roles cannot be deleted"
-    )
+    is_system = models.BooleanField(default=False, help_text="System roles cannot be deleted")
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,

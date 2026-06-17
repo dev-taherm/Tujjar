@@ -60,11 +60,15 @@ def organization(user, db):
 
     org = Organization.objects.create(name="Test Org", slug="test-org")
     role, _ = Role.objects.get_or_create(
-        slug="owner", organization=None,
+        slug="owner",
+        organization=None,
         defaults={"name": "Owner", "is_system": True},
     )
     OrganizationMembership.objects.create(
-        user=user, organization=org, role=role, is_accepted=True,
+        user=user,
+        organization=org,
+        role=role,
+        is_accepted=True,
     )
     return org
 
@@ -74,17 +78,26 @@ def store(organization, db):
     from apps.stores.models import Store
 
     return Store.objects.create(
-        organization=organization, name="Test Store", slug="test-store",
+        organization=organization,
+        name="Test Store",
+        slug="test-store",
     )
 
 
 @pytest.fixture
 def product(db, organization, store):
-    from apps.products.models import Product
     from decimal import Decimal
+
+    from apps.products.models import Product
+
     return Product.objects.create(
-        organization=organization, store=store,
-        title="Test Product", slug="test-product",
-        description="A test product", product_type="physical",
-        status="active", price=Decimal("29.99"), sku="TST-001",
+        organization=organization,
+        store=store,
+        title="Test Product",
+        slug="test-product",
+        description="A test product",
+        product_type="physical",
+        status="active",
+        price=Decimal("29.99"),
+        sku="TST-001",
     )

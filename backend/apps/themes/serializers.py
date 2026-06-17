@@ -81,6 +81,7 @@ class ThemeInstallSerializer(serializers.Serializer):
         store_id = attrs.get("store_id")
         if store_id:
             from apps.stores.models import Store
+
             request = self.context["request"]
             if not Store.objects.filter(id=store_id, organization_id=request.org_id).exists():
                 raise serializers.ValidationError("Store not found.")
@@ -113,6 +114,7 @@ class ThemeInstallSerializer(serializers.Serializer):
         # Assign to store if store_id provided
         if store_id:
             from apps.stores.models import Store
+
             store = Store.objects.get(id=store_id, organization_id=request.org_id)
             store.theme = new_theme
             store.save()

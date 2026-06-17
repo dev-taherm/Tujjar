@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class IsPlatformAdmin(BasePermission):
@@ -43,11 +43,15 @@ class HasOrganizationPermission(BasePermission):
 
         from apps.organizations.models import OrganizationMembership
 
-        membership = OrganizationMembership.objects.filter(
-            user=request.user,
-            organization_id=org_id,
-            is_accepted=True,
-        ).select_related("role").first()
+        membership = (
+            OrganizationMembership.objects.filter(
+                user=request.user,
+                organization_id=org_id,
+                is_accepted=True,
+            )
+            .select_related("role")
+            .first()
+        )
 
         if not membership:
             return False

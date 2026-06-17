@@ -5,31 +5,41 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('marketplace', '0002_initial'),
+        ("marketplace", "0002_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='marketplacereview',
-            name='rating',
-            field=models.PositiveSmallIntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(5)]),
+            model_name="marketplacereview",
+            name="rating",
+            field=models.PositiveSmallIntegerField(
+                validators=[
+                    django.core.validators.MinValueValidator(1),
+                    django.core.validators.MaxValueValidator(5),
+                ]
+            ),
         ),
         migrations.AddIndex(
-            model_name='marketplacelisting',
-            index=models.Index(fields=['status', 'is_featured'], name='marketplace_status_ca02b0_idx'),
+            model_name="marketplacelisting",
+            index=models.Index(
+                fields=["status", "is_featured"], name="marketplace_status_ca02b0_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='marketplacelisting',
-            index=models.Index(fields=['status', 'category'], name='marketplace_status_d19707_idx'),
+            model_name="marketplacelisting",
+            index=models.Index(fields=["status", "category"], name="marketplace_status_d19707_idx"),
         ),
         migrations.AddIndex(
-            model_name='marketplacelisting',
-            index=models.Index(fields=['status', 'pricing_type'], name='marketplace_status_739c03_idx'),
+            model_name="marketplacelisting",
+            index=models.Index(
+                fields=["status", "pricing_type"], name="marketplace_status_739c03_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='marketplacelisting',
-            index=models.Index(fields=['developer', 'status'], name='marketplace_develop_7ac706_idx'),
+            model_name="marketplacelisting",
+            index=models.Index(
+                fields=["developer", "status"], name="marketplace_develop_7ac706_idx"
+            ),
         ),
     ]

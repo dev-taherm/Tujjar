@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -38,7 +37,8 @@ class Category(UUIDModel, TimeStampedModel):
     is_active = models.BooleanField(default=True)
     sort_order = models.IntegerField(default=0)
     translations = models.JSONField(
-        default=dict, blank=True,
+        default=dict,
+        blank=True,
         help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
     )
 
@@ -82,7 +82,8 @@ class Collection(UUIDModel, TimeStampedModel):
         related_name="collection_set",
     )
     translations = models.JSONField(
-        default=dict, blank=True,
+        default=dict,
+        blank=True,
         help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
     )
 
@@ -129,23 +130,23 @@ class Product(UUIDModel, TimeStampedModel):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
     description = models.TextField(blank=True, default="")
-    product_type = models.CharField(
-        max_length=20, choices=PRODUCT_TYPE_CHOICES, default="physical"
-    )
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="draft"
-    )
+    product_type = models.CharField(max_length=20, choices=PRODUCT_TYPE_CHOICES, default="physical")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
 
     # Pricing
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
-    )
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     compare_at_price = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True,
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(0)],
     )
     cost_per_item = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True,
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(0)],
     )
 
@@ -158,9 +159,7 @@ class Product(UUIDModel, TimeStampedModel):
     low_stock_threshold = models.IntegerField(default=5)
 
     # Physical
-    weight = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True
-    )
+    weight = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     requires_shipping = models.BooleanField(default=True)
 
     # SEO
@@ -172,20 +171,17 @@ class Product(UUIDModel, TimeStampedModel):
     tax_code = models.CharField(max_length=50, blank=True, default="")
 
     # Organization
-    categories = models.ManyToManyField(
-        Category, blank=True, related_name="products"
-    )
+    categories = models.ManyToManyField(Category, blank=True, related_name="products")
     tags = models.JSONField(default=list, blank=True)
     translations = models.JSONField(
-        default=dict, blank=True,
+        default=dict,
+        blank=True,
         help_text='Per-locale translations, e.g. {"ar": {"title": "...", "description": "..."}}',
     )
 
     # Stats
     total_sold = models.PositiveIntegerField(default=0)
-    total_revenue = models.DecimalField(
-        max_digits=12, decimal_places=2, default=0
-    )
+    total_revenue = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
         unique_together = ["store", "slug"]
@@ -209,10 +205,7 @@ class Product(UUIDModel, TimeStampedModel):
 
     @property
     def is_on_sale(self) -> bool:
-        return (
-            self.compare_at_price is not None
-            and self.compare_at_price > self.price
-        )
+        return self.compare_at_price is not None and self.compare_at_price > self.price
 
     @property
     def primary_image(self) -> ProductImage | None:
@@ -222,23 +215,15 @@ class Product(UUIDModel, TimeStampedModel):
 class ProductVariant(UUIDModel, TimeStampedModel):
     """Product variant (size, color, etc.)."""
 
-    product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="variants"
-    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
     title = models.CharField(max_length=255)
     sku = models.CharField(max_length=100, blank=True, default="")
     barcode = models.CharField(max_length=100, blank=True, default="")
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
-    )
-    compare_at_price = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    compare_at_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     inventory_quantity = models.IntegerField(default=0)
     track_inventory = models.BooleanField(default=True)
-    weight = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True
-    )
+    weight = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     option1 = models.CharField(max_length=100, blank=True, default="")
     option2 = models.CharField(max_length=100, blank=True, default="")
     option3 = models.CharField(max_length=100, blank=True, default="")
@@ -261,9 +246,7 @@ class ProductVariant(UUIDModel, TimeStampedModel):
 class ProductImage(UUIDModel, TimeStampedModel):
     """Product image with position ordering."""
 
-    product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="images"
-    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     url = models.URLField()
     alt_text = models.CharField(max_length=255, blank=True, default="")
     position = models.PositiveIntegerField(default=0)

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('customers', '0003_customer_customers_c_organiz_82d41a_idx'),
+        ("customers", "0003_customer_customers_c_organiz_82d41a_idx"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customer',
-            name='last_order_date',
+            model_name="customer",
+            name="last_order_date",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

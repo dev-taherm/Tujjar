@@ -7,7 +7,7 @@ from django.conf import settings as django_settings
 from django.core.cache import cache
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -15,7 +15,13 @@ from apps.core.permissions import HasOrganizationPermission
 from apps.core.viewsets import AuditLogMixin, TenantViewSet
 
 from .models import Store, StoreDomain
-from .serializers import SlugCheckSerializer, StoreDomainSerializer, StoreSerializer, StoreSettingsSerializer, StoreWizardSerializer
+from .serializers import (
+    SlugCheckSerializer,
+    StoreDomainSerializer,
+    StoreSerializer,
+    StoreSettingsSerializer,
+    StoreWizardSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +41,12 @@ class SlugCheckView(APIView):
         exists = Store.objects.filter(slug=clean_slug)
         if org_id:
             exists = exists.filter(organization_id=org_id)
-        return Response({
-            "slug": clean_slug,
-            "available": not exists.exists(),
-        })
+        return Response(
+            {
+                "slug": clean_slug,
+                "available": not exists.exists(),
+            }
+        )
 
 
 class StoreSlugChangeView(AuditLogMixin, APIView):
@@ -48,9 +56,7 @@ class StoreSlugChangeView(AuditLogMixin, APIView):
     required_permission = "settings.manage"
 
     def post(self, request, pk):
-        store = Store.objects.filter(
-            id=pk, organization_id=request.org_id
-        ).first()
+        store = Store.objects.filter(id=pk, organization_id=request.org_id).first()
         if not store:
             return Response({"error": "Store not found"}, status=404)
 
@@ -82,11 +88,13 @@ class StoreSlugChangeView(AuditLogMixin, APIView):
             new_value={"slug": clean_slug},
         )
 
-        return Response({
-            "slug": clean_slug,
-            "domain": store.domain,
-            "message": "Store slug updated successfully",
-        })
+        return Response(
+            {
+                "slug": clean_slug,
+                "domain": store.domain,
+                "message": "Store slug updated successfully",
+            }
+        )
 
 
 class StoreWizardView(AuditLogMixin, APIView):
@@ -115,34 +123,48 @@ class StoreViewSet(TenantViewSet):
     required_permission = "settings.manage"
 
     def get_queryset(self):
-        return Store.objects.filter(
-            organization_id=self.request.org_id
-        ).select_related("theme", "template", "logo", "favicon")
+        return Store.objects.filter(organization_id=self.request.org_id).select_related(
+            "theme", "template", "logo", "favicon"
+        )
 
     def perform_create(self, serializer):
         store = serializer.save()
-        self._log_audit(action="store.create", resource_type="store", resource_id=store.id, new_value=StoreSerializer(store).data)
+        self._log_audit(
+            action="store.create",
+            resource_type="store",
+            resource_id=store.id,
+            new_value=StoreSerializer(store).data,
+        )
 
     def perform_update(self, serializer):
         old_data = StoreSerializer(serializer.instance).data
         old_slug = serializer.instance.slug
         store = serializer.save()
-        self._log_audit(action="store.update", resource_type="store", resource_id=store.id, old_value=old_data, new_value=StoreSerializer(store).data)
+        self._log_audit(
+            action="store.update",
+            resource_type="store",
+            resource_id=store.id,
+            old_value=old_data,
+            new_value=StoreSerializer(store).data,
+        )
         cache.delete(f"storefront:store:{old_slug}")
         if store.slug != old_slug:
             cache.delete(f"storefront:store:{store.slug}")
 
     def perform_destroy(self, instance):
-        self._log_audit(action="store.delete", resource_type="store", resource_id=instance.id, old_value=StoreSerializer(instance).data)
+        self._log_audit(
+            action="store.delete",
+            resource_type="store",
+            resource_id=instance.id,
+            old_value=StoreSerializer(instance).data,
+        )
         cache.delete(f"storefront:store:{instance.slug}")
         instance.delete()
 
     @action(detail=False, methods=["get"])
     def current(self, request):
         """Get the first active store for the current organization."""
-        store = Store.objects.filter(
-            organization_id=request.org_id, is_active=True
-        ).first()
+        store = Store.objects.filter(organization_id=request.org_id, is_active=True).first()
         if not store:
             return Response(
                 {"detail": "No active store found."},
@@ -184,6 +206,7 @@ class StoreDomainViewSet(TenantViewSet):
         ).first()
         if not store:
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Store not found.")
         domain = StoreDomain.objects.filter(
             id=self.kwargs["domain_pk"],
@@ -191,6 +214,7 @@ class StoreDomainViewSet(TenantViewSet):
         ).first()
         if not domain:
             from rest_framework.exceptions import NotFound
+
             raise NotFound("Domain not found.")
         return domain
 
@@ -201,6 +225,7 @@ class StoreDomainViewSet(TenantViewSet):
         ).first()
         if not store:
             from rest_framework.exceptions import PermissionDenied
+
             raise PermissionDenied("Store not found or access denied.")
         domain = serializer.save(store_id=self.kwargs["pk"])
         self._log_audit(
@@ -273,29 +298,38 @@ class StoreDomainVerifyView(AuditLogMixin, generics.GenericAPIView):
         if not cname_ok:
             errors.append("CNAME or A record not found. Point your domain to the target CNAME.")
         if not txt_ok:
-            errors.append("TXT verification record not found. Add the verification token as a TXT record.")
-        return Response({
-            "verified": False,
-            "domain": domain.domain,
-            "message": " ".join(errors),
-            "details": {"cname": cname_ok, "txt": txt_ok},
-        })
+            errors.append(
+                "TXT verification record not found. Add the verification token as a TXT record."
+            )
+        return Response(
+            {
+                "verified": False,
+                "domain": domain.domain,
+                "message": " ".join(errors),
+                "details": {"cname": cname_ok, "txt": txt_ok},
+            }
+        )
 
     def _check_cname_a(self, domain_name: str) -> bool:
         try:
             socket_result = subprocess.run(
                 ["dig", "+short", domain_name, "A"],
-                capture_output=True, text=True, timeout=10,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             if socket_result.stdout.strip():
                 return True
             socket_result = subprocess.run(
                 ["dig", "+short", domain_name, "CNAME"],
-                capture_output=True, text=True, timeout=10,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             return bool(socket_result.stdout.strip())
         except (subprocess.TimeoutExpired, FileNotFoundError):
             import socket
+
             try:
                 socket.getaddrinfo(domain_name, 80, socket.AF_INET)
                 return True
@@ -306,7 +340,9 @@ class StoreDomainVerifyView(AuditLogMixin, generics.GenericAPIView):
         try:
             result = subprocess.run(
                 ["dig", "+short", f"_tujjar-verify.{domain_name}", "TXT"],
-                capture_output=True, text=True, timeout=10,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             output = result.stdout.strip()
             if not output:
@@ -335,28 +371,29 @@ class StoreDomainInstructionsView(generics.GenericAPIView):
         if not domain:
             return Response({"error": "Domain not found"}, status=404)
 
-        from django.conf import settings as django_settings
         target_cname = f"{store.slug}.{django_settings.STORE_DOMAIN}"
 
-        return Response({
-            "domain": domain.domain,
-            "verification_token": domain.verification_token,
-            "instructions": {
-                "cname": {
-                    "type": "CNAME",
-                    "host": domain.domain,
-                    "value": target_cname,
-                    "description": "Point your domain to your Tujjar store",
+        return Response(
+            {
+                "domain": domain.domain,
+                "verification_token": domain.verification_token,
+                "instructions": {
+                    "cname": {
+                        "type": "CNAME",
+                        "host": domain.domain,
+                        "value": target_cname,
+                        "description": "Point your domain to your Tujjar store",
+                    },
+                    "verification": {
+                        "type": "TXT",
+                        "host": f"_tujjar-verify.{domain.domain}",
+                        "value": domain.verification_token,
+                        "description": "Verify domain ownership",
+                    },
                 },
-                "verification": {
-                    "type": "TXT",
-                    "host": f"_tujjar-verify.{domain.domain}",
-                    "value": domain.verification_token,
-                    "description": "Verify domain ownership",
-                },
-            },
-            "verified": domain.verified,
-        })
+                "verified": domain.verified,
+            }
+        )
 
 
 class StoreDomainPrimaryView(AuditLogMixin, generics.GenericAPIView):

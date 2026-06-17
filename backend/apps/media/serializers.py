@@ -11,8 +11,14 @@ class MediaFolderSerializer(serializers.ModelSerializer):
     class Meta:
         model = MediaFolder
         fields = [
-            "id", "organization", "store", "name", "parent",
-            "path", "asset_count", "created_at",
+            "id",
+            "organization",
+            "store",
+            "name",
+            "parent",
+            "path",
+            "asset_count",
+            "created_at",
         ]
         read_only_fields = ["id", "organization", "path", "created_at"]
 
@@ -28,18 +34,41 @@ class MediaAssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = MediaAsset
         fields = [
-            "id", "organization", "store", "folder", "folder_name",
-            "title", "filename", "original_filename", "file_type",
-            "mime_type", "file_size", "file_size_display",
-            "file_url", "thumbnail_url", "cdn_url",
-            "storage_backend", "storage_path",
-            "width", "height", "alt_text", "title_attr",
-            "used_in_products", "used_in_pages",
-            "is_image", "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "folder",
+            "folder_name",
+            "title",
+            "filename",
+            "original_filename",
+            "file_type",
+            "mime_type",
+            "file_size",
+            "file_size_display",
+            "file_url",
+            "thumbnail_url",
+            "cdn_url",
+            "storage_backend",
+            "storage_path",
+            "width",
+            "height",
+            "alt_text",
+            "title_attr",
+            "used_in_products",
+            "used_in_pages",
+            "is_image",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "id", "organization", "file_size", "storage_backend",
-            "storage_path", "created_at", "updated_at",
+            "id",
+            "organization",
+            "file_size",
+            "storage_backend",
+            "storage_path",
+            "created_at",
+            "updated_at",
         ]
 
 
@@ -56,13 +85,33 @@ ALLOWED_UPLOAD_MIME_TYPES = {
 }
 
 BLOCKED_EXTENSIONS = {
-    ".php", ".php3", ".php4", ".php5", ".phtml",
-    ".exe", ".bat", ".cmd", ".com", ".msi",
-    ".sh", ".bash", ".csh", ".ksh",
-    ".js", ".vbs", ".vbe", ".wsf", ".wsc",
-    ".scr", ".pif", ".hta", ".cpl",
-    ".jar", ".class",
-    ".svg", ".svgz",
+    ".php",
+    ".php3",
+    ".php4",
+    ".php5",
+    ".phtml",
+    ".exe",
+    ".bat",
+    ".cmd",
+    ".com",
+    ".msi",
+    ".sh",
+    ".bash",
+    ".csh",
+    ".ksh",
+    ".js",
+    ".vbs",
+    ".vbe",
+    ".wsf",
+    ".wsc",
+    ".scr",
+    ".pif",
+    ".hta",
+    ".cpl",
+    ".jar",
+    ".class",
+    ".svg",
+    ".svgz",
 }
 
 MAX_UPLOAD_SIZE_MB = 50
@@ -96,9 +145,7 @@ class MediaUploadSerializer(serializers.Serializer):
             for mime_list in ALLOWED_UPLOAD_MIME_TYPES.values():
                 allowed.extend(mime_list)
             if content_type not in allowed:
-                raise serializers.ValidationError(
-                    f"File type '{content_type}' is not allowed."
-                )
+                raise serializers.ValidationError(f"File type '{content_type}' is not allowed.")
 
         # Server-side MIME sniffing to verify actual file content
         try:

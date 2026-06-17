@@ -7,11 +7,10 @@ from rest_framework.response import Response
 
 from apps.core.viewsets import TenantViewSet
 
-
-from .models import AIGenerationLog, AIProvider, AIConversation, AIMessage
+from .models import AIConversation, AIGenerationLog, AIMessage, AIProvider
 from .serializers import (
-    AIConversationSerializer,
     AIConversationListSerializer,
+    AIConversationSerializer,
     AIGenerationLogSerializer,
     AIProviderSerializer,
     ChatMessageSerializer,
@@ -67,9 +66,9 @@ class AIConversationViewSet(TenantViewSet):
         return AIConversationSerializer
 
     def get_queryset(self):
-        return AIConversation.objects.filter(
-            organization_id=self.request.org_id
-        ).prefetch_related("messages")
+        return AIConversation.objects.filter(organization_id=self.request.org_id).prefetch_related(
+            "messages"
+        )
 
     def perform_create(self, serializer):
         serializer.save(organization_id=self.request.org_id, user=self.request.user)
@@ -111,15 +110,18 @@ class AIConversationViewSet(TenantViewSet):
         conversation.total_tokens_used += result.get("tokens_used", 0)
         conversation.save(update_fields=["total_tokens_used", "updated_at"])
 
-        return Response({
-            "content": result["content"],
-            "tokens_used": result.get("tokens_used", 0),
-            "latency_ms": result.get("latency_ms", 0),
-        })
+        return Response(
+            {
+                "content": result["content"],
+                "tokens_used": result.get("tokens_used", 0),
+                "latency_ms": result.get("latency_ms", 0),
+            }
+        )
 
 
 class AIGenerationViewSet(viewsets.GenericViewSet):
     """AI content generation endpoints."""
+
     permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=["post"])
@@ -195,6 +197,7 @@ Return as JSON: {{"description": "...", "seo_title": "...", "seo_description": "
 
         try:
             import json
+
             parsed = json.loads(result.get("content", "{}"))
         except (json.JSONDecodeError, TypeError):
             parsed = {
@@ -223,7 +226,5 @@ Return as JSON: {{"description": "...", "seo_title": "...", "seo_description": "
     @action(detail=False, methods=["get"], url_path="logs")
     def generation_logs(self, request):
         """List recent AI generation logs."""
-        logs = AIGenerationLog.objects.filter(
-            organization_id=self.request.org_id
-        )[:50]
+        logs = AIGenerationLog.objects.filter(organization_id=self.request.org_id)[:50]
         return Response(AIGenerationLogSerializer(logs, many=True).data)

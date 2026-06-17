@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import logging
 
-from celery import shared_task
 from django.utils import timezone
+
+from celery import shared_task
 
 logger = logging.getLogger(__name__)
 

@@ -52,9 +52,7 @@ class Theme(UUIDModel, TimeStampedModel):
         blank=True,
         related_name="theme_previews",
     )
-    is_system = models.BooleanField(
-        default=False, help_text="System themes cannot be deleted"
-    )
+    is_system = models.BooleanField(default=False, help_text="System themes cannot be deleted")
     is_active = models.BooleanField(default=True)
 
     class Meta:

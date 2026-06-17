@@ -74,7 +74,8 @@ class Store(UUIDModel, TimeStampedModel):
     navigation = models.JSONField(default=dict, blank=True)
     footer_config = models.JSONField(default=dict, blank=True)
     translations = models.JSONField(
-        default=dict, blank=True,
+        default=dict,
+        blank=True,
         help_text='Per-locale translations, e.g. {"ar": {"name": "...", "description": "..."}}',
     )
 
@@ -99,9 +100,7 @@ class StoreDomain(UUIDModel, TimeStampedModel):
     domain = models.CharField(max_length=255, unique=True)
     is_primary = models.BooleanField(default=False)
     verified = models.BooleanField(default=False)
-    verification_token = models.CharField(
-        max_length=255, default=secrets.token_urlsafe
-    )
+    verification_token = models.CharField(max_length=255, default=secrets.token_urlsafe)
 
     class Meta:
         ordering = ["-is_primary", "domain"]

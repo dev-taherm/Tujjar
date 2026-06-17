@@ -1,6 +1,7 @@
 import pytest
 from rest_framework import status
-from tests.factories import create_org_with_owner, StoreFactory
+
+from tests.factories import StoreFactory, create_org_with_owner
 
 pytestmark = pytest.mark.django_db
 
@@ -9,10 +10,14 @@ class TestStoreCRUD:
     def test_create_store(self, api_client):
         user, org, token = create_org_with_owner("create-store@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        response = api_client.post("/api/v1/stores/", {
-            "name": "My New Store",
-            "slug": "my-new-store",
-        }, format="json")
+        response = api_client.post(
+            "/api/v1/stores/",
+            {
+                "name": "My New Store",
+                "slug": "my-new-store",
+            },
+            format="json",
+        )
         assert response.status_code == status.HTTP_201_CREATED
 
     def test_list_stores(self, api_client):
@@ -26,13 +31,17 @@ class TestStoreCRUD:
         user, org, token = create_org_with_owner("update-store@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         store = StoreFactory(organization=org, name="Settings Store", slug="settings-store")
-        response = api_client.patch(f"/api/v1/stores/{store.id}/", {
-            "description": "Updated description",
-        }, format="json")
+        response = api_client.patch(
+            f"/api/v1/stores/{store.id}/",
+            {
+                "description": "Updated description",
+            },
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
 
     def test_cross_org_store_access_denied(self, api_client):
-        from tests.factories import UserFactory, OrganizationFactory, OwnerMembershipFactory
+        from tests.factories import OrganizationFactory, OwnerMembershipFactory, UserFactory
 
         user1, org1, token1 = create_org_with_owner("cross-store1@example.com")
         user2 = UserFactory(email="cross-store2@example.com")

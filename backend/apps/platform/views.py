@@ -7,19 +7,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from apps.authentication.models import User
-from apps.organizations.models import Organization
-from apps.stores.models import Store
-from apps.billing.models import Plan, Subscription, Invoice
+from apps.billing.models import Invoice, Plan, Subscription
 from apps.core.permissions import IsPlatformAdmin
 from apps.core.viewsets import AuditLogMixin
+from apps.organizations.models import Organization
 from apps.platform.models import SystemConfig
 from apps.platform.serializers import (
-    PlatformUserSerializer,
     PlatformOrganizationSerializer,
-    PlatformStoreSerializer,
     PlatformPlanSerializer,
+    PlatformStoreSerializer,
+    PlatformUserSerializer,
     SystemConfigSerializer,
 )
+from apps.stores.models import Store
 
 
 @api_view(["GET"])
@@ -37,29 +37,30 @@ def platform_dashboard(request):
     active_stores = Store.objects.filter(is_active=True).count()
     total_subscriptions = Subscription.objects.count()
     active_subscriptions = Subscription.objects.filter(status="active").count()
-    total_revenue = Invoice.objects.filter(status="paid").aggregate(
-        total=Sum("amount")
-    )["total"] or 0
-    recent_users = PlatformUserSerializer(
-        User.objects.order_by("-created_at")[:5], many=True
-    ).data
+    total_revenue = (
+        Invoice.objects.filter(status="paid").aggregate(total=Sum("amount"))["total"] or 0
+    )
+    recent_users = PlatformUserSerializer(User.objects.order_by("-created_at")[:5], many=True).data
 
-    return Response({
-        "total_users": total_users,
-        "new_users_30d": new_users_30d,
-        "total_organizations": total_orgs,
-        "active_organizations": active_orgs,
-        "total_stores": total_stores,
-        "active_stores": active_stores,
-        "total_subscriptions": total_subscriptions,
-        "active_subscriptions": active_subscriptions,
-        "total_revenue": str(total_revenue),
-        "recent_users": recent_users,
-    })
+    return Response(
+        {
+            "total_users": total_users,
+            "new_users_30d": new_users_30d,
+            "total_organizations": total_orgs,
+            "active_organizations": active_orgs,
+            "total_stores": total_stores,
+            "active_stores": active_stores,
+            "total_subscriptions": total_subscriptions,
+            "active_subscriptions": active_subscriptions,
+            "total_revenue": str(total_revenue),
+            "recent_users": recent_users,
+        }
+    )
 
 
 class PlatformUserViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """Manage all users across the platform."""
+
     serializer_class = PlatformUserSerializer
     permission_classes = [IsPlatformAdmin]
 
@@ -82,20 +83,37 @@ class PlatformUserViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user = serializer.save()
-        self._log_audit(action="platform.user.create", resource_type="user", resource_id=user.id, new_value=PlatformUserSerializer(user).data)
+        self._log_audit(
+            action="platform.user.create",
+            resource_type="user",
+            resource_id=user.id,
+            new_value=PlatformUserSerializer(user).data,
+        )
 
     def perform_update(self, serializer):
         old_data = PlatformUserSerializer(serializer.instance).data
         user = serializer.save()
-        self._log_audit(action="platform.user.update", resource_type="user", resource_id=user.id, old_value=old_data, new_value=PlatformUserSerializer(user).data)
+        self._log_audit(
+            action="platform.user.update",
+            resource_type="user",
+            resource_id=user.id,
+            old_value=old_data,
+            new_value=PlatformUserSerializer(user).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="platform.user.delete", resource_type="user", resource_id=instance.id, old_value=PlatformUserSerializer(instance).data)
+        self._log_audit(
+            action="platform.user.delete",
+            resource_type="user",
+            resource_id=instance.id,
+            old_value=PlatformUserSerializer(instance).data,
+        )
         instance.delete()
 
 
 class PlatformOrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """Manage all organizations across the platform."""
+
     serializer_class = PlatformOrganizationSerializer
     permission_classes = [IsPlatformAdmin]
 
@@ -103,9 +121,7 @@ class PlatformOrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
         qs = Organization.objects.all()
         search = self.request.query_params.get("search")
         if search:
-            qs = qs.filter(
-                Q(name__icontains=search) | Q(slug__icontains=search)
-            )
+            qs = qs.filter(Q(name__icontains=search) | Q(slug__icontains=search))
         is_active = self.request.query_params.get("is_active")
         if is_active is not None:
             qs = qs.filter(is_active=is_active.lower() == "true")
@@ -130,15 +146,26 @@ class PlatformOrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         org = serializer.save()
-        self._log_audit(action="platform.organization.create", resource_type="organization", resource_id=org.id, new_value=PlatformOrganizationSerializer(org).data)
+        self._log_audit(
+            action="platform.organization.create",
+            resource_type="organization",
+            resource_id=org.id,
+            new_value=PlatformOrganizationSerializer(org).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="platform.organization.delete", resource_type="organization", resource_id=instance.id, old_value=PlatformOrganizationSerializer(instance).data)
+        self._log_audit(
+            action="platform.organization.delete",
+            resource_type="organization",
+            resource_id=instance.id,
+            old_value=PlatformOrganizationSerializer(instance).data,
+        )
         instance.delete()
 
 
 class PlatformStoreViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """Manage all stores across the platform."""
+
     serializer_class = PlatformStoreSerializer
     permission_classes = [IsPlatformAdmin]
 
@@ -175,15 +202,26 @@ class PlatformStoreViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         store = serializer.save()
-        self._log_audit(action="platform.store.create", resource_type="store", resource_id=store.id, new_value=PlatformStoreSerializer(store).data)
+        self._log_audit(
+            action="platform.store.create",
+            resource_type="store",
+            resource_id=store.id,
+            new_value=PlatformStoreSerializer(store).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="platform.store.delete", resource_type="store", resource_id=instance.id, old_value=PlatformStoreSerializer(instance).data)
+        self._log_audit(
+            action="platform.store.delete",
+            resource_type="store",
+            resource_id=instance.id,
+            old_value=PlatformStoreSerializer(instance).data,
+        )
         instance.delete()
 
 
 class PlatformPlanViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """Manage subscription plans."""
+
     serializer_class = PlatformPlanSerializer
     permission_classes = [IsPlatformAdmin]
 
@@ -192,20 +230,37 @@ class PlatformPlanViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         plan = serializer.save()
-        self._log_audit(action="platform.plan.create", resource_type="plan", resource_id=plan.id, new_value=PlatformPlanSerializer(plan).data)
+        self._log_audit(
+            action="platform.plan.create",
+            resource_type="plan",
+            resource_id=plan.id,
+            new_value=PlatformPlanSerializer(plan).data,
+        )
 
     def perform_update(self, serializer):
         old_data = PlatformPlanSerializer(serializer.instance).data
         plan = serializer.save()
-        self._log_audit(action="platform.plan.update", resource_type="plan", resource_id=plan.id, old_value=old_data, new_value=PlatformPlanSerializer(plan).data)
+        self._log_audit(
+            action="platform.plan.update",
+            resource_type="plan",
+            resource_id=plan.id,
+            old_value=old_data,
+            new_value=PlatformPlanSerializer(plan).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="platform.plan.delete", resource_type="plan", resource_id=instance.id, old_value=PlatformPlanSerializer(instance).data)
+        self._log_audit(
+            action="platform.plan.delete",
+            resource_type="plan",
+            resource_id=instance.id,
+            old_value=PlatformPlanSerializer(instance).data,
+        )
         instance.delete()
 
 
 class PlatformSystemConfigViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """Manage platform system configuration."""
+
     serializer_class = SystemConfigSerializer
     permission_classes = [IsPlatformAdmin]
 
@@ -214,13 +269,29 @@ class PlatformSystemConfigViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         config = serializer.save()
-        self._log_audit(action="platform.system_config.create", resource_type="system_config", resource_id=config.id, new_value=SystemConfigSerializer(config).data)
+        self._log_audit(
+            action="platform.system_config.create",
+            resource_type="system_config",
+            resource_id=config.id,
+            new_value=SystemConfigSerializer(config).data,
+        )
 
     def perform_update(self, serializer):
         old_data = SystemConfigSerializer(serializer.instance).data
         config = serializer.save()
-        self._log_audit(action="platform.system_config.update", resource_type="system_config", resource_id=config.id, old_value=old_data, new_value=SystemConfigSerializer(config).data)
+        self._log_audit(
+            action="platform.system_config.update",
+            resource_type="system_config",
+            resource_id=config.id,
+            old_value=old_data,
+            new_value=SystemConfigSerializer(config).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="platform.system_config.delete", resource_type="system_config", resource_id=instance.id, old_value=SystemConfigSerializer(instance).data)
+        self._log_audit(
+            action="platform.system_config.delete",
+            resource_type="system_config",
+            resource_id=instance.id,
+            old_value=SystemConfigSerializer(instance).data,
+        )
         instance.delete()

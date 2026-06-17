@@ -1,7 +1,12 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from apps.billing.views import PlanViewSet, SubscriptionViewSet, InvoiceViewSet, PaymentMethodViewSet
+from apps.billing.views import (
+    InvoiceViewSet,
+    PaymentMethodViewSet,
+    PlanViewSet,
+    SubscriptionViewSet,
+)
 
 router = DefaultRouter()
 router.register(r"plans", PlanViewSet, basename="plan")

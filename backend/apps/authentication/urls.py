@@ -13,7 +13,9 @@ urlpatterns = [
     # Public endpoints
     path("register/", views.RegisterView.as_view(), name="register"),
     path("verify-email/", views.VerifyEmailView.as_view(), name="verify-email"),
-    path("verify-email/resend/", views.ResendVerificationView.as_view(), name="resend-verification"),
+    path(
+        "verify-email/resend/", views.ResendVerificationView.as_view(), name="resend-verification"
+    ),
     path(
         "password-reset/request/",
         views.RequestPasswordResetView.as_view(),

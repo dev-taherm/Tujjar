@@ -6,23 +6,17 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from apps.blog.models import (
-    BlogAuthor,
     BlogCategory,
-    BlogComment,
     BlogPost,
-    BlogPostCategory,
-    BlogPostTag,
     BlogSubscriber,
-    BlogTag,
 )
 from tests.factories import create_org_with_owner_and_store
 from tests.factories.blog import (
     BlogAuthorFactory,
     BlogCategoryFactory,
     BlogCommentFactory,
-    BlogPostFactory,
     BlogPostCategoryFactory,
-    BlogPostTagFactory,
+    BlogPostFactory,
     BlogSubscriberFactory,
     BlogTagFactory,
 )
@@ -38,12 +32,15 @@ class BlogCategoryAPITests(TestCase):
         self.base_url = "/api/v1/blog/categories/"
 
     def test_create_category(self):
-        response = self.client.post(self.base_url, {
-            "store": str(self.store.id),
-            "name": "Technology",
-            "slug": "technology",
-            "description": "Tech articles",
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "store": str(self.store.id),
+                "name": "Technology",
+                "slug": "technology",
+                "description": "Tech articles",
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "Technology")
         self.assertEqual(response.data["slug"], "technology")
@@ -68,11 +65,14 @@ class BlogCategoryAPITests(TestCase):
 
     def test_category_slug_unique_per_store(self):
         BlogCategoryFactory(organization=self.org, store=self.store, slug="unique-slug")
-        response = self.client.post(self.base_url, {
-            "store": str(self.store.id),
-            "name": "Duplicate",
-            "slug": "unique-slug",
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "store": str(self.store.id),
+                "name": "Duplicate",
+                "slug": "unique-slug",
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
@@ -86,11 +86,14 @@ class BlogTagAPITests(TestCase):
         self.base_url = "/api/v1/blog/tags/"
 
     def test_create_tag(self):
-        response = self.client.post(self.base_url, {
-            "store": str(self.store.id),
-            "name": "Python",
-            "slug": "python",
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "store": str(self.store.id),
+                "name": "Python",
+                "slug": "python",
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "Python")
 
@@ -115,12 +118,15 @@ class BlogAuthorAPITests(TestCase):
         self.base_url = "/api/v1/blog/authors/"
 
     def test_create_author(self):
-        response = self.client.post(self.base_url, {
-            "store": str(self.store.id),
-            "name": "John Doe",
-            "slug": "john-doe",
-            "bio": "Tech writer",
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "store": str(self.store.id),
+                "name": "John Doe",
+                "slug": "john-doe",
+                "bio": "Tech writer",
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "John Doe")
 
@@ -141,14 +147,17 @@ class BlogPostAPITests(TestCase):
         self.author = BlogAuthorFactory(organization=self.org, store=self.store)
 
     def test_create_post(self):
-        response = self.client.post(self.base_url, {
-            "store": str(self.store.id),
-            "title": "My First Post",
-            "slug": "my-first-post",
-            "excerpt": "A great post",
-            "content": "<p>Content here</p>",
-            "author": str(self.author.id),
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "store": str(self.store.id),
+                "title": "My First Post",
+                "slug": "my-first-post",
+                "excerpt": "A great post",
+                "content": "<p>Content here</p>",
+                "author": str(self.author.id),
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["title"], "My First Post")
         self.assertEqual(response.data["status"], "draft")
@@ -167,9 +176,12 @@ class BlogPostAPITests(TestCase):
 
     def test_update_post(self):
         post = BlogPostFactory(organization=self.org, store=self.store)
-        response = self.client.patch(f"{self.base_url}{post.id}/", {
-            "title": "Updated Title",
-        })
+        response = self.client.patch(
+            f"{self.base_url}{post.id}/",
+            {
+                "title": "Updated Title",
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Updated Title")
 
@@ -188,8 +200,10 @@ class BlogPostAPITests(TestCase):
 
     def test_unpublish_post(self):
         post = BlogPostFactory(
-            organization=self.org, store=self.store,
-            status="published", published_at=timezone.now(),
+            organization=self.org,
+            store=self.store,
+            status="published",
+            published_at=timezone.now(),
         )
         response = self.client.post(f"{self.base_url}{post.id}/unpublish/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -204,9 +218,12 @@ class BlogPostAPITests(TestCase):
     def test_schedule_post(self):
         post = BlogPostFactory(organization=self.org, store=self.store, status="draft")
         scheduled_at = (timezone.now() + timezone.timedelta(hours=1)).isoformat()
-        response = self.client.post(f"{self.base_url}{post.id}/schedule/", {
-            "scheduled_at": scheduled_at,
-        })
+        response = self.client.post(
+            f"{self.base_url}{post.id}/schedule/",
+            {
+                "scheduled_at": scheduled_at,
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "scheduled")
 
@@ -224,7 +241,10 @@ class BlogPostAPITests(TestCase):
     def test_get_stats(self):
         post = BlogPostFactory(organization=self.org, store=self.store, view_count=42)
         BlogCommentFactory(
-            organization=self.org, store=self.store, post=post, status="approved",
+            organization=self.org,
+            store=self.store,
+            post=post,
+            status="approved",
         )
         response = self.client.get(f"{self.base_url}{post.id}/stats/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -233,25 +253,32 @@ class BlogPostAPITests(TestCase):
 
     def test_auto_save(self):
         post = BlogPostFactory(organization=self.org, store=self.store)
-        response = self.client.post(f"{self.base_url}{post.id}/auto-save/", {
-            "title": "Auto Saved Title",
-            "content": "<p>New content</p>",
-        })
+        response = self.client.post(
+            f"{self.base_url}{post.id}/auto-save/",
+            {
+                "title": "Auto Saved Title",
+                "content": "<p>New content</p>",
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data["saved"])
 
     def test_post_slug_unique_per_store(self):
         BlogPostFactory(organization=self.org, store=self.store, slug="same-slug")
-        response = self.client.post(self.base_url, {
-            "store": str(self.store.id),
-            "title": "Duplicate",
-            "slug": "same-slug",
-        })
+        response = self.client.post(
+            self.base_url,
+            {
+                "store": str(self.store.id),
+                "title": "Duplicate",
+                "slug": "same-slug",
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_reading_time_calculation(self):
         post = BlogPostFactory(
-            organization=self.org, store=self.store,
+            organization=self.org,
+            store=self.store,
             content="<p>" + "word " * 400 + "</p>",
         )
         post.calculate_reading_time()
@@ -268,12 +295,17 @@ class BlogCommentAPITests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.base_url = "/api/v1/blog/comments/"
         self.post = BlogPostFactory(
-            organization=self.org, store=self.store, status="published",
+            organization=self.org,
+            store=self.store,
+            status="published",
         )
 
     def test_approve_comment(self):
         comment = BlogCommentFactory(
-            organization=self.org, store=self.store, post=self.post, status="pending",
+            organization=self.org,
+            store=self.store,
+            post=self.post,
+            status="pending",
         )
         response = self.client.post(f"{self.base_url}{comment.id}/approve/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -281,7 +313,10 @@ class BlogCommentAPITests(TestCase):
 
     def test_reject_comment(self):
         comment = BlogCommentFactory(
-            organization=self.org, store=self.store, post=self.post, status="pending",
+            organization=self.org,
+            store=self.store,
+            post=self.post,
+            status="pending",
         )
         response = self.client.post(f"{self.base_url}{comment.id}/reject/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -289,7 +324,10 @@ class BlogCommentAPITests(TestCase):
 
     def test_trash_comment(self):
         comment = BlogCommentFactory(
-            organization=self.org, store=self.store, post=self.post, status="pending",
+            organization=self.org,
+            store=self.store,
+            post=self.post,
+            status="pending",
         )
         response = self.client.post(f"{self.base_url}{comment.id}/trash/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -297,23 +335,38 @@ class BlogCommentAPITests(TestCase):
 
     def test_approve_all_comments(self):
         BlogCommentFactory(
-            organization=self.org, store=self.store, post=self.post, status="pending",
+            organization=self.org,
+            store=self.store,
+            post=self.post,
+            status="pending",
         )
         BlogCommentFactory(
-            organization=self.org, store=self.store, post=self.post, status="pending",
+            organization=self.org,
+            store=self.store,
+            post=self.post,
+            status="pending",
         )
-        response = self.client.post(f"{self.base_url}approve-all/", {
-            "store": str(self.store.id),
-        })
+        response = self.client.post(
+            f"{self.base_url}approve-all/",
+            {
+                "store": str(self.store.id),
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["approved"], 2)
 
     def test_list_comments_filter_by_status(self):
         BlogCommentFactory(
-            organization=self.org, store=self.store, post=self.post, status="pending",
+            organization=self.org,
+            store=self.store,
+            post=self.post,
+            status="pending",
         )
         BlogCommentFactory(
-            organization=self.org, store=self.store, post=self.post, status="approved",
+            organization=self.org,
+            store=self.store,
+            post=self.post,
+            status="approved",
         )
         response = self.client.get(f"{self.base_url}?store={self.store.id}&status=pending")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -335,7 +388,9 @@ class BlogSubscriberAPITests(TestCase):
 
     def test_unsubscribe(self):
         subscriber = BlogSubscriberFactory(
-            organization=self.org, store=self.store, is_active=True,
+            organization=self.org,
+            store=self.store,
+            is_active=True,
         )
         response = self.client.post(f"{self.base_url}{subscriber.id}/unsubscribe/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -351,13 +406,18 @@ class StorefrontBlogAPITests(TestCase):
         self.user, self.org, self.store, self.token = create_org_with_owner_and_store()
         self.client = APIClient()
         self.published_post = BlogPostFactory(
-            organization=self.org, store=self.store,
-            status="published", published_at=timezone.now(),
-            title="Published Post", slug="published-post",
+            organization=self.org,
+            store=self.store,
+            status="published",
+            published_at=timezone.now(),
+            title="Published Post",
+            slug="published-post",
         )
         self.draft_post = BlogPostFactory(
-            organization=self.org, store=self.store,
-            status="draft", title="Draft Post",
+            organization=self.org,
+            store=self.store,
+            status="draft",
+            title="Draft Post",
         )
 
     def test_blog_list_returns_published_only(self):
@@ -390,7 +450,9 @@ class StorefrontBlogAPITests(TestCase):
 
     def test_blog_categories(self):
         cat = BlogCategoryFactory(
-            organization=self.org, store=self.store, name="Tech",
+            organization=self.org,
+            store=self.store,
+            name="Tech",
         )
         BlogPostCategoryFactory(post=self.published_post, category=cat)
         response = self.client.get(
@@ -413,13 +475,16 @@ class StorefrontBlogAPITests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             BlogSubscriber.objects.filter(
-                store=self.store, email="new@example.com",
+                store=self.store,
+                email="new@example.com",
             ).exists()
         )
 
     def test_blog_subscribe_duplicate(self):
         BlogSubscriberFactory(
-            organization=self.org, store=self.store, email="dup@example.com",
+            organization=self.org,
+            store=self.store,
+            email="dup@example.com",
         )
         response = self.client.post(
             f"/api/v1/store/{self.store.slug}/blog/subscribe/",
@@ -439,9 +504,12 @@ class StorefrontBlogAPITests(TestCase):
     def test_blog_pagination(self):
         for i in range(15):
             BlogPostFactory(
-                organization=self.org, store=self.store,
-                status="published", published_at=timezone.now(),
-                title=f"Post {i}", slug=f"post-{i}",
+                organization=self.org,
+                store=self.store,
+                status="published",
+                published_at=timezone.now(),
+                title=f"Post {i}",
+                slug=f"post-{i}",
             )
         response = self.client.get(
             f"/api/v1/store/{self.store.slug}/blog/?locale=en&page=1&per_page=5",
@@ -453,7 +521,9 @@ class StorefrontBlogAPITests(TestCase):
 
     def test_blog_filter_by_category(self):
         cat = BlogCategoryFactory(
-            organization=self.org, store=self.store, slug="tech",
+            organization=self.org,
+            store=self.store,
+            slug="tech",
         )
         BlogPostCategoryFactory(post=self.published_post, category=cat)
         response = self.client.get(

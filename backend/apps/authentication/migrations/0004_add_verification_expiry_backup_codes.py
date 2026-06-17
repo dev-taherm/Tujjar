@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('authentication', '0003_migrate_existing_tokens'),
+        ("authentication", "0003_migrate_existing_tokens"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='backup_codes',
+            model_name="user",
+            name="backup_codes",
             field=models.JSONField(blank=True, default=list),
         ),
         migrations.AddField(
-            model_name='user',
-            name='verification_token_expires',
+            model_name="user",
+            name="verification_token_expires",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

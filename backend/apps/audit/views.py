@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from django.utils.dateparse import parse_datetime
-from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from apps.core.permissions import IsPlatformAdmin
 from apps.core.viewsets import TenantReadOnlyViewSet
 
 from .models import AuditLog

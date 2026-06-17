@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import uuid as _uuid
 
-from django.conf import settings
 from django.core.validators import RegexValidator
 from django.utils.text import slugify
 from rest_framework import serializers
@@ -13,10 +12,37 @@ from apps.organizations.models import Organization
 from .models import Store, StoreDomain
 
 RESERVED_SLUGS = {
-    "admin", "api", "www", "mail", "smtp", "imap", "ftp", "ns1", "ns2",
-    "dns", "cdn", "assets", "static", "media", "blog", "help", "support",
-    "status", "docs", "dev", "staging", "test", "beta", "app", "portal",
-    "dashboard", "login", "register", "auth", "oauth", "sso",
+    "admin",
+    "api",
+    "www",
+    "mail",
+    "smtp",
+    "imap",
+    "ftp",
+    "ns1",
+    "ns2",
+    "dns",
+    "cdn",
+    "assets",
+    "static",
+    "media",
+    "blog",
+    "help",
+    "support",
+    "status",
+    "docs",
+    "dev",
+    "staging",
+    "test",
+    "beta",
+    "app",
+    "portal",
+    "dashboard",
+    "login",
+    "register",
+    "auth",
+    "oauth",
+    "sso",
 }
 
 slug_validator = RegexValidator(
@@ -114,7 +140,14 @@ class StoreSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "organization", "slug", "custom_domain", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "organization",
+            "slug",
+            "custom_domain",
+            "created_at",
+            "updated_at",
+        ]
 
     def get_logo_url(self, obj):
         if obj.logo_id:
@@ -144,6 +177,7 @@ class StoreSerializer(serializers.ModelSerializer):
         if media_id is None:
             return
         from apps.media.models import MediaAsset
+
         org_id = self.context["request"].org_id
         if not MediaAsset.objects.filter(id=media_id, organization_id=org_id).exists():
             raise serializers.ValidationError(
@@ -165,7 +199,9 @@ class StoreSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         org_id = self.context["request"].org_id
         if not org_id:
-            raise serializers.ValidationError("You must belong to an organization to create a store.")
+            raise serializers.ValidationError(
+                "You must belong to an organization to create a store."
+            )
         try:
             validated_data["organization"] = Organization.objects.get(id=org_id)
         except Organization.DoesNotExist:
@@ -195,6 +231,7 @@ class SlugCheckSerializer(serializers.Serializer):
 
 class StoreWizardSerializer(serializers.Serializer):
     """Multi-step store creation wizard."""
+
     name = serializers.CharField(max_length=255)
     slug = serializers.CharField(max_length=255, required=False)
     description = serializers.CharField(required=False, default="")
@@ -210,12 +247,11 @@ class StoreWizardSerializer(serializers.Serializer):
     enable_blog = serializers.BooleanField(default=False, required=False)
 
     def validate_slug(self, value):
-        if value:
-            slug = slugify(value)
-        else:
-            slug = slugify(self.initial_data.get("name", ""))
+        slug = slugify(value) if value else slugify(self.initial_data.get("name", ""))
         if not slug:
-            raise serializers.ValidationError("Could not generate a valid slug from the store name.")
+            raise serializers.ValidationError(
+                "Could not generate a valid slug from the store name."
+            )
         if len(slug) < 3:
             raise serializers.ValidationError("Slug must be at least 3 characters.")
         if slug in RESERVED_SLUGS:
@@ -235,12 +271,14 @@ class StoreWizardSerializer(serializers.Serializer):
         template_id = attrs.get("template_id")
         if template_id:
             from apps.templates.models import Template
+
             if not Template.objects.filter(id=template_id).exists():
                 raise serializers.ValidationError({"template_id": "Template not found."})
         return attrs
 
     def create(self, validated_data):
         from django.db import transaction
+
         from apps.templates.models import Template
 
         org_id = self.context["request"].org_id
@@ -261,6 +299,7 @@ class StoreWizardSerializer(serializers.Serializer):
 
         if logo_id:
             from apps.media.models import MediaAsset
+
             try:
                 logo = MediaAsset.objects.get(id=logo_id, organization_id=org_id)
                 validated_data["logo"] = logo
@@ -330,7 +369,7 @@ class StoreWizardSerializer(serializers.Serializer):
             )
             store.theme = theme
 
-            for preset_data in (template.presets or []):
+            for preset_data in template.presets or []:
                 ThemePreset.objects.create(
                     theme=theme,
                     name=preset_data["name"],
@@ -354,6 +393,7 @@ class StoreWizardSerializer(serializers.Serializer):
 
         if template.pages:
             from apps.pages.models import Page
+
             for page_def in template.pages:
                 if isinstance(page_def, dict):
                     sections = copy.deepcopy(page_def.get("sections", []))
@@ -378,7 +418,8 @@ class StoreWizardSerializer(serializers.Serializer):
                     )
 
         if template.demo_content:
-            from apps.products.models import Collection, Category
+            from apps.products.models import Category, Collection
+
             for coll_data in template.demo_content.get("collections", []):
                 Collection.objects.get_or_create(
                     organization_id=store.organization_id,

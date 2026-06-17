@@ -40,9 +40,7 @@ class ForbiddenException(TujjarException):
     default_code = "forbidden"
 
 
-def custom_exception_handler(
-    exc: Exception, context: dict[str, Any]
-) -> Response | None:
+def custom_exception_handler(exc: Exception, context: dict[str, Any]) -> Response | None:
     """Custom exception handler that returns consistent error format."""
     response = exception_handler(exc, context)
 

@@ -72,7 +72,9 @@ class TemplateViewSet(TenantViewSet):
                 slug=theme_slug,
                 version=template.version,
                 config=theme_data,
-                sections_schema={"sections": template.pages[0]["sections"] if template.pages else []},
+                sections_schema={
+                    "sections": template.pages[0]["sections"] if template.pages else []
+                },
                 is_system=False,
                 is_active=True,
             )
@@ -125,9 +127,7 @@ class TemplateViewSet(TenantViewSet):
                     slug=page_def.get("slug", ""),
                     page_type=page_def.get("page_type", "custom"),
                     content_schema={"sections": sections},
-                    seo_title=page_def.get("seo_title", "").replace(
-                        "{{store_name}}", store.name
-                    ),
+                    seo_title=page_def.get("seo_title", "").replace("{{store_name}}", store.name),
                     seo_description=page_def.get("seo_description", "").replace(
                         "{{store_description}}", store.description or ""
                     ),
@@ -167,7 +167,16 @@ class TemplateViewSet(TenantViewSet):
                 )
 
             # Audit log
-            self._log_audit(action="template.install", resource_type="template", resource_id=template.id, new_value={"template": template.name, "store": store.name, "pages_created": len(created_pages)})
+            self._log_audit(
+                action="template.install",
+                resource_type="template",
+                resource_id=template.id,
+                new_value={
+                    "template": template.name,
+                    "store": store.name,
+                    "pages_created": len(created_pages),
+                },
+            )
 
         return Response(
             {

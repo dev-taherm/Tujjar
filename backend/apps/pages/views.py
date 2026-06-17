@@ -26,15 +26,31 @@ class PageViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         page = serializer.save()
-        self._log_audit(action="page.create", resource_type="page", resource_id=page.id, new_value=PageSerializer(page).data)
+        self._log_audit(
+            action="page.create",
+            resource_type="page",
+            resource_id=page.id,
+            new_value=PageSerializer(page).data,
+        )
 
     def perform_update(self, serializer):
         old_data = PageSerializer(serializer.instance).data
         page = serializer.save()
-        self._log_audit(action="page.update", resource_type="page", resource_id=page.id, old_value=old_data, new_value=PageSerializer(page).data)
+        self._log_audit(
+            action="page.update",
+            resource_type="page",
+            resource_id=page.id,
+            old_value=old_data,
+            new_value=PageSerializer(page).data,
+        )
 
     def perform_destroy(self, instance):
-        self._log_audit(action="page.delete", resource_type="page", resource_id=instance.id, old_value=PageSerializer(instance).data)
+        self._log_audit(
+            action="page.delete",
+            resource_type="page",
+            resource_id=instance.id,
+            old_value=PageSerializer(instance).data,
+        )
         instance.delete()
 
     @action(detail=True, methods=["post"])
@@ -76,10 +92,12 @@ class PageViewSet(TenantViewSet):
     def preview(self, request, pk=None):
         """Get page data for storefront preview."""
         page = self.get_object()
-        return Response({
-            "page": PageSerializer(page).data,
-            "sections": page.get_sections(),
-        })
+        return Response(
+            {
+                "page": PageSerializer(page).data,
+                "sections": page.get_sections(),
+            }
+        )
 
     @action(detail=False, methods=["get"], url_path="section-types")
     def section_types(self, request):
@@ -128,7 +146,9 @@ class PageViewSet(TenantViewSet):
         page.duplicate_section(section_id)
         return Response(PageSerializer(page).data)
 
-    @action(detail=True, methods=["post"], url_path="sections/(?P<section_id>[^/]+)/toggle-visibility")
+    @action(
+        detail=True, methods=["post"], url_path="sections/(?P<section_id>[^/]+)/toggle-visibility"
+    )
     def toggle_section_visibility(self, request, pk=None, section_id=None):
         """Toggle section visibility for a device."""
         page = self.get_object()

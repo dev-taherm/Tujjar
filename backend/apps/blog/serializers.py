@@ -25,10 +25,22 @@ class BlogCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogCategory
         fields = [
-            "id", "organization", "store", "name", "slug", "description",
-            "featured_image", "seo_title", "seo_description", "og_image",
-            "translations", "is_active", "order", "post_count",
-            "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "name",
+            "slug",
+            "description",
+            "featured_image",
+            "seo_title",
+            "seo_description",
+            "og_image",
+            "translations",
+            "is_active",
+            "order",
+            "post_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
@@ -60,8 +72,16 @@ class BlogTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogTag
         fields = [
-            "id", "organization", "store", "name", "slug", "description",
-            "translations", "post_count", "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "name",
+            "slug",
+            "description",
+            "translations",
+            "post_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
@@ -93,9 +113,19 @@ class BlogAuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogAuthor
         fields = [
-            "id", "organization", "store", "user", "name", "slug", "bio",
-            "avatar", "avatar_url", "social_links", "translations",
-            "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "user",
+            "name",
+            "slug",
+            "bio",
+            "avatar",
+            "avatar_url",
+            "social_links",
+            "translations",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
@@ -143,7 +173,9 @@ class BlogPostTagSerializer(serializers.ModelSerializer):
 
 class BlogPostSerializer(serializers.ModelSerializer):
     author_detail = BlogAuthorSerializer(source="author", read_only=True)
-    categories_detail = BlogPostCategorySerializer(source="post_categories", many=True, read_only=True)
+    categories_detail = BlogPostCategorySerializer(
+        source="post_categories", many=True, read_only=True
+    )
     tags_detail = BlogPostTagSerializer(source="post_tags", many=True, read_only=True)
     featured_image_url = serializers.SerializerMethodField()
     og_image_url = serializers.SerializerMethodField()
@@ -153,21 +185,49 @@ class BlogPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
         fields = [
-            "id", "organization", "store", "title", "slug", "excerpt", "content",
-            "featured_image", "featured_image_url", "featured_image_alt",
-            "author", "author_detail",
-            "status", "published_at", "scheduled_at",
-            "categories", "categories_detail",
-            "tags", "tags_detail",
-            "seo_title", "seo_description", "og_image", "og_image_url",
-            "twitter_card", "canonical_url", "focus_keyword",
-            "translations", "reading_time", "allow_comments", "is_featured",
-            "view_count", "expires_at", "comment_count",
-            "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "title",
+            "slug",
+            "excerpt",
+            "content",
+            "featured_image",
+            "featured_image_url",
+            "featured_image_alt",
+            "author",
+            "author_detail",
+            "status",
+            "published_at",
+            "scheduled_at",
+            "categories",
+            "categories_detail",
+            "tags",
+            "tags_detail",
+            "seo_title",
+            "seo_description",
+            "og_image",
+            "og_image_url",
+            "twitter_card",
+            "canonical_url",
+            "focus_keyword",
+            "translations",
+            "reading_time",
+            "allow_comments",
+            "is_featured",
+            "view_count",
+            "expires_at",
+            "comment_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "id", "organization", "reading_time", "view_count",
-            "created_at", "updated_at",
+            "id",
+            "organization",
+            "reading_time",
+            "view_count",
+            "created_at",
+            "updated_at",
         ]
 
     def get_featured_image_url(self, obj) -> str | None:
@@ -199,7 +259,9 @@ class BlogPostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["organization"] = resolve_organization(self.context["request"].org_id)
-        if validated_data.get("status") == BlogPost.Status.PUBLISHED and not validated_data.get("published_at"):
+        if validated_data.get("status") == BlogPost.Status.PUBLISHED and not validated_data.get(
+            "published_at"
+        ):
             validated_data["published_at"] = timezone.now()
         return super().create(validated_data)
 
@@ -212,6 +274,7 @@ class BlogPostSerializer(serializers.ModelSerializer):
 
 class BlogPostListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for list views."""
+
     author_name = serializers.CharField(source="author.name", read_only=True, default="")
     featured_image_url = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
@@ -219,10 +282,18 @@ class BlogPostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
         fields = [
-            "id", "title", "slug", "excerpt",
-            "featured_image_url", "author_name",
-            "status", "published_at", "reading_time",
-            "is_featured", "view_count", "comment_count",
+            "id",
+            "title",
+            "slug",
+            "excerpt",
+            "featured_image_url",
+            "author_name",
+            "status",
+            "published_at",
+            "reading_time",
+            "is_featured",
+            "view_count",
+            "comment_count",
             "created_at",
         ]
 
@@ -242,10 +313,21 @@ class BlogCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogComment
         fields = [
-            "id", "organization", "store", "post", "parent",
-            "user", "author_name", "author_email", "author_website",
-            "content", "status", "is_guest", "replies",
-            "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "post",
+            "parent",
+            "user",
+            "author_name",
+            "author_email",
+            "author_website",
+            "content",
+            "status",
+            "is_guest",
+            "replies",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "organization", "status", "is_guest", "created_at", "updated_at"]
 
@@ -265,8 +347,14 @@ class BlogSubscriberSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogSubscriber
         fields = [
-            "id", "organization", "store", "email", "user",
-            "is_active", "subscribed_at", "unsubscribed_at",
+            "id",
+            "organization",
+            "store",
+            "email",
+            "user",
+            "is_active",
+            "subscribed_at",
+            "unsubscribed_at",
         ]
         read_only_fields = ["id", "organization", "subscribed_at", "unsubscribed_at"]
 
@@ -279,11 +367,17 @@ class BlogSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogSettings
         fields = [
-            "id", "organization", "store",
-            "posts_per_page", "default_status",
-            "allow_comments", "comment_moderation",
-            "show_author_bio", "rss_enabled",
-            "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "posts_per_page",
+            "default_status",
+            "allow_comments",
+            "comment_moderation",
+            "show_author_bio",
+            "rss_enabled",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 

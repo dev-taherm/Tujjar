@@ -3,10 +3,10 @@ from __future__ import annotations
 from rest_framework import serializers
 
 from apps.authentication.models import User
-from apps.organizations.models import Organization
-from apps.stores.models import Store
 from apps.billing.models import Plan, Subscription
+from apps.organizations.models import Organization
 from apps.platform.models import SystemConfig
+from apps.stores.models import Store
 
 
 class PlatformUserSerializer(serializers.ModelSerializer):
@@ -15,9 +15,19 @@ class PlatformUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id", "email", "first_name", "last_name", "full_name",
-            "is_active", "is_staff", "is_verified", "is_superuser",
-            "two_factor_enabled", "provider", "last_login", "created_at",
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "is_active",
+            "is_staff",
+            "is_verified",
+            "is_superuser",
+            "two_factor_enabled",
+            "provider",
+            "last_login",
+            "created_at",
             "organization_count",
         ]
         read_only_fields = ["id", "email", "created_at", "last_login"]
@@ -35,8 +45,15 @@ class PlatformOrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
         fields = [
-            "id", "name", "slug", "is_active", "created_at",
-            "owner_email", "store_count", "member_count", "subscription_status",
+            "id",
+            "name",
+            "slug",
+            "is_active",
+            "created_at",
+            "owner_email",
+            "store_count",
+            "member_count",
+            "subscription_status",
         ]
 
     def get_owner_email(self, obj) -> str | None:
@@ -63,8 +80,15 @@ class PlatformStoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
         fields = [
-            "id", "name", "slug", "custom_domain", "is_active",
-            "organization", "organization_name", "owner_email", "created_at",
+            "id",
+            "name",
+            "slug",
+            "custom_domain",
+            "is_active",
+            "organization",
+            "organization_name",
+            "owner_email",
+            "created_at",
         ]
 
     def get_owner_email(self, obj) -> str | None:
@@ -78,10 +102,23 @@ class PlatformPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plan
         fields = [
-            "id", "name", "slug", "description", "price", "currency",
-            "interval", "trial_days", "max_products", "max_orders",
-            "max_storage_gb", "max_ai_generations", "features",
-            "is_active", "is_system", "subscription_count", "created_at",
+            "id",
+            "name",
+            "slug",
+            "description",
+            "price",
+            "currency",
+            "interval",
+            "trial_days",
+            "max_products",
+            "max_orders",
+            "max_storage_gb",
+            "max_ai_generations",
+            "features",
+            "is_active",
+            "is_system",
+            "subscription_count",
+            "created_at",
         ]
 
     def get_subscription_count(self, obj) -> int:

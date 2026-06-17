@@ -35,8 +35,10 @@ class OwnerMembershipFactory(factory.django.DjangoModelFactory):
     @factory.lazy_attribute
     def role(self):
         from apps.organizations.models import Role
+
         role, _ = Role.objects.get_or_create(
-            slug="owner", organization=None,
+            slug="owner",
+            organization=None,
             defaults={"name": "Owner", "is_system": True},
         )
         return role

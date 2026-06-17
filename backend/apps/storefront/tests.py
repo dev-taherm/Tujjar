@@ -1,10 +1,11 @@
-import pytest
 from decimal import Decimal
-from rest_framework import status
 
-from apps.products.models import Product, Category
-from apps.stores.models import Store
+import pytest
+from rest_framework import status
 from tests.factories import create_org_with_owner
+
+from apps.products.models import Category, Product
+from apps.stores.models import Store
 
 pytestmark = pytest.mark.django_db
 
@@ -16,24 +17,38 @@ def storefront_data(db):
     cache.clear()
     user, org, token = create_org_with_owner("storeowner@example.com")
     store = Store.objects.create(
-        organization=org, name="My Store", slug="my-store",
+        organization=org,
+        name="My Store",
+        slug="my-store",
     )
     category = Category.objects.create(
-        organization=org, store=store,
-        name="Electronics", slug="electronics",
+        organization=org,
+        store=store,
+        name="Electronics",
+        slug="electronics",
     )
     product = Product.objects.create(
-        organization=org, store=store,
-        title="Test Widget", slug="test-widget",
-        description="A fine widget", product_type="physical",
-        status="active", price=Decimal("29.99"), sku="TW-001",
+        organization=org,
+        store=store,
+        title="Test Widget",
+        slug="test-widget",
+        description="A fine widget",
+        product_type="physical",
+        status="active",
+        price=Decimal("29.99"),
+        sku="TW-001",
     )
     product.categories.add(category)
     Product.objects.create(
-        organization=org, store=store,
-        title="Draft Widget", slug="draft-widget",
-        description="Not yet live", product_type="physical",
-        status="draft", price=Decimal("15.00"), sku="DW-001",
+        organization=org,
+        store=store,
+        title="Draft Widget",
+        slug="draft-widget",
+        description="Not yet live",
+        product_type="physical",
+        status="draft",
+        price=Decimal("15.00"),
+        sku="DW-001",
     )
     return {"user": user, "org": org, "store": store, "product": product, "category": category}
 

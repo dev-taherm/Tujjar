@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from apps.marketplace.models import MarketplaceListing, MarketplaceOrder
 from apps.marketplace.serializers import (
     MarketplaceListingSerializer,
-    MarketplaceReviewSerializer,
     MarketplaceOrderSerializer,
+    MarketplaceReviewSerializer,
 )
 
 
@@ -46,9 +46,14 @@ class MarketplaceListingViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def categories(self, request):
-        cats = MarketplaceListing.objects.filter(
-            status=MarketplaceListing.Status.APPROVED,
-        ).values_list("category", flat=True).distinct().order_by("category")
+        cats = (
+            MarketplaceListing.objects.filter(
+                status=MarketplaceListing.Status.APPROVED,
+            )
+            .values_list("category", flat=True)
+            .distinct()
+            .order_by("category")
+        )
         return Response({"categories": list(cats)})
 
     @action(detail=True, methods=["get", "post"])

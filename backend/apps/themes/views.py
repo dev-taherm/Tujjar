@@ -29,18 +29,35 @@ class ThemeViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         theme = serializer.save()
-        self._log_audit(action="theme.create", resource_type="theme", resource_id=theme.id, new_value=ThemeSerializer(theme).data)
+        self._log_audit(
+            action="theme.create",
+            resource_type="theme",
+            resource_id=theme.id,
+            new_value=ThemeSerializer(theme).data,
+        )
 
     def perform_update(self, serializer):
         old_data = ThemeSerializer(serializer.instance).data
         theme = serializer.save()
-        self._log_audit(action="theme.update", resource_type="theme", resource_id=theme.id, old_value=old_data, new_value=ThemeSerializer(theme).data)
+        self._log_audit(
+            action="theme.update",
+            resource_type="theme",
+            resource_id=theme.id,
+            old_value=old_data,
+            new_value=ThemeSerializer(theme).data,
+        )
 
     def perform_destroy(self, instance):
         if instance.is_system:
             from rest_framework.exceptions import PermissionDenied
+
             raise PermissionDenied("System themes cannot be deleted.")
-        self._log_audit(action="theme.delete", resource_type="theme", resource_id=instance.id, old_value=ThemeSerializer(instance).data)
+        self._log_audit(
+            action="theme.delete",
+            resource_type="theme",
+            resource_id=instance.id,
+            old_value=ThemeSerializer(instance).data,
+        )
         instance.delete()
 
     @action(detail=True, methods=["post"])
@@ -60,7 +77,9 @@ class ThemeViewSet(TenantViewSet):
     @action(detail=True, methods=["post"])
     def duplicate(self, request, pk=None):
         """Duplicate a theme."""
-        serializer = ThemeDuplicateSerializer(data=request.data, context={"view": self, "request": request})
+        serializer = ThemeDuplicateSerializer(
+            data=request.data, context={"view": self, "request": request}
+        )
         serializer.is_valid(raise_exception=True)
         new_theme = serializer.save()
         return Response(
@@ -72,14 +91,16 @@ class ThemeViewSet(TenantViewSet):
     def export(self, request, pk=None):
         """Export theme as JSON."""
         theme = self.get_object()
-        return Response({
-            "name": theme.name,
-            "version": theme.version,
-            "config": theme.config,
-            "sections_schema": theme.sections_schema,
-            "assets": theme.assets,
-            "presets": ThemePresetSerializer(theme.presets.all(), many=True).data,
-        })
+        return Response(
+            {
+                "name": theme.name,
+                "version": theme.version,
+                "config": theme.config,
+                "sections_schema": theme.sections_schema,
+                "assets": theme.assets,
+                "presets": ThemePresetSerializer(theme.presets.all(), many=True).data,
+            }
+        )
 
     @action(detail=False, methods=["get"])
     def marketplace(self, request):

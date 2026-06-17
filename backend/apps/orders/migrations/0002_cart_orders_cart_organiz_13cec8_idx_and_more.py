@@ -4,38 +4,45 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orders', '0001_initial'),
+        ("orders", "0001_initial"),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='cart',
-            index=models.Index(fields=['organization', 'store'], name='orders_cart_organiz_13cec8_idx'),
+            model_name="cart",
+            index=models.Index(
+                fields=["organization", "store"], name="orders_cart_organiz_13cec8_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='cart',
-            index=models.Index(fields=['status', 'created_at'], name='orders_cart_status_d9efaf_idx'),
+            model_name="cart",
+            index=models.Index(
+                fields=["status", "created_at"], name="orders_cart_status_d9efaf_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='order',
-            index=models.Index(fields=['organization', 'store'], name='orders_orde_organiz_9d5bb1_idx'),
+            model_name="order",
+            index=models.Index(
+                fields=["organization", "store"], name="orders_orde_organiz_9d5bb1_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='order',
-            index=models.Index(fields=['status'], name='orders_orde_status_c6dd84_idx'),
+            model_name="order",
+            index=models.Index(fields=["status"], name="orders_orde_status_c6dd84_idx"),
         ),
         migrations.AddIndex(
-            model_name='order',
-            index=models.Index(fields=['payment_status'], name='orders_orde_payment_bc131d_idx'),
+            model_name="order",
+            index=models.Index(fields=["payment_status"], name="orders_orde_payment_bc131d_idx"),
         ),
         migrations.AddIndex(
-            model_name='order',
-            index=models.Index(fields=['organization', 'store', 'status'], name='orders_orde_organiz_75f8e9_idx'),
+            model_name="order",
+            index=models.Index(
+                fields=["organization", "store", "status"], name="orders_orde_organiz_75f8e9_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='order',
-            index=models.Index(fields=['customer_email'], name='orders_orde_custome_ca0107_idx'),
+            model_name="order",
+            index=models.Index(fields=["customer_email"], name="orders_orde_custome_ca0107_idx"),
         ),
     ]

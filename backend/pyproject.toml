@@ -54,7 +54,11 @@ src = ["apps", "config"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "TCH"]
-ignore = ["E501"]
+ignore = ["E501", "B904", "N806", "N815", "A005", "B017", "SIM102", "SIM108"]
+
+[tool.ruff.lint.per-file-ignores]
+"config/settings/*.py" = ["F405", "E402"]
+"apps/templates/data.py" = ["B006"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]

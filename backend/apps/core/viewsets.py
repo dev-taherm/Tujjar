@@ -26,7 +26,10 @@ class AuditLogMixin:
 
         if organization is None:
             from apps.organizations.models import Organization
-            organization = Organization.objects.filter(id=getattr(self.request, "org_id", None)).first()
+
+            organization = Organization.objects.filter(
+                id=getattr(self.request, "org_id", None)
+            ).first()
 
         log_action(
             action=action,
@@ -62,7 +65,6 @@ class TenantViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if self.action in ("list", "retrieve", "metadata", "options"):
             return [IsAuthenticated()]
         return [IsAuthenticated(), HasOrganizationPermission()]
-
 
 
 class TenantReadOnlyViewSet(AuditLogMixin, viewsets.ReadOnlyModelViewSet):

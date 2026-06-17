@@ -1,4 +1,5 @@
 """Migrate existing plaintext tokens to hashed/encrypted format."""
+
 from __future__ import annotations
 
 import hashlib

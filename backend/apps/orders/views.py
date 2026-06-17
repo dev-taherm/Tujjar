@@ -58,7 +58,9 @@ class CartViewSet(TenantViewSet):
                 return Response({"detail": "Variant not found."}, status=status.HTTP_404_NOT_FOUND)
 
         item, created = CartItem.objects.get_or_create(
-            cart=cart, product=product, variant=variant,
+            cart=cart,
+            product=product,
+            variant=variant,
             defaults={"quantity": quantity, "unit_price": unit_price},
         )
         if not created:
@@ -117,9 +119,14 @@ class CartViewSet(TenantViewSet):
                 product = cart_item.product
                 if product.track_inventory:
                     locked_product = Product.objects.select_for_update().get(id=product.id)
-                    if locked_product.inventory_quantity < cart_item.quantity and not locked_product.allow_backorder:
+                    if (
+                        locked_product.inventory_quantity < cart_item.quantity
+                        and not locked_product.allow_backorder
+                    ):
                         return Response(
-                            {"detail": f"Insufficient stock for '{product.title}'. Available: {locked_product.inventory_quantity}"},
+                            {
+                                "detail": f"Insufficient stock for '{product.title}'. Available: {locked_product.inventory_quantity}"
+                            },
                             status=status.HTTP_400_BAD_REQUEST,
                         )
 
@@ -128,9 +135,15 @@ class CartViewSet(TenantViewSet):
                 store=cart.store,
                 customer=cart.customer,
                 customer_email=customer_email,
-                customer_first_name=request.data.get("customer_first_name", cart.customer.first_name if cart.customer else ""),
-                customer_last_name=request.data.get("customer_last_name", cart.customer.last_name if cart.customer else ""),
-                customer_phone=request.data.get("customer_phone", cart.customer.phone if cart.customer else ""),
+                customer_first_name=request.data.get(
+                    "customer_first_name", cart.customer.first_name if cart.customer else ""
+                ),
+                customer_last_name=request.data.get(
+                    "customer_last_name", cart.customer.last_name if cart.customer else ""
+                ),
+                customer_phone=request.data.get(
+                    "customer_phone", cart.customer.phone if cart.customer else ""
+                ),
                 subtotal=cart.subtotal,
                 tax_amount=Decimal("0"),
                 shipping_amount=Decimal("0"),
@@ -145,7 +158,9 @@ class CartViewSet(TenantViewSet):
             )
 
             # Calculate totals server-side
-            order.total = order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
+            order.total = (
+                order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
+            )
             order.save(update_fields=["total"])
 
             for cart_item in cart.items.select_related("product", "variant").all():
@@ -172,11 +187,17 @@ class CartViewSet(TenantViewSet):
             cart.status = "converted"
             cart.save(update_fields=["status"])
 
-        self._log_audit(action="order.create", resource_type="order", resource_id=order.id, new_value=OrderDetailSerializer(order).data)
+        self._log_audit(
+            action="order.create",
+            resource_type="order",
+            resource_id=order.id,
+            new_value=OrderDetailSerializer(order).data,
+        )
 
         # Send notification to store owner
         from apps.notifications.models import Notification
         from apps.stores.models import Store
+
         try:
             store = Store.objects.get(id=cart.store_id)
             owner = store.organization.owner
@@ -207,8 +228,10 @@ class OrderViewSet(TenantViewSet):
         return OrderListSerializer
 
     def get_queryset(self):
-        qs = Order.objects.select_related("store", "customer").prefetch_related("items").filter(
-            organization_id=self.request.org_id
+        qs = (
+            Order.objects.select_related("store", "customer")
+            .prefetch_related("items")
+            .filter(organization_id=self.request.org_id)
         )
         store_id = self.request.query_params.get("store")
         if store_id:
@@ -239,7 +262,13 @@ class OrderViewSet(TenantViewSet):
             order.transition_status(new_status, changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        self._log_audit(action="order.status.update", resource_type="order", resource_id=order.id, old_value={"status": old_status}, new_value={"status": new_status, "notes": notes})
+        self._log_audit(
+            action="order.status.update",
+            resource_type="order",
+            resource_id=order.id,
+            old_value={"status": old_status},
+            new_value={"status": new_status, "notes": notes},
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -249,10 +278,19 @@ class OrderViewSet(TenantViewSet):
         new_status = request.data.get("payment_status")
         valid = [c[0] for c in Order.PAYMENT_STATUS_CHOICES]
         if new_status not in valid:
-            return Response({"detail": f"Invalid payment status. Must be one of: {valid}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": f"Invalid payment status. Must be one of: {valid}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         order.payment_status = new_status
         order.save(update_fields=["payment_status", "updated_at"])
-        self._log_audit(action="order.payment_status.update", resource_type="order", resource_id=order.id, old_value={"payment_status": old_payment_status}, new_value={"payment_status": new_status})
+        self._log_audit(
+            action="order.payment_status.update",
+            resource_type="order",
+            resource_id=order.id,
+            old_value={"payment_status": old_payment_status},
+            new_value={"payment_status": new_status},
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -271,7 +309,13 @@ class OrderViewSet(TenantViewSet):
             order.transition_status("shipped", changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        self._log_audit(action="order.ship", resource_type="order", resource_id=order.id, old_value={"status": old_status}, new_value={"status": "shipped", "tracking_number": tracking_number})
+        self._log_audit(
+            action="order.ship",
+            resource_type="order",
+            resource_id=order.id,
+            old_value={"status": old_status},
+            new_value={"status": "shipped", "tracking_number": tracking_number},
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -283,7 +327,13 @@ class OrderViewSet(TenantViewSet):
             order.transition_status("delivered", changed_by=request.user, notes=notes)
         except OrderTransitionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        self._log_audit(action="order.deliver", resource_type="order", resource_id=order.id, old_value={"status": old_status}, new_value={"status": "delivered"})
+        self._log_audit(
+            action="order.deliver",
+            resource_type="order",
+            resource_id=order.id,
+            old_value={"status": old_status},
+            new_value={"status": "delivered"},
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["post"])
@@ -295,7 +345,13 @@ class OrderViewSet(TenantViewSet):
             order.cancel(changed_by=request.user, notes=notes)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        self._log_audit(action="order.cancel", resource_type="order", resource_id=order.id, old_value={"status": old_status}, new_value={"status": "cancelled", "notes": notes})
+        self._log_audit(
+            action="order.cancel",
+            resource_type="order",
+            resource_id=order.id,
+            old_value={"status": old_status},
+            new_value={"status": "cancelled", "notes": notes},
+        )
         return Response(OrderDetailSerializer(order).data)
 
     @action(detail=True, methods=["get"])

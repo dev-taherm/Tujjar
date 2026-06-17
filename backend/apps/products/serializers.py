@@ -12,9 +12,21 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = [
-            "id", "organization", "store", "parent", "name", "slug",
-            "description", "image", "is_active", "sort_order",
-            "translations", "children", "product_count", "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "parent",
+            "name",
+            "slug",
+            "description",
+            "image",
+            "is_active",
+            "sort_order",
+            "translations",
+            "children",
+            "product_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
@@ -38,10 +50,24 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductVariant
         fields = [
-            "id", "product", "title", "sku", "barcode", "price",
-            "compare_at_price", "inventory_quantity", "track_inventory",
-            "weight", "option1", "option2", "option3", "is_active",
-            "sort_order", "is_in_stock", "created_at", "updated_at",
+            "id",
+            "product",
+            "title",
+            "sku",
+            "barcode",
+            "price",
+            "compare_at_price",
+            "inventory_quantity",
+            "track_inventory",
+            "weight",
+            "option1",
+            "option2",
+            "option3",
+            "is_active",
+            "sort_order",
+            "is_in_stock",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
@@ -56,12 +82,26 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            "id", "organization", "store", "title", "slug",
-            "product_type", "status", "price", "compare_at_price",
-            "sku", "track_inventory", "inventory_quantity",
-            "primary_image", "is_in_stock", "is_on_sale",
-            "category_names", "variant_count", "total_sold",
-            "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "title",
+            "slug",
+            "product_type",
+            "status",
+            "price",
+            "compare_at_price",
+            "sku",
+            "track_inventory",
+            "inventory_quantity",
+            "primary_image",
+            "is_in_stock",
+            "is_on_sale",
+            "category_names",
+            "variant_count",
+            "total_sold",
+            "created_at",
+            "updated_at",
         ]
 
     def get_category_names(self, obj) -> list[str]:
@@ -76,8 +116,11 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     variants = ProductVariantSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     category_ids = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(), many=True, write_only=True,
-        source="categories", required=False,
+        queryset=Category.objects.all(),
+        many=True,
+        write_only=True,
+        source="categories",
+        required=False,
     )
     is_in_stock = serializers.BooleanField(read_only=True)
     is_on_sale = serializers.BooleanField(read_only=True)
@@ -85,24 +128,49 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            "id", "organization", "store", "title", "slug",
-            "description", "product_type", "status",
-            "price", "compare_at_price", "cost_per_item",
-            "sku", "barcode", "track_inventory", "inventory_quantity",
-            "allow_backorder", "low_stock_threshold",
-            "weight", "requires_shipping",
-            "seo_title", "seo_description",
-            "is_taxable", "tax_code",
-            "categories", "category_ids", "tags",
-            "images", "variants",
-            "is_in_stock", "is_on_sale",
+            "id",
+            "organization",
+            "store",
+            "title",
+            "slug",
+            "description",
+            "product_type",
+            "status",
+            "price",
+            "compare_at_price",
+            "cost_per_item",
+            "sku",
+            "barcode",
+            "track_inventory",
+            "inventory_quantity",
+            "allow_backorder",
+            "low_stock_threshold",
+            "weight",
+            "requires_shipping",
+            "seo_title",
+            "seo_description",
+            "is_taxable",
+            "tax_code",
+            "categories",
+            "category_ids",
+            "tags",
+            "images",
+            "variants",
+            "is_in_stock",
+            "is_on_sale",
             "translations",
-            "total_sold", "total_revenue",
-            "created_at", "updated_at",
+            "total_sold",
+            "total_revenue",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "id", "organization", "total_sold", "total_revenue",
-            "created_at", "updated_at",
+            "id",
+            "organization",
+            "total_sold",
+            "total_revenue",
+            "created_at",
+            "updated_at",
         ]
 
 
@@ -112,9 +180,19 @@ class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = [
-            "id", "organization", "store", "name", "slug",
-            "description", "image", "is_active", "sort_order",
-            "translations", "product_count", "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "name",
+            "slug",
+            "description",
+            "image",
+            "is_active",
+            "sort_order",
+            "translations",
+            "product_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
@@ -125,18 +203,32 @@ class CollectionSerializer(serializers.ModelSerializer):
 class CollectionDetailSerializer(serializers.ModelSerializer):
     products = ProductListSerializer(many=True, read_only=True)
     product_ids = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.all(), many=True, write_only=True,
-        source="products", required=False,
+        queryset=Product.objects.all(),
+        many=True,
+        write_only=True,
+        source="products",
+        required=False,
     )
     product_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Collection
         fields = [
-            "id", "organization", "store", "name", "slug",
-            "description", "image", "is_active", "sort_order",
-            "products", "product_ids", "product_count",
-            "translations", "created_at", "updated_at",
+            "id",
+            "organization",
+            "store",
+            "name",
+            "slug",
+            "description",
+            "image",
+            "is_active",
+            "sort_order",
+            "products",
+            "product_ids",
+            "product_count",
+            "translations",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 

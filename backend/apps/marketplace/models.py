@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -37,7 +36,9 @@ class MarketplaceListing(UUIDModel, TimeStampedModel):
     description = models.TextField()
     short_description = models.CharField(max_length=500, blank=True, default="")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
-    pricing_type = models.CharField(max_length=20, choices=PricingType.choices, default=PricingType.FREE)
+    pricing_type = models.CharField(
+        max_length=20, choices=PricingType.choices, default=PricingType.FREE
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     category = models.CharField(max_length=100, blank=True, default="")
     tags = models.JSONField(default=list, blank=True)

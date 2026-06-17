@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from django.conf import settings
-from django.core.validators import MinLengthValidator
 from django.db import models
-from django.utils.text import slugify
 
 from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
@@ -238,6 +236,7 @@ class BlogPost(UUIDModel, TimeStampedModel):
     def calculate_reading_time(self):
         """Estimate reading time from content (avg 200 words per minute)."""
         import re
+
         text = re.sub(r"<[^>]+>", " ", self.content or "")
         words = len(text.split())
         self.reading_time = max(1, round(words / 200))
@@ -251,7 +250,9 @@ class BlogPostCategory(UUIDModel):
     """Through model for BlogPost <-> BlogCategory with ordering."""
 
     post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name="post_categories")
-    category = models.ForeignKey(BlogCategory, on_delete=models.CASCADE, related_name="category_posts")
+    category = models.ForeignKey(
+        BlogCategory, on_delete=models.CASCADE, related_name="category_posts"
+    )
     order = models.IntegerField(default=0)
 
     class Meta:

@@ -1,16 +1,13 @@
-import pytest
 from django.test import TestCase
 from rest_framework import status
 
 from apps.authentication.models import User
-from apps.organizations.models import Organization, OrganizationMembership, Role, Permission
+from apps.organizations.models import Organization, OrganizationMembership, Role
 
 
 class TestOrganizationCRUD(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            email="owner@example.com", password="testpass123"
-        )
+        self.user = User.objects.create_user(email="owner@example.com", password="testpass123")
         from rest_framework_simplejwt.tokens import RefreshToken
 
         refresh = RefreshToken.for_user(self.user)
@@ -18,6 +15,7 @@ class TestOrganizationCRUD(TestCase):
 
         # Seed roles and permissions (may not exist in test DB)
         from apps.organizations.signals import create_default_roles_and_permissions
+
         create_default_roles_and_permissions(sender=None)
 
     def test_create_organization(self):
@@ -65,9 +63,7 @@ class TestOrganizationCRUD(TestCase):
         self.assertEqual(org.name, "New Name")
 
     def test_cannot_access_other_org(self):
-        other_user = User.objects.create_user(
-            email="other@example.com", password="testpass123"
-        )
+        other_user = User.objects.create_user(email="other@example.com", password="testpass123")
         other_org = Organization.objects.create(name="Other Org", slug="other-org")
         role = Role.objects.get(slug="owner")
         OrganizationMembership.objects.create(

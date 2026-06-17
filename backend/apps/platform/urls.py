@@ -1,13 +1,13 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.platform.views import (
-    platform_dashboard,
-    PlatformUserViewSet,
     PlatformOrganizationViewSet,
-    PlatformStoreViewSet,
     PlatformPlanViewSet,
+    PlatformStoreViewSet,
     PlatformSystemConfigViewSet,
+    PlatformUserViewSet,
+    platform_dashboard,
 )
 
 app_name = "platform"

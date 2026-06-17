@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import logging
 
-from celery import shared_task
-from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail
+
+from celery import shared_task
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ def send_notification_email_task(self, notification_id: str):
         return
 
     from apps.notifications.models import NotificationPreference
+
     pref, _ = NotificationPreference.objects.get_or_create(user=notification.user)
     if not pref.email_notifications:
         return
