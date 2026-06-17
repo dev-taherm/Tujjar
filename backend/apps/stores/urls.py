@@ -46,5 +46,10 @@ urlpatterns = [
         views.StoreViewSet.as_view({"patch": "update_settings"}),
         name="store-update-settings",
     ),
+    path(
+        "<uuid:pk>/set-theme/",
+        views.StoreViewSet.as_view({"post": "set_theme"}),
+        name="store-set-theme",
+    ),
     path("", include(router.urls)),
 ]
