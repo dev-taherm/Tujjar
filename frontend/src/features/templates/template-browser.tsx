@@ -7,6 +7,7 @@ import {
   useInstalledTemplate,
   useInstallTemplate,
   usePreviewInstall,
+  useTemplate,
 } from "@/api/queries";
 import type { Template } from "@/api/templates";
 import { TemplateCard } from "./template-card";
@@ -32,7 +33,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
   const tc = useTranslations("common");
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
-  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
   const [installingId, setInstallingId] = useState<string | null>(null);
   const [storeDialogTemplate, setStoreDialogTemplate] = useState<Template | null>(null);
 
@@ -61,6 +62,11 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
   const installMutation = useInstallTemplate();
   const previewInstall = usePreviewInstall();
   const queryClient = useQueryClient();
+
+  // Fetch full template detail for preview (marketplace only has list data)
+  const { data: fullPreviewTemplate, isLoading: loadingFullPreview } = useTemplate(
+    previewTemplateId
+  );
 
   const marketplaceTemplates = (marketplaceData?.results || []).filter(
     (t) =>
@@ -108,7 +114,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
         storeId: targetStoreId,
       });
       toast.success(`Template "${template.name}" installed! ${result.pages_created} pages created.`);
-      setPreviewTemplate(null);
+      setPreviewTemplateId(null);
       setStoreDialogTemplate(null);
       setOverwriteTemplate(null);
       queryClient.invalidateQueries({ queryKey: ["stores"] });
@@ -178,7 +184,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
                 {t("export")}
               </button>
               <button
-                onClick={() => setPreviewTemplate(installedTemplate)}
+                onClick={() => setPreviewTemplateId(installedTemplate.id)}
                 className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
               >
                 <ExternalLink className="h-4 w-4" />
@@ -259,7 +265,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
               <TemplateCard
                 key={template.id}
                 template={template}
-                onPreview={setPreviewTemplate}
+                onPreview={(t) => setPreviewTemplateId(t.id)}
                 onInstall={handleInstallClick}
                 onDuplicate={setDuplicateTemplate}
                 onDelete={setDeleteTemplate}
@@ -271,15 +277,24 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
       </section>
 
       {/* Preview Modal */}
-      {previewTemplate && (
-        <TemplatePreview
-          template={previewTemplate}
-          onClose={() => setPreviewTemplate(null)}
-          onInstall={handleInstallClick}
-          onExport={setExportTemplate}
-          onVersionHistory={setVersionHistoryTemplate}
-          isInstalling={installingId === previewTemplate.id}
-        />
+      {previewTemplateId && (
+        loadingFullPreview ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="flex flex-col items-center gap-3 rounded-2xl bg-white p-8 shadow-xl">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+              <p className="text-sm text-gray-500">Loading template details...</p>
+            </div>
+          </div>
+        ) : fullPreviewTemplate ? (
+          <TemplatePreview
+            template={fullPreviewTemplate}
+            onClose={() => setPreviewTemplateId(null)}
+            onInstall={handleInstallClick}
+            onExport={setExportTemplate}
+            onVersionHistory={setVersionHistoryTemplate}
+            isInstalling={installingId === fullPreviewTemplate.id}
+          />
+        ) : null
       )}
 
       {/* Store Selector Dialog */}
