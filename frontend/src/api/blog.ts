@@ -136,6 +136,11 @@ export const blogPostsApi = {
     author?: string;
     categories?: string[];
     tags?: string[];
+    featured_image?: string | null;
+    featured_image_alt?: string;
+    status?: string;
+    seo_title?: string;
+    seo_description?: string;
   }): Promise<BlogPost> => {
     const { data } = await apiClient.post("/blog/posts/", payload);
     return data;

@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { Save, Eye, ArrowLeft, Calendar, Settings } from "lucide-react";
+import { Save, Eye, ArrowLeft, Calendar, Settings, Image as ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import { useBlogPost, useCreateBlogPost, useUpdateBlogPost, useAutoSaveBlogPost, useBlogCategories, useBlogTags } from "@/api/blog";
 import { useStores } from "@/api/queries";
 import { Button } from "@/shared/ui";
 import { TiptapEditor } from "./editor";
 import { BlogAIAssistant } from "./ai/blog-ai-assistant";
+import { MediaPickerModal } from "../media/media-picker-modal";
 
 interface BlogPostEditorProps {
   postId?: string;
@@ -37,6 +38,10 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const [status, setStatus] = useState<"draft" | "published" | "scheduled" | "archived">("draft");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
+  const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
+  const [featuredImageAlt, setFeaturedImageAlt] = useState("");
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
@@ -60,6 +65,9 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
       setStatus(existingPost.status);
       setSelectedCategories(existingPost.categories || []);
       setSelectedTags(existingPost.tags || []);
+      setFeaturedImage(existingPost.featured_image || null);
+      setFeaturedImageUrl(existingPost.featured_image_url || null);
+      setFeaturedImageAlt(existingPost.featured_image_alt || "");
       setSeoTitle(existingPost.seo_title);
       setSeoDescription(existingPost.seo_description);
     }
@@ -106,6 +114,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
       content,
       categories: selectedCategories,
       tags: selectedTags,
+      featured_image: featuredImage,
+      featured_image_alt: featuredImageAlt,
       seo_title: seoTitle,
       seo_description: seoDescription,
     };
@@ -171,6 +181,63 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
       </div>
 
       <div className="w-80 space-y-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <h3 className="mb-3 text-sm font-semibold text-gray-900">Featured Image</h3>
+          {featuredImageUrl ? (
+            <div className="relative">
+              <img
+                src={featuredImageUrl}
+                alt={featuredImageAlt || "Featured image"}
+                className="w-full rounded-lg object-cover"
+              />
+              <button
+                onClick={() => { setFeaturedImage(null); setFeaturedImageUrl(null); setFeaturedImageAlt(""); setHasUnsavedChanges(true); }}
+                className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white hover:bg-black/80"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setShowMediaPicker(true)}
+                className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Change Image
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowMediaPicker(true)}
+              className="flex w-full flex-col items-center rounded-lg border-2 border-dashed border-gray-200 p-6 text-center hover:border-blue-300 hover:bg-blue-50/50"
+            >
+              <ImageIcon className="h-8 w-8 text-gray-300" />
+              <p className="mt-2 text-sm font-medium text-gray-600">Choose Image</p>
+              <p className="mt-0.5 text-xs text-gray-400">or upload a new one</p>
+            </button>
+          )}
+          {featuredImageUrl && (
+            <div className="mt-2">
+              <label className="mb-1 block text-xs text-gray-500">Alt Text</label>
+              <input
+                type="text"
+                value={featuredImageAlt}
+                onChange={(e) => { setFeaturedImageAlt(e.target.value); setHasUnsavedChanges(true); }}
+                placeholder="Describe the image"
+                className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          )}
+        </div>
+
+        <MediaPickerModal
+          open={showMediaPicker}
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={(asset) => {
+            setFeaturedImage(asset.id);
+            setFeaturedImageUrl(asset.file_url);
+            setHasUnsavedChanges(true);
+          }}
+          storeId={store?.id}
+        />
+
         {stores && stores.length > 1 && (
           <div className="rounded-xl border border-gray-200 bg-white p-4">
             <label className="mb-2 block text-sm font-semibold text-gray-900">Store</label>
