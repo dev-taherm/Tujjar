@@ -4,12 +4,15 @@ import { Card, CardHeader, CardTitle, CardDescription, Badge, Button } from "@/s
 import { Palette, Download, ExternalLink, Check } from "lucide-react";
 import type { Theme, ThemeConfig } from "@/shared/types";
 import { useTranslations } from "next-intl";
+import { useTheme } from "@/api/themes";
 
 interface ThemeCardProps {
   theme: Theme;
   onSelect?: (theme: Theme) => void;
   onInstall?: (theme: Theme) => void;
+  onApply?: (theme: Theme) => void;
   isSelected?: boolean;
+  isActive?: boolean;
   isInstalling?: boolean;
   isInstalled?: boolean;
 }
@@ -30,7 +33,7 @@ function ColorSwatch({ colors }: { colors: ThemeConfig["colors"] }) {
   );
 }
 
-export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling, isInstalled }: ThemeCardProps) {
+export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isActive, isInstalling, isInstalled }: ThemeCardProps) {
   const t = useTranslations("dashboard.themes");
   const tc = useTranslations("common");
   return (
@@ -54,7 +57,11 @@ export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling
               <CardDescription>v{theme.version}</CardDescription>
             </div>
           </div>
-          {theme.is_system && <Badge>{t("system")}</Badge>}
+          <div className="flex items-center gap-2">
+            {isActive && <Badge variant="success">{t("active") || "Active"}</Badge>}
+            {theme.parent_theme && <Badge variant="secondary">{t("inherits") || "Inherits"}</Badge>}
+            {theme.is_system && <Badge>{t("system")}</Badge>}
+          </div>
         </div>
       </CardHeader>
       <div className="px-6 pb-2">
@@ -69,35 +76,50 @@ export function ThemeCard({ theme, onSelect, onInstall, isSelected, isInstalling
             <span>•</span>
             <span>{theme.presets.length} {t("presets")}{theme.presets.length !== 1 ? "s" : ""}</span>
           </div>
-          {onInstall && (
-            <Button
-              size="sm"
-              variant={isInstalled ? "secondary" : "default"}
-              disabled={isInstalling || isInstalled}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!isInstalling && !isInstalled) onInstall(theme);
-              }}
-              className="ms-2 shrink-0"
-            >
-              {isInstalling ? (
+          <div className="flex gap-2">
+            {onApply && !isActive && (
+              <Button
+                size="sm"
+                variant="default"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onApply(theme);
+                }}
+                className="shrink-0"
+              >
+                {t("applyToStore") || "Apply to Store"}
+              </Button>
+            )}
+            {onInstall && (
+              <Button
+                size="sm"
+                variant={isInstalled ? "secondary" : "default"}
+                disabled={isInstalling || isInstalled}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isInstalling && !isInstalled) onInstall(theme);
+                }}
+                className="shrink-0"
+              >
+                {isInstalling ? (
+                    <span className="flex items-center gap-1.5">
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    {t("installing")}
+                  </span>
+                ) : isInstalled ? (
                   <span className="flex items-center gap-1.5">
-                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  {t("installing")}
-                </span>
-              ) : isInstalled ? (
-                <span className="flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5" />
-                  {t("installed")}
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  <Download className="h-3.5 w-3.5" />
-                  {t("install")}
-                </span>
-              )}
-            </Button>
-          )}
+                    <Check className="h-3.5 w-3.5" />
+                    {t("installed")}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <Download className="h-3.5 w-3.5" />
+                    {t("install")}
+                  </span>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </Card>

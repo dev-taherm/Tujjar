@@ -11,10 +11,11 @@ import { toast } from "sonner";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
-import { useUpdateStore, useDeleteStore, useChangeSlug, useCheckSlug } from "@/api/queries";
+import { useUpdateStore, useDeleteStore, useChangeSlug, useCheckSlug, useSetTheme } from "@/api/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { mediaApi } from "@/api/media";
 import { usePages } from "@/api/pages";
+import { useThemes, useTheme, useUpdateTheme } from "@/api/themes";
 import { TemplateBrowser } from "@/features/templates/template-browser";
 import { StoreDomains } from "./store-domains";
 import type { Store, ThemeConfig } from "@/shared/types";
@@ -1105,18 +1106,35 @@ function TemplateTab({ store }: { store: Store }) {
 function ThemeTab({ store }: { store: Store }) {
   const t = useTranslations("storeSettings.theme");
   const tc = useTranslations("common");
-  const updateStore = useUpdateStore();
+  const updateTheme = useUpdateTheme();
+  const setTheme = useSetTheme();
+  const queryClient = useQueryClient();
+  const { data: allThemes } = useThemes();
 
-  const theme = (store.theme as unknown as { config?: ThemeConfig })?.config || {} as ThemeConfig;
-  const colors = theme.colors || ({} as ThemeConfig["colors"]);
-  const borderRadius = theme.borderRadius || ({} as ThemeConfig["borderRadius"]);
-  const animations = theme.animations || { enabled: true, duration: "0.3s", easing: "ease" };
-  const darkMode = theme.darkMode || { enabled: false, default: false, toggle: true };
+  const themeId = store.theme;
+  const { data: activeTheme, isLoading: themeLoading } = useTheme(themeId || "");
+
+  const themeConfig = activeTheme?.config || ({} as ThemeConfig);
+  const colors = themeConfig.colors || ({} as ThemeConfig["colors"]);
+  const borderRadius = themeConfig.borderRadius || ({} as ThemeConfig["borderRadius"]);
+  const animations = themeConfig.animations || { enabled: true, duration: "0.3s", easing: "ease" };
+  const darkMode = themeConfig.darkMode || { enabled: false, default: false, toggle: true };
 
   const [themeColors, setThemeColors] = useState(colors);
   const [themeRadius, setThemeRadius] = useState(borderRadius);
   const [themeAnimations, setThemeAnimations] = useState(animations);
   const [themeDarkMode, setThemeDarkMode] = useState(darkMode);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (activeTheme?.config && !initialized) {
+      setThemeColors(activeTheme.config.colors || {});
+      setThemeRadius(activeTheme.config.borderRadius || {});
+      setThemeAnimations(activeTheme.config.animations || { enabled: true, duration: "0.3s", easing: "ease" });
+      setThemeDarkMode(activeTheme.config.darkMode || { enabled: false, default: false, toggle: true });
+      setInitialized(true);
+    }
+  }, [activeTheme, initialized]);
 
   const COLOR_FIELDS = [
     { key: "primary" as const, label: "Primary" },
@@ -1133,23 +1151,74 @@ function ThemeTab({ store }: { store: Store }) {
   ];
 
   const handleSaveTheme = async () => {
-    await updateStore.mutateAsync({
-      id: store.id,
-      settings: {
-        ...((store.settings || {}) as Record<string, unknown>),
-        theme: {
-          colors: themeColors,
-          borderRadius: themeRadius,
-          animations: themeAnimations,
-          darkMode: themeDarkMode,
-        },
+    if (!themeId || !activeTheme) return;
+    await updateTheme.mutateAsync({
+      id: themeId,
+      config: {
+        ...activeTheme.config,
+        colors: themeColors,
+        borderRadius: themeRadius,
+        animations: themeAnimations,
+        darkMode: themeDarkMode,
       },
     });
     toast.success(tc("saved"));
   };
 
+  const handleSwitchTheme = async (newThemeId: string) => {
+    if (!newThemeId || newThemeId === themeId) return;
+    await setTheme.mutateAsync({ storeId: store.id, themeId: newThemeId });
+    setInitialized(false);
+    toast.success(t("themeApplied") || "Theme applied");
+  };
+
+  const installedThemes = allThemes?.filter((th) => !th.is_system || th.organization) || [];
+
+  if (themeLoading) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center text-sm text-gray-500">
+          {tc("loading")}...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!themeId || !activeTheme) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <Palette className="mx-auto mb-3 h-10 w-10 text-gray-400" />
+          <h4 className="mb-1 text-sm font-medium text-gray-900">{t("noTheme") || "No Theme Assigned"}</h4>
+          <p className="mb-4 text-xs text-gray-500">{t("noThemeDescription") || "Install a theme from the marketplace to get started"}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Theme Switcher */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("activeTheme") || "Active Theme"}</CardTitle>
+          <CardDescription>{activeTheme.name} v{activeTheme.version}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <select
+            value={themeId || ""}
+            onChange={(e) => handleSwitchTheme(e.target.value)}
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+          >
+            {installedThemes.map((th) => (
+              <option key={th.id} value={th.id}>
+                {th.name} {th.id === themeId ? "(active)" : ""}
+              </option>
+            ))}
+          </select>
+        </CardContent>
+      </Card>
+
       {/* Colors */}
       <Card>
         <CardHeader>
@@ -1168,7 +1237,7 @@ function ThemeTab({ store }: { store: Store }) {
                 />
                 <div>
                   <p className="text-xs font-medium text-gray-700">{label}</p>
-                  <p className="text-xs text-gray-400 font-mono">{themeColors[key] || "#000000"}</p>
+                  <p className="font-mono text-xs text-gray-400">{themeColors[key] || "#000000"}</p>
                 </div>
               </div>
             ))}
@@ -1237,7 +1306,7 @@ function ThemeTab({ store }: { store: Store }) {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSaveTheme} isLoading={updateStore.isPending}>
+        <Button onClick={handleSaveTheme} isLoading={updateTheme.isPending}>
           {tc("save")}
         </Button>
       </div>

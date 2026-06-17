@@ -1,9 +1,22 @@
 from __future__ import annotations
 
+import copy
+
 from django.db import models
 
 from apps.core.managers import TenantManager, UnscopedManager
 from apps.core.models import TimeStampedModel, UUIDModel
+
+
+def _deep_merge(base: dict, override: dict) -> dict:
+    """Deep merge two dicts. Override values win, but nested dicts are merged recursively."""
+    result = copy.deepcopy(base)
+    for key, value in override.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = _deep_merge(result[key], value)
+        else:
+            result[key] = copy.deepcopy(value)
+    return result
 
 
 class Theme(UUIDModel, TimeStampedModel):
@@ -61,12 +74,17 @@ class Theme(UUIDModel, TimeStampedModel):
     def __str__(self) -> str:
         return f"{self.name} v{self.version}"
 
+    @property
+    def effective_config(self) -> dict:
+        """Property alias for get_effective_config()."""
+        return self.get_effective_config()
+
     def get_effective_config(self) -> dict:
-        """Get merged config with parent theme inheritance."""
+        """Get merged config with parent theme inheritance (deep merge)."""
         if self.parent_theme:
             parent_config = self.parent_theme.get_effective_config()
-            return {**parent_config, **self.config}
-        return self.config
+            return _deep_merge(parent_config, self.config)
+        return copy.deepcopy(self.config)
 
     def get_color(self, color_name: str) -> str | None:
         """Get a specific color from the theme config."""
@@ -101,3 +119,27 @@ class ThemePreset(UUIDModel, TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.theme.name} - {self.name}"
+
+
+class ThemeVersion(UUIDModel, TimeStampedModel):
+    """Snapshot of a theme's state at a point in time for version history and rollback."""
+
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name="versions")
+    version = models.CharField(max_length=50)
+    config = models.JSONField(default=dict, blank=True)
+    sections_schema = models.JSONField(default=dict, blank=True)
+    assets = models.JSONField(default=dict, blank=True)
+    note = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        "authentication.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="theme_versions",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.theme.name} v{self.version}"

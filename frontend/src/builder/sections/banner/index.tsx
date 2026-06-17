@@ -8,10 +8,10 @@ export function BannerPreview({ section }: { section: Section }) {
   const buttonText = String(section.settings.buttonText || "");
   const buttonLink = String(section.settings.buttonLink || "");
   const textColor = String(section.settings.textColor || "#ffffff");
-  const backgroundColor = String(section.settings.backgroundColor || "#2563eb");
+  const backgroundColor = String(section.settings.backgroundColor || "var(--color-primary)");
   return (
     <div className="rounded-lg py-12 px-8 text-center" style={{ backgroundColor, backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined, backgroundSize: "cover" }}>
-      <h2 className="mb-2 text-3xl font-bold" style={{ color: textColor }}>{title}</h2>
+      <h2 className="mb-2 text-3xl font-bold" style={{ color: textColor, fontFamily: "var(--font-heading)" }}>{title}</h2>
       {subtitle && <p className="mb-6 text-lg opacity-90" style={{ color: textColor }}>{subtitle}</p>}
       {buttonText && <a href={buttonLink} className="inline-block rounded-lg bg-white px-6 py-3 font-medium text-gray-900 hover:bg-gray-100">{buttonText}</a>}
     </div>

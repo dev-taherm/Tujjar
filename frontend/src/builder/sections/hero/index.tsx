@@ -19,13 +19,13 @@ export function HeroPreview({ section }: { section: Section }) {
   return (
     <div
       className={`relative flex flex-col justify-center rounded-lg ${alignMap[alignment] || alignMap.center}`}
-      style={{ minHeight: `${minHeight}px`, backgroundColor: "#1e293b", backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }}
+      style={{ minHeight: `${minHeight}px`, backgroundColor: "var(--color-primary)", backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }}
     >
       {backgroundImage && <div className="absolute inset-0 rounded-lg" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />}
       <div className="relative z-10 px-8 py-16">
-        <h1 className="mb-4 text-4xl font-bold" style={{ color: textColor }}>{title}</h1>
+        <h1 className="mb-4 text-4xl font-bold" style={{ color: textColor, fontFamily: "var(--font-heading)" }}>{title}</h1>
         {subtitle && <p className="mb-6 text-lg opacity-90" style={{ color: textColor }}>{subtitle}</p>}
-        {buttonText && <a href={buttonLink} className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-white font-medium hover:bg-blue-700">{buttonText}</a>}
+        {buttonText && <a href={buttonLink} className="inline-block rounded-lg bg-[var(--color-primary)] px-6 py-3 text-white font-medium hover:opacity-90">{buttonText}</a>}
       </div>
     </div>
   );

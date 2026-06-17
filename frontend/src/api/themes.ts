@@ -3,6 +3,14 @@ import { apiClient } from "./client";
 import { unwrapResults } from "./helpers";
 import type { Theme, ThemePreset } from "@/shared/types";
 
+export interface ThemeVersion {
+  id: string;
+  version: string;
+  note: string;
+  created_at: string;
+  created_by: string | null;
+}
+
 export const themesApi = {
   list: async (): Promise<Theme[]> => {
     const { data } = await apiClient.get("/themes/");
@@ -55,6 +63,21 @@ export const themesApi = {
 
   createPreset: async (themeId: string, payload: { name: string; config: Record<string, unknown> }): Promise<ThemePreset> => {
     const { data } = await apiClient.post(`/themes/${themeId}/presets/`, payload);
+    return data;
+  },
+
+  getVersions: async (themeId: string): Promise<ThemeVersion[]> => {
+    const { data } = await apiClient.get(`/themes/${themeId}/versions/`);
+    return data;
+  },
+
+  rollback: async (themeId: string, versionId: string): Promise<Theme> => {
+    const { data } = await apiClient.post(`/themes/${themeId}/rollback/`, { version_id: versionId });
+    return data;
+  },
+
+  importTheme: async (payload: { name: string; config: Record<string, unknown>; sections_schema?: Record<string, unknown>; assets?: Record<string, unknown>; presets?: Array<{ name: string; config: Record<string, unknown> }> }): Promise<Theme> => {
+    const { data } = await apiClient.post("/themes/import/", payload);
     return data;
   },
 };
@@ -112,5 +135,36 @@ export function useThemeMarketplace() {
   return useQuery({
     queryKey: ["themes", "marketplace"],
     queryFn: themesApi.marketplace,
+  });
+}
+
+export function useThemeVersions(themeId: string) {
+  return useQuery({
+    queryKey: ["themes", themeId, "versions"],
+    queryFn: () => themesApi.getVersions(themeId),
+    enabled: !!themeId,
+  });
+}
+
+export function useRollbackTheme() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ themeId, versionId }: { themeId: string; versionId: string }) =>
+      themesApi.rollback(themeId, versionId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["themes"] });
+      queryClient.invalidateQueries({ queryKey: ["themes", variables.themeId] });
+      queryClient.invalidateQueries({ queryKey: ["themes", variables.themeId, "versions"] });
+    },
+  });
+}
+
+export function useImportTheme() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: themesApi.importTheme,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["themes"] });
+    },
   });
 }

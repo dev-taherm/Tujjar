@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { use, useEffect, useSyncExternalStore } from "react";
+import { use, useEffect, useSyncExternalStore, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
-import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
+import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon } from "lucide-react";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 
 interface NavLink {
@@ -118,6 +118,39 @@ export default function StorefrontLayout({
   const navigation: Navigation = store?.navigation || {};
   const footerConfig: FooterConfig = store?.footer_config || {};
 
+  // Dark mode state
+  const [isDark, setIsDark] = useState(false);
+  const toggleDark = useCallback(() => {
+    setIsDark((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("dark", next);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("tujjar-dark-mode", String(next));
+      }
+      return next;
+    });
+  }, []);
+
+  // Initialize dark mode from localStorage or theme default
+  useEffect(() => {
+    const theme = store?.theme_config;
+    if (!theme?.darkMode?.enabled) {
+      document.documentElement.classList.remove("dark");
+      setIsDark(false);
+      return;
+    }
+    const stored = localStorage.getItem("tujjar-dark-mode");
+    if (stored !== null) {
+      const dark = stored === "true";
+      document.documentElement.classList.toggle("dark", dark);
+      setIsDark(dark);
+    } else {
+      const dark = theme.darkMode.default;
+      document.documentElement.classList.toggle("dark", dark);
+      setIsDark(dark);
+    }
+  }, [store?.theme_config]);
+
   // Apply favicon
   useEffect(() => {
     if (store?.favicon_url) {
@@ -221,6 +254,45 @@ export default function StorefrontLayout({
     }
   }, [store?.theme_config]);
 
+  // Load Google Fonts from theme typography
+  useEffect(() => {
+    const theme = store?.theme_config;
+    if (!theme?.typography) return;
+    const fonts = new Set<string>();
+    if (theme.typography.headingFont && !theme.typography.headingFont.startsWith("system")) {
+      fonts.add(theme.typography.headingFont);
+    }
+    if (theme.typography.bodyFont && !theme.typography.bodyFont.startsWith("system")) {
+      fonts.add(theme.typography.bodyFont);
+    }
+    for (const font of fonts) {
+      const id = `google-font-${font.replace(/\s+/g, "-").toLowerCase()}`;
+      if (!document.getElementById(id)) {
+        const link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700&display=swap`;
+        document.head.appendChild(link);
+      }
+    }
+  }, [store?.theme_config]);
+
+  // Inject custom CSS from theme assets
+  useEffect(() => {
+    const theme = store?.theme_config;
+    const assets = (store as unknown as { theme_assets?: Record<string, unknown> })?.theme_assets;
+    const customCss = assets?.custom_css || "";
+    if (!customCss) return;
+    const id = "theme-custom-css";
+    let style = document.getElementById(id) as HTMLStyleElement;
+    if (!style) {
+      style = document.createElement("style");
+      style.id = id;
+      document.head.appendChild(style);
+    }
+    style.textContent = customCss as string;
+  }, [store]);
+
   const prefixLink = (url: string) => {
     if (url.startsWith("http")) return url;
     if (subdomainSlug) return `/${locale}${url}`;
@@ -304,6 +376,15 @@ export default function StorefrontLayout({
           </nav>
           <div className="flex items-center gap-4">
             <LocaleSwitcher variant="header" />
+            {store?.theme_config?.darkMode?.enabled && store.theme_config.darkMode.toggle && (
+              <button
+                onClick={toggleDark}
+                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                aria-label="Toggle dark mode"
+              >
+                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
+            )}
             {navigation.cta_button?.enabled && (
               <Link
                 href={prefixLink(navigation.cta_button.url)}

@@ -11,6 +11,34 @@
   --color-primary-700: #1d4ed8;
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
+
+  /* Theme CSS variables — set dynamically by storefront layout */
+  --color-primary: #2563eb;
+  --color-secondary: #7c3aed;
+  --color-accent: #f59e0b;
+  --color-bg: #ffffff;
+  --color-surface: #f9fafb;
+  --color-text: #111827;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --font-heading: system-ui, -apple-system, sans-serif;
+  --font-body: system-ui, -apple-system, sans-serif;
+  --font-size-base: 16px;
+  --font-scale: 1.25;
+  --line-height-base: 1.6;
+  --section-padding-y: 64px;
+  --section-padding-x: 24px;
+  --container-max-width: 1200px;
+  --grid-gap: 24px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  --transition-duration: 0.3s;
+  --transition-easing: ease;
 }
 
 @theme {
@@ -24,8 +52,55 @@
   --color-primary-700: #1d4ed8;
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
+
+  /* Theme-aware tokens */
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-text: var(--color-text);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-border: var(--color-border);
+  --color-error: var(--color-error);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-size-base: var(--font-size-base);
 }
 
 body {
   @apply bg-gray-50 text-gray-900 antialiased;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+}
+
+.dark body {
+  @apply bg-gray-900 text-gray-100;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark header {
+  @apply border-gray-800 bg-gray-900;
+}
+
+.dark header nav a {
+  @apply text-gray-400 hover:text-white;
+}
+
+.dark footer {
+  @apply border-gray-800 bg-gray-950;
+}
+
+.dark footer h4 {
+  @apply text-white;
+}
+
+.dark footer a {
+  @apply text-gray-400 hover:text-white;
 }

@@ -184,6 +184,16 @@ class StoreSerializer(serializers.ModelSerializer):
                 {field_name: "Media asset not found or does not belong to your organization."}
             )
 
+    def validate_theme(self, value):
+        if value is None:
+            return value
+        org_id = self.context["request"].org_id
+        if value.organization_id and str(value.organization_id) != str(org_id):
+            raise serializers.ValidationError(
+                "Theme does not belong to your organization."
+            )
+        return value
+
     def validate_logo(self, value):
         self._validate_media_ownership(value, "logo")
         return value

@@ -172,6 +172,44 @@ class StoreViewSet(TenantViewSet):
             )
         return Response(StoreSerializer(store).data)
 
+    @action(detail=True, methods=["post"], url_path="set-theme")
+    def set_theme(self, request, pk=None):
+        """Set the active theme for a store."""
+        store = self.get_object()
+        theme_id = request.data.get("theme_id")
+        if not theme_id:
+            return Response(
+                {"error": "theme_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from apps.themes.models import Theme
+
+        theme = Theme.objects.filter(id=theme_id).first()
+        if not theme:
+            return Response(
+                {"error": "Theme not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if theme.organization_id and str(theme.organization_id) != str(request.org_id):
+            return Response(
+                {"error": "Theme does not belong to your organization"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        store.theme = theme
+        store.save(update_fields=["theme", "updated_at"])
+        cache.delete(f"storefront:store:{store.slug}")
+
+        self._log_audit(
+            action="store.set_theme",
+            resource_type="store",
+            resource_id=store.id,
+            new_value={"theme_id": str(theme.id), "theme_name": theme.name},
+        )
+
+        return Response(StoreSerializer(store).data)
+
     @action(detail=True, methods=["patch"], url_path="update-settings")
     def update_settings(self, request, pk=None):
         store = self.get_object()

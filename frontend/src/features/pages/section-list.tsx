@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Badge, Button } from "@/shared/ui";
 import { getRegistryEntry } from "@/builder/sections/registry";
 import type { Section } from "@/shared/types";
-import { GripVertical, Eye, EyeOff, Copy, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { GripVertical, Eye, EyeOff, Copy, Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone } from "lucide-react";
 import * as Icons from "lucide-react";
 import type { ComponentType } from "react";
 import { useTranslations } from "next-intl";
@@ -23,6 +24,7 @@ export function SectionList({
   sections, selectedSectionId, onSelect, onMoveUp, onMoveDown, onDuplicate, onRemove, onToggleVisibility,
 }: SectionListProps) {
   const t = useTranslations("dashboard.pages");
+  const [showVisMenu, setShowVisMenu] = useState<string | null>(null);
   const getIcon = (iconName: string) => {
     const IconComponent = (Icons as unknown as Record<string, ComponentType<{ className?: string }>>)[iconName];
     return IconComponent || Icons.Box;
@@ -43,6 +45,8 @@ export function SectionList({
           const def = getRegistryEntry(section.type);
           const Icon = def ? getIcon(def.icon) : Icons.Box;
           const isSelected = section.id === selectedSectionId;
+          const vis = section.visibility || { desktop: true, tablet: true, mobile: true };
+          const allVisible = vis.desktop && vis.tablet && vis.mobile;
           return (
             <div
               key={section.id}
@@ -61,9 +65,49 @@ export function SectionList({
                 <button onClick={(e) => { e.stopPropagation(); onMoveDown(index); }} disabled={index === sections.length - 1} className="rounded p-0.5 hover:bg-gray-200 disabled:opacity-30">
                   <ChevronDown className="h-3 w-3" />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); onToggleVisibility(section.id, "desktop"); }} className="rounded p-0.5 hover:bg-gray-200">
-                  {section.visibility?.desktop ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3 text-gray-400" />}
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowVisMenu(showVisMenu === section.id ? null : section.id); }}
+                    className="rounded p-0.5 hover:bg-gray-200"
+                    title="Device visibility"
+                  >
+                    {allVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3 text-amber-500" />}
+                  </button>
+                  {showVisMenu === section.id && (
+                    <div className="absolute right-0 top-6 z-10 w-36 rounded-lg border border-gray-200 bg-white p-1 shadow-lg">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onToggleVisibility(section.id, "desktop"); }}
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-gray-100"
+                      >
+                        <Monitor className="h-3 w-3" />
+                        <span>Desktop</span>
+                        <span className={`ms-auto ${vis.desktop ? "text-green-600" : "text-gray-400"}`}>
+                          {vis.desktop ? "On" : "Off"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onToggleVisibility(section.id, "tablet"); }}
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-gray-100"
+                      >
+                        <Tablet className="h-3 w-3" />
+                        <span>Tablet</span>
+                        <span className={`ms-auto ${vis.tablet ? "text-green-600" : "text-gray-400"}`}>
+                          {vis.tablet ? "On" : "Off"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onToggleVisibility(section.id, "mobile"); }}
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-gray-100"
+                      >
+                        <Smartphone className="h-3 w-3" />
+                        <span>Mobile</span>
+                        <span className={`ms-auto ${vis.mobile ? "text-green-600" : "text-gray-400"}`}>
+                          {vis.mobile ? "On" : "Off"}
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <button onClick={(e) => { e.stopPropagation(); onDuplicate(section.id); }} className="rounded p-0.5 hover:bg-gray-200">
                   <Copy className="h-3 w-3" />
                 </button>

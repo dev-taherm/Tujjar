@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import logging
 
 from django.core.cache import cache
 from django.db.models import Q
@@ -26,6 +27,8 @@ from apps.products.serializers import (
 )
 from apps.stores.models import Store
 
+logger = logging.getLogger(__name__)
+
 STORE_CACHE_TTL = 300  # 5 minutes
 
 
@@ -34,7 +37,11 @@ def get_store_by_slug(slug: str):
     cache_key = f"storefront:store:{slug}"
     store = cache.get(cache_key)
     if store is None:
-        store = Store.objects.select_related("organization").filter(slug=slug).first()
+        store = (
+            Store.objects.select_related("organization", "theme", "logo", "favicon", "og_image")
+            .filter(slug=slug)
+            .first()
+        )
         if store:
             cache.set(cache_key, store, STORE_CACHE_TTL)
     return store
@@ -109,23 +116,31 @@ def _resolve_store(store: Store, locale: str) -> dict:
 
     logo_url = None
     if store.logo_id:
-        with contextlib.suppress(Exception):
+        try:
             logo_url = store.logo.file_url
+        except Exception:
+            logger.warning("Failed to resolve logo for store %s", store.slug, exc_info=True)
 
     favicon_url = None
     if store.favicon_id:
-        with contextlib.suppress(Exception):
+        try:
             favicon_url = store.favicon.file_url
+        except Exception:
+            logger.warning("Failed to resolve favicon for store %s", store.slug, exc_info=True)
 
     theme_config = None
     if store.theme_id:
-        with contextlib.suppress(Exception):
-            theme_config = store.theme.effective_config
+        try:
+            theme_config = store.theme.get_effective_config()
+        except Exception:
+            logger.warning("Failed to resolve theme_config for store %s", store.slug, exc_info=True)
 
     og_image_url = None
     if store.og_image_id:
-        with contextlib.suppress(Exception):
+        try:
             og_image_url = store.og_image.file_url
+        except Exception:
+            logger.warning("Failed to resolve og_image for store %s", store.slug, exc_info=True)
 
     return {
         "name": name,

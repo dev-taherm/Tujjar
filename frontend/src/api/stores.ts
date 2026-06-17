@@ -76,6 +76,11 @@ export const storesApi = {
     const { data } = await apiClient.post(`/stores/${id}/change-slug/`, { slug });
     return data;
   },
+
+  setTheme: async (storeId: string, themeId: string): Promise<Store> => {
+    const { data } = await apiClient.post(`/stores/${storeId}/set-theme/`, { theme_id: themeId });
+    return data;
+  },
 };
 
 export function useStores() {
@@ -150,6 +155,19 @@ export function useChangeSlug() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });
       queryClient.invalidateQueries({ queryKey: ["stores", variables.id] });
+    },
+  });
+}
+
+export function useSetTheme() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ storeId, themeId }: { storeId: string; themeId: string }) =>
+      storesApi.setTheme(storeId, themeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      queryClient.invalidateQueries({ queryKey: ["storefront"] });
+      queryClient.invalidateQueries({ queryKey: ["themes"] });
     },
   });
 }
