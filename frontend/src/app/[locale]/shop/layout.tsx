@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon } from "lucide-react";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 import { generateColorShades } from "@/lib/color-palette";
+import { AnnouncementBar } from "@/features/store/announcement-bar";
 
 interface NavLink {
   label: string;
@@ -66,6 +67,7 @@ interface StorefrontStore {
   twitter_card: string;
   domain: string;
   theme_config: ThemeConfig | null;
+  settings: Record<string, unknown>;
 }
 
 const SOCIAL_ICONS: Record<string, typeof Facebook> = {
@@ -124,16 +126,19 @@ export default function StorefrontLayout({
     const root = document.documentElement;
 
     if (theme.colors) {
-      // Dark mode overrides — swap base colors
-      const darkOverrides: Record<string, string> = dark
-        ? {
-            background: "#111827",
-            surface: "#1f2937",
-            text: "#f3f4f6",
-            textSecondary: "#9ca3af",
-            border: "#374151",
-          }
-        : {};
+      // Dark mode overrides — use theme config dark variants when available, else fallback
+      const darkDefaults: Record<string, string> = {
+        background: "#111827",
+        surface: "#1f2937",
+        text: "#f3f4f6",
+        textSecondary: "#9ca3af",
+        border: "#374151",
+        primary: theme.colors.primaryDark || theme.colors.primary,
+        secondary: theme.colors.secondaryDark || theme.colors.secondary,
+        accent: theme.colors.accentDark || theme.colors.accent,
+      };
+
+      const darkOverrides: Record<string, string> = dark ? darkDefaults : {};
 
       const resolvedColors = { ...theme.colors, ...darkOverrides };
 
@@ -380,6 +385,10 @@ export default function StorefrontLayout({
 
   return (
     <div className="min-h-screen" style={{ background: "var(--color-bg)" }}>
+      <AnnouncementBar
+        config={store?.settings?.announcement_bar as ReturnType<typeof Object> as { enabled: boolean; text: string; link_url?: string; link_label?: string; background_color?: string; text_color?: string; dismissible?: boolean } | undefined}
+        storeSlug={store?.slug || ""}
+      />
       <header className="border-b" style={{ borderColor: "var(--color-border)" }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href={slug ? (subdomainSlug ? `/${locale}` : `/${locale}/shop/${slug}`) : "#"} className="flex items-center gap-2 text-xl font-bold" style={{ color: "var(--color-text)" }}>

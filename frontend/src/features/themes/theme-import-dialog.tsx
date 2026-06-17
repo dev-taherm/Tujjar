@@ -26,6 +26,11 @@ export function ThemeImportDialog({ onClose }: ThemeImportDialogProps) {
     setFileName(file.name);
     setParseError(null);
 
+    if (file.name.endsWith(".zip")) {
+      setParsedData({ _zipFile: file } as Record<string, unknown>);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
@@ -47,13 +52,18 @@ export function ThemeImportDialog({ onClose }: ThemeImportDialogProps) {
   const handleImport = async () => {
     if (!parsedData) return;
     try {
-      await importTheme.mutateAsync({
-        name: (parsedData.name as string) || "Imported Theme",
-        config: parsedData.config as Record<string, unknown>,
-        sections_schema: parsedData.sections_schema as Record<string, unknown>,
-        assets: parsedData.assets as Record<string, unknown>,
-        presets: parsedData.presets as Array<{ name: string; config: Record<string, unknown> }>,
-      });
+      if (parsedData._zipFile instanceof File) {
+        await importTheme.mutateAsync(parsedData._zipFile as File);
+      } else {
+        await importTheme.mutateAsync({
+          name: (parsedData.name as string) || "Imported Theme",
+          config: parsedData.config as Record<string, unknown>,
+          sections_schema: parsedData.sections_schema as Record<string, unknown>,
+          assets: parsedData.assets as Record<string, unknown>,
+          presets: parsedData.presets as Array<{ name: string; config: Record<string, unknown> }>,
+          category: parsedData.category as string,
+        });
+      }
       toast.success(t("themeImported") || "Theme imported successfully");
       onClose();
     } catch {
@@ -74,13 +84,13 @@ export function ThemeImportDialog({ onClose }: ThemeImportDialogProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-500">
-            {t("importDescription") || "Upload a theme JSON file (same format as export)"}
+            {t("importDescription") || "Upload a theme .json or .zip file (same format as export)"}
           </p>
 
           <input
             ref={fileInputRef}
             type="file"
-            accept=".json"
+            accept=".json,.zip"
             className="hidden"
             onChange={handleFileChange}
           />
@@ -90,7 +100,7 @@ export function ThemeImportDialog({ onClose }: ThemeImportDialogProps) {
             className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-8 text-sm text-gray-600 hover:border-blue-400 hover:bg-blue-50"
           >
             <Upload className="h-5 w-5" />
-            {fileName || t("chooseFile") || "Choose a JSON file"}
+            {fileName || t("chooseFile") || "Choose a JSON or ZIP file"}
           </button>
 
           {parseError && (
@@ -101,14 +111,18 @@ export function ThemeImportDialog({ onClose }: ThemeImportDialogProps) {
             <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
               <div className="flex items-center gap-2">
                 <FileJson className="h-4 w-4" />
-                <span className="font-medium">{(parsedData.name as string) || "Imported Theme"}</span>
+                <span className="font-medium">
+                  {parsedData._zipFile instanceof File
+                    ? (parsedData._zipFile as File).name
+                    : (parsedData.name as string) || "Imported Theme"}
+                </span>
               </div>
-              {Boolean(parsedData.config) && typeof parsedData.config === "object" && (
+              {!(parsedData._zipFile instanceof File) && Boolean(parsedData.config) && typeof parsedData.config === "object" && (
                 <p className="mt-1 text-xs text-green-600">
                   Config keys: {Object.keys(parsedData.config as Record<string, unknown>).join(", ")}
                 </p>
               )}
-              {Array.isArray(parsedData.presets) && (
+              {!(parsedData._zipFile instanceof File) && Array.isArray(parsedData.presets) && (
                 <p className="mt-1 text-xs text-green-600">
                   {parsedData.presets.length} preset(s)
                 </p>

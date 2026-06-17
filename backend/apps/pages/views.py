@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from apps.core.viewsets import TenantViewSet
 
 from .models import Page, PageVersion
-from .section_registry import create_section, get_section_types
+from .section_registry import create_section, get_section_type, get_section_types
 from .serializers import PageSerializer, PageVersionSerializer, SectionTypeSerializer
 
 
@@ -112,6 +112,20 @@ class PageViewSet(TenantViewSet):
         page = self.get_object()
         section_type = request.data.get("type")
         position = request.data.get("position")
+        section_type_def = get_section_type(section_type)
+        if not section_type_def:
+            return Response(
+                {"detail": f"Invalid section type: {section_type}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        limit = section_type_def.get("limit")
+        if limit is not None:
+            existing_count = sum(1 for s in page.content_schema.get("sections", []) if s.get("type") == section_type)
+            if existing_count >= limit:
+                return Response(
+                    {"detail": f"Maximum {limit} '{section_type}' section(s) allowed per page"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         section = create_section(section_type)
         if not section:
             return Response(

@@ -2,7 +2,7 @@
 
 import { useState, type ComponentType } from "react";
 import { getAllSectionTypes } from "@/builder/sections/registry";
-import type { SectionDefinition } from "@/shared/types";
+import type { Section, SectionDefinition } from "@/shared/types";
 import * as Icons from "lucide-react";
 import { Dialog, SearchInput } from "@/shared/ui";
 import { useTranslations } from "next-intl";
@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 interface SectionTypePickerProps {
   onSelect: (type: string) => void;
   onClose: () => void;
+  sections?: Section[];
 }
 
 const categories = ["hero", "products", "content", "social", "layout"] as const;
@@ -21,12 +22,17 @@ const categoryLabels: Record<string, string> = {
   layout: "Layout",
 };
 
-export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps) {
+export function SectionTypePicker({ onSelect, onClose, sections }: SectionTypePickerProps) {
   const t = useTranslations("dashboard.pages");
   const tc = useTranslations("common");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const allTypes = getAllSectionTypes();
+
+  const countsByType = (sections || []).reduce<Record<string, number>>((acc, s) => {
+    acc[s.type] = (acc[s.type] || 0) + 1;
+    return acc;
+  }, {});
 
   const filtered = allTypes.filter((def) => {
     const matchesSearch = !search || def.label.toLowerCase().includes(search.toLowerCase());
@@ -73,16 +79,26 @@ export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps)
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {filtered.map((def: SectionDefinition) => {
               const Icon = getIcon(def.icon);
+              const currentCount = countsByType[def.type] || 0;
+              const atLimit = def.limit !== undefined && currentCount >= def.limit;
               return (
                 <button
                   key={def.type}
-                  onClick={() => { onSelect(def.type); onClose(); }}
-                  className="group flex flex-col items-center gap-2 rounded-lg border border-gray-200 p-4 text-center transition-colors hover:border-blue-300 hover:bg-blue-50"
+                  onClick={() => { if (!atLimit) { onSelect(def.type); onClose(); } }}
+                  disabled={atLimit}
+                  className={`group flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
+                    atLimit
+                      ? "cursor-not-allowed border-gray-100 bg-gray-50 opacity-50"
+                      : "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                  }`}
                 >
-                  <Icon className="h-8 w-8 text-gray-400 group-hover:text-blue-600" />
+                  <Icon className={`h-8 w-8 ${atLimit ? "text-gray-300" : "text-gray-400 group-hover:text-blue-600"}`} />
                   <div>
                     <p className="text-sm font-medium text-gray-900">{def.label}</p>
                     <p className="text-xs text-gray-500 capitalize">{def.category}</p>
+                    {atLimit && (
+                      <p className="mt-1 text-[10px] font-medium text-amber-600">(Max reached)</p>
+                    )}
                   </div>
                 </button>
               );

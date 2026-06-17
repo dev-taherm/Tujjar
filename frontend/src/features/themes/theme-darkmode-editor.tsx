@@ -1,6 +1,7 @@
 "use client";
 
 import { Toggle } from "@/shared/components/toggle";
+import { RotateCcw } from "lucide-react";
 
 interface ThemeDarkModeEditorProps {
   darkMode: {
@@ -9,11 +10,41 @@ interface ThemeDarkModeEditorProps {
     toggle: boolean;
   };
   onChange: (darkMode: ThemeDarkModeEditorProps["darkMode"]) => void;
+  parentDarkMode?: ThemeDarkModeEditorProps["darkMode"];
 }
 
-export function ThemeDarkModeEditor({ darkMode, onChange }: ThemeDarkModeEditorProps) {
+export function ThemeDarkModeEditor({ darkMode, onChange, parentDarkMode }: ThemeDarkModeEditorProps) {
+  const isOverridden = parentDarkMode && (
+    darkMode.enabled !== parentDarkMode.enabled ||
+    darkMode.default !== parentDarkMode.default ||
+    darkMode.toggle !== parentDarkMode.toggle
+  );
+
+  const handleReset = () => {
+    if (!parentDarkMode) return;
+    onChange(parentDarkMode);
+  };
+
   return (
     <div className="space-y-4">
+      {parentDarkMode && (
+        <div className="flex items-center gap-2">
+          <span className={`text-xs ${isOverridden ? "text-amber-600" : "text-gray-400"}`}>
+            {isOverridden ? "Overridden" : "Inherited"}
+          </span>
+          {isOverridden && (
+            <button
+              type="button"
+              onClick={handleReset}
+              title="Reset to parent"
+              className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      )}
+
       <Toggle
         label="Enable Dark Mode"
         description="Allow customers to switch between light and dark modes"

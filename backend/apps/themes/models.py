@@ -22,6 +22,17 @@ def _deep_merge(base: dict, override: dict) -> dict:
 class Theme(UUIDModel, TimeStampedModel):
     """Theme model with configuration for colors, typography, spacing, etc."""
 
+    CATEGORY_CHOICES = [
+        ("", "General"),
+        ("fashion", "Fashion"),
+        ("electronics", "Electronics"),
+        ("restaurant", "Restaurant"),
+        ("pharmacy", "Pharmacy"),
+        ("beauty", "Beauty & Wellness"),
+        ("sports", "Sports & Fitness"),
+        ("home", "Home & Garden"),
+    ]
+
     objects = TenantManager()
     unscoped = UnscopedManager()
 
@@ -67,6 +78,7 @@ class Theme(UUIDModel, TimeStampedModel):
     )
     is_system = models.BooleanField(default=False, help_text="System themes cannot be deleted")
     is_active = models.BooleanField(default=True)
+    category = models.CharField(max_length=50, blank=True, default="", choices=CATEGORY_CHOICES)
 
     class Meta:
         ordering = ["name"]

@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from "@/shared/ui";
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Label } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useUpdateStore, useDeleteStore, useChangeSlug, useCheckSlug, useSetTheme } from "@/api/queries";
@@ -18,6 +18,10 @@ import { usePages } from "@/api/pages";
 import { useThemes, useTheme, useUpdateTheme } from "@/api/themes";
 import { TemplateBrowser } from "@/features/templates/template-browser";
 import { StoreDomains } from "./store-domains";
+import { ThemeColorEditor } from "@/features/themes/theme-color-editor";
+import { ThemeBorderRadiusEditor } from "@/features/themes/theme-border-radius-editor";
+import { ThemeAnimationsEditor } from "@/features/themes/theme-animations-editor";
+import { ThemeDarkModeEditor } from "@/features/themes/theme-darkmode-editor";
 import type { Store, ThemeConfig } from "@/shared/types";
 
 const BLOCKED_URL_PROTOCOLS = ["javascript:", "data:", "vbscript:"];
@@ -656,6 +660,9 @@ function BrandingTab({ store }: { store: Store }) {
           ))}
         </CardContent>
       </Card>
+
+      {/* Announcement Bar */}
+      <AnnouncementBarSettings store={store} />
     </div>
   );
 }
@@ -1101,6 +1108,94 @@ function TemplateTab({ store }: { store: Store }) {
   );
 }
 
+/* ── Announcement Bar Settings ──────────────────────────────────────── */
+
+function AnnouncementBarSettings({ store }: { store: Store }) {
+  const t = useTranslations("storeSettings.branding");
+  const tc = useTranslations("common");
+  const updateStore = useUpdateStore();
+  const queryClient = useQueryClient();
+  const settings = (store.settings || {}) as Record<string, unknown>;
+  const ab = (settings.announcement_bar || {}) as {
+    enabled?: boolean;
+    text?: string;
+    link_url?: string;
+    link_label?: string;
+    background_color?: string;
+    text_color?: string;
+    dismissible?: boolean;
+  };
+
+  const [enabled, setEnabled] = useState(ab.enabled || false);
+  const [text, setText] = useState(ab.text || "");
+  const [linkUrl, setLinkUrl] = useState(ab.link_url || "");
+  const [linkLabel, setLinkLabel] = useState(ab.link_label || "");
+  const [bgColor, setBgColor] = useState(ab.background_color || "#1a1a2e");
+  const [textColor, setTextColor] = useState(ab.text_color || "#ffffff");
+  const [dismissible, setDismissible] = useState(ab.dismissible !== false);
+
+  const handleSave = async () => {
+    const latestStore = queryClient.getQueryData<Store>(["stores", store.id]) || store;
+    const latestSettings = (latestStore.settings || {}) as Record<string, unknown>;
+    await updateStore.mutateAsync({
+      id: store.id,
+      settings: {
+        ...latestSettings,
+        announcement_bar: { enabled, text, link_url: linkUrl, link_label: linkLabel, background_color: bgColor, text_color: textColor, dismissible },
+      },
+    });
+    toast.success(tc("saved"));
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>{t("announcementBar") || "Announcement Bar"}</CardTitle>
+            <CardDescription>{t("announcementBarDescription") || "Show a promotional banner above your store header"}</CardDescription>
+          </div>
+          <Button onClick={handleSave} isLoading={updateStore.isPending}>
+            {tc("save")}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Toggle label={t("enableAnnouncement") || "Enable Announcement Bar"} enabled={enabled} onToggle={() => setEnabled(!enabled)} />
+        {enabled && (
+          <>
+            <div>
+              <Label className="text-sm">{t("announcementText") || "Message Text"}</Label>
+              <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Free shipping on orders over $50!" className="mt-1" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm">{t("announcementLink") || "Link URL"}</Label>
+                <Input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="/shop/sale" className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-sm">{t("announcementLinkLabel") || "Button Label"}</Label>
+                <Input value={linkLabel} onChange={(e) => setLinkLabel(e.target.value)} placeholder="Shop Now" className="mt-1" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2">
+                <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-8 w-8 cursor-pointer rounded border" />
+                <Label className="text-sm">{t("announcementBgColor") || "Background Color"}</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="h-8 w-8 cursor-pointer rounded border" />
+                <Label className="text-sm">{t("announcementTextColor") || "Text Color"}</Label>
+              </div>
+            </div>
+            <Toggle label={t("announcementDismissible") || "Dismissible"} enabled={dismissible} onToggle={() => setDismissible(!dismissible)} />
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ── Theme Tab ───────────────────────────────────────────────────────── */
 
 function ThemeTab({ store }: { store: Store }) {
@@ -1115,60 +1210,24 @@ function ThemeTab({ store }: { store: Store }) {
   const { data: activeTheme, isLoading: themeLoading } = useTheme(themeId || "");
 
   const themeConfig = activeTheme?.config || ({} as ThemeConfig);
-  const colors = themeConfig.colors || ({} as ThemeConfig["colors"]);
-  const borderRadius = themeConfig.borderRadius || ({} as ThemeConfig["borderRadius"]);
-  const animations = themeConfig.animations || { enabled: true, duration: "0.3s", easing: "ease" };
-  const darkMode = themeConfig.darkMode || { enabled: false, default: false, toggle: true };
-
-  const [themeColors, setThemeColors] = useState(colors);
-  const [themeRadius, setThemeRadius] = useState(borderRadius);
-  const [themeAnimations, setThemeAnimations] = useState(animations);
-  const [themeDarkMode, setThemeDarkMode] = useState(darkMode);
-  const [initialized, setInitialized] = useState(false);
-
-  useEffect(() => {
-    if (activeTheme?.config && !initialized) {
-      setThemeColors(activeTheme.config.colors || {});
-      setThemeRadius(activeTheme.config.borderRadius || {});
-      setThemeAnimations(activeTheme.config.animations || { enabled: true, duration: "0.3s", easing: "ease" });
-      setThemeDarkMode(activeTheme.config.darkMode || { enabled: false, default: false, toggle: true });
-      setInitialized(true);
-    }
-  }, [activeTheme, initialized]);
-
-  const COLOR_FIELDS = [
-    { key: "primary" as const, label: "Primary" },
-    { key: "secondary" as const, label: "Secondary" },
-    { key: "accent" as const, label: "Accent" },
-    { key: "background" as const, label: "Background" },
-    { key: "surface" as const, label: "Surface" },
-    { key: "text" as const, label: "Text" },
-    { key: "textSecondary" as const, label: "Text Secondary" },
-    { key: "border" as const, label: "Border" },
-    { key: "error" as const, label: "Error" },
-    { key: "success" as const, label: "Success" },
-    { key: "warning" as const, label: "Warning" },
-  ];
+  const [editedConfig, setEditedConfig] = useState<ThemeConfig | null>(null);
+  const localConfig = editedConfig || themeConfig;
 
   const handleSaveTheme = async () => {
     if (!themeId || !activeTheme) return;
+    const configToSave = editedConfig || themeConfig;
     await updateTheme.mutateAsync({
       id: themeId,
-      config: {
-        ...activeTheme.config,
-        colors: themeColors,
-        borderRadius: themeRadius,
-        animations: themeAnimations,
-        darkMode: themeDarkMode,
-      },
+      config: configToSave,
     });
+    setEditedConfig(null);
     toast.success(tc("saved"));
   };
 
   const handleSwitchTheme = async (newThemeId: string) => {
     if (!newThemeId || newThemeId === themeId) return;
     await setTheme.mutateAsync({ storeId: store.id, themeId: newThemeId });
-    setInitialized(false);
+    setEditedConfig(null);
     toast.success(t("themeApplied") || "Theme applied");
   };
 
@@ -1226,22 +1285,10 @@ function ThemeTab({ store }: { store: Store }) {
           <CardDescription>{t("colorsDescription") || "Customize your store's color palette"}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {COLOR_FIELDS.map(({ key, label }) => (
-              <div key={key} className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={themeColors[key] || "#000000"}
-                  onChange={(e) => setThemeColors((prev) => ({ ...prev, [key]: e.target.value }))}
-                  className="h-8 w-8 cursor-pointer rounded border border-gray-200"
-                />
-                <div>
-                  <p className="text-xs font-medium text-gray-700">{label}</p>
-                  <p className="font-mono text-xs text-gray-400">{themeColors[key] || "#000000"}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ThemeColorEditor
+            colors={localConfig.colors}
+            onChange={(colors) => setEditedConfig({ ...localConfig, colors })}
+          />
         </CardContent>
       </Card>
 
@@ -1251,24 +1298,10 @@ function ThemeTab({ store }: { store: Store }) {
           <CardTitle>{t("borderRadius") || "Border Radius"}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {(["small", "medium", "large", "full"] as const).map((key) => (
-              <div key={key}>
-                <label className="mb-1 block text-sm font-medium text-gray-700 capitalize">{key}</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="32"
-                    value={themeRadius[key] || 0}
-                    onChange={(e) => setThemeRadius((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
-                    className="flex-1"
-                  />
-                  <span className="w-8 text-right text-xs text-gray-500">{themeRadius[key] || 0}px</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ThemeBorderRadiusEditor
+            borderRadius={localConfig.borderRadius}
+            onChange={(borderRadius) => setEditedConfig({ ...localConfig, borderRadius })}
+          />
         </CardContent>
       </Card>
 
@@ -1277,31 +1310,15 @@ function ThemeTab({ store }: { store: Store }) {
         <CardHeader>
           <CardTitle>{t("behavior") || "Behavior"}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Toggle
-            label={t("enableAnimations") || "Enable Animations"}
-            enabled={themeAnimations.enabled}
-            onToggle={() => setThemeAnimations((prev) => ({ ...prev, enabled: !prev.enabled }))}
+        <CardContent className="space-y-6">
+          <ThemeAnimationsEditor
+            animations={localConfig.animations}
+            onChange={(animations) => setEditedConfig({ ...localConfig, animations })}
           />
-          <Toggle
-            label={t("enableDarkMode") || "Enable Dark Mode Toggle"}
-            enabled={themeDarkMode.enabled}
-            onToggle={() => setThemeDarkMode((prev) => ({ ...prev, enabled: !prev.enabled }))}
+          <ThemeDarkModeEditor
+            darkMode={localConfig.darkMode}
+            onChange={(darkMode) => setEditedConfig({ ...localConfig, darkMode })}
           />
-          {themeDarkMode.enabled && (
-            <Toggle
-              label={t("darkModeDefault") || "Default to Dark Mode"}
-              enabled={themeDarkMode.default}
-              onToggle={() => setThemeDarkMode((prev) => ({ ...prev, default: !prev.default }))}
-            />
-          )}
-          {themeDarkMode.enabled && (
-            <Toggle
-              label={t("showDarkModeToggle") || "Show Dark Mode Toggle in Header"}
-              enabled={themeDarkMode.toggle}
-              onToggle={() => setThemeDarkMode((prev) => ({ ...prev, toggle: !prev.toggle }))}
-            />
-          )}
         </CardContent>
       </Card>
 

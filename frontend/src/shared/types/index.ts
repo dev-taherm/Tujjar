@@ -142,6 +142,14 @@ export interface ThemeConfig {
     error: string;
     success: string;
     warning: string;
+    primaryDark?: string;
+    secondaryDark?: string;
+    accentDark?: string;
+    backgroundDark?: string;
+    surfaceDark?: string;
+    textDark?: string;
+    textSecondaryDark?: string;
+    borderDark?: string;
   };
   typography: {
     headingFont: string;
@@ -187,6 +195,7 @@ export interface Theme {
   preview_image: string | null;
   is_system: boolean;
   is_active: boolean;
+  category: string;
   presets: ThemePreset[];
   effective_config: ThemeConfig;
   created_at: string;
@@ -263,6 +272,12 @@ export interface SectionDefinition {
   icon: string;
   defaultSettings: Record<string, unknown>;
   settingsSchema: SettingField[];
+  limit?: number;
+  presets?: Array<{
+    name: string;
+    label: string;
+    settings: Record<string, unknown>;
+  }>;
 }
 
 // Product Types

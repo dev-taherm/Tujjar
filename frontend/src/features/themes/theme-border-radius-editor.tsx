@@ -1,5 +1,7 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
+
 interface ThemeBorderRadiusEditorProps {
   borderRadius: {
     small: number;
@@ -8,9 +10,10 @@ interface ThemeBorderRadiusEditorProps {
     full: number;
   };
   onChange: (borderRadius: ThemeBorderRadiusEditorProps["borderRadius"]) => void;
+  parentBorderRadius?: ThemeBorderRadiusEditorProps["borderRadius"];
 }
 
-export function ThemeBorderRadiusEditor({ borderRadius, onChange }: ThemeBorderRadiusEditorProps) {
+export function ThemeBorderRadiusEditor({ borderRadius, onChange, parentBorderRadius }: ThemeBorderRadiusEditorProps) {
   const FIELDS = [
     { key: "small" as const, label: "Small", description: "Buttons, inputs" },
     { key: "medium" as const, label: "Medium", description: "Cards, panels" },
@@ -18,26 +21,49 @@ export function ThemeBorderRadiusEditor({ borderRadius, onChange }: ThemeBorderR
     { key: "full" as const, label: "Full", description: "Avatars, pills" },
   ];
 
+  const handleReset = (key: keyof typeof borderRadius) => {
+    if (!parentBorderRadius) return;
+    onChange({ ...borderRadius, [key]: parentBorderRadius[key] });
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {FIELDS.map(({ key, label, description }) => (
-          <div key={key}>
-            <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
-            <p className="mb-2 text-xs text-gray-400">{description}</p>
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min="0"
-                max="32"
-                value={borderRadius[key]}
-                onChange={(e) => onChange({ ...borderRadius, [key]: Number(e.target.value) })}
-                className="flex-1"
-              />
-              <span className="w-10 text-right text-xs text-gray-500">{borderRadius[key]}px</span>
+        {FIELDS.map(({ key, label, description }) => {
+          const isOverridden = parentBorderRadius && borderRadius[key] !== parentBorderRadius[key];
+          return (
+            <div key={key}>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+              <p className="mb-2 text-xs text-gray-400">{description}</p>
+              {parentBorderRadius && (
+                <span className={`mb-1 block text-[10px] ${isOverridden ? "text-amber-600" : "text-gray-400"}`}>
+                  {isOverridden ? "Overridden" : "Inherited"}
+                </span>
+              )}
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="32"
+                  value={borderRadius[key]}
+                  onChange={(e) => onChange({ ...borderRadius, [key]: Number(e.target.value) })}
+                  className="flex-1"
+                />
+                <span className="w-10 text-right text-xs text-gray-500">{borderRadius[key]}px</span>
+                {isOverridden && parentBorderRadius && (
+                  <button
+                    type="button"
+                    onClick={() => handleReset(key)}
+                    title="Reset to parent"
+                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -46,8 +72,8 @@ export function ThemeBorderRadiusEditor({ borderRadius, onChange }: ThemeBorderR
           {FIELDS.map(({ key, label }) => (
             <div key={key} className="text-center">
               <div
-                className="mx-auto mb-2 h-12 w-12 bg-primary-500"
-                style={{ borderRadius: `${borderRadius[key]}px` }}
+                className="mx-auto mb-2 h-12 w-12"
+                style={{ borderRadius: `${borderRadius[key]}px`, background: "var(--color-primary)" }}
               />
               <span className="text-xs text-gray-500">{label}</span>
             </div>

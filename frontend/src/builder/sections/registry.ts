@@ -39,6 +39,7 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     label: "Hero Banner",
     category: "hero",
     icon: "LayoutTemplate",
+    limit: 1,
     defaultSettings: {
       title: "Welcome to Our Store",
       subtitle: "Discover amazing products",
@@ -50,6 +51,38 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
       textColor: "#ffffff",
       minHeight: 500,
     },
+    presets: [
+      {
+        name: "centered",
+        label: "Centered",
+        settings: {
+          title: "Welcome to Our Store",
+          subtitle: "Discover amazing products",
+          buttonText: "Shop Now",
+          buttonLink: "/products",
+          backgroundImage: "",
+          overlayOpacity: 0.4,
+          alignment: "center",
+          textColor: "#ffffff",
+          minHeight: 500,
+        },
+      },
+      {
+        name: "left",
+        label: "Left Aligned",
+        settings: {
+          title: "Welcome to Our Store",
+          subtitle: "Discover amazing products",
+          buttonText: "Shop Now",
+          buttonLink: "/products",
+          backgroundImage: "",
+          overlayOpacity: 0.4,
+          alignment: "left",
+          textColor: "#ffffff",
+          minHeight: 500,
+        },
+      },
+    ],
     settingsSchema: heroSettings,
   },
   "product-grid": {
@@ -65,6 +98,32 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
       showPrices: true,
       showBadges: true,
     },
+    presets: [
+      {
+        name: "4col",
+        label: "4 Columns",
+        settings: {
+          title: "Featured Products",
+          columns: "4",
+          productsPerPage: 8,
+          sortBy: "created_at",
+          showPrices: true,
+          showBadges: true,
+        },
+      },
+      {
+        name: "3col",
+        label: "3 Columns",
+        settings: {
+          title: "Featured Products",
+          columns: "3",
+          productsPerPage: 8,
+          sortBy: "created_at",
+          showPrices: true,
+          showBadges: true,
+        },
+      },
+    ],
     settingsSchema: productGridSettings,
   },
   gallery: {
@@ -154,6 +213,34 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
       textColor: "#ffffff",
       backgroundColor: "#2563eb",
     },
+    presets: [
+      {
+        name: "blue",
+        label: "Blue Banner",
+        settings: {
+          title: "Special Offer",
+          subtitle: "Limited time only",
+          backgroundImage: "",
+          buttonText: "Shop Now",
+          buttonLink: "/products",
+          textColor: "#ffffff",
+          backgroundColor: "#2563eb",
+        },
+      },
+      {
+        name: "dark",
+        label: "Dark Banner",
+        settings: {
+          title: "Special Offer",
+          subtitle: "Limited time only",
+          backgroundImage: "",
+          buttonText: "Shop Now",
+          buttonLink: "/products",
+          textColor: "#ffffff",
+          backgroundColor: "#1f2937",
+        },
+      },
+    ],
     settingsSchema: [
       { key: "title", label: "Title", type: "text" },
       { key: "subtitle", label: "Subtitle", type: "text" },
@@ -169,6 +256,7 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     label: "Newsletter",
     category: "content",
     icon: "Mail",
+    limit: 1,
     defaultSettings: {
       title: "Subscribe to Our Newsletter",
       subtitle: "Stay updated with the latest products",

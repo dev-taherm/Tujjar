@@ -6,6 +6,7 @@ SECTION_TYPES = {
         "label": "Hero Banner",
         "category": "hero",
         "icon": "LayoutTemplate",
+        "limit": 1,
         "defaultSettings": {
             "title": "Welcome to Our Store",
             "subtitle": "Discover amazing products",
@@ -237,6 +238,7 @@ SECTION_TYPES = {
         "label": "Newsletter",
         "category": "content",
         "icon": "Mail",
+        "limit": 1,
         "defaultSettings": {
             "title": "Subscribe to Our Newsletter",
             "subtitle": "Stay updated with the latest products and offers",

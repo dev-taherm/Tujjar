@@ -165,7 +165,7 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
       </div>
 
       {showTypePicker && (
-        <SectionTypePicker onSelect={handleAddSection} onClose={() => setShowTypePicker(false)} />
+        <SectionTypePicker onSelect={handleAddSection} onClose={() => setShowTypePicker(false)} sections={sections} />
       )}
 
       {showHistory && (

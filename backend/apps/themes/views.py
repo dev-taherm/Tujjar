@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import copy
+import json
+import zipfile
+from io import BytesIO
 
 from django.db import models
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -47,7 +51,7 @@ class ThemeViewSet(TenantViewSet):
     required_permission = "themes.manage"
 
     def get_queryset(self):
-        return Theme.objects.filter(
+        return Theme.unscoped.filter(
             models.Q(organization_id=self.request.org_id) | models.Q(is_system=True)
         ).distinct()
 
@@ -116,18 +120,27 @@ class ThemeViewSet(TenantViewSet):
 
     @action(detail=True, methods=["get"])
     def export(self, request, pk=None):
-        """Export theme as JSON."""
+        """Export theme as a .zip file with config, presets, and metadata."""
         theme = self.get_object()
-        return Response(
-            {
-                "name": theme.name,
-                "version": theme.version,
-                "config": theme.config,
-                "sections_schema": theme.sections_schema,
-                "assets": theme.assets,
-                "presets": ThemePresetSerializer(theme.presets.all(), many=True).data,
-            }
-        )
+        data = {
+            "name": theme.name,
+            "version": theme.version,
+            "config": theme.config,
+            "sections_schema": theme.sections_schema,
+            "assets": theme.assets,
+            "category": getattr(theme, "category", ""),
+            "presets": [
+                {"name": p.name, "config": p.config}
+                for p in theme.presets.all()
+            ],
+        }
+        buffer = BytesIO()
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("theme.json", json.dumps(data, indent=2))
+        buffer.seek(0)
+        response = HttpResponse(buffer.getvalue(), content_type="application/zip")
+        response["Content-Disposition"] = f'attachment; filename="{theme.slug}-v{theme.version}.zip"'
+        return response
 
     @action(detail=True, methods=["get"], url_path="versions")
     def versions(self, request, pk=None):
@@ -169,8 +182,11 @@ class ThemeViewSet(TenantViewSet):
 
     @action(detail=False, methods=["get"])
     def marketplace(self, request):
-        """List all system themes available for installation."""
-        themes = Theme.objects.filter(is_system=True, is_active=True)
+        """List all system themes available for installation, optionally filtered by category."""
+        themes = Theme.unscoped.filter(is_system=True, is_active=True)
+        category = request.query_params.get("category")
+        if category:
+            themes = themes.filter(category=category)
         page = self.paginate_queryset(themes)
         if page is not None:
             serializer = ThemeSerializer(page, many=True)
@@ -180,11 +196,21 @@ class ThemeViewSet(TenantViewSet):
 
     @action(detail=False, methods=["post"], url_path="import")
     def import_theme(self, request):
-        """Import a theme from JSON data."""
-        name = request.data.get("name", "Imported Theme")
-        config = request.data.get("config", {})
-        sections_schema = request.data.get("sections_schema", {})
-        assets = request.data.get("assets", {})
+        """Import a theme from JSON data or .zip file."""
+        uploaded_file = request.FILES.get("file")
+        if uploaded_file and uploaded_file.name.endswith(".zip"):
+            with zipfile.ZipFile(uploaded_file, "r") as zf:
+                if "theme.json" not in zf.namelist():
+                    return Response({"detail": "Invalid theme zip: missing theme.json"}, status=400)
+                data = json.loads(zf.read("theme.json"))
+        else:
+            data = request.data
+
+        name = data.get("name", "Imported Theme")
+        config = data.get("config", {})
+        sections_schema = data.get("sections_schema", {})
+        assets = data.get("assets", {})
+        category = data.get("category", "")
 
         if not config:
             return Response({"error": "config is required"}, status=400)
@@ -205,11 +231,12 @@ class ThemeViewSet(TenantViewSet):
             config=config,
             sections_schema=sections_schema,
             assets=assets,
+            category=category,
             is_system=False,
             is_active=True,
         )
 
-        presets = request.data.get("presets", [])
+        presets = data.get("presets", [])
         for preset_data in presets:
             ThemePreset.objects.create(
                 theme=theme,

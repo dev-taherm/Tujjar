@@ -113,9 +113,21 @@ export function MarketplaceBrowse() {
 
 /* ── Themes Tab ────────────────────────────────────────────────────── */
 
+const THEME_CATEGORIES = [
+  { value: "", label: "All" },
+  { value: "fashion", label: "Fashion" },
+  { value: "electronics", label: "Electronics" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "pharmacy", label: "Pharmacy" },
+  { value: "beauty", label: "Beauty & Wellness" },
+  { value: "sports", label: "Sports & Fitness" },
+  { value: "home", label: "Home & Garden" },
+];
+
 function ThemesTab() {
   const t = useTranslations("dashboard.marketplace");
-  const { data: themes, isLoading } = useThemeMarketplace();
+  const [themeCategory, setThemeCategory] = useState("");
+  const { data: themes, isLoading } = useThemeMarketplace(themeCategory || undefined);
   const installTheme = useInstallTheme();
   const queryClient = useQueryClient();
   const [installingId, setInstallingId] = useState<string | null>(null);
@@ -144,7 +156,25 @@ function ThemesTab() {
 
   return (
     <>
-      <div>
+      <div className="space-y-6">
+        {/* Category Filter */}
+        <div className="flex flex-wrap gap-1">
+          {THEME_CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setThemeCategory(cat.value)}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                themeCategory === cat.value
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
         {isLoading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -168,6 +198,7 @@ function ThemesTab() {
             ))}
           </div>
         )}
+
       </div>
 
       <StoreSelectorDialog

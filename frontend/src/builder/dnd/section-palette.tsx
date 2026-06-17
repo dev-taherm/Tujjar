@@ -2,12 +2,13 @@
 
 import { useState, type ComponentType } from "react";
 import { getAllSectionTypes } from "@/builder/sections/registry";
-import type { SectionDefinition } from "@/shared/types";
+import type { Section, SectionDefinition } from "@/shared/types";
 import * as Icons from "lucide-react";
 import { Search, ChevronDown, ChevronRight } from "lucide-react";
 
 interface SectionPaletteProps {
   onAddSection: (type: string) => void;
+  sections?: Section[];
 }
 
 const categories = [
@@ -17,10 +18,15 @@ const categories = [
   { key: "social", label: "Social Proof" },
 ] as const;
 
-export function SectionPalette({ onAddSection }: SectionPaletteProps) {
+export function SectionPalette({ onAddSection, sections }: SectionPaletteProps) {
   const [search, setSearch] = useState("");
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set(["hero", "products", "content", "social"]));
   const allTypes = getAllSectionTypes();
+
+  const countsByType = (sections || []).reduce<Record<string, number>>((acc, s) => {
+    acc[s.type] = (acc[s.type] || 0) + 1;
+    return acc;
+  }, {});
 
   const toggleCat = (cat: string) => {
     setExpandedCats((prev) => {
@@ -70,14 +76,24 @@ export function SectionPalette({ onAddSection }: SectionPaletteProps) {
               <div className="mt-1 space-y-1">
                 {catSections.map((def: SectionDefinition) => {
                   const Icon = getIcon(def.icon);
+                  const currentCount = countsByType[def.type] || 0;
+                  const atLimit = def.limit !== undefined && currentCount >= def.limit;
                   return (
                     <button
                       key={def.type}
-                      onClick={() => onAddSection(def.type)}
-                      className="flex w-full items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-start text-xs transition-colors hover:border-blue-200 hover:bg-blue-50"
+                      onClick={() => { if (!atLimit) onAddSection(def.type); }}
+                      disabled={atLimit}
+                      className={`flex w-full items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-start text-xs transition-colors ${
+                        atLimit
+                          ? "cursor-not-allowed opacity-40"
+                          : "hover:border-blue-200 hover:bg-blue-50"
+                      }`}
                     >
-                      <Icon className="h-4 w-4 text-gray-400" />
-                      <span className="font-medium text-gray-700">{def.label}</span>
+                      <Icon className={`h-4 w-4 ${atLimit ? "text-gray-300" : "text-gray-400"}`} />
+                      <span className={`font-medium ${atLimit ? "text-gray-400" : "text-gray-700"}`}>{def.label}</span>
+                      {atLimit && (
+                        <span className="ms-auto text-[10px] font-medium text-amber-600">Max</span>
+                      )}
                     </button>
                   );
                 })}

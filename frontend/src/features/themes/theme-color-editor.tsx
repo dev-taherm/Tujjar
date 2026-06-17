@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Input, Label } from "@/shared/ui";
 import type { ThemeConfig } from "@/shared/types";
 import { useTranslations } from "next-intl";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
 
 interface ThemeColorEditorProps {
   colors: ThemeConfig["colors"];
@@ -26,8 +26,21 @@ const COLOR_FIELDS = [
   { key: "warning" as const, label: "Warning" },
 ];
 
+const DARK_COLOR_FIELDS = [
+  { key: "primaryDark" as const, label: "Primary Dark", baseKey: "primary" as const },
+  { key: "secondaryDark" as const, label: "Secondary Dark", baseKey: "secondary" as const },
+  { key: "accentDark" as const, label: "Accent Dark", baseKey: "accent" as const },
+  { key: "backgroundDark" as const, label: "Background Dark", baseKey: "background" as const },
+  { key: "surfaceDark" as const, label: "Surface Dark", baseKey: "surface" as const },
+  { key: "textDark" as const, label: "Text Dark", baseKey: "text" as const },
+  { key: "textSecondaryDark" as const, label: "Text Secondary Dark", baseKey: "textSecondary" as const },
+  { key: "borderDark" as const, label: "Border Dark", baseKey: "border" as const },
+];
+
 export function ThemeColorEditor({ colors, onChange, parentColors }: ThemeColorEditorProps) {
   const t = useTranslations("dashboard.themes");
+  const [showDark, setShowDark] = useState(false);
+
   const handleChange = (key: keyof ThemeConfig["colors"], value: string) => {
     onChange({ ...colors, [key]: value });
   };
@@ -84,6 +97,46 @@ export function ThemeColorEditor({ colors, onChange, parentColors }: ThemeColorE
           );
         })}
       </div>
+
+      {/* Dark Mode Colors */}
+      <button
+        type="button"
+        onClick={() => setShowDark(!showDark)}
+        className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900"
+      >
+        {showDark ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+        Dark Mode Colors
+      </button>
+      {showDark && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <p className="mb-3 text-xs text-gray-500">
+            Optional overrides for dark mode. Leave empty to auto-generate from the light color.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {DARK_COLOR_FIELDS.map(({ key, label, baseKey }) => (
+              <div key={key} className="flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={colors[key] || colors[baseKey]}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    className="h-8 w-8 cursor-pointer rounded-lg border border-gray-200"
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs">{label}</Label>
+                  <Input
+                    value={colors[key] || ""}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    placeholder={colors[baseKey]}
+                    className="h-7 text-xs"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

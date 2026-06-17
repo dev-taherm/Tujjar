@@ -7,7 +7,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "text-white hover:opacity-90 focus-visible:ring-[var(--color-primary)]",
+        default: "bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-[var(--color-primary)]",
         destructive: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
         outline: "border border-gray-300 bg-white hover:bg-gray-50 focus-visible:ring-primary-500",
         secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-500",
@@ -41,8 +41,9 @@ const variantStyles: Record<string, React.CSSProperties> = {
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, isLoading, children, disabled, style, ...props }, ref) => {
-    const mergedStyle = variant && variantStyles[variant]
-      ? { ...variantStyles[variant], ...style }
+    const effectiveVariant = variant ?? "default";
+    const mergedStyle = variantStyles[effectiveVariant]
+      ? { ...variantStyles[effectiveVariant], ...style }
       : style;
 
     return (

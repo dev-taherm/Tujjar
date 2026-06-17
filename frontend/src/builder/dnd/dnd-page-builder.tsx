@@ -193,7 +193,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Section Palette */}
         <div className="w-56 border-e border-gray-200 overflow-y-auto p-3">
-          <SectionPalette onAddSection={handleAddSection} />
+          <SectionPalette onAddSection={handleAddSection} sections={sortedSections} />
         </div>
 
         {/* Center: DnD Canvas */}
@@ -266,7 +266,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
             <h2 className="mb-4 text-lg font-semibold">Add Section</h2>
-            <SectionPalette onAddSection={(type) => { handleAddSection(type); setShowTypePicker(false); }} />
+            <SectionPalette onAddSection={(type) => { handleAddSection(type); setShowTypePicker(false); }} sections={sortedSections} />
             <button onClick={() => setShowTypePicker(false)} className="mt-4 w-full rounded-lg border border-gray-200 py-2 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
           </div>
         </div>

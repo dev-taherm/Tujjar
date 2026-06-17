@@ -1,10 +1,13 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardDescription, Badge, Button } from "@/shared/ui";
-import { Palette, Download, ExternalLink, Check } from "lucide-react";
+import { useState } from "react";
+import { Card, CardHeader, CardTitle, CardDescription, Badge, Button, Dialog } from "@/shared/ui";
+import { Palette, Download, ExternalLink, Check, Trash2, Copy } from "lucide-react";
 import type { Theme, ThemeConfig } from "@/shared/types";
 import { useTranslations } from "next-intl";
-import { useTheme } from "@/api/themes";
+import { themesApi } from "@/api/themes";
+import { useDeleteTheme, useDuplicateTheme } from "@/api/queries";
+import { toast } from "sonner";
 
 interface ThemeCardProps {
   theme: Theme;
@@ -36,7 +39,51 @@ function ColorSwatch({ colors }: { colors: ThemeConfig["colors"] }) {
 export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isActive, isInstalling, isInstalled }: ThemeCardProps) {
   const t = useTranslations("dashboard.themes");
   const tc = useTranslations("common");
+  const deleteTheme = useDeleteTheme();
+  const duplicateTheme = useDuplicateTheme();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [duplicateName, setDuplicateName] = useState(`${theme.name} Copy`);
+
+  const handleDelete = async () => {
+    try {
+      await deleteTheme.mutateAsync(theme.id);
+      toast.success(t("themeDeleted") || "Theme deleted");
+      setShowDeleteDialog(false);
+    } catch {
+      toast.error(t("deleteFailed") || "Failed to delete theme");
+    }
+  };
+
+  const handleDuplicate = async () => {
+    if (!duplicateName.trim()) return;
+    try {
+      await duplicateTheme.mutateAsync({ id: theme.id, name: duplicateName.trim() });
+      toast.success(t("themeDuplicated") || "Theme duplicated");
+      setShowDuplicateDialog(false);
+    } catch {
+      toast.error(t("duplicateFailed") || "Failed to duplicate theme");
+    }
+  };
+
+  const handleExport = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const blob = await themesApi.exportTheme(theme.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${theme.slug}-v${theme.version}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(t("exportFailed") || "Failed to export theme");
+    }
+  };
   return (
+    <>
     <Card
       className={`group cursor-pointer transition-all hover:shadow-md ${
         isSelected ? "ring-2 ring-primary-500 border-primary-300" : "hover:border-primary-200"
@@ -77,6 +124,42 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
             <span>{theme.presets.length} {t("presets")}{theme.presets.length !== 1 ? "s" : ""}</span>
           </div>
           <div className="flex gap-2">
+            {!theme.is_system && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleExport}
+                  className="shrink-0"
+                  title={t("export") || "Export"}
+                >
+                  <Download className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDuplicateName(`${theme.name} Copy`);
+                    setShowDuplicateDialog(true);
+                  }}
+                  className="shrink-0"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteDialog(true);
+                  }}
+                  className="shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </>
+            )}
             {onApply && !isActive && (
               <Button
                 size="sm"
@@ -123,5 +206,42 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
         </div>
       </div>
     </Card>
+
+    {/* Delete Confirmation Dialog */}
+    <Dialog open={showDeleteDialog} onClose={() => setShowDeleteDialog(false)} title={t("deleteTheme") || "Delete Theme"}>
+      <p className="text-sm text-gray-500 mb-4">
+        {t("deleteThemeConfirm") || `Are you sure you want to delete "${theme.name}"? This action cannot be undone.`}
+      </p>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>{tc("cancel")}</Button>
+        <Button variant="destructive" onClick={handleDelete} isLoading={deleteTheme.isPending}>
+          {tc("delete")}
+        </Button>
+      </div>
+    </Dialog>
+
+    {/* Duplicate Dialog */}
+    <Dialog open={showDuplicateDialog} onClose={() => setShowDuplicateDialog(false)} title={t("duplicateTheme") || "Duplicate Theme"}>
+      <div className="space-y-4">
+        <p className="text-sm text-gray-500">
+          {t("duplicateThemeDescription") || "Enter a name for the duplicated theme."}
+        </p>
+        <input
+          type="text"
+          value={duplicateName}
+          onChange={(e) => setDuplicateName(e.target.value)}
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+          autoFocus
+          onKeyDown={(e) => { if (e.key === "Enter") handleDuplicate(); }}
+        />
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setShowDuplicateDialog(false)}>{tc("cancel")}</Button>
+          <Button onClick={handleDuplicate} disabled={!duplicateName.trim()} isLoading={duplicateTheme.isPending}>
+            {tc("duplicate")}
+          </Button>
+        </div>
+      </div>
+    </Dialog>
+    </>
   );
 }

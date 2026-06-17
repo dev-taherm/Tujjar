@@ -157,18 +157,21 @@ export default function ThemeDetailPage() {
                 <ThemeBorderRadiusEditor
                   borderRadius={activeConfig.borderRadius}
                   onChange={(borderRadius) => setConfig({ ...activeConfig, borderRadius })}
+                  parentBorderRadius={parentTheme?.config?.borderRadius}
                 />
               )}
               {activeTab === "animations" && (
                 <ThemeAnimationsEditor
                   animations={activeConfig.animations}
                   onChange={(animations) => setConfig({ ...activeConfig, animations })}
+                  parentAnimations={parentTheme?.config?.animations}
                 />
               )}
               {activeTab === "darkmode" && (
                 <ThemeDarkModeEditor
                   darkMode={activeConfig.darkMode}
                   onChange={(darkMode) => setConfig({ ...activeConfig, darkMode })}
+                  parentDarkMode={parentTheme?.config?.darkMode}
                 />
               )}
             </CardContent>

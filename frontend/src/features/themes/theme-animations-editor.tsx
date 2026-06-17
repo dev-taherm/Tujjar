@@ -1,6 +1,7 @@
 "use client";
 
 import { Toggle } from "@/shared/components/toggle";
+import { RotateCcw } from "lucide-react";
 
 interface ThemeAnimationsEditorProps {
   animations: {
@@ -9,6 +10,7 @@ interface ThemeAnimationsEditorProps {
     easing: string;
   };
   onChange: (animations: ThemeAnimationsEditorProps["animations"]) => void;
+  parentAnimations?: ThemeAnimationsEditorProps["animations"];
 }
 
 const DURATION_OPTIONS = [
@@ -25,9 +27,38 @@ const EASING_OPTIONS = [
   { value: "ease-in-out", label: "Ease In Out" },
 ];
 
-export function ThemeAnimationsEditor({ animations, onChange }: ThemeAnimationsEditorProps) {
+export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }: ThemeAnimationsEditorProps) {
+  const isOverridden = parentAnimations && (
+    animations.enabled !== parentAnimations.enabled ||
+    animations.duration !== parentAnimations.duration ||
+    animations.easing !== parentAnimations.easing
+  );
+
+  const handleReset = () => {
+    if (!parentAnimations) return;
+    onChange(parentAnimations);
+  };
+
   return (
     <div className="space-y-4">
+      {parentAnimations && (
+        <div className="flex items-center gap-2">
+          <span className={`text-xs ${isOverridden ? "text-amber-600" : "text-gray-400"}`}>
+            {isOverridden ? "Overridden" : "Inherited"}
+          </span>
+          {isOverridden && (
+            <button
+              type="button"
+              onClick={handleReset}
+              title="Reset to parent"
+              className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      )}
+
       <Toggle
         label="Enable Animations"
         enabled={animations.enabled}
@@ -70,8 +101,9 @@ export function ThemeAnimationsEditor({ animations, onChange }: ThemeAnimationsE
             <p className="mb-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</p>
             <div className="flex gap-4">
               <div
-                className="h-12 w-12 rounded-lg bg-primary-500 transition-all hover:scale-110"
+                className="h-12 w-12 rounded-lg transition-all hover:scale-110"
                 style={{
+                  background: "var(--color-primary)",
                   transitionDuration: animations.duration,
                   transitionTimingFunction: animations.easing,
                 }}

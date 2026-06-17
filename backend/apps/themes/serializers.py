@@ -36,6 +36,7 @@ class ThemeSerializer(serializers.ModelSerializer):
             "preview_image",
             "is_system",
             "is_active",
+            "category",
             "presets",
             "effective_config",
             "created_at",

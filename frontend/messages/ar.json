@@ -921,7 +921,16 @@
       "ogImageDescription": "الصورة التي تظهر عند مشاركة رابط المتجر على وسائل التواصل الاجتماعي (يُوصى بحجم 1200x630)",
       "uploadOgImage": "رفع صورة",
       "socialLinks": "روابط التواصل الاجتماعي",
-      "socialLinksDescription": "أضف روابط حساباتك على وسائل التواصل الاجتماعي"
+      "socialLinksDescription": "أضف روابط حساباتك على وسائل التواصل الاجتماعي",
+      "announcementBar": "شريط الإعلانات",
+      "announcementBarDescription": "عرض شعار ترويجي فوق رأس متجرك",
+      "enableAnnouncement": "تفعيل شريط الإعلانات",
+      "announcementText": "نص الرسالة",
+      "announcementLink": "رابط URL",
+      "announcementLinkLabel": "تسمية الزر",
+      "announcementBgColor": "لون الخلفية",
+      "announcementTextColor": "لون النص",
+      "announcementDismissible": "قابل للإغلاق"
     },
     "template": {
       "title": "القالب الحالي",

@@ -47,12 +47,13 @@ export const themesApi = {
   },
 
   exportTheme: async (id: string) => {
-    const { data } = await apiClient.get(`/themes/${id}/export/`);
+    const { data } = await apiClient.get(`/themes/${id}/export/`, { responseType: "blob" });
     return data;
   },
 
-  marketplace: async (): Promise<Theme[]> => {
-    const { data } = await apiClient.get("/themes/marketplace/");
+  marketplace: async (category?: string): Promise<Theme[]> => {
+    const params = category ? { category } : {};
+    const { data } = await apiClient.get("/themes/marketplace/", { params });
     return unwrapResults(data);
   },
 
@@ -76,7 +77,15 @@ export const themesApi = {
     return data;
   },
 
-  importTheme: async (payload: { name: string; config: Record<string, unknown>; sections_schema?: Record<string, unknown>; assets?: Record<string, unknown>; presets?: Array<{ name: string; config: Record<string, unknown> }> }): Promise<Theme> => {
+  importTheme: async (payload: { name: string; config: Record<string, unknown>; sections_schema?: Record<string, unknown>; assets?: Record<string, unknown>; presets?: Array<{ name: string; config: Record<string, unknown> }>; category?: string } | File): Promise<Theme> => {
+    if (payload instanceof File) {
+      const formData = new FormData();
+      formData.append("file", payload);
+      const { data } = await apiClient.post("/themes/import/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data;
+    }
     const { data } = await apiClient.post("/themes/import/", payload);
     return data;
   },
@@ -131,10 +140,10 @@ export function useInstallTheme() {
   });
 }
 
-export function useThemeMarketplace() {
+export function useThemeMarketplace(category?: string) {
   return useQuery({
-    queryKey: ["themes", "marketplace"],
-    queryFn: themesApi.marketplace,
+    queryKey: ["themes", "marketplace", category || ""],
+    queryFn: () => themesApi.marketplace(category),
   });
 }
 
@@ -163,6 +172,26 @@ export function useImportTheme() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: themesApi.importTheme,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["themes"] });
+    },
+  });
+}
+
+export function useDeleteTheme() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: themesApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["themes"] });
+    },
+  });
+}
+
+export function useDuplicateTheme() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) => themesApi.duplicate(id, name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["themes"] });
     },
