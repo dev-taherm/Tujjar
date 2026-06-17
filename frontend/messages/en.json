@@ -36,7 +36,8 @@
     "tryAgain": "Try again",
     "none": "None",
     "saved": "Saved",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "duplicate": "Duplicate"
   },
   "landing": {
     "title": "Tujjar",
@@ -515,6 +516,8 @@
       "deleteThemeConfirm": "Are you sure you want to delete this theme? This action cannot be undone.",
       "duplicateTheme": "Duplicate Theme",
       "duplicateThemeName": "New theme name",
+      "duplicateThemeDescription": "Enter a name for the duplicated theme.",
+      "export": "Export",
       "versionHistory": "Version History",
       "restoreVersion": "Restore Version",
       "restoreVersionConfirm": "Are you sure you want to restore to version {version}? The current state will be saved as a checkpoint first.",

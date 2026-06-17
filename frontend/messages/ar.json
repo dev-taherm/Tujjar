@@ -36,7 +36,8 @@
     "tryAgain": "حاول مرة أخرى",
     "none": "بلا",
     "saved": "تم الحفظ",
-    "saveChanges": "حفظ التغييرات"
+    "saveChanges": "حفظ التغييرات",
+    "duplicate": "تكرار"
   },
   "landing": {
     "title": "تججر",
@@ -520,7 +521,11 @@
       "version": "الإصدار",
       "noDescription": "بلا وصف",
       "restore": "استعادة",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "export": "تصدير",
+      "duplicateTheme": "تكرار السمة",
+      "duplicateThemeName": "اسم السمة الجديدة",
+      "duplicateThemeDescription": "أدخل اسماً للسمة المكررة"
     },
     "media": {
       "upload": "رفع",
