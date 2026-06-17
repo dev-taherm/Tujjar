@@ -31,7 +31,6 @@ export default function ThemeDetailPage() {
   const updateTheme = useUpdateTheme();
   const setTheme = useSetTheme();
   const { data: stores } = useStores();
-  const previewStore = stores?.[0];
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
   const [activeTab, setActiveTab] = useState<EditorTab>("colors");
   const [previewDevice, setPreviewDevice] = useState<DeviceSize>("desktop");
@@ -71,8 +70,9 @@ export default function ThemeDetailPage() {
   };
 
   const handlePreview = () => {
-    if (!previewStore) return;
-    window.open(`/${previewStore.slug}/shop/?preview_theme=${theme.id}`, "_blank");
+    const firstStore = stores?.[0];
+    if (!firstStore) return;
+    window.open(`/${firstStore.slug}/shop/`, "_blank");
   };
 
   const EDITOR_TABS: { id: EditorTab; label: string }[] = [
@@ -209,45 +209,36 @@ export default function ThemeDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {previewStore ? (
-                  <div
-                    className="mx-auto overflow-hidden rounded-lg border border-gray-200 transition-all duration-300"
-                    style={{ maxWidth: DEVICE_WIDTHS[previewDevice] }}
+                <div
+                  className="rounded-lg p-6 transition-all duration-300"
+                  style={{
+                    backgroundColor: activeConfig.colors.background,
+                    maxWidth: DEVICE_WIDTHS[previewDevice],
+                    margin: "0 auto",
+                  }}
+                >
+                  <h3
+                    className="mb-2 text-lg font-bold"
+                    style={{ color: activeConfig.colors.text, fontFamily: activeConfig.typography.headingFont }}
                   >
-                    <iframe
-                      src={`/${previewStore.slug}/shop/?preview_theme=${theme.id}`}
-                      className="h-[400px] w-full border-0"
-                      title="Theme Preview"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className="rounded-lg p-6"
-                    style={{ backgroundColor: activeConfig.colors.background }}
+                    {t("sampleHeading")}
+                  </h3>
+                  <p
+                    className="text-sm"
+                    style={{ color: activeConfig.colors.textSecondary, fontFamily: activeConfig.typography.bodyFont }}
                   >
-                    <h3
-                      className="mb-2 text-lg font-bold"
-                      style={{ color: activeConfig.colors.text, fontFamily: activeConfig.typography.headingFont }}
-                    >
-                      {t("sampleHeading")}
-                    </h3>
-                    <p
-                      className="text-sm"
-                      style={{ color: activeConfig.colors.textSecondary, fontFamily: activeConfig.typography.bodyFont }}
-                    >
-                      {t("previewDescription")}
-                    </p>
-                    <button
-                      className="mt-4 px-4 py-2 text-sm font-medium text-white"
-                      style={{
-                        backgroundColor: activeConfig.colors.primary,
-                        borderRadius: `${activeConfig.borderRadius.medium}px`,
-                      }}
-                    >
-                      {t("primaryButton")}
-                    </button>
-                  </div>
-                )}
+                    {t("previewDescription")}
+                  </p>
+                  <button
+                    className="mt-4 px-4 py-2 text-sm font-medium text-white"
+                    style={{
+                      backgroundColor: activeConfig.colors.primary,
+                      borderRadius: `${activeConfig.borderRadius.medium}px`,
+                    }}
+                  >
+                    {t("primaryButton")}
+                  </button>
+                </div>
                 <div className="flex gap-1">
                   {Object.entries(activeConfig.colors).slice(0, 6).map(([key, color]) => (
                     <div
