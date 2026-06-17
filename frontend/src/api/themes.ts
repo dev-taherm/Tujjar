@@ -11,6 +11,12 @@ export interface ThemeVersion {
   created_by: string | null;
 }
 
+export interface ThemeVersionDetail extends ThemeVersion {
+  config: Record<string, unknown>;
+  sections_schema: Record<string, unknown>;
+  assets: Record<string, unknown>;
+}
+
 export const themesApi = {
   list: async (): Promise<Theme[]> => {
     const { data } = await apiClient.get("/themes/");
@@ -70,6 +76,15 @@ export const themesApi = {
   getVersions: async (themeId: string): Promise<ThemeVersion[]> => {
     const { data } = await apiClient.get(`/themes/${themeId}/versions/`);
     return data;
+  },
+
+  getVersion: async (themeId: string, versionId: string): Promise<ThemeVersionDetail> => {
+    const { data } = await apiClient.get(`/themes/${themeId}/versions/${versionId}/`);
+    return data;
+  },
+
+  createSnapshot: async (themeId: string, note?: string): Promise<void> => {
+    await apiClient.post(`/themes/${themeId}/snapshot/`, { note: note || "" });
   },
 
   rollback: async (themeId: string, versionId: string): Promise<Theme> => {
@@ -152,6 +167,25 @@ export function useThemeVersions(themeId: string) {
     queryKey: ["themes", themeId, "versions"],
     queryFn: () => themesApi.getVersions(themeId),
     enabled: !!themeId,
+  });
+}
+
+export function useThemeVersionDetail(themeId: string, versionId: string) {
+  return useQuery({
+    queryKey: ["themes", themeId, "versions", versionId],
+    queryFn: () => themesApi.getVersion(themeId, versionId),
+    enabled: !!themeId && !!versionId,
+  });
+}
+
+export function useCreateSnapshot() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ themeId, note }: { themeId: string; note?: string }) =>
+      themesApi.createSnapshot(themeId, note),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["themes", variables.themeId, "versions"] });
+    },
   });
 }
 

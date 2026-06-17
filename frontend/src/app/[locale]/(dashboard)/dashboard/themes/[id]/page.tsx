@@ -12,9 +12,10 @@ import { ThemeBorderRadiusEditor } from "@/features/themes/theme-border-radius-e
 import { ThemeAnimationsEditor } from "@/features/themes/theme-animations-editor";
 import { ThemeDarkModeEditor } from "@/features/themes/theme-darkmode-editor";
 import { Button, Card, CardHeader, CardTitle, CardContent, Skeleton } from "@/shared/ui";
-import { Save, Eye, Paintbrush, Monitor, Tablet, Smartphone } from "lucide-react";
+import { Save, Eye, Paintbrush, Monitor, Tablet, Smartphone, History } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { ThemeVersionHistory } from "@/features/themes/theme-version-history";
 
 type EditorTab = "colors" | "typography" | "spacing" | "radius" | "animations" | "darkmode";
 
@@ -34,6 +35,7 @@ export default function ThemeDetailPage() {
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
   const [activeTab, setActiveTab] = useState<EditorTab>("colors");
   const [previewDevice, setPreviewDevice] = useState<DeviceSize>("desktop");
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
 
   if (isLoading) {
     return (
@@ -93,6 +95,10 @@ export default function ThemeDetailPage() {
           )}
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowVersionHistory(true)}>
+            <History className="me-2 h-4 w-4" />
+            {t("versionHistory") || "History"}
+          </Button>
           <Button variant="outline" onClick={handlePreview}>
             <Eye className="me-2 h-4 w-4" />
             {tc("preview")}
@@ -261,6 +267,10 @@ export default function ThemeDetailPage() {
           </Card>
         </div>
       </div>
+
+      {showVersionHistory && (
+        <ThemeVersionHistory themeId={theme.id} onClose={() => setShowVersionHistory(false)} />
+      )}
     </div>
   );
 }

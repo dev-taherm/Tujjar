@@ -1,7 +1,7 @@
 export { authApi, useUser } from "./auth";
 export { organizationsApi, useOrganizations, useCreateOrganization } from "./organizations";
 export { storesApi, useStores, useStore, useCreateStore, useCreateStoreWizard, useCheckSlug, useUpdateStore, useDeleteStore, useChangeSlug, useSetTheme } from "./stores";
-export { themesApi, useThemes, useTheme, useCreateTheme, useUpdateTheme, useInstallTheme, useThemeMarketplace, useThemeVersions, useRollbackTheme, useImportTheme, useDeleteTheme, useDuplicateTheme } from "./themes";
+export { themesApi, useThemes, useTheme, useCreateTheme, useUpdateTheme, useInstallTheme, useThemeMarketplace, useThemeVersions, useThemeVersionDetail, useCreateSnapshot, useRollbackTheme, useImportTheme, useDeleteTheme, useDuplicateTheme } from "./themes";
 export {
   pagesApi,
   usePages,

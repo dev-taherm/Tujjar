@@ -506,7 +506,21 @@
       "noThemeDescription": "قم بتثبيت سمة من سوق السمات للبدء",
       "themeApplied": "تم تطبيق السمة",
       "applyToStore": "تطبيق على المتجر",
-      "active": "نشط"
+      "active": "نشط",
+      "versionHistory": "سجل الإصدارات",
+      "restoreVersion": "استعادة الإصدار",
+      "restoreVersionConfirm": "هل أنت متأكد أنك تريد استعادة الإصدار {version}؟ سيتم حفظ الحالة الحالية كنقطة مرجعية أولاً.",
+      "noVersions": "لا يوجد سجل إصدارات بعد",
+      "currentVersion": "الحالي",
+      "saveCheckpoint": "حفظ نقطة مرجعية",
+      "checkpointNote": "ملاحظة النقطة المرجعية (اختياري)",
+      "checkpointSaved": "تم حفظ النقطة المرجعية",
+      "previewVersion": "معاينة",
+      "versionRestored": "تمت استعادة الإصدار بنجاح",
+      "version": "الإصدار",
+      "noDescription": "بلا وصف",
+      "restore": "استعادة",
+      "cancel": "إلغاء"
     },
     "media": {
       "upload": "رفع",

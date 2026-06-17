@@ -57,6 +57,7 @@ class ThemeViewSet(TenantViewSet):
 
     def perform_create(self, serializer):
         theme = serializer.save()
+        _save_version_snapshot(theme, note="Initial version", user=self.request.user)
         self._log_audit(
             action="theme.create",
             resource_type="theme",
@@ -158,6 +159,34 @@ class ThemeViewSet(TenantViewSet):
             for v in versions
         ]
         return Response(data)
+
+    @action(detail=True, methods=["get"], url_path=r"versions/(?P<version_id>[^/.]+)")
+    def version_detail(self, request, pk=None, version_id=None):
+        """Fetch full state of a specific version (config, sections_schema, assets)."""
+        theme = self.get_object()
+        try:
+            version = ThemeVersion.objects.get(id=version_id, theme=theme)
+        except ThemeVersion.DoesNotExist:
+            return Response({"error": "Version not found"}, status=404)
+
+        return Response({
+            "id": str(version.id),
+            "version": version.version,
+            "note": version.note,
+            "created_at": version.created_at.isoformat() if version.created_at else None,
+            "created_by": str(version.created_by_id) if version.created_by_id else None,
+            "config": version.config,
+            "sections_schema": version.sections_schema,
+            "assets": version.assets,
+        })
+
+    @action(detail=True, methods=["post"], url_path="snapshot")
+    def snapshot(self, request, pk=None):
+        """Create a manual checkpoint of the current theme state."""
+        theme = self.get_object()
+        note = request.data.get("note", "")
+        _save_version_snapshot(theme, note=note or "Manual checkpoint", user=request.user)
+        return Response({"detail": "Snapshot created"}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="rollback")
     def rollback(self, request, pk=None):

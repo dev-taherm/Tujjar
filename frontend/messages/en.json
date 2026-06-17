@@ -514,7 +514,21 @@
       "deleteTheme": "Delete Theme",
       "deleteThemeConfirm": "Are you sure you want to delete this theme? This action cannot be undone.",
       "duplicateTheme": "Duplicate Theme",
-      "duplicateThemeName": "New theme name"
+      "duplicateThemeName": "New theme name",
+      "versionHistory": "Version History",
+      "restoreVersion": "Restore Version",
+      "restoreVersionConfirm": "Are you sure you want to restore to version {version}? The current state will be saved as a checkpoint first.",
+      "noVersions": "No version history yet",
+      "currentVersion": "Current",
+      "saveCheckpoint": "Save Checkpoint",
+      "checkpointNote": "Checkpoint note (optional)",
+      "checkpointSaved": "Checkpoint saved",
+      "previewVersion": "Preview",
+      "versionRestored": "Version restored successfully",
+      "version": "Version",
+      "noDescription": "No description",
+      "restore": "Restore",
+      "cancel": "Cancel"
     },
     "media": {
       "upload": "Upload",

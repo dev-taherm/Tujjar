@@ -384,6 +384,80 @@ class TestThemeVersions:
         theme.refresh_from_db()
         assert theme.version == "1.0.1"
 
+    def test_version_detail(self, api_client):
+        user, org, token = create_org_with_owner("theme-ver-detail@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        theme = _create_org_theme(org, slug="ver-detail-theme")
+        version = ThemeVersion.objects.create(
+            theme=theme,
+            version="1.0.0",
+            config={"colors": {"primary": "#aaa"}},
+            sections_schema={"hero": {"type": "hero"}},
+            assets={"css": "/a.css"},
+            note="Test version",
+        )
+        response = api_client.get(f"/api/v1/themes/{theme.id}/versions/{version.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["version"] == "1.0.0"
+        assert response.data["config"] == {"colors": {"primary": "#aaa"}}
+        assert response.data["sections_schema"] == {"hero": {"type": "hero"}}
+        assert response.data["assets"] == {"css": "/a.css"}
+        assert response.data["note"] == "Test version"
+
+    def test_version_detail_not_found(self, api_client):
+        user, org, token = create_org_with_owner("theme-ver-notfound@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        theme = _create_org_theme(org, slug="ver-notfound-theme")
+        response = api_client.get(f"/api/v1/themes/{theme.id}/versions/{uuid.uuid4()}/")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_create_snapshot(self, api_client):
+        user, org, token = create_org_with_owner("theme-snapshot@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        theme = _create_org_theme(org, slug="snapshot-theme")
+        count_before = ThemeVersion.objects.filter(theme=theme).count()
+        response = api_client.post(
+            f"/api/v1/themes/{theme.id}/snapshot/",
+            {"note": "Manual checkpoint"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        count_after = ThemeVersion.objects.filter(theme=theme).count()
+        assert count_after == count_before + 1
+        latest = ThemeVersion.objects.filter(theme=theme).first()
+        assert latest.note == "Manual checkpoint"
+
+    def test_create_snapshot_default_note(self, api_client):
+        user, org, token = create_org_with_owner("theme-snap-default@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        theme = _create_org_theme(org, slug="snap-default-theme")
+        response = api_client.post(
+            f"/api/v1/themes/{theme.id}/snapshot/",
+            {},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        latest = ThemeVersion.objects.filter(theme=theme).first()
+        assert latest.note == "Manual checkpoint"
+
+    def test_auto_snapshot_on_create(self, api_client):
+        user, org, token = create_org_with_owner("theme-auto-snap@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.post(
+            "/api/v1/themes/",
+            {
+                "name": "Auto Snap Theme",
+                "slug": "auto-snap-theme",
+                "config": {"colors": {"primary": "#000"}},
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        theme = Theme.unscoped.get(id=response.data["id"])
+        versions = ThemeVersion.objects.filter(theme=theme)
+        assert versions.count() == 1
+        assert versions.first().note == "Initial version"
+
 
 class TestThemeRollback:
     def test_rollback_to_version(self, api_client):
