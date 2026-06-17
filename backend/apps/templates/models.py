@@ -58,3 +58,31 @@ class Template(UUIDModel, TimeStampedModel):
 
     def __str__(self):
         return f"{self.name} v{self.version}"
+
+
+class TemplateVersion(UUIDModel, TimeStampedModel):
+    """Snapshot of a template's state at a point in time for version history and rollback."""
+
+    template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name="versions")
+    version = models.CharField(max_length=50)
+    config = models.JSONField(default=dict, blank=True)
+    pages = models.JSONField(default=list, blank=True)
+    navigation = models.JSONField(default=dict, blank=True)
+    footer = models.JSONField(default=dict, blank=True)
+    seo_defaults = models.JSONField(default=dict, blank=True)
+    demo_content = models.JSONField(default=dict, blank=True)
+    store_settings = models.JSONField(default=dict, blank=True)
+    note = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        "authentication.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="template_versions",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.template.name} v{self.version}"

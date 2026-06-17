@@ -1,4 +1,4 @@
-.PHONY: install dev test migrate shell lint typecheck clean docker-up docker-down
+.PHONY: install dev test test-cov frontend-test frontend-test-cov migrate shell lint typecheck clean docker-up docker-down
 
 # Backend
 install:
@@ -51,6 +51,12 @@ frontend-lint:
 
 frontend-typecheck:
 	cd frontend && pnpm typecheck
+
+frontend-test:
+	cd frontend && pnpm test:run
+
+frontend-test-cov:
+	cd frontend && pnpm vitest run --coverage
 
 # Docker
 docker-up:

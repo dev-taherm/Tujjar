@@ -112,6 +112,13 @@ export {
   useTemplateMarketplace,
   useInstallTemplate,
   useInstalledTemplate,
+  useCreateTemplate,
+  useUpdateTemplate,
+  useDeleteTemplate,
+  useDuplicateTemplate,
+  useTemplateVersions,
+  useTemplateVersionDetail,
+  useRollbackTemplate,
 } from "./templates";
 export {
   blogCategoriesApi,

@@ -82,6 +82,18 @@ addopts = "-v --tb=short --strict-markers"
 markers = [
     "slow: marks tests as slow",
     "integration: marks integration tests",
+    "unit: marks unit tests",
+]
+
+[tool.coverage.run]
+source = ["apps", "config", "tests"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
 ]
 
 [tool.django-stubs]

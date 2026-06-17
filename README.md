@@ -205,12 +205,16 @@ pnpm dev
 
 ```bash
 # Backend tests
-cd backend
-DJANGO_SETTINGS_MODULE=config.settings.development python -m pytest -v
+make test
+
+# Backend tests with coverage
+make test-cov
 
 # Frontend tests
-cd frontend
-pnpm test:run
+make frontend-test
+
+# Frontend tests with coverage
+make frontend-test-cov
 ```
 
 ### Default Credentials
