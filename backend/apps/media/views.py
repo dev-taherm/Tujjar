@@ -124,6 +124,9 @@ class MediaAssetViewSet(TenantViewSet):
     def stats(self, request):
         """Get media library statistics."""
         qs = MediaAsset.objects.filter(organization_id=request.org_id)
+        store_id = request.query_params.get("store")
+        if store_id:
+            qs = qs.filter(store_id=store_id)
         agg = qs.aggregate(
             total_assets=Count("id"),
             total_size=Sum("file_size"),

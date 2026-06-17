@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Search, Upload, Image, Check, X } from "lucide-react";
+import { useState, useRef, useMemo } from "react";
+import { Search, Upload, Image, Check } from "lucide-react";
 import { Dialog } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui";
 import { useMediaAssets, useUploadMedia } from "@/api/media";
@@ -20,11 +20,24 @@ export function MediaPickerModal({ open, onClose, onSelect, storeId }: MediaPick
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMedia = useUploadMedia();
 
-  const { data: assets, isLoading } = useMediaAssets({
+  const { data: storeAssets, isLoading: storeLoading } = useMediaAssets({
     store: storeId,
     file_type: "image",
     search: search || undefined,
   });
+
+  const { data: orgAssets, isLoading: orgLoading } = useMediaAssets({
+    file_type: "image",
+    search: search || undefined,
+  });
+
+  const isLoading = storeLoading || orgLoading;
+
+  const orgOnlyAssets = useMemo(() => {
+    if (!orgAssets) return [];
+    const storeIds = new Set((storeAssets || []).map((a) => a.id));
+    return orgAssets.filter((a) => !storeIds.has(a.id));
+  }, [orgAssets, storeAssets]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,13 +49,48 @@ export function MediaPickerModal({ open, onClose, onSelect, storeId }: MediaPick
   };
 
   const handleSelect = () => {
-    if (!selectedId || !assets) return;
-    const asset = assets.find((a) => a.id === selectedId);
+    if (!selectedId) return;
+    const all = [...(storeAssets || []), ...orgOnlyAssets];
+    const asset = all.find((a) => a.id === selectedId);
     if (asset) {
       onSelect(asset);
       onClose();
     }
   };
+
+  const renderGrid = (assets: MediaAsset[]) => (
+    <div className="grid grid-cols-4 gap-2">
+      {assets.map((asset) => (
+        <button
+          key={asset.id}
+          onClick={() => setSelectedId(selectedId === asset.id ? null : asset.id)}
+          className={`group relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
+            selectedId === asset.id
+              ? "border-blue-500 ring-2 ring-blue-200"
+              : "border-transparent hover:border-gray-300"
+          }`}
+        >
+          <img
+            src={asset.thumbnail_url || asset.file_url}
+            alt={asset.alt_text || asset.title}
+            className="h-full w-full object-cover"
+          />
+          {selectedId === asset.id && (
+            <div className="absolute inset-0 flex items-center justify-center bg-blue-500/20">
+              <div className="rounded-full bg-blue-600 p-1">
+                <Check className="h-4 w-4 text-white" />
+              </div>
+            </div>
+          )}
+          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+            <p className="truncate text-[10px] text-white">{asset.title || asset.filename}</p>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+
+  const hasAnyAssets = (storeAssets && storeAssets.length > 0) || orgOnlyAssets.length > 0;
 
   return (
     <Dialog open={open} onClose={onClose} title="Choose Image" maxWidth="max-w-2xl">
@@ -82,7 +130,7 @@ export function MediaPickerModal({ open, onClose, onSelect, storeId }: MediaPick
                 <div key={i} className="aspect-square animate-pulse rounded-lg bg-gray-100" />
               ))}
             </div>
-          ) : !assets || assets.length === 0 ? (
+          ) : !hasAnyAssets ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Image className="h-12 w-12 text-gray-300" />
               <p className="mt-3 text-sm font-medium text-gray-900">No images</p>
@@ -96,46 +144,33 @@ export function MediaPickerModal({ open, onClose, onSelect, storeId }: MediaPick
                 onClick={() => fileInputRef.current?.click()}
                 disabled={!storeId}
               >
-                <Upload className="me-1.5 h-3.5 w-3.5" />
+                <Upload className="me-1.5 h-3.5 h-3.5" />
                 Upload Image
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {assets.map((asset) => (
-                <button
-                  key={asset.id}
-                  onClick={() => setSelectedId(selectedId === asset.id ? null : asset.id)}
-                  className={`group relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
-                    selectedId === asset.id
-                      ? "border-blue-500 ring-2 ring-blue-200"
-                      : "border-transparent hover:border-gray-300"
-                  }`}
-                >
-                  <img
-                    src={asset.thumbnail_url || asset.file_url}
-                    alt={asset.alt_text || asset.title}
-                    className="h-full w-full object-cover"
-                  />
-                  {selectedId === asset.id && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-blue-500/20">
-                      <div className="rounded-full bg-blue-600 p-1">
-                        <Check className="h-4 w-4 text-white" />
-                      </div>
-                    </div>
-                  )}
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-                    <p className="truncate text-[10px] text-white">{asset.title || asset.filename}</p>
-                  </div>
-                </button>
-              ))}
+            <div className="space-y-4">
+              {storeAssets && storeAssets.length > 0 && (
+                <div>
+                  <h4 className="mb-2 text-xs font-semibold text-gray-500">This Store</h4>
+                  {renderGrid(storeAssets)}
+                </div>
+              )}
+              {orgOnlyAssets.length > 0 && (
+                <div>
+                  <h4 className="mb-2 text-xs font-semibold text-gray-500">All Organizations</h4>
+                  {renderGrid(orgOnlyAssets)}
+                </div>
+              )}
             </div>
           )}
         </div>
 
         <div className="flex items-center justify-between border-t border-gray-100 pt-3">
           <p className="text-xs text-gray-400">
-            {assets ? `${assets.length} image${assets.length !== 1 ? "s" : ""}` : ""}
+            {hasAnyAssets
+              ? `${(storeAssets?.length || 0) + orgOnlyAssets.length} image${(storeAssets?.length || 0) + orgOnlyAssets.length !== 1 ? "s" : ""}`
+              : ""}
           </p>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={onClose}>Cancel</Button>

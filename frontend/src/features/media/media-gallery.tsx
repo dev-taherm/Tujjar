@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useMediaAssets, useUploadMedia, useDeleteMedia, useMediaFolders, useCreateMediaFolder } from "@/api/queries";
+import { useStores } from "@/api/queries";
 import { Button, Input, Badge } from "@/shared/ui";
 import { Upload, Image, Film, FileText, FolderPlus, Trash2, Search, Grid, List, ArrowLeft, Folder, Eye } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
@@ -10,9 +11,15 @@ import { toast } from "sonner";
 
 type ViewMode = "grid" | "list";
 
-export function MediaGallery() {
+interface MediaGalleryProps {
+  selectedStoreId: string;
+  onStoreChange: (storeId: string) => void;
+}
+
+export function MediaGallery({ selectedStoreId, onStoreChange }: MediaGalleryProps) {
   const t = useTranslations("dashboard.media");
   const tc = useTranslations("common");
+  const { data: stores } = useStores();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [currentFolder, setCurrentFolder] = useState<string | undefined>();
@@ -21,11 +28,12 @@ export function MediaGallery() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: assets, isLoading } = useMediaAssets({
+    store: selectedStoreId || undefined,
     folder: currentFolder,
     file_type: typeFilter || undefined,
     search: search || undefined,
   });
-  const { data: folders } = useMediaFolders({ parent: currentFolder });
+  const { data: folders } = useMediaFolders({ store: selectedStoreId || undefined, parent: currentFolder });
   const uploadMedia = useUploadMedia();
   const deleteMedia = useDeleteMedia();
   const createFolder = useCreateMediaFolder();
@@ -61,7 +69,7 @@ export function MediaGallery() {
         toast.error(error);
         continue;
       }
-      await uploadMedia.mutateAsync({ file, folder: currentFolder });
+      await uploadMedia.mutateAsync({ file, folder: currentFolder, store: selectedStoreId || undefined });
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -133,6 +141,18 @@ export function MediaGallery() {
             <button onClick={() => setCurrentFolder(undefined)} className="rounded p-1 hover:bg-gray-100">
               <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
             </button>
+          )}
+          {stores && stores.length > 1 && (
+            <select
+              value={selectedStoreId}
+              onChange={(e) => { onStoreChange(e.target.value); setCurrentFolder(undefined); }}
+              className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+            >
+              <option value="">All Stores</option>
+              {stores.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
           )}
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />

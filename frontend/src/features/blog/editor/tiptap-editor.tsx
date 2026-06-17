@@ -24,6 +24,8 @@ interface TiptapEditorProps {
   placeholder?: string;
   editable?: boolean;
   className?: string;
+  onImageInsert?: () => void;
+  pendingImageInsert?: string | null;
 }
 
 export function TiptapEditor({
@@ -32,6 +34,8 @@ export function TiptapEditor({
   placeholder = "Start writing...",
   editable = true,
   className,
+  onImageInsert,
+  pendingImageInsert,
 }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -82,6 +86,12 @@ export function TiptapEditor({
     }
   }, [content, editor]);
 
+  useEffect(() => {
+    if (editor && pendingImageInsert) {
+      editor.chain().focus().setImage({ src: pendingImageInsert }).run();
+    }
+  }, [pendingImageInsert, editor]);
+
   if (!editor) {
     return (
       <div className="min-h-[400px] animate-pulse rounded-xl border border-gray-200 bg-white p-4">
@@ -92,7 +102,7 @@ export function TiptapEditor({
 
   return (
     <div className={`overflow-hidden rounded-xl border border-gray-200 bg-white ${className || ""}`}>
-      {editable && <EditorToolbar editor={editor} />}
+      {editable && <EditorToolbar editor={editor} onImageInsert={onImageInsert} />}
       <EditorContent editor={editor} className="tiptap-editor" />
     </div>
   );

@@ -4,9 +4,13 @@ import { useMediaStats } from "@/api/queries";
 import { Image, Film, FileText, HardDrive } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-export function MediaStatsCards() {
+interface MediaStatsCardsProps {
+  storeId?: string;
+}
+
+export function MediaStatsCards({ storeId }: MediaStatsCardsProps) {
   const t = useTranslations("dashboard.media");
-  const { data: stats } = useMediaStats();
+  const { data: stats } = useMediaStats(storeId);
   return (
     <div className="grid grid-cols-4 gap-4 mb-6">
       {[

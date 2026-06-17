@@ -26,10 +26,15 @@ import {
 
 interface EditorToolbarProps {
   editor: Editor;
+  onImageInsert?: (url: string) => void;
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onImageInsert }: EditorToolbarProps) {
   const addImage = () => {
+    if (onImageInsert) {
+      onImageInsert("");
+      return;
+    }
     const url = window.prompt("Enter image URL:");
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();

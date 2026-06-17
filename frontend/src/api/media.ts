@@ -42,8 +42,9 @@ export const mediaApi = {
     return data;
   },
 
-  getStats: async (): Promise<MediaStats> => {
-    const { data } = await apiClient.get("/media/assets/stats/");
+  getStats: async (store?: string): Promise<MediaStats> => {
+    const qs = store ? `?store=${store}` : "";
+    const { data } = await apiClient.get(`/media/assets/stats/${qs}`);
     return data;
   },
 
@@ -73,10 +74,10 @@ export function useMediaAssets(params?: { store?: string; folder?: string; file_
   });
 }
 
-export function useMediaStats() {
+export function useMediaStats(store?: string) {
   return useQuery({
-    queryKey: ["media", "stats"],
-    queryFn: mediaApi.getStats,
+    queryKey: ["media", "stats", store],
+    queryFn: () => mediaApi.getStats(store),
   });
 }
 

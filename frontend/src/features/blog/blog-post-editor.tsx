@@ -42,6 +42,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
   const [featuredImageAlt, setFeaturedImageAlt] = useState("");
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [showContentImagePicker, setShowContentImagePicker] = useState(false);
+  const [pendingImageInsert, setPendingImageInsert] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
@@ -175,8 +177,10 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
 
         <TiptapEditor
           content={content}
-          onChange={(html) => { setContent(html); setHasUnsavedChanges(true); }}
+          onChange={(html) => { setContent(html); setPendingImageInsert(null); setHasUnsavedChanges(true); }}
           placeholder="Start writing your post..."
+          onImageInsert={() => setShowContentImagePicker(true)}
+          pendingImageInsert={pendingImageInsert}
         />
       </div>
 
@@ -233,6 +237,16 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
           onSelect={(asset) => {
             setFeaturedImage(asset.id);
             setFeaturedImageUrl(asset.file_url);
+            setHasUnsavedChanges(true);
+          }}
+          storeId={store?.id}
+        />
+
+        <MediaPickerModal
+          open={showContentImagePicker}
+          onClose={() => setShowContentImagePicker(false)}
+          onSelect={(asset) => {
+            setPendingImageInsert(asset.file_url);
             setHasUnsavedChanges(true);
           }}
           storeId={store?.id}

@@ -170,13 +170,13 @@ class BlogPostSerializer(serializers.ModelSerializer):
         ]
 
     def get_featured_image_url(self, obj) -> str | None:
-        if obj.featured_image and hasattr(obj.featured_image, "file"):
-            return obj.featured_image.file.url if obj.featured_image.file else None
+        if obj.featured_image and obj.featured_image.file_url:
+            return obj.featured_image.file_url
         return None
 
     def get_og_image_url(self, obj) -> str | None:
-        if obj.og_image and hasattr(obj.og_image, "file"):
-            return obj.og_image.file.url if obj.og_image.file else None
+        if obj.og_image and obj.og_image.file_url:
+            return obj.og_image.file_url
         return None
 
     def get_comment_count(self, obj) -> int:
