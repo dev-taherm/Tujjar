@@ -97,8 +97,8 @@ body {
 }
 
 .dark body {
-  background: #111827;
-  color: #f3f4f6;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .dark {
@@ -106,31 +106,31 @@ body {
 }
 
 .dark header {
-  border-color: #1f2937;
-  background: #111827;
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .dark header nav a {
-  color: #9ca3af;
+  color: var(--color-text-secondary);
 }
 
 .dark header nav a:hover {
-  color: #ffffff;
+  color: var(--color-text);
 }
 
 .dark footer {
-  border-color: #1f2937;
-  background: #030712;
+  border-color: var(--color-border);
+  background: var(--color-surface);
 }
 
 .dark footer h4 {
-  color: #ffffff;
+  color: var(--color-text);
 }
 
 .dark footer a {
-  color: #9ca3af;
+  color: var(--color-text-secondary);
 }
 
 .dark footer a:hover {
-  color: #ffffff;
+  color: var(--color-text);
 }
