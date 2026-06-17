@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download, History } from "lucide-react";
 import type { Template } from "@/api/templates";
 import { Dialog } from "@/shared/ui";
 import { useTranslations } from "next-intl";
@@ -10,10 +10,12 @@ interface TemplatePreviewProps {
   template: Template;
   onClose: () => void;
   onInstall: (template: Template) => void;
+  onExport?: (template: Template) => void;
+  onVersionHistory?: (template: Template) => void;
   isInstalling?: boolean;
 }
 
-export function TemplatePreview({ template, onClose, onInstall, isInstalling }: TemplatePreviewProps) {
+export function TemplatePreview({ template, onClose, onInstall, onExport, onVersionHistory, isInstalling }: TemplatePreviewProps) {
   const t = useTranslations("dashboard.templates");
   const tc = useTranslations("common");
   const [activePageIndex, setActivePageIndex] = useState(0);
@@ -108,9 +110,29 @@ export function TemplatePreview({ template, onClose, onInstall, isInstalling }: 
       </div>
 
       <div className="flex items-center justify-between -mx-6 px-6 -mb-6 pb-6 pt-4 border-t bg-gray-50">
-        <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200">
-          {tc("close")}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200">
+            {tc("close")}
+          </button>
+          {onExport && (
+            <button
+              onClick={() => onExport(template)}
+              className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+            >
+              <Download className="h-4 w-4" />
+              {t("export")}
+            </button>
+          )}
+          {onVersionHistory && (
+            <button
+              onClick={() => onVersionHistory(template)}
+              className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+            >
+              <History className="h-4 w-4" />
+              {t("versionHistory")}
+            </button>
+          )}
+        </div>
         <button
           onClick={() => onInstall(template)}
           disabled={isInstalling}

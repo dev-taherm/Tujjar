@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/shared/ui";
-import { Eye, Check, Loader2 } from "lucide-react";
+import { Eye, Check, Loader2, Copy, Trash2 } from "lucide-react";
 import type { Template } from "@/api/templates";
 import { useTranslations } from "next-intl";
 
@@ -27,12 +27,15 @@ interface TemplateCardProps {
   template: Template;
   onPreview: (template: Template) => void;
   onInstall: (template: Template) => void;
+  onDuplicate?: (template: Template) => void;
+  onDelete?: (template: Template) => void;
   isInstalling?: boolean;
   showInstallButton?: boolean;
 }
 
-export function TemplateCard({ template, onPreview, onInstall, isInstalling, showInstallButton = true }: TemplateCardProps) {
+export function TemplateCard({ template, onPreview, onInstall, onDuplicate, onDelete, isInstalling, showInstallButton = true }: TemplateCardProps) {
   const t = useTranslations("dashboard.templates");
+  const tc = useTranslations("common");
   const gradient = CATEGORY_GRADIENTS[template.category] || CATEGORY_GRADIENTS.general;
   const colorClass = CATEGORY_COLORS[template.category] || CATEGORY_COLORS.general;
 
@@ -106,6 +109,30 @@ export function TemplateCard({ template, onPreview, onInstall, isInstalling, sho
             </button>
           )}
         </div>
+
+        {/* Non-system actions */}
+        {!template.is_system && (onDuplicate || onDelete) && (
+          <div className="mt-2 flex gap-2">
+            {onDuplicate && (
+              <button
+                onClick={() => onDuplicate(template)}
+                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
+              >
+                <Copy className="h-3 w-3" />
+                {t("duplicate")}
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(template)}
+                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+              >
+                <Trash2 className="h-3 w-3" />
+                {tc("delete")}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

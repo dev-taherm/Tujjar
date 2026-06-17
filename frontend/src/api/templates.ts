@@ -114,6 +114,15 @@ export const templatesApi = {
 
   rollback: (id: UUID, versionId: string) =>
     apiClient.post<Template>(`/templates/${id}/rollback/`, { version_id: versionId }).then((r) => r.data),
+
+  previewInstall: (id: UUID, storeId: string) =>
+    apiClient.get<{ replaced: { pages: number; collections: number; categories: number } }>(
+      `/templates/${id}/preview-install/`,
+      { params: { store_id: storeId } }
+    ).then((r) => r.data),
+
+  createSnapshot: (id: UUID, note: string) =>
+    apiClient.post<Template>(`/templates/${id}/snapshot/`, { note }).then((r) => r.data),
 };
 
 export function useTemplates(category?: string) {
@@ -226,6 +235,24 @@ export function useRollbackTemplate() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["templates"] });
       queryClient.invalidateQueries({ queryKey: ["templates", variables.templateId] });
+      queryClient.invalidateQueries({ queryKey: ["templates", variables.templateId, "versions"] });
+    },
+  });
+}
+
+export function usePreviewInstall() {
+  return useMutation({
+    mutationFn: ({ templateId, storeId }: { templateId: UUID; storeId: string }) =>
+      templatesApi.previewInstall(templateId, storeId),
+  });
+}
+
+export function useCreateTemplateSnapshot() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ templateId, note }: { templateId: UUID; note: string }) =>
+      templatesApi.createSnapshot(templateId, note),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["templates", variables.templateId, "versions"] });
     },
   });

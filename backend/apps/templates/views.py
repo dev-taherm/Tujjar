@@ -277,6 +277,46 @@ class TemplateViewSet(TenantViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @action(detail=True, methods=["get"], url_path="preview-install")
+    def preview_install(self, request, pk=None):
+        """Preview what would be replaced when installing this template."""
+        self.get_object()
+        store_id = request.query_params.get("store_id")
+        if not store_id:
+            return Response(
+                {"detail": "store_id query parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from apps.stores.models import Store
+
+        try:
+            store = Store.objects.get(id=store_id, organization_id=request.org_id)
+        except Store.DoesNotExist:
+            return Response(
+                {"detail": "Store not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        from apps.pages.models import Page
+        from apps.products.models import Category, Collection
+
+        return Response(
+            {
+                "replaced": {
+                    "pages": Page.objects.filter(
+                        organization_id=request.org_id, store=store
+                    ).count(),
+                    "collections": Collection.objects.filter(
+                        organization_id=request.org_id, store=store
+                    ).count(),
+                    "categories": Category.objects.filter(
+                        organization_id=request.org_id, store=store
+                    ).count(),
+                }
+            }
+        )
+
     @action(detail=True, methods=["get"])
     def preview(self, request, pk=None):
         """Get full template preview data."""
