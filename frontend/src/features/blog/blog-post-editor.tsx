@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Save, Eye, ArrowLeft, Calendar, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { useBlogPost, useCreateBlogPost, useUpdateBlogPost, useAutoSaveBlogPost } from "@/api/blog";
+import { useBlogPost, useCreateBlogPost, useUpdateBlogPost, useAutoSaveBlogPost, useBlogCategories, useBlogTags } from "@/api/blog";
 import { useStores } from "@/api/queries";
 import { Button } from "@/shared/ui";
 import { TiptapEditor } from "./editor";
@@ -24,6 +24,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const isNew = !postId || postId === "new";
 
   const { data: existingPost, isLoading } = useBlogPost(isNew ? "" : postId || "");
+  const { data: availableCategories } = useBlogCategories(store?.id);
+  const { data: availableTags } = useBlogTags(store?.id);
   const createPost = useCreateBlogPost();
   const updatePost = useUpdateBlogPost();
   const autoSave = useAutoSaveBlogPost();
@@ -33,6 +35,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<"draft" | "published" | "scheduled" | "archived">("draft");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
@@ -54,6 +58,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
       setExcerpt(existingPost.excerpt);
       setContent(existingPost.content);
       setStatus(existingPost.status);
+      setSelectedCategories(existingPost.categories || []);
+      setSelectedTags(existingPost.tags || []);
       setSeoTitle(existingPost.seo_title);
       setSeoDescription(existingPost.seo_description);
     }
@@ -98,6 +104,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
       status,
       excerpt,
       content,
+      categories: selectedCategories,
+      tags: selectedTags,
       seo_title: seoTitle,
       seo_description: seoDescription,
     };
@@ -215,6 +223,67 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
             <option value="scheduled">Scheduled</option>
             <option value="archived">Archived</option>
           </select>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <h3 className="mb-3 text-sm font-semibold text-gray-900">Categories</h3>
+          {availableCategories && availableCategories.length > 0 ? (
+            <div className="space-y-1">
+              {availableCategories.map((cat) => (
+                <label
+                  key={cat.id}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-gray-50"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(cat.id)}
+                    onChange={(e) => {
+                      setSelectedCategories(
+                        e.target.checked
+                          ? [...selectedCategories, cat.id]
+                          : selectedCategories.filter((id) => id !== cat.id)
+                      );
+                      setHasUnsavedChanges(true);
+                    }}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-gray-700">{cat.name}</span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400">No categories yet. Create them in the Categories tab.</p>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <h3 className="mb-3 text-sm font-semibold text-gray-900">Tags</h3>
+          {availableTags && availableTags.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {availableTags.map((tag) => (
+                <button
+                  key={tag.id}
+                  onClick={() => {
+                    setSelectedTags(
+                      selectedTags.includes(tag.id)
+                        ? selectedTags.filter((id) => id !== tag.id)
+                        : [...selectedTags, tag.id]
+                    );
+                    setHasUnsavedChanges(true);
+                  }}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                    selectedTags.includes(tag.id)
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400">No tags yet. Create them in the Tags tab.</p>
+          )}
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-4">

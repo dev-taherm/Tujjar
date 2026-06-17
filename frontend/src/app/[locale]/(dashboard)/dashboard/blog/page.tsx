@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { FileText, Tags, FolderOpen, MessageSquare, Settings } from "lucide-react";
 import { BlogPostList } from "@/features/blog/blog-post-list";
+import { BlogCategoryManager } from "@/features/blog/blog-category-manager";
+import { BlogTagManager } from "@/features/blog/blog-tag-manager";
 import { BlogCommentManager } from "@/features/blog/blog-comment-manager";
 
 type Tab = "posts" | "categories" | "tags" | "comments" | "settings";
@@ -43,40 +45,10 @@ export default function BlogPage() {
       </div>
 
       {tab === "posts" && <BlogPostList />}
-      {tab === "categories" && <BlogCategoryList />}
-      {tab === "tags" && <BlogTagList />}
+      {tab === "categories" && <BlogCategoryManager />}
+      {tab === "tags" && <BlogTagManager />}
       {tab === "comments" && <BlogCommentManager />}
       {tab === "settings" && <BlogSettings />}
-    </div>
-  );
-}
-
-function BlogCategoryList() {
-  const t = useTranslations("dashboard.blog");
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
-      <h3 className="text-lg font-semibold text-gray-900">{t("categories.title")}</h3>
-      <p className="mt-1 text-sm text-gray-500">{t("categories.description")}</p>
-    </div>
-  );
-}
-
-function BlogTagList() {
-  const t = useTranslations("dashboard.blog");
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
-      <h3 className="text-lg font-semibold text-gray-900">{t("tags.title")}</h3>
-      <p className="mt-1 text-sm text-gray-500">{t("tags.description")}</p>
-    </div>
-  );
-}
-
-function BlogCommentList() {
-  const t = useTranslations("dashboard.blog");
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
-      <h3 className="text-lg font-semibold text-gray-900">{t("comments.title")}</h3>
-      <p className="mt-1 text-sm text-gray-500">{t("comments.description")}</p>
     </div>
   );
 }
