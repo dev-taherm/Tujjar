@@ -36,19 +36,21 @@ export default function StorefrontProductsPage({ params }: { params: Promise<{ s
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t("allProducts")}</h1>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("allProducts")}</h1>
         <div className="flex items-center gap-4">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="rounded-lg border px-3 py-1.5 text-sm"
+            style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
           />
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="rounded-lg border px-3 py-1.5 text-sm"
+            style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}
           >
             {sortOptions.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -59,11 +61,11 @@ export default function StorefrontProductsPage({ params }: { params: Promise<{ s
       {isLoading ? (
         <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="aspect-square animate-pulse rounded-xl bg-gray-200" />
+            <div key={i} className="aspect-square animate-pulse rounded-xl" style={{ background: "var(--color-surface)" }} />
           ))}
         </div>
       ) : !products?.length ? (
-        <div className="mt-6 rounded-xl border border-dashed border-gray-300 p-12 text-center text-gray-500">
+        <div className="mt-6 rounded-xl border border-dashed p-12 text-center" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
           {t("noProducts")}
         </div>
       ) : (
