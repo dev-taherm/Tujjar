@@ -5,12 +5,12 @@ import uuid
 
 import pytest
 from rest_framework import status
-
-from apps.themes.models import Theme, ThemePreset, ThemeVersion
 from tests.factories import (
     create_org_with_owner,
     create_org_with_owner_and_store,
 )
+
+from apps.themes.models import Theme, ThemePreset, ThemeVersion
 
 
 def _get_response_data(response):

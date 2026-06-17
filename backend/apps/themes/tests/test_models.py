@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import copy
-
 import pytest
 
 from apps.themes.models import Theme, ThemePreset, ThemeVersion, _deep_merge
@@ -159,7 +157,7 @@ class TestThemeVersion:
     def test_ordering_by_created_at_desc(self):
         from apps.authentication.models import User
 
-        user = User.objects.create_user(email="v@test.com", password="pass123")
+        User.objects.create_user(email="v@test.com", password="pass123")
         theme = Theme.objects.create(name="T", slug="t")
         v1 = ThemeVersion.objects.create(theme=theme, version="1.0.0", note="first")
         v2 = ThemeVersion.objects.create(theme=theme, version="1.0.1", note="second")
