@@ -496,7 +496,17 @@
       "noThemes": "لم يتم تثبيت أي سمات",
       "browseMarketplaceButton": "تصفح السوق",
       "preset": "إعداد مسبق",
-      "presetsLabel": "إعدادات مسبقة"
+      "presetsLabel": "إعدادات مسبقة",
+      "importTheme": "استيراد السمة",
+      "importDescription": "ارفع ملف سمة بصيغة JSON (نفس صيغة التصدير)",
+      "themeImported": "تم استيراد السمة بنجاح",
+      "importFailed": "فشل استيراد السمة",
+      "inherits": "يرث من",
+      "activeTheme": "السمة النشطة",
+      "noThemeDescription": "قم بتثبيت سمة من سوق السمات للبدء",
+      "themeApplied": "تم تطبيق السمة",
+      "applyToStore": "تطبيق على المتجر",
+      "active": "نشط"
     },
     "media": {
       "upload": "رفع",

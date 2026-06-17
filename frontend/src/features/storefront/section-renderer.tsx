@@ -5,7 +5,7 @@ import type { Section } from "@/shared/types";
 
 function SectionFallback({ section }: { section: Section }) {
   return (
-    <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">
+    <div className="rounded-lg border border-dashed p-8 text-center text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
       {section.type} section
     </div>
   );

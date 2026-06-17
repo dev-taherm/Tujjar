@@ -9,7 +9,7 @@ export function GalleryPreview({ section }: { section: Section }) {
       {title && <h2 className="mb-6 text-2xl font-bold">{title}</h2>}
       <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="aspect-square rounded-lg bg-gray-100" />
+          <div key={i} className="aspect-square rounded-lg" style={{ background: "var(--color-surface)" }} />
         ))}
       </div>
     </div>

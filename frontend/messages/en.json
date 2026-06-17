@@ -496,7 +496,17 @@
       "noThemes": "No themes installed",
       "browseMarketplaceButton": "Browse Marketplace",
       "preset": "preset",
-      "presetsLabel": "presets"
+      "presetsLabel": "presets",
+      "importTheme": "Import Theme",
+      "importDescription": "Upload a theme JSON file (same format as export)",
+      "themeImported": "Theme imported successfully",
+      "importFailed": "Failed to import theme",
+      "inherits": "Inherits",
+      "activeTheme": "Active Theme",
+      "noThemeDescription": "Install a theme from the marketplace to get started",
+      "themeApplied": "Theme applied",
+      "applyToStore": "Apply to Store",
+      "active": "Active"
     },
     "media": {
       "upload": "Upload",

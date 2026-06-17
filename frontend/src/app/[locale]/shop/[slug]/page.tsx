@@ -84,8 +84,8 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
         <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-primary-50">
           <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
             <div className="max-w-2xl animate-pulse">
-              <div className="h-12 w-3/4 rounded bg-gray-200" />
-              <div className="mt-6 h-6 w-1/2 rounded bg-gray-200" />
+              <div className="h-12 w-3/4 rounded" style={{ background: "var(--color-surface)" }} />
+              <div className="mt-6 h-6 w-1/2 rounded" style={{ background: "var(--color-surface)" }} />
             </div>
           </div>
         </section>
@@ -96,8 +96,8 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center py-24">
-        <h1 className="text-2xl font-bold text-gray-900">{tNotFound("title")}</h1>
-        <p className="mt-2 text-gray-500">{tNotFound("description")}</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{tNotFound("title")}</h1>
+        <p className="mt-2" style={{ color: "var(--color-text-secondary)" }}>{tNotFound("description")}</p>
         <Link href={`/${locale}`} className="mt-6">
           <Button>{tNotFound("goToTujjar")}</Button>
         </Link>
@@ -115,7 +115,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
         {featuredProducts.length > 0 && (
           <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">{t("featuredProducts")}</h2>
+              <h2 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("featuredProducts")}</h2>
               <Link href={`/${locale}/shop/${slug}/shop`} className="text-sm font-medium text-primary-600 hover:text-primary-700">
                 {t("viewAll")}
               </Link>
@@ -136,16 +136,16 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-primary-50">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl" style={{ color: "var(--color-text)" }}>
               {store!.name}
             </h1>
             {store!.description && (
-              <p className="mt-6 text-lg text-gray-600">
+              <p className="mt-6 text-lg" style={{ color: "var(--color-text-secondary)" }}>
                 {store!.description}
               </p>
             )}
             {!store!.description && (
-              <p className="mt-6 text-lg text-gray-600">
+              <p className="mt-6 text-lg" style={{ color: "var(--color-text-secondary)" }}>
                 {t("discoverProducts")}
               </p>
             )}
@@ -162,7 +162,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
 
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">{t("featuredProducts")}</h2>
+          <h2 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("featuredProducts")}</h2>
           <Link href={`/${locale}/shop/${slug}/shop`} className="text-sm font-medium text-primary-600 hover:text-primary-700">
             {t("viewAll")}
           </Link>
@@ -174,7 +174,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
             ))}
           </div>
         ) : (
-          <div className="mt-6 rounded-xl border border-dashed border-gray-300 p-12 text-center text-gray-500">
+          <div className="mt-6 rounded-xl border border-dashed p-12 text-center" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
             {t("noFeaturedProducts")}
           </div>
         )}

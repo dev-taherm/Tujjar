@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { use, useEffect, useSyncExternalStore, useState, useCallback } from "react";
+import { useEffect, useSyncExternalStore, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
 import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon } from "lucide-react";
@@ -118,17 +118,20 @@ export default function StorefrontLayout({
   const navigation: Navigation = store?.navigation || {};
   const footerConfig: FooterConfig = store?.footer_config || {};
 
-  // Dark mode state
-  const [isDark, setIsDark] = useState(false);
+  // Dark mode state — derived from DOM
+  const subscribeDark = useCallback(() => () => {}, []);
+  const isDark = useSyncExternalStore(
+    subscribeDark,
+    () => document.documentElement.classList.contains("dark"),
+    () => false,
+  );
+
   const toggleDark = useCallback(() => {
-    setIsDark((prev) => {
-      const next = !prev;
-      document.documentElement.classList.toggle("dark", next);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("tujjar-dark-mode", String(next));
-      }
-      return next;
-    });
+    const next = !document.documentElement.classList.contains("dark");
+    document.documentElement.classList.toggle("dark", next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("tujjar-dark-mode", String(next));
+    }
   }, []);
 
   // Initialize dark mode from localStorage or theme default
@@ -136,19 +139,11 @@ export default function StorefrontLayout({
     const theme = store?.theme_config;
     if (!theme?.darkMode?.enabled) {
       document.documentElement.classList.remove("dark");
-      setIsDark(false);
       return;
     }
     const stored = localStorage.getItem("tujjar-dark-mode");
-    if (stored !== null) {
-      const dark = stored === "true";
-      document.documentElement.classList.toggle("dark", dark);
-      setIsDark(dark);
-    } else {
-      const dark = theme.darkMode.default;
-      document.documentElement.classList.toggle("dark", dark);
-      setIsDark(dark);
-    }
+    const dark = stored !== null ? stored === "true" : theme.darkMode.default;
+    document.documentElement.classList.toggle("dark", dark);
   }, [store?.theme_config]);
 
   // Apply favicon
@@ -243,14 +238,11 @@ export default function StorefrontLayout({
     }
 
     if (theme.animations) {
-      root.style.setProperty("--transition-duration", theme.animations.enabled ? (theme.animations.duration || "0.3s") : "0s");
+      const durationMap: Record<string, string> = { fast: "0.15s", normal: "0.3s", slow: "0.5s" };
+      const raw = theme.animations.duration || "0.3s";
+      const duration = theme.animations.enabled ? (durationMap[raw] || raw) : "0s";
+      root.style.setProperty("--transition-duration", duration);
       root.style.setProperty("--transition-easing", theme.animations.easing || "ease");
-    }
-
-    if (theme.darkMode?.enabled) {
-      root.classList.toggle("dark", theme.darkMode.default);
-    } else {
-      root.classList.remove("dark");
     }
   }, [store?.theme_config]);
 
@@ -279,7 +271,6 @@ export default function StorefrontLayout({
 
   // Inject custom CSS from theme assets
   useEffect(() => {
-    const theme = store?.theme_config;
     const assets = (store as unknown as { theme_assets?: Record<string, unknown> })?.theme_assets;
     const customCss = assets?.custom_css || "";
     if (!customCss) return;
@@ -354,10 +345,10 @@ export default function StorefrontLayout({
   const copyrightText = resolveField(footerConfig.copyright as string | Record<string, string> | undefined, tNav("poweredBy"));
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200">
+    <div className="min-h-screen" style={{ background: "var(--color-bg)" }}>
+      <header className="border-b" style={{ borderColor: "var(--color-border)" }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href={slug ? (subdomainSlug ? `/${locale}` : `/${locale}/shop/${slug}`) : "#"} className="flex items-center gap-2 text-xl font-bold text-gray-900">
+          <Link href={slug ? (subdomainSlug ? `/${locale}` : `/${locale}/shop/${slug}`) : "#"} className="flex items-center gap-2 text-xl font-bold" style={{ color: "var(--color-text)" }}>
             {store?.logo_url ? (
               <img src={store.logo_url} alt={store.name} className="h-8 w-auto object-contain" />
             ) : null}
@@ -368,7 +359,10 @@ export default function StorefrontLayout({
               <Link
                 key={link.url}
                 href={prefixLink(link.url)}
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                className="text-sm font-medium transition-colors"
+                style={{ color: "var(--color-text-secondary)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
               >
                 {resolveLabel(link.label)}
               </Link>
@@ -379,7 +373,10 @@ export default function StorefrontLayout({
             {store?.theme_config?.darkMode?.enabled && store.theme_config.darkMode.toggle && (
               <button
                 onClick={toggleDark}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                className="rounded-lg p-2 transition-colors"
+                style={{ color: "var(--color-text-secondary)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 aria-label="Toggle dark mode"
               >
                 {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -393,34 +390,54 @@ export default function StorefrontLayout({
                 {resolveLabel(navigation.cta_button?.label)}
               </Link>
             )}
-            <button className="rounded-lg p-2 text-gray-500 hover:bg-gray-100">
+            <button
+              className="rounded-lg p-2 transition-colors"
+              style={{ color: "var(--color-text-secondary)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
               <Search className="h-5 w-5" />
             </button>
-            <Link href={slug ? (subdomainSlug ? `/${locale}/shop/cart` : `/${locale}/shop/${slug}/shop/cart`) : "#"} className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100">
+            <Link
+              href={slug ? (subdomainSlug ? `/${locale}/shop/cart` : `/${locale}/shop/${slug}/shop/cart`) : "#"}
+              className="relative rounded-lg p-2 transition-colors"
+              style={{ color: "var(--color-text-secondary)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-[10px] text-white">
                 0
               </span>
             </Link>
-            <Link href={`/${locale}/login`} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100">
+            <Link
+              href={`/${locale}/login`}
+              className="rounded-lg p-2 transition-colors"
+              style={{ color: "var(--color-text-secondary)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
               <User className="h-5 w-5" />
             </Link>
           </div>
         </div>
       </header>
       <main>{children}</main>
-      <footer className="border-t border-gray-200 bg-gray-50">
+      <footer className="border-t" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 text-sm text-gray-500">
+          <div className="grid grid-cols-3 gap-8 text-sm" style={{ color: "var(--color-text-secondary)" }}>
             {footerColumns.map((column) => (
               <div key={column.title}>
-                <h4 className="mb-3 font-semibold text-gray-900">{resolveLabel(column.title)}</h4>
+                <h4 className="mb-3 font-semibold" style={{ color: "var(--color-text)" }}>{resolveLabel(column.title)}</h4>
                 <div className="space-y-2">
                    {column.links.map((link) => (
                     <Link
                       key={`${column.title}-${link.label}`}
                       href={prefixLink(link.url)}
-                      className="block hover:text-gray-900"
+                      className="block transition-colors"
+                      style={{ color: "var(--color-text-secondary)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
                     >
                       {resolveLabel(link.label)}
                     </Link>
@@ -429,7 +446,6 @@ export default function StorefrontLayout({
               </div>
             ))}
           </div>
-          {/* Social Links */}
           {footerConfig.social_links && Object.keys(footerConfig.social_links).length > 0 && (
             <div className="mt-6 flex items-center gap-4">
               {Object.entries(footerConfig.social_links).map(([platform, url]) => {
@@ -441,7 +457,10 @@ export default function StorefrontLayout({
                     href={url as string}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-600"
+                    className="transition-colors"
+                    style={{ color: "var(--color-text-secondary)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
                   >
                     {Icon ? <Icon className="h-5 w-5" /> : <span className="text-xs">{platform}</span>}
                   </a>
@@ -449,7 +468,7 @@ export default function StorefrontLayout({
               })}
             </div>
           )}
-          <div className="mt-8 border-t border-gray-200 pt-4 text-center text-xs text-gray-400">
+          <div className="mt-8 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
             {copyrightText}
           </div>
         </div>

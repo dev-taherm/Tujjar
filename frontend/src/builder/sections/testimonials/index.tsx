@@ -9,10 +9,10 @@ export function TestimonialsPreview({ section }: { section: Section }) {
       {title && <h2 className="mb-6 text-2xl font-bold">{title}</h2>}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {items.map((t, i) => (
-          <div key={i} className="rounded-lg border border-gray-200 p-6">
-            <p className="mb-4 text-gray-600 italic">&quot;{t.quote}&quot;</p>
+          <div key={i} className="rounded-lg border p-6" style={{ borderColor: "var(--color-border)" }}>
+            <p className="mb-4 italic" style={{ color: "var(--color-text-secondary)" }}>&quot;{t.quote}&quot;</p>
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gray-200" />
+              <div className="h-10 w-10 rounded-full" style={{ background: "var(--color-surface)" }} />
               <div>
                 <p className="font-medium">{t.name}</p>
                 <div className="flex gap-0.5 text-yellow-400">

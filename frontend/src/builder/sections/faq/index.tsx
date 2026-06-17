@@ -11,12 +11,12 @@ export function FaqPreview({ section }: { section: Section }) {
       {title && <h2 className="mb-6 text-2xl font-bold">{title}</h2>}
       <div className="space-y-3 max-w-2xl">
         {faqs.map((faq, i) => (
-          <div key={i} className="rounded-lg border border-gray-200">
+          <div key={i} className="rounded-lg border" style={{ borderColor: "var(--color-border)" }}>
             <button className="flex w-full items-center justify-between px-4 py-3 text-start font-medium" onClick={() => setOpenIndex(openIndex === i ? null : i)}>
               {faq.question}
-              <span className="text-gray-400">{openIndex === i ? "\u2212" : "+"}</span>
+              <span style={{ color: "var(--color-text-secondary)" }}>{openIndex === i ? "\u2212" : "+"}</span>
             </button>
-            {openIndex === i && <div className="border-t border-gray-100 px-4 py-3 text-gray-600">{faq.answer}</div>}
+            {openIndex === i && <div className="border-t px-4 py-3" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>{faq.answer}</div>}
           </div>
         ))}
       </div>
