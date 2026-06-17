@@ -598,3 +598,76 @@ export function useBlogSubscribe() {
       blogSubscribersApi.subscribe(storeId, email),
   });
 }
+
+export interface BlogSettingsData {
+  id: string;
+  organization: string;
+  store: string;
+  posts_per_page: number;
+  default_status: "draft" | "published";
+  allow_comments: boolean;
+  comment_moderation: boolean;
+  show_author_bio: boolean;
+  rss_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const blogSettingsApi = {
+  get: async (storeId: string): Promise<BlogSettingsData> => {
+    const { data } = await apiClient.get(
+      `/blog/settings/?store=${storeId}`,
+    );
+    const results = unwrapResults(data);
+    return results[0] ?? null;
+  },
+
+  createOrUpdate: async (
+    storeId: string,
+    payload: Partial<BlogSettingsData>,
+  ): Promise<BlogSettingsData> => {
+    try {
+      const existing = await blogSettingsApi.get(storeId);
+      if (existing) {
+        const { data } = await apiClient.patch(
+          `/blog/settings/${existing.id}/`,
+          { ...payload, store: storeId },
+        );
+        return data;
+      }
+    } catch {
+      // no existing settings
+    }
+    const { data } = await apiClient.post("/blog/settings/", {
+      ...payload,
+      store: storeId,
+    });
+    return data;
+  },
+};
+
+export function useBlogSettings(storeId?: string) {
+  return useQuery({
+    queryKey: ["blog-settings", storeId],
+    queryFn: () => blogSettingsApi.get(storeId!),
+    enabled: !!storeId,
+  });
+}
+
+export function useSaveBlogSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      storeId,
+      payload,
+    }: {
+      storeId: string;
+      payload: Partial<BlogSettingsData>;
+    }) => blogSettingsApi.createOrUpdate(storeId, payload),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["blog-settings", variables.storeId],
+      });
+    },
+  });
+}

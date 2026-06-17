@@ -17,6 +17,7 @@ from .models import (
     BlogCategory,
     BlogComment,
     BlogPost,
+    BlogSettings,
     BlogSubscriber,
     BlogTag,
 )
@@ -26,6 +27,7 @@ from .serializers import (
     BlogCommentSerializer,
     BlogPostListSerializer,
     BlogPostSerializer,
+    BlogSettingsSerializer,
     BlogSubscriberSerializer,
     BlogTagSerializer,
 )
@@ -632,3 +634,23 @@ class BlogPublicSubscribeView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"detail": "Subscribed successfully!"}, status=status.HTTP_201_CREATED)
+
+
+class BlogSettingsViewSet(TenantViewSet):
+    """Per-store blog settings."""
+
+    serializer_class = BlogSettingsSerializer
+    required_permission = "settings.manage"
+
+    def get_queryset(self):
+        qs = BlogSettings.objects.filter(organization_id=self.request.org_id)
+        store_id = self.request.query_params.get("store")
+        if store_id:
+            qs = qs.filter(store_id=store_id)
+        return qs
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()

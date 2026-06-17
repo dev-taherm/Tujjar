@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { Save, Eye, ArrowLeft, Calendar, Settings, Image as ImageIcon, X } from "lucide-react";
+import { Save, Eye, ArrowLeft, Calendar, Settings, Image as ImageIcon, X, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { useBlogPost, useCreateBlogPost, useUpdateBlogPost, useAutoSaveBlogPost, useBlogCategories, useBlogTags } from "@/api/blog";
+import { useBlogPost, useCreateBlogPost, useUpdateBlogPost, useAutoSaveBlogPost, useBlogCategories, useBlogTags, useCreateBlogCategory, useCreateBlogTag } from "@/api/blog";
 import { useStores } from "@/api/queries";
 import { Button } from "@/shared/ui";
 import { TiptapEditor } from "./editor";
@@ -27,6 +27,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const { data: existingPost, isLoading } = useBlogPost(isNew ? "" : postId || "");
   const { data: availableCategories } = useBlogCategories(store?.id);
   const { data: availableTags } = useBlogTags(store?.id);
+  const createCategory = useCreateBlogCategory();
+  const createTag = useCreateBlogTag();
   const createPost = useCreateBlogPost();
   const updatePost = useUpdateBlogPost();
   const autoSave = useAutoSaveBlogPost();
@@ -48,6 +50,10 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [showNewTag, setShowNewTag] = useState(false);
+  const [newTagName, setNewTagName] = useState("");
 
   useEffect(() => {
     if (stores?.length && !selectedStoreId) {
@@ -92,6 +98,26 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
   }, []);
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim() || !store?.id) return;
+    const slug = generateSlug(newCategoryName);
+    const result = await createCategory.mutateAsync({ store: store.id, name: newCategoryName, slug });
+    setSelectedCategories([...selectedCategories, result.id]);
+    setNewCategoryName("");
+    setShowNewCategory(false);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleCreateTag = async () => {
+    if (!newTagName.trim() || !store?.id) return;
+    const slug = generateSlug(newTagName);
+    const result = await createTag.mutateAsync({ store: store.id, name: newTagName, slug });
+    setSelectedTags([...selectedTags, result.id]);
+    setNewTagName("");
+    setShowNewTag(false);
+    setHasUnsavedChanges(true);
+  };
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -307,7 +333,35 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-gray-900">Categories</h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-900">Categories</h3>
+            <button
+              onClick={() => setShowNewCategory(!showNewCategory)}
+              className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          {showNewCategory && (
+            <div className="mb-2 flex gap-1.5">
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Category name"
+                className="flex-1 rounded-lg border border-gray-200 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                onKeyDown={(e) => { if (e.key === "Enter") handleCreateCategory(); }}
+                autoFocus
+              />
+              <button
+                onClick={handleCreateCategory}
+                disabled={createCategory.isPending || !newCategoryName.trim()}
+                className="rounded-lg bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                Add
+              </button>
+            </div>
+          )}
           {availableCategories && availableCategories.length > 0 ? (
             <div className="space-y-1">
               {availableCategories.map((cat) => (
@@ -333,12 +387,40 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-gray-400">No categories yet. Create them in the Categories tab.</p>
+            <p className="text-xs text-gray-400">{showNewCategory ? "Type a name and click Add." : "No categories yet. Click + to create one."}</p>
           )}
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-gray-900">Tags</h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-900">Tags</h3>
+            <button
+              onClick={() => setShowNewTag(!showNewTag)}
+              className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          {showNewTag && (
+            <div className="mb-2 flex gap-1.5">
+              <input
+                type="text"
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                placeholder="Tag name"
+                className="flex-1 rounded-lg border border-gray-200 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                onKeyDown={(e) => { if (e.key === "Enter") handleCreateTag(); }}
+                autoFocus
+              />
+              <button
+                onClick={handleCreateTag}
+                disabled={createTag.isPending || !newTagName.trim()}
+                className="rounded-lg bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                Add
+              </button>
+            </div>
+          )}
           {availableTags && availableTags.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {availableTags.map((tag) => (
@@ -363,7 +445,7 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-gray-400">No tags yet. Create them in the Tags tab.</p>
+            <p className="text-xs text-gray-400">{showNewTag ? "Type a name and click Add." : "No tags yet. Click + to create one."}</p>
           )}
         </div>
 

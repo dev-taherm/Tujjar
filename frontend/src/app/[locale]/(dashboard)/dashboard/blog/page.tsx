@@ -7,12 +7,16 @@ import { BlogPostList } from "@/features/blog/blog-post-list";
 import { BlogCategoryManager } from "@/features/blog/blog-category-manager";
 import { BlogTagManager } from "@/features/blog/blog-tag-manager";
 import { BlogCommentManager } from "@/features/blog/blog-comment-manager";
+import { BlogSettings } from "@/features/blog/blog-settings";
+import { useStores } from "@/api/queries";
 
 type Tab = "posts" | "categories" | "tags" | "comments" | "settings";
 
 export default function BlogPage() {
   const t = useTranslations("dashboard.blog");
   const [tab, setTab] = useState<Tab>("posts");
+  const { data: stores } = useStores();
+  const storeId = stores?.[0]?.id;
 
   const tabs = [
     { key: "posts" as Tab, label: t("tabs.posts"), icon: FileText },
@@ -48,17 +52,7 @@ export default function BlogPage() {
       {tab === "categories" && <BlogCategoryManager />}
       {tab === "tags" && <BlogTagManager />}
       {tab === "comments" && <BlogCommentManager />}
-      {tab === "settings" && <BlogSettings />}
-    </div>
-  );
-}
-
-function BlogSettings() {
-  const t = useTranslations("dashboard.blog");
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
-      <h3 className="text-lg font-semibold text-gray-900">{t("settings.title")}</h3>
-      <p className="mt-1 text-sm text-gray-500">{t("settings.description")}</p>
+      {tab === "settings" && storeId && <BlogSettings storeId={storeId} />}
     </div>
   );
 }

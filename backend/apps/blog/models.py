@@ -367,3 +367,37 @@ class BlogSubscriber(UUIDModel, TimeStampedModel):
 
     def __str__(self):
         return self.email
+
+
+class BlogSettings(UUIDModel, TimeStampedModel):
+    """Per-store blog configuration."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization",
+        on_delete=models.CASCADE,
+        related_name="blog_settings",
+    )
+    store = models.OneToOneField(
+        "stores.Store",
+        on_delete=models.CASCADE,
+        related_name="blog_settings",
+    )
+    posts_per_page = models.PositiveIntegerField(default=10)
+    default_status = models.CharField(
+        max_length=20,
+        choices=[("draft", "Draft"), ("published", "Published")],
+        default="draft",
+    )
+    allow_comments = models.BooleanField(default=True)
+    comment_moderation = models.BooleanField(default=True)
+    show_author_bio = models.BooleanField(default=True)
+    rss_enabled = models.BooleanField(default=True)
+
+    objects = TenantManager()
+    unscoped = UnscopedManager()
+
+    class Meta:
+        verbose_name_plural = "blog settings"
+
+    def __str__(self):
+        return f"Blog Settings for {self.store}"

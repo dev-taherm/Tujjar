@@ -13,6 +13,7 @@ from .models import (
     BlogPost,
     BlogPostCategory,
     BlogPostTag,
+    BlogSettings,
     BlogSubscriber,
     BlogTag,
 )
@@ -268,6 +269,23 @@ class BlogSubscriberSerializer(serializers.ModelSerializer):
             "is_active", "subscribed_at", "unsubscribed_at",
         ]
         read_only_fields = ["id", "organization", "subscribed_at", "unsubscribed_at"]
+
+    def create(self, validated_data):
+        validated_data["organization"] = resolve_organization(self.context["request"].org_id)
+        return super().create(validated_data)
+
+
+class BlogSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogSettings
+        fields = [
+            "id", "organization", "store",
+            "posts_per_page", "default_status",
+            "allow_comments", "comment_moderation",
+            "show_author_bio", "rss_enabled",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
     def create(self, validated_data):
         validated_data["organization"] = resolve_organization(self.context["request"].org_id)

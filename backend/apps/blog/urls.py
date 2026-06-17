@@ -10,6 +10,7 @@ router.register(r"authors", views.BlogAuthorViewSet, basename="blog-author")
 router.register(r"posts", views.BlogPostViewSet, basename="blog-post")
 router.register(r"comments", views.BlogCommentViewSet, basename="blog-comment")
 router.register(r"subscribers", views.BlogSubscriberViewSet, basename="blog-subscriber")
+router.register(r"settings", views.BlogSettingsViewSet, basename="blog-settings")
 
 app_name = "blog"
 
