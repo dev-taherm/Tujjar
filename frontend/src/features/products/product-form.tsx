@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Textarea, Select, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
@@ -27,6 +27,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
   const [editLocale, setEditLocale] = useState("en");
   const [storeId, setStoreId] = useState(product?.store || "");
+  const effectiveStoreId = storeId || (!product ? stores?.[0]?.id || "" : "");
   const [title, setTitle] = useState(product?.title || "");
   const [slug, setSlug] = useState(product?.slug || "");
   const [description, setDescription] = useState(product?.description || "");
@@ -73,19 +74,6 @@ export function ProductForm({ product, mode }: ProductFormProps) {
     [product, mode]
   );
 
-  // Auto-select first store on load
-  useEffect(() => {
-    if (stores?.length && !storeId && !product) {
-      setStoreId(stores[0].id);
-    }
-  }, [stores, storeId, product]);
-
-  useEffect(() => {
-    if (!product && title && !slug) {
-      setSlug(slugify(title));
-    }
-  }, [title, product, slug]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
@@ -100,9 +88,9 @@ export function ProductForm({ product, mode }: ProductFormProps) {
     }
 
     const basePayload = {
-      store: storeId,
+      store: effectiveStoreId,
       title,
-      slug,
+      slug: slug || (!product ? slugify(title) : ""),
       description,
       product_type: productType,
       status,

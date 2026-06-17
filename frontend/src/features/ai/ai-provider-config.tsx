@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button, Input, Select, Card, CardContent, CardHeader, CardTitle, Badge } from "@/shared/ui";
 import { useAIProviders, useCreateAIProvider, useDeleteAIProvider } from "@/api/queries";
+import type { AIProvider } from "@/shared/types";
 import { Plus, Trash2, Check, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -41,12 +42,12 @@ export function AIProviderConfig() {
     if (!name) return;
     await createProvider.mutateAsync({
       name,
-      provider: provider as any,
+      provider: provider as AIProvider["provider"],
       model_name: model,
       api_key: apiKey,
       api_base_url: apiBase,
       is_default: !providers?.length,
-    } as any);
+    } as Partial<AIProvider>);
     setShowAdd(false);
     setName("");
     setApiKey("");

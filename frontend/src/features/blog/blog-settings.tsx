@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Toggle } from "@/shared/components/toggle";
 import { useBlogSettings, useSaveBlogSettings, type BlogSettingsData } from "@/api/blog";
@@ -21,20 +21,20 @@ const defaults: Omit<BlogSettingsData, "id" | "organization" | "store" | "create
 export function BlogSettings({ storeId }: BlogSettingsProps) {
   const { data: settings, isLoading } = useBlogSettings(storeId);
   const saveMutation = useSaveBlogSettings();
-  const [form, setForm] = useState(defaults);
+  const [overrides, setOverrides] = useState<Record<string, unknown>>({});
 
-  useEffect(() => {
-    if (settings) {
-      setForm({
-        posts_per_page: settings.posts_per_page,
-        default_status: settings.default_status,
-        allow_comments: settings.allow_comments,
-        comment_moderation: settings.comment_moderation,
-        show_author_bio: settings.show_author_bio,
-        rss_enabled: settings.rss_enabled,
-      });
-    }
-  }, [settings]);
+  const form = {
+    posts_per_page: (overrides.posts_per_page as number) ?? settings?.posts_per_page ?? defaults.posts_per_page,
+    default_status: (overrides.default_status as "draft" | "published") ?? settings?.default_status ?? defaults.default_status,
+    allow_comments: (overrides.allow_comments as boolean) ?? settings?.allow_comments ?? defaults.allow_comments,
+    comment_moderation: (overrides.comment_moderation as boolean) ?? settings?.comment_moderation ?? defaults.comment_moderation,
+    show_author_bio: (overrides.show_author_bio as boolean) ?? settings?.show_author_bio ?? defaults.show_author_bio,
+    rss_enabled: (overrides.rss_enabled as boolean) ?? settings?.rss_enabled ?? defaults.rss_enabled,
+  };
+
+  const updateForm = (key: string, value: unknown) => {
+    setOverrides((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleSave = async () => {
     try {
@@ -72,10 +72,7 @@ export function BlogSettings({ storeId }: BlogSettingsProps) {
                 max={100}
                 value={form.posts_per_page}
                 onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    posts_per_page: Math.max(1, parseInt(e.target.value, 10) || 1),
-                  }))
+                  updateForm("posts_per_page", Math.max(1, parseInt(e.target.value, 10) || 1))
                 }
                 className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
@@ -89,10 +86,7 @@ export function BlogSettings({ storeId }: BlogSettingsProps) {
                 id="default_status"
                 value={form.default_status}
                 onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    default_status: e.target.value as "draft" | "published",
-                  }))
+                  updateForm("default_status", e.target.value as "draft" | "published")
                 }
                 className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
@@ -105,25 +99,25 @@ export function BlogSettings({ storeId }: BlogSettingsProps) {
           <div className="space-y-4">
             <Toggle
               enabled={form.allow_comments}
-              onToggle={() => setForm((f) => ({ ...f, allow_comments: !f.allow_comments }))}
+              onToggle={() => updateForm("allow_comments", !form.allow_comments)}
               label="Allow comments"
               description="Visitors can leave comments on blog posts"
             />
             <Toggle
               enabled={form.comment_moderation}
-              onToggle={() => setForm((f) => ({ ...f, comment_moderation: !f.comment_moderation }))}
+              onToggle={() => updateForm("comment_moderation", !form.comment_moderation)}
               label="Comment moderation"
               description="New comments require approval before appearing"
             />
             <Toggle
               enabled={form.show_author_bio}
-              onToggle={() => setForm((f) => ({ ...f, show_author_bio: !f.show_author_bio }))}
+              onToggle={() => updateForm("show_author_bio", !form.show_author_bio)}
               label="Show author bio"
               description="Display author information below blog posts"
             />
             <Toggle
               enabled={form.rss_enabled}
-              onToggle={() => setForm((f) => ({ ...f, rss_enabled: !f.rss_enabled }))}
+              onToggle={() => updateForm("rss_enabled", !form.rss_enabled)}
               label="RSS feed enabled"
               description="Allow visitors to subscribe via RSS"
             />

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useAuthStore } from "../index";
+import type { User } from "@/shared/types";
 
 describe("AuthStore", () => {
   beforeEach(() => {
@@ -41,7 +42,7 @@ describe("AuthStore", () => {
   });
 
   it("should logout and clear state", () => {
-    useAuthStore.getState().setUser({ id: "1" } as any);
+    useAuthStore.getState().setUser({ id: "1" } as User);
     useAuthStore.getState().setTokens({ access: "a", refresh: "b" });
     useAuthStore.getState().logout();
     expect(useAuthStore.getState().user).toBeNull();

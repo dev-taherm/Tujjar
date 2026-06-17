@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useTheme, useUpdateTheme } from "@/api/queries";
+import type { ThemeConfig } from "@/shared/types";
 import { ThemeColorEditor } from "@/features/themes/theme-color-editor";
 import { ThemeTypographyEditor } from "@/features/themes/theme-typography-editor";
 import { ThemeSpacingEditor } from "@/features/themes/theme-spacing-editor";
@@ -31,13 +32,13 @@ export default function ThemeDetailPage() {
     return <div>{t("notFound")}</div>;
   }
 
-  const activeConfig = (config as any) || theme.config;
+  const activeConfig = (config as unknown as ThemeConfig) || theme.config;
 
   const handleSave = async () => {
     if (!config) return;
     await updateTheme.mutateAsync({
       id: theme.id,
-      config: config as any,
+      config: config as unknown as ThemeConfig,
     });
   };
 

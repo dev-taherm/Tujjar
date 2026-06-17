@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, Card, CardContent, CardHeader, CardTitle, Dialog, Input, EmptyState } from "@/shared/ui";
 import { slugify } from "@/lib/utils";
 import { useCollections, useCreateCollection, useDeleteCollection } from "@/api/queries";
+import type { Collection } from "@/shared/types";
 import { Plus, Layers, Trash2, Edit } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
@@ -23,7 +24,7 @@ export function CollectionList() {
 
   const handleCreate = async () => {
     if (!newName || !newSlug) return;
-    await createCollection.mutateAsync({ name: newName, slug: newSlug } as any);
+    await createCollection.mutateAsync({ name: newName, slug: newSlug } as Partial<Collection>);
     setShowCreate(false);
     setNewName("");
     setNewSlug("");

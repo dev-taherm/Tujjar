@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,13 +21,15 @@ import {
 } from "lucide-react";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 
+const emptySubscribe = () => () => {};
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations("admin.nav");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated } = useAuthStore();
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   const adminNav = [
     { name: t("overview"), href: "/admin", icon: LayoutDashboard },
@@ -37,10 +39,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: t("plans"), href: "/admin/plans", icon: CreditCard },
     { name: t("settings"), href: "/admin/settings", icon: Settings },
   ];
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (!hydrated) return;

@@ -5,6 +5,7 @@ import { getRegistryEntry } from "@/builder/sections/registry";
 import type { Section } from "@/shared/types";
 import { GripVertical, Eye, EyeOff, Copy, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import * as Icons from "lucide-react";
+import type { ComponentType } from "react";
 import { useTranslations } from "next-intl";
 
 interface SectionListProps {
@@ -23,7 +24,7 @@ export function SectionList({
 }: SectionListProps) {
   const t = useTranslations("dashboard.pages");
   const getIcon = (iconName: string) => {
-    const IconComponent = (Icons as any)[iconName];
+    const IconComponent = (Icons as unknown as Record<string, ComponentType<{ className?: string }>>)[iconName];
     return IconComponent || Icons.Box;
   };
 

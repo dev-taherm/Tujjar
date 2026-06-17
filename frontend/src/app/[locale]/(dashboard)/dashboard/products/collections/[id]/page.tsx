@@ -1,11 +1,12 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Button, Input, Textarea, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useCollection, useUpdateCollection } from "@/api/queries";
+import type { Collection } from "@/shared/types";
 import { ArrowLeft, Save } from "lucide-react";
 import { slugify } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -24,15 +25,15 @@ export default function CollectionDetailPage() {
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [initializedId, setInitializedId] = useState("");
 
-  useEffect(() => {
-    if (collection) {
-      setName(collection.name);
-      setSlug(collection.slug);
-      setDescription(collection.description);
-      setIsActive(collection.is_active);
-    }
-  }, [collection]);
+  if (collection && collection.id !== initializedId) {
+    setInitializedId(collection.id);
+    setName(collection.name);
+    setSlug(collection.slug);
+    setDescription(collection.description);
+    setIsActive(collection.is_active);
+  }
 
   const handleLocaleChange = useCallback(
     (newLocale: string) => {
@@ -60,7 +61,7 @@ export default function CollectionDetailPage() {
         slug,
         description,
         is_active: isActive,
-      } as any);
+      } as { id: string } & Partial<Collection>);
     } else {
       await updateCollection.mutateAsync({
         id: collectionId,
@@ -68,7 +69,7 @@ export default function CollectionDetailPage() {
           ...collection?.translations,
           [editLocale]: { name, description },
         },
-      } as any);
+      } as { id: string } & Partial<Collection>);
     }
     router.back();
   };

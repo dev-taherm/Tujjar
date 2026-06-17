@@ -1,11 +1,12 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Button, Input, Textarea, Select, Card, CardContent, CardHeader, CardTitle } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
 import { useCategory, useUpdateCategory, useCategories, useStores } from "@/api/queries";
+import type { Category } from "@/shared/types";
 import { ArrowLeft, Save } from "lucide-react";
 import { slugify } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -28,17 +29,17 @@ export default function CategoryDetailPage() {
   const [parentId, setParentId] = useState("");
   const [storeId, setStoreId] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [initializedId, setInitializedId] = useState("");
 
-  useEffect(() => {
-    if (category) {
-      setName(category.name);
-      setSlug(category.slug);
-      setDescription(category.description);
-      setParentId(category.parent || "");
-      setStoreId(category.store);
-      setIsActive(category.is_active);
-    }
-  }, [category]);
+  if (category && category.id !== initializedId) {
+    setInitializedId(category.id);
+    setName(category.name);
+    setSlug(category.slug);
+    setDescription(category.description);
+    setParentId(category.parent || "");
+    setStoreId(category.store);
+    setIsActive(category.is_active);
+  }
 
   const handleLocaleChange = useCallback(
     (newLocale: string) => {
@@ -67,7 +68,7 @@ export default function CategoryDetailPage() {
         description,
         parent: parentId || null,
         is_active: isActive,
-      } as any);
+      } as { id: string } & Partial<Category>);
     } else {
       await updateCategory.mutateAsync({
         id: categoryId,
@@ -75,7 +76,7 @@ export default function CategoryDetailPage() {
           ...category?.translations,
           [editLocale]: { name, description },
         },
-      } as any);
+      } as { id: string } & Partial<Category>);
     }
     router.back();
   };

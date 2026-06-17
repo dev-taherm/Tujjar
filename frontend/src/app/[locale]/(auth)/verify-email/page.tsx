@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui";
@@ -12,27 +12,19 @@ export default function VerifyEmailPage() {
   const locale = useLocale();
   const t = useTranslations("auth.verifyEmail");
   const token = searchParams.get("token");
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setMessage(t("noToken"));
-      return;
-    }
+  const result = use(
+    useMemo(() => {
+      if (!token) return Promise.resolve({ ok: false, message: t("noToken") });
+      return authApi
+        .verifyEmail(token)
+        .then(() => ({ ok: true, message: t("success") }))
+        .catch(() => ({ ok: false, message: t("invalid") }));
+    }, [token, t])
+  );
 
-    authApi
-      .verifyEmail(token)
-      .then(() => {
-        setStatus("success");
-        setMessage(t("success"));
-      })
-      .catch(() => {
-        setStatus("error");
-        setMessage(t("invalid"));
-      });
-  }, [token, t]);
+  const status = result.ok ? ("success" as const) : ("error" as const);
+  const message = result.message;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -42,9 +34,6 @@ export default function VerifyEmailPage() {
           <CardDescription>{message}</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          {status === "loading" && (
-            <p className="text-gray-500">{t("verifying")}</p>
-          )}
           {status === "success" && (
             <Link
               href={`/${locale}/login`}

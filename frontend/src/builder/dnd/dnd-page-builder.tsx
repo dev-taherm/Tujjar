@@ -76,6 +76,10 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
     return schema.sections || [];
   }, [schema.sections]);
 
+  const handleAddSectionAtPosition = useCallback(async (type: string, position: number) => {
+    await addSection.mutateAsync({ pageId, sectionType: type, position });
+  }, [pageId, addSection]);
+
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const { active } = event;
     const data = active.data.current;
@@ -119,11 +123,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
         setSchema({ ...schema, sections: reordered });
       }
     }
-  }, [sortedSections, schema, setSchema]);
-
-  const handleAddSectionAtPosition = useCallback(async (type: string, position: number) => {
-    await addSection.mutateAsync({ pageId, sectionType: type, position });
-  }, [pageId, addSection]);
+  }, [sortedSections, schema, setSchema, handleAddSectionAtPosition]);
 
   const handleAddSection = useCallback(async (type: string) => {
     await addSection.mutateAsync({ pageId, sectionType: type });

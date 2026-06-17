@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState, useMemo, useEffect } from "react";
+import { createContext, useCallback, useContext, useState, useMemo } from "react";
 import type { Page, Section, PageSchema } from "@/shared/types";
 
 interface PageBuilderState {
@@ -39,11 +39,13 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
 
   const pageId = initialPage?.id;
 
-  useEffect(() => {
+  const [syncedPageId, setSyncedPageId] = useState<string | undefined>(undefined);
+  if (pageId !== syncedPageId) {
+    setSyncedPageId(pageId);
     setPageState(initialPage);
     setIsDirty(false);
     setLocaleSchemas({});
-  }, [pageId]);
+  }
 
   const setEditLocale = useCallback((locale: string) => {
     setEditLocaleState(locale);

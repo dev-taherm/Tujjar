@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
 import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
@@ -85,15 +85,19 @@ export default function StorefrontLayout({
   const locale = useLocale();
   const tNav = useTranslations("storefront.header");
 
-  const [subdomainSlug, setSubdomainSlug] = useState("");
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const hostname = window.location.hostname;
-    const parts = hostname.split(".");
-    if (parts.length >= 2 && parts[parts.length - 1] === "localhost") {
-      setSubdomainSlug(parts[0]);
-    }
-  }, []);
+  const subdomainSlug = useSyncExternalStore(
+    () => () => {},
+    () => {
+      if (typeof window === "undefined") return "";
+      const hostname = window.location.hostname;
+      const parts = hostname.split(".");
+      if (parts.length >= 2 && parts[parts.length - 1] === "localhost") {
+        return parts[0];
+      }
+      return "";
+    },
+    () => ""
+  );
 
   const slug = subdomainSlug || pathSlug;
 

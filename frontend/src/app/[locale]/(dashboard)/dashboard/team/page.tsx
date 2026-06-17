@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuthStore } from "@/stores";
 import { useMembers, useRoles, teamsApi } from "@/api/organizations";
+import type { Membership, Role } from "@/shared/types";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -26,8 +27,8 @@ export default function TeamPage() {
   const [removing, setRemoving] = useState<string | null>(null);
 
   const memberList = Array.isArray(members) ? members : [];
-  const acceptedMembers = memberList.filter((m: any) => m.is_accepted);
-  const pendingInvites = memberList.filter((m: any) => !m.is_accepted);
+  const acceptedMembers = memberList.filter((m: Membership) => m.is_accepted);
+  const pendingInvites = memberList.filter((m: Membership) => !m.is_accepted);
   const roleList = Array.isArray(roles) ? roles : [];
 
   const handleInvite = async () => {
@@ -39,8 +40,9 @@ export default function TeamPage() {
       setShowInvite(false);
       setInviteEmail("");
       queryClient.invalidateQueries({ queryKey: ["members", organization.id] });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.detail || t("inviteFailed"));
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      toast.error(axiosErr?.response?.data?.detail || t("inviteFailed"));
     } finally {
       setInviting(false);
     }
@@ -53,8 +55,9 @@ export default function TeamPage() {
       await teamsApi.removeMember(organization.id, userId);
       toast.success(t("memberRemoved"));
       queryClient.invalidateQueries({ queryKey: ["members", organization.id] });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.detail || t("removeFailed"));
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      toast.error(axiosErr?.response?.data?.detail || t("removeFailed"));
     } finally {
       setRemoving(null);
     }
@@ -97,7 +100,7 @@ export default function TeamPage() {
               <div className="py-12 text-center text-sm text-gray-500">{t("noMembers")}</div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {acceptedMembers.map((member: any) => (
+                {acceptedMembers.map((member: Membership) => (
                   <div key={member.id} className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-600">
@@ -139,7 +142,7 @@ export default function TeamPage() {
               <div className="py-12 text-center text-sm text-gray-500">{t("noPendingInvites")}</div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {pendingInvites.map((invite: any) => (
+                {pendingInvites.map((invite: Membership) => (
                   <div key={invite.id} className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 text-sm font-medium text-yellow-600">
@@ -166,7 +169,7 @@ export default function TeamPage() {
               <div className="py-12 text-center text-sm text-gray-500">{t("noRoles")}</div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {roleList.map((role: any) => (
+                {roleList.map((role: Role) => (
                   <div key={role.id} className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50">
@@ -206,7 +209,7 @@ export default function TeamPage() {
                 label={t("role")}
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
-                options={roleList.map((r: any) => ({ value: r.slug, label: r.name }))}
+                options={roleList.map((r: Role) => ({ value: r.slug, label: r.name }))}
               />
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setShowInvite(false)}>{tc("cancel")}</Button>

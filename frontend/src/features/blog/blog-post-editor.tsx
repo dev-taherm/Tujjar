@@ -21,7 +21,8 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const locale = useLocale();
   const { data: stores } = useStores();
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
-  const store = stores?.find((s) => s.id === selectedStoreId) || stores?.[0];
+  const effectiveStoreId = selectedStoreId || stores?.[0]?.id || "";
+  const store = stores?.find((s) => s.id === effectiveStoreId) || stores?.[0];
   const isNew = !postId || postId === "new";
 
   const { data: existingPost, isLoading } = useBlogPost(isNew ? "" : postId || "");
@@ -55,31 +56,25 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   const [showNewTag, setShowNewTag] = useState(false);
   const [newTagName, setNewTagName] = useState("");
 
-  useEffect(() => {
-    if (stores?.length && !selectedStoreId) {
-      setSelectedStoreId(stores[0].id);
+  const [initializedPostId, setInitializedPostId] = useState<string>("");
+  if (existingPost && existingPost.id !== initializedPostId) {
+    setInitializedPostId(existingPost.id);
+    if (existingPost.store && stores?.length) {
+      setSelectedStoreId(existingPost.store as string);
     }
-  }, [stores, selectedStoreId]);
-
-  useEffect(() => {
-    if (existingPost) {
-      if (existingPost.store && stores?.length) {
-        setSelectedStoreId(existingPost.store as string);
-      }
-      setTitle(existingPost.title);
-      setSlug(existingPost.slug);
-      setExcerpt(existingPost.excerpt);
-      setContent(existingPost.content);
-      setStatus(existingPost.status);
-      setSelectedCategories(existingPost.categories || []);
-      setSelectedTags(existingPost.tags || []);
-      setFeaturedImage(existingPost.featured_image || null);
-      setFeaturedImageUrl(existingPost.featured_image_url || null);
-      setFeaturedImageAlt(existingPost.featured_image_alt || "");
-      setSeoTitle(existingPost.seo_title);
-      setSeoDescription(existingPost.seo_description);
-    }
-  }, [existingPost, stores]);
+    setTitle(existingPost.title);
+    setSlug(existingPost.slug);
+    setExcerpt(existingPost.excerpt);
+    setContent(existingPost.content);
+    setStatus(existingPost.status);
+    setSelectedCategories(existingPost.categories || []);
+    setSelectedTags(existingPost.tags || []);
+    setFeaturedImage(existingPost.featured_image || null);
+    setFeaturedImageUrl(existingPost.featured_image_url || null);
+    setFeaturedImageAlt(existingPost.featured_image_alt || "");
+    setSeoTitle(existingPost.seo_title);
+    setSeoDescription(existingPost.seo_description);
+  }
 
   useEffect(() => {
     if (isNew) return;

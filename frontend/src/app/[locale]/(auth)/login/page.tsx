@@ -11,6 +11,7 @@ import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardConten
 import { authApi } from "@/api/queries";
 import { useAuthStore } from "@/stores";
 import { useTranslations, useLocale } from "next-intl";
+import type { User, AuthTokens, Membership } from "@/shared/types";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  const handleLoginSuccess = async (user: any, tokens: any) => {
+  const handleLoginSuccess = async (user: User, tokens: AuthTokens) => {
     useAuthStore.getState().setUser(user);
     useAuthStore.getState().setTokens(tokens);
     try {
@@ -49,7 +50,7 @@ export default function LoginPage() {
         useAuthStore.getState().setOrganization(orgList[0]);
         const { data: members } = await import("@/api/client").then(m => m.apiClient.get(`/organizations/${orgList[0].id}/members/`));
         const memberList = Array.isArray(members) ? members : [];
-        const myMembership = memberList.find((m: any) => m.user === user.id);
+        const myMembership = memberList.find((m: Membership) => m.user === user.id);
         if (myMembership) {
           useAuthStore.getState().setRole(myMembership.role_name);
         }
@@ -90,8 +91,9 @@ export default function LoginPage() {
         result = await authApi.login2FA(twoFactorSessionToken, twoFactorCode);
       }
       await handleLoginSuccess(result.user, result.tokens);
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail || err?.response?.data?.code?.[0] || err?.response?.data?.backup_code?.[0] || t("loginFailed");
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string; code?: string[]; backup_code?: string[] } } };
+      const detail = axiosErr?.response?.data?.detail || axiosErr?.response?.data?.code?.[0] || axiosErr?.response?.data?.backup_code?.[0] || t("loginFailed");
       setError(detail);
     } finally {
       setIs2FASubmitting(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Plus, Search, FileText, Calendar, Eye, MessageSquare, MoreHorizontal, Star, Archive, Trash2 } from "lucide-react";
@@ -18,14 +18,10 @@ export function BlogPostList() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (stores?.length && !selectedStoreId) {
-      setSelectedStoreId(stores[0].id);
-    }
-  }, [stores, selectedStoreId]);
+  const effectiveStoreId = selectedStoreId || stores?.[0]?.id || "";
 
   const { data: posts, isLoading } = useBlogPosts({
-    store: selectedStoreId || undefined,
+    store: effectiveStoreId || undefined,
     status: statusFilter || undefined,
     search: search || undefined,
   });

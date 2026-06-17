@@ -7,7 +7,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea } fro
 import { useUpdateCustomer } from "@/api/queries";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ArrowLeft, Save } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Customer } from "@/shared/types";
 import { useTranslations } from "next-intl";
 
@@ -38,21 +38,21 @@ export default function CustomerDetailPage() {
   const [state, setState] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("");
+  const [initializedId, setInitializedId] = useState("");
 
-  useEffect(() => {
-    if (customer) {
-      setFirstName(customer.first_name);
-      setLastName(customer.last_name);
-      setPhone(customer.phone);
-      setCompany(customer.company);
-      setNotes(customer.notes);
-      setAddressLine1(customer.address_line1);
-      setCity(customer.city);
-      setState(customer.state);
-      setPostalCode(customer.postal_code);
-      setCountry(customer.country);
-    }
-  }, [customer]);
+  if (customer && customer.id !== initializedId) {
+    setInitializedId(customer.id);
+    setFirstName(customer.first_name);
+    setLastName(customer.last_name);
+    setPhone(customer.phone);
+    setCompany(customer.company);
+    setNotes(customer.notes);
+    setAddressLine1(customer.address_line1);
+    setCity(customer.city);
+    setState(customer.state);
+    setPostalCode(customer.postal_code);
+    setCountry(customer.country);
+  }
 
   const handleSave = async () => {
     await updateCustomer.mutateAsync({

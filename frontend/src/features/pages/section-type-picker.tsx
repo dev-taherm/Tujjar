@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import { getAllSectionTypes } from "@/builder/sections/registry";
 import type { SectionDefinition } from "@/shared/types";
 import * as Icons from "lucide-react";
@@ -35,7 +35,7 @@ export function SectionTypePicker({ onSelect, onClose }: SectionTypePickerProps)
   });
 
   const getIcon = (iconName: string) => {
-    const IconComponent = (Icons as any)[iconName];
+    const IconComponent = (Icons as unknown as Record<string, ComponentType<{ className?: string }>>)[iconName];
     return IconComponent || Icons.Box;
   };
 

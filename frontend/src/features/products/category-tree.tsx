@@ -64,7 +64,7 @@ export function CategoryTree() {
 
   const handleCreate = async () => {
     if (!newName || !newSlug) return;
-    await createCategory.mutateAsync({ name: newName, slug: newSlug } as any);
+    await createCategory.mutateAsync({ name: newName, slug: newSlug } as Partial<Category>);
     setShowCreate(false);
     setNewName("");
     setNewSlug("");

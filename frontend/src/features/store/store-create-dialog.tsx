@@ -79,11 +79,11 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
     setValue("slug", slug, { shouldValidate: true });
   }, [setValue]);
 
-  useEffect(() => {
-    if (watchName && !watchSlug) {
-      autoGenerateSlug(watchName);
-    }
-  }, [watchName, watchSlug, autoGenerateSlug]);
+  const [lastAutoGenName, setLastAutoGenName] = useState("");
+  if (watchName && watchName !== lastAutoGenName && !watchSlug) {
+    setLastAutoGenName(watchName);
+    autoGenerateSlug(watchName);
+  }
 
   useEffect(() => {
     if (watchSlug && watchSlug.length >= 3) {
@@ -98,14 +98,16 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
     setSlugAvailable(null);
   }, [watchSlug, checkSlug]);
 
-  useEffect(() => {
+  const [lastHomePage, setLastHomePage] = useState(homePage);
+  if (homePage !== lastHomePage) {
+    setLastHomePage(homePage);
     if (homePage === "/shop") {
       setEnableShop(true);
     }
     if (homePage === "/shop/blog") {
       setEnableBlog(true);
     }
-  }, [homePage]);
+  }
 
   const stepIndex = STEPS.indexOf(step);
 

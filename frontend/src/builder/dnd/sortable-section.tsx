@@ -5,6 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Eye, EyeOff, Copy, Trash2 } from "lucide-react";
 import { getRegistryEntry } from "@/builder/sections/registry";
 import * as Icons from "lucide-react";
+import type { ComponentType } from "react";
 import type { Section } from "@/shared/types";
 
 interface SortableSectionProps {
@@ -29,7 +30,7 @@ export function SortableSection({
   };
 
   const def = getRegistryEntry(section.type);
-  const IconComponent = def ? (Icons as any)[def.icon] : Icons.Box;
+  const IconComponent = def ? (Icons as unknown as Record<string, ComponentType<{ className?: string }>>)[def.icon] : Icons.Box;
   const SectionIcon = IconComponent || Icons.Box;
 
   return (

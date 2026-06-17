@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/shared/layouts/dashboard-layout";
 import { ErrorBoundary } from "@/shared/components/error-boundary";
 import { useAuthStore } from "@/stores";
+
+const emptySubscribe = () => () => {};
 
 export default function DashboardRootLayout({
   children,
@@ -13,11 +15,7 @@ export default function DashboardRootLayout({
 }) {
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
+  const hydrated = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   useEffect(() => {
     if (!hydrated) return;

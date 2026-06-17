@@ -1,12 +1,13 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState } from "react";
 import { Button } from "@/shared/ui";
 import { ShoppingBag, Plus, Minus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { apiClient } from "@/api/client";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from "next-intl";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface CartItem {
   id: string;
@@ -28,26 +29,20 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
   const { slug } = use(params);
   const locale = useLocale();
   const t = useTranslations("storefront.cart");
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadCart();
-  }, [slug]);
-
-  const loadCart = async () => {
-    try {
-      const { data } = await apiClient.get("/orders/carts/", { params: { store: slug } });
-      const results = data.results || data;
-      if (results.length > 0) {
-        setCart(results[0]);
+  const { data: cart, isLoading: loading } = useQuery<Cart | null>({
+    queryKey: ["cart", slug],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get("/orders/carts/", { params: { store: slug } });
+        const results = data.results || data;
+        return results.length > 0 ? results[0] : null;
+      } catch {
+        return null;
       }
-    } catch {
-      // Cart might not exist yet
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
 
   const updateQuantity = async (itemId: string, quantity: number) => {
     if (!cart) return;
@@ -60,7 +55,7 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
           quantity,
         });
       }
-      loadCart();
+      queryClient.invalidateQueries({ queryKey: ["cart", slug] });
     } catch {
       toast.error(t("updateFailed"));
     }

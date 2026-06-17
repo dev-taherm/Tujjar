@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { Button } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 
 interface ConfigItem {
   id: string;
@@ -14,7 +14,6 @@ interface ConfigItem {
 
 export default function AdminSettingsPage() {
   const queryClient = useQueryClient();
-  const [configs, setConfigs] = useState<Record<string, ConfigItem>>({});
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "config"],
@@ -24,12 +23,11 @@ export default function AdminSettingsPage() {
     },
   });
 
-  useEffect(() => {
-    if (data?.results) {
-      const map: Record<string, ConfigItem> = {};
-      data.results.forEach((c: ConfigItem) => { map[c.key] = c; });
-      setConfigs(map);
-    }
+  const configs = useMemo(() => {
+    if (!data?.results) return {};
+    const map: Record<string, ConfigItem> = {};
+    data.results.forEach((c: ConfigItem) => { map[c.key] = c; });
+    return map;
   }, [data]);
 
   const updateConfig = useMutation({
