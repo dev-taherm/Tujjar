@@ -14,10 +14,13 @@ interface ThemeAnimationsEditorProps {
 }
 
 const DURATION_OPTIONS = [
-  { value: "0.1s", label: "Fast (0.1s)" },
-  { value: "0.2s", label: "Quick (0.2s)" },
-  { value: "0.3s", label: "Normal (0.3s)" },
-  { value: "0.5s", label: "Slow (0.5s)" },
+  { value: "fast", label: "Fast", css: "0.15s" },
+  { value: "normal", label: "Normal", css: "0.3s" },
+  { value: "slow", label: "Slow", css: "0.5s" },
+  { value: "0.1s", label: "Very Fast (0.1s)", css: "0.1s" },
+  { value: "0.2s", label: "Quick (0.2s)", css: "0.2s" },
+  { value: "0.7s", label: "Very Slow (0.7s)", css: "0.7s" },
+  { value: "1s", label: "Extra Slow (1s)", css: "1s" },
 ];
 
 const EASING_OPTIONS = [
@@ -25,7 +28,15 @@ const EASING_OPTIONS = [
   { value: "ease-in", label: "Ease In" },
   { value: "ease-out", label: "Ease Out" },
   { value: "ease-in-out", label: "Ease In Out" },
+  { value: "cubic-bezier(0.4, 0, 0.2, 1)", label: "Material (cubic-bezier)" },
+  { value: "cubic-bezier(0.25, 0.1, 0.25, 1)", label: "Smooth (cubic-bezier)" },
+  { value: "linear", label: "Linear" },
 ];
+
+function resolveDurationCss(value: string): string {
+  const opt = DURATION_OPTIONS.find((o) => o.value === value);
+  return opt ? opt.css : value;
+}
 
 export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }: ThemeAnimationsEditorProps) {
   const isOverridden = parentAnimations && (
@@ -76,7 +87,7 @@ export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }
             >
               {DURATION_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {opt.label} ({opt.css})
                 </option>
               ))}
             </select>
@@ -104,7 +115,7 @@ export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }
                 className="h-12 w-12 rounded-lg transition-all hover:scale-110"
                 style={{
                   background: "var(--color-primary)",
-                  transitionDuration: animations.duration,
+                  transitionDuration: resolveDurationCss(animations.duration),
                   transitionTimingFunction: animations.easing,
                 }}
               />
