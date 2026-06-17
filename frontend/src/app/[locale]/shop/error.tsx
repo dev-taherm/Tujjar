@@ -16,7 +16,8 @@ export default function ShopError({
         </p>
         <button
           onClick={reset}
-          className="mt-4 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+          className="mt-4 rounded-lg px-4 py-2 text-sm font-medium text-white"
+          style={{ background: "var(--color-primary)" }}
         >
           Try again
         </button>

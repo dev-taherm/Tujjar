@@ -118,9 +118,10 @@ export default function StorefrontProductDetailPage({
                     onClick={() => setSelectedVariant(v.id)}
                     className={`rounded-lg border px-3 py-1.5 text-sm ${
                       selectedVariant === v.id
-                        ? "border-primary-500 bg-primary-50"
+                        ? "border-[var(--color-primary)]"
                         : "border-gray-200"
                     }`}
+                    style={selectedVariant === v.id ? { borderColor: "var(--color-primary)", background: "var(--color-surface)" } : {}}
                   >
                     {v.name}{" "}
                     {v.price && <span className="text-gray-500">${v.price}</span>}

@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
 import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon } from "lucide-react";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
+import { generateColorShades } from "@/lib/color-palette";
 
 interface NavLink {
   label: string;
@@ -118,6 +119,88 @@ export default function StorefrontLayout({
   const navigation: Navigation = store?.navigation || {};
   const footerConfig: FooterConfig = store?.footer_config || {};
 
+  const applyThemeVariables = useCallback((theme: ThemeConfig | null | undefined, dark: boolean) => {
+    if (!theme) return;
+    const root = document.documentElement;
+
+    if (theme.colors) {
+      // Dark mode overrides — swap base colors
+      const darkOverrides: Record<string, string> = dark
+        ? {
+            background: "#111827",
+            surface: "#1f2937",
+            text: "#f3f4f6",
+            textSecondary: "#9ca3af",
+            border: "#374151",
+          }
+        : {};
+
+      const resolvedColors = { ...theme.colors, ...darkOverrides };
+
+      const colorMap: Record<string, string> = {
+        primary: "--color-primary",
+        secondary: "--color-secondary",
+        accent: "--color-accent",
+        background: "--color-bg",
+        surface: "--color-surface",
+        text: "--color-text",
+        textSecondary: "--color-text-secondary",
+        border: "--color-border",
+        error: "--color-error",
+        success: "--color-success",
+        warning: "--color-warning",
+      };
+
+      for (const [key, cssVar] of Object.entries(colorMap)) {
+        if (resolvedColors[key]) {
+          root.style.setProperty(cssVar, resolvedColors[key]);
+        }
+      }
+
+      // Generate full shade palettes for primary, secondary, accent
+      const shadeKeys = ["primary", "secondary", "accent"] as const;
+      for (const colorKey of shadeKeys) {
+        const hex = resolvedColors[colorKey];
+        if (hex) {
+          const shades = generateColorShades(hex, colorKey);
+          for (const [varName, value] of Object.entries(shades)) {
+            root.style.setProperty(varName, value);
+          }
+        }
+      }
+    }
+
+    if (theme.borderRadius) {
+      root.style.setProperty("--radius-sm", `${theme.borderRadius.small ?? 4}px`);
+      root.style.setProperty("--radius-md", `${theme.borderRadius.medium ?? 8}px`);
+      root.style.setProperty("--radius-lg", `${theme.borderRadius.large ?? 12}px`);
+      root.style.setProperty("--radius-full", `${theme.borderRadius.full ?? 9999}px`);
+    }
+
+    if (theme.typography) {
+      if (theme.typography.headingFont) root.style.setProperty("--font-heading", theme.typography.headingFont);
+      if (theme.typography.bodyFont) root.style.setProperty("--font-body", theme.typography.bodyFont);
+      if (theme.typography.baseFontSize) root.style.setProperty("--font-size-base", `${theme.typography.baseFontSize}px`);
+      if (theme.typography.scale) root.style.setProperty("--font-scale", `${theme.typography.scale}`);
+      if (theme.typography.lineHeight) root.style.setProperty("--line-height-base", `${theme.typography.lineHeight}`);
+    }
+
+    if (theme.spacing) {
+      if (theme.spacing.sectionPaddingY) root.style.setProperty("--section-padding-y", `${theme.spacing.sectionPaddingY}px`);
+      if (theme.spacing.sectionPaddingX) root.style.setProperty("--section-padding-x", `${theme.spacing.sectionPaddingX}px`);
+      if (theme.spacing.containerMaxWidth) root.style.setProperty("--container-max-width", `${theme.spacing.containerMaxWidth}px`);
+      if (theme.spacing.gridGap) root.style.setProperty("--grid-gap", `${theme.spacing.gridGap}px`);
+    }
+
+    if (theme.animations) {
+      const durationMap: Record<string, string> = { fast: "0.15s", normal: "0.3s", slow: "0.5s" };
+      const raw = theme.animations.duration || "0.3s";
+      const duration = theme.animations.enabled ? (durationMap[raw] || raw) : "0s";
+      root.style.setProperty("--transition-duration", duration);
+      root.style.setProperty("--transition-easing", theme.animations.easing || "ease");
+    }
+  }, []);
+
   // Dark mode state — derived from DOM
   const subscribeDark = useCallback(() => () => {}, []);
   const isDark = useSyncExternalStore(
@@ -132,19 +215,28 @@ export default function StorefrontLayout({
     if (typeof window !== "undefined") {
       localStorage.setItem("tujjar-dark-mode", String(next));
     }
-  }, []);
+    // Re-apply theme CSS variables with dark mode
+    applyThemeVariables(store?.theme_config || null, next);
+  }, [store?.theme_config, applyThemeVariables]);
 
-  // Initialize dark mode from localStorage or theme default
+  // Apply theme CSS variables
   useEffect(() => {
     const theme = store?.theme_config;
-    if (!theme?.darkMode?.enabled) {
+    const dark = document.documentElement.classList.contains("dark");
+    applyThemeVariables(theme, dark);
+
+    // Initialize dark mode from localStorage or theme default
+    if (theme?.darkMode?.enabled) {
+      const stored = localStorage.getItem("tujjar-dark-mode");
+      const shouldBeDark = stored !== null ? stored === "true" : theme.darkMode.default;
+      if (shouldBeDark !== dark) {
+        document.documentElement.classList.toggle("dark", shouldBeDark);
+        applyThemeVariables(theme, shouldBeDark);
+      }
+    } else {
       document.documentElement.classList.remove("dark");
-      return;
     }
-    const stored = localStorage.getItem("tujjar-dark-mode");
-    const dark = stored !== null ? stored === "true" : theme.darkMode.default;
-    document.documentElement.classList.toggle("dark", dark);
-  }, [store?.theme_config]);
+  }, [store?.theme_config, applyThemeVariables]);
 
   // Apply favicon
   useEffect(() => {
@@ -187,64 +279,6 @@ export default function StorefrontLayout({
       }
     }
   }, [store]);
-
-  // Apply theme CSS variables
-  useEffect(() => {
-    const theme = store?.theme_config;
-    if (!theme) return;
-    const root = document.documentElement;
-
-    if (theme.colors) {
-      const colorMap: Record<string, string> = {
-        primary: "--color-primary",
-        secondary: "--color-secondary",
-        accent: "--color-accent",
-        background: "--color-bg",
-        surface: "--color-surface",
-        text: "--color-text",
-        textSecondary: "--color-text-secondary",
-        border: "--color-border",
-        error: "--color-error",
-        success: "--color-success",
-        warning: "--color-warning",
-      };
-      for (const [key, cssVar] of Object.entries(colorMap)) {
-        if (theme.colors[key]) {
-          root.style.setProperty(cssVar, theme.colors[key]);
-        }
-      }
-    }
-
-    if (theme.borderRadius) {
-      root.style.setProperty("--radius-sm", `${theme.borderRadius.small ?? 4}px`);
-      root.style.setProperty("--radius-md", `${theme.borderRadius.medium ?? 8}px`);
-      root.style.setProperty("--radius-lg", `${theme.borderRadius.large ?? 12}px`);
-      root.style.setProperty("--radius-full", `${theme.borderRadius.full ?? 9999}px`);
-    }
-
-    if (theme.typography) {
-      if (theme.typography.headingFont) root.style.setProperty("--font-heading", theme.typography.headingFont);
-      if (theme.typography.bodyFont) root.style.setProperty("--font-body", theme.typography.bodyFont);
-      if (theme.typography.baseFontSize) root.style.setProperty("--font-size-base", `${theme.typography.baseFontSize}px`);
-      if (theme.typography.scale) root.style.setProperty("--font-scale", `${theme.typography.scale}`);
-      if (theme.typography.lineHeight) root.style.setProperty("--line-height-base", `${theme.typography.lineHeight}`);
-    }
-
-    if (theme.spacing) {
-      if (theme.spacing.sectionPaddingY) root.style.setProperty("--section-padding-y", `${theme.spacing.sectionPaddingY}px`);
-      if (theme.spacing.sectionPaddingX) root.style.setProperty("--section-padding-x", `${theme.spacing.sectionPaddingX}px`);
-      if (theme.spacing.containerMaxWidth) root.style.setProperty("--container-max-width", `${theme.spacing.containerMaxWidth}px`);
-      if (theme.spacing.gridGap) root.style.setProperty("--grid-gap", `${theme.spacing.gridGap}px`);
-    }
-
-    if (theme.animations) {
-      const durationMap: Record<string, string> = { fast: "0.15s", normal: "0.3s", slow: "0.5s" };
-      const raw = theme.animations.duration || "0.3s";
-      const duration = theme.animations.enabled ? (durationMap[raw] || raw) : "0s";
-      root.style.setProperty("--transition-duration", duration);
-      root.style.setProperty("--transition-easing", theme.animations.easing || "ease");
-    }
-  }, [store?.theme_config]);
 
   // Load Google Fonts from theme typography
   useEffect(() => {
@@ -385,7 +419,9 @@ export default function StorefrontLayout({
             {navigation.cta_button?.enabled && (
               <Link
                 href={prefixLink(navigation.cta_button.url)}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-white"
+                style={{ background: "var(--color-primary)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-primary-700)")}
               >
                 {resolveLabel(navigation.cta_button?.label)}
               </Link>
@@ -406,7 +442,8 @@ export default function StorefrontLayout({
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-[10px] text-white">
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white"
+                style={{ background: "var(--color-primary)" }}>
                 0
               </span>
             </Link>

@@ -7,12 +7,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-primary-500",
+        default: "text-white hover:opacity-90 focus-visible:ring-[var(--color-primary)]",
         destructive: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
         outline: "border border-gray-300 bg-white hover:bg-gray-50 focus-visible:ring-primary-500",
         secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-500",
         ghost: "hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-gray-500",
-        link: "text-primary-600 underline-offset-4 hover:underline focus-visible:ring-primary-500",
+        link: "underline-offset-4 hover:underline focus-visible:ring-primary-500",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -34,13 +34,23 @@ export interface ButtonProps
   isLoading?: boolean;
 }
 
+const variantStyles: Record<string, React.CSSProperties> = {
+  default: { background: "var(--color-primary)" },
+  link: { color: "var(--color-primary)" },
+};
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, isLoading, children, disabled, ...props }, ref) => {
+  ({ className, variant, size, isLoading, children, disabled, style, ...props }, ref) => {
+    const mergedStyle = variant && variantStyles[variant]
+      ? { ...variantStyles[variant], ...style }
+      : style;
+
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || isLoading}
+        style={mergedStyle}
         {...props}
       >
         {isLoading && (

@@ -14,7 +14,7 @@ export function StorefrontProductCard({ product, slug }: { product: Product; slu
       </div>
       <div className="mt-3">
         <h3 className="text-sm font-medium transition-colors" style={{ color: "var(--color-text)" }}>
-          <span className="group-hover:text-primary-600">{product.title}</span>
+          <span className="group-hover:underline" style={{ color: "var(--color-primary)" }}>{product.title}</span>
         </h3>
         <div className="mt-1 flex items-center gap-2">
           {product.compare_at_price && product.compare_at_price > product.price && (

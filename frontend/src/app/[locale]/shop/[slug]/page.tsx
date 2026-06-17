@@ -81,7 +81,7 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
   if (isLoading) {
     return (
       <div className="space-y-16">
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-primary-50">
+        <section className="relative overflow-hidden" style={{ background: `linear-gradient(to bottom right, var(--color-surface), var(--color-bg), var(--color-surface))` }}>
           <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
             <div className="max-w-2xl animate-pulse">
               <div className="h-12 w-3/4 rounded" style={{ background: "var(--color-surface)" }} />
@@ -116,7 +116,11 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
           <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("featuredProducts")}</h2>
-              <Link href={`/${locale}/shop/${slug}/shop`} className="text-sm font-medium text-primary-600 hover:text-primary-700">
+              <Link href={`/${locale}/shop/${slug}/shop`} className="text-sm font-medium transition-colors"
+                style={{ color: "var(--color-primary)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-primary-700)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-primary)")}
+              >
                 {t("viewAll")}
               </Link>
             </div>
@@ -163,7 +167,11 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("featuredProducts")}</h2>
-          <Link href={`/${locale}/shop/${slug}/shop`} className="text-sm font-medium text-primary-600 hover:text-primary-700">
+          <Link href={`/${locale}/shop/${slug}/shop`} className="text-sm font-medium transition-colors"
+            style={{ color: "var(--color-primary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-primary-700)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-primary)")}
+          >
             {t("viewAll")}
           </Link>
         </div>
