@@ -4,15 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('themes', '0002_add_themeversion'),
+        ("themes", "0002_add_themeversion"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='theme',
-            name='category',
-            field=models.CharField(blank=True, choices=[('', 'General'), ('fashion', 'Fashion'), ('electronics', 'Electronics'), ('restaurant', 'Restaurant'), ('pharmacy', 'Pharmacy'), ('beauty', 'Beauty & Wellness'), ('sports', 'Sports & Fitness'), ('home', 'Home & Garden')], default='', max_length=50),
+            model_name="theme",
+            name="category",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("", "General"),
+                    ("fashion", "Fashion"),
+                    ("electronics", "Electronics"),
+                    ("restaurant", "Restaurant"),
+                    ("pharmacy", "Pharmacy"),
+                    ("beauty", "Beauty & Wellness"),
+                    ("sports", "Sports & Fitness"),
+                    ("home", "Home & Garden"),
+                ],
+                default="",
+                max_length=50,
+            ),
         ),
     ]

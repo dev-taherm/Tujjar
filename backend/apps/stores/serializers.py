@@ -189,9 +189,7 @@ class StoreSerializer(serializers.ModelSerializer):
             return value
         org_id = self.context["request"].org_id
         if value.organization_id and str(value.organization_id) != str(org_id):
-            raise serializers.ValidationError(
-                "Theme does not belong to your organization."
-            )
+            raise serializers.ValidationError("Theme does not belong to your organization.")
         return value
 
     def validate_logo(self, value):

@@ -130,17 +130,16 @@ class ThemeViewSet(TenantViewSet):
             "sections_schema": theme.sections_schema,
             "assets": theme.assets,
             "category": getattr(theme, "category", ""),
-            "presets": [
-                {"name": p.name, "config": p.config}
-                for p in theme.presets.all()
-            ],
+            "presets": [{"name": p.name, "config": p.config} for p in theme.presets.all()],
         }
         buffer = BytesIO()
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
             zf.writestr("theme.json", json.dumps(data, indent=2))
         buffer.seek(0)
         response = HttpResponse(buffer.getvalue(), content_type="application/zip")
-        response["Content-Disposition"] = f'attachment; filename="{theme.slug}-v{theme.version}.zip"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="{theme.slug}-v{theme.version}.zip"'
+        )
         return response
 
     @action(detail=True, methods=["get"], url_path="versions")
@@ -169,16 +168,18 @@ class ThemeViewSet(TenantViewSet):
         except ThemeVersion.DoesNotExist:
             return Response({"error": "Version not found"}, status=404)
 
-        return Response({
-            "id": str(version.id),
-            "version": version.version,
-            "note": version.note,
-            "created_at": version.created_at.isoformat() if version.created_at else None,
-            "created_by": str(version.created_by_id) if version.created_by_id else None,
-            "config": version.config,
-            "sections_schema": version.sections_schema,
-            "assets": version.assets,
-        })
+        return Response(
+            {
+                "id": str(version.id),
+                "version": version.version,
+                "note": version.note,
+                "created_at": version.created_at.isoformat() if version.created_at else None,
+                "created_by": str(version.created_by_id) if version.created_by_id else None,
+                "config": version.config,
+                "sections_schema": version.sections_schema,
+                "assets": version.assets,
+            }
+        )
 
     @action(detail=True, methods=["post"], url_path="snapshot")
     def snapshot(self, request, pk=None):
@@ -200,7 +201,9 @@ class ThemeViewSet(TenantViewSet):
         except ThemeVersion.DoesNotExist:
             return Response({"error": "Version not found"}, status=404)
 
-        _save_version_snapshot(theme, note=f"Before rollback to v{version.version}", user=request.user)
+        _save_version_snapshot(
+            theme, note=f"Before rollback to v{version.version}", user=request.user
+        )
         theme.config = copy.deepcopy(version.config)
         theme.sections_schema = copy.deepcopy(version.sections_schema)
         theme.assets = copy.deepcopy(version.assets)

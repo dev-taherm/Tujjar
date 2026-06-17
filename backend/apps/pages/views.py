@@ -120,7 +120,9 @@ class PageViewSet(TenantViewSet):
             )
         limit = section_type_def.get("limit")
         if limit is not None:
-            existing_count = sum(1 for s in page.content_schema.get("sections", []) if s.get("type") == section_type)
+            existing_count = sum(
+                1 for s in page.content_schema.get("sections", []) if s.get("type") == section_type
+            )
             if existing_count >= limit:
                 return Response(
                     {"detail": f"Maximum {limit} '{section_type}' section(s) allowed per page"},

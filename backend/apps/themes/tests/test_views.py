@@ -21,6 +21,7 @@ def _get_response_data(response):
         response.render()
     return json.loads(response.content)
 
+
 pytestmark = pytest.mark.django_db
 
 
@@ -54,12 +55,8 @@ def _create_theme_with_presets(org, slug="preset-theme"):
         organization=org,
         config={"colors": {"primary": "#000"}},
     )
-    ThemePreset.objects.create(
-        theme=theme, name="Dark", config={"colors": {"primary": "#111"}}
-    )
-    ThemePreset.objects.create(
-        theme=theme, name="Light", config={"colors": {"primary": "#eee"}}
-    )
+    ThemePreset.objects.create(theme=theme, name="Dark", config={"colors": {"primary": "#111"}})
+    ThemePreset.objects.create(theme=theme, name="Light", config={"colors": {"primary": "#eee"}})
     return theme
 
 
@@ -186,9 +183,7 @@ class TestThemeInstall:
         user, org, token = create_org_with_owner("theme-install@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         system_theme = _create_system_theme(slug="install-sys-theme")
-        response = api_client.post(
-            f"/api/v1/themes/{system_theme.id}/install/", format="json"
-        )
+        response = api_client.post(f"/api/v1/themes/{system_theme.id}/install/", format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == system_theme.name
         installed = Theme.unscoped.get(id=response.data["id"])
@@ -208,9 +203,7 @@ class TestThemeInstall:
             theme=sys_theme, name="Light", config={"colors": {"primary": "#eee"}}
         )
 
-        response = api_client.post(
-            f"/api/v1/themes/{sys_theme.id}/install/", format="json"
-        )
+        response = api_client.post(f"/api/v1/themes/{sys_theme.id}/install/", format="json")
         assert response.status_code == status.HTTP_201_CREATED
         installed = Theme.unscoped.get(id=response.data["id"])
         assert installed.presets.count() == 2
@@ -223,9 +216,7 @@ class TestThemeInstall:
         user, org, token = create_org_with_owner("theme-install-nonsys@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         theme = _create_org_theme(org, slug="install-nonsys-theme")
-        response = api_client.post(
-            f"/api/v1/themes/{theme.id}/install/", format="json"
-        )
+        response = api_client.post(f"/api/v1/themes/{theme.id}/install/", format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -576,18 +567,14 @@ class TestThemePresets:
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         theme = _create_theme_with_presets(org, slug="preset-delete-theme")
         preset = theme.presets.first()
-        response = api_client.delete(
-            f"/api/v1/themes/{theme.id}/presets/{preset.id}/"
-        )
+        response = api_client.delete(f"/api/v1/themes/{theme.id}/presets/{preset.id}/")
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not ThemePreset.objects.filter(pk=preset.id).exists()
 
 
 class TestSetTheme:
     def test_set_theme_on_store(self, api_client):
-        user, org, store, token = create_org_with_owner_and_store(
-            "set-theme-store@example.com"
-        )
+        user, org, store, token = create_org_with_owner_and_store("set-theme-store@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         theme = _create_org_theme(org, slug="set-store-theme")
         response = api_client.post(
@@ -600,9 +587,7 @@ class TestSetTheme:
         assert store.theme == theme
 
     def test_set_theme_no_theme_id_fails(self, api_client):
-        user, org, store, token = create_org_with_owner_and_store(
-            "set-theme-noid@example.com"
-        )
+        user, org, store, token = create_org_with_owner_and_store("set-theme-noid@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(
             f"/api/v1/stores/{store.id}/set-theme/",
@@ -612,9 +597,7 @@ class TestSetTheme:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_set_theme_nonexistent_fails(self, api_client):
-        user, org, store, token = create_org_with_owner_and_store(
-            "set-theme-notfound@example.com"
-        )
+        user, org, store, token = create_org_with_owner_and_store("set-theme-notfound@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(
             f"/api/v1/stores/{store.id}/set-theme/",
@@ -624,9 +607,7 @@ class TestSetTheme:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_set_system_theme_on_store(self, api_client):
-        user, org, store, token = create_org_with_owner_and_store(
-            "set-theme-sys@example.com"
-        )
+        user, org, store, token = create_org_with_owner_and_store("set-theme-sys@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         system_theme = _create_system_theme(slug="set-sys-theme")
         response = api_client.post(
