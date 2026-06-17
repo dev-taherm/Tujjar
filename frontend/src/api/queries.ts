@@ -121,6 +121,8 @@ export {
   useRollbackTemplate,
   usePreviewInstall,
   useCreateTemplateSnapshot,
+  useExportTemplate,
+  useImportTemplate,
 } from "./templates";
 export {
   blogCategoriesApi,

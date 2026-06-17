@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { templatesApi } from "@/api/templates";
+import { useExportTemplate } from "@/api/queries";
 import type { Template } from "@/api/templates";
 import { Button, Dialog } from "@/shared/ui";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -17,12 +16,11 @@ interface TemplateExportDialogProps {
 export function TemplateExportDialog({ template, open, onClose }: TemplateExportDialogProps) {
   const t = useTranslations("dashboard.templates");
   const tc = useTranslations("common");
-  const [exporting, setExporting] = useState(false);
+  const exportMutation = useExportTemplate();
 
   const handleExport = async () => {
-    setExporting(true);
     try {
-      const data = await templatesApi.exportTemplate(template.id);
+      const data = await exportMutation.mutateAsync(template.id);
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -36,8 +34,6 @@ export function TemplateExportDialog({ template, open, onClose }: TemplateExport
       onClose();
     } catch {
       toast.error("Failed to export template");
-    } finally {
-      setExporting(false);
     }
   };
 
@@ -52,12 +48,8 @@ export function TemplateExportDialog({ template, open, onClose }: TemplateExport
         <Button variant="outline" onClick={onClose}>
           {tc("cancel")}
         </Button>
-        <Button onClick={handleExport} disabled={exporting}>
-          {exporting ? (
-            <Loader2 className="me-1 h-3 w-3 animate-spin" />
-          ) : (
-            <Download className="me-1 h-3 w-3" />
-          )}
+        <Button onClick={handleExport} disabled={exportMutation.isPending} isLoading={exportMutation.isPending}>
+          <Download className="me-1 h-3 w-3" />
           {t("export")}
         </Button>
       </div>

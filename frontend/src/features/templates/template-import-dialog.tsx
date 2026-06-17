@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { templatesApi } from "@/api/templates";
+import { useImportTemplate } from "@/api/queries";
 import { Button, Dialog } from "@/shared/ui";
-import { Upload, FileJson, X, ChevronDown, ChevronRight } from "lucide-react";
+import { Upload, FileJson, ChevronDown, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface TemplateImportDialogProps {
   open: boolean;
@@ -67,12 +66,11 @@ const EXPECTED_FORMAT = `{
 export function TemplateImportDialog({ open, onClose }: TemplateImportDialogProps) {
   const t = useTranslations("dashboard.templates");
   const tc = useTranslations("common");
-  const queryClient = useQueryClient();
+  const importMutation = useImportTemplate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<Record<string, unknown> | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
-  const [importing, setImporting] = useState(false);
   const [showFormat, setShowFormat] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,17 +99,13 @@ export function TemplateImportDialog({ open, onClose }: TemplateImportDialogProp
 
   const handleImport = async () => {
     if (!parsedData) return;
-    setImporting(true);
     try {
-      await templatesApi.importTemplate(parsedData);
+      await importMutation.mutateAsync(parsedData);
       toast.success(t("templateCreated"));
-      queryClient.invalidateQueries({ queryKey: ["templates"] });
       onClose();
       reset();
     } catch {
       toast.error("Failed to import template");
-    } finally {
-      setImporting(false);
     }
   };
 
@@ -192,7 +186,7 @@ export function TemplateImportDialog({ open, onClose }: TemplateImportDialogProp
           <Button variant="outline" onClick={handleClose}>
             {tc("cancel")}
           </Button>
-          <Button onClick={handleImport} disabled={!parsedData || !!parseError || importing} isLoading={importing}>
+          <Button onClick={handleImport} disabled={!parsedData || !!parseError || importMutation.isPending} isLoading={importMutation.isPending}>
             <Upload className="me-1 h-3 w-3" />
             {t("importTemplate")}
           </Button>

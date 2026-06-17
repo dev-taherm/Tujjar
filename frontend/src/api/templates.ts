@@ -257,3 +257,19 @@ export function useCreateTemplateSnapshot() {
     },
   });
 }
+
+export function useExportTemplate() {
+  return useMutation({
+    mutationFn: (id: UUID) => templatesApi.exportTemplate(id),
+  });
+}
+
+export function useImportTemplate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) => templatesApi.importTemplate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+    },
+  });
+}
