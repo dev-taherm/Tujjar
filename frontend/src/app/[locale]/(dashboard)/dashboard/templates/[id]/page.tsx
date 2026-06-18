@@ -164,11 +164,11 @@ export default function TemplateEditorPage() {
             {activeTab === "theme" && (
               <div className="space-y-6">
                 <ThemeColorEditor
-                  colors={themeConfig.colors}
+                  colors={themeConfig.colors || { primary: "#3B82F6", secondary: "#10B981", accent: "#F59E0B", background: "#FFFFFF", text: "#111827", textSecondary: "#6B7280", border: "#E5E7EB", surface: "#F9FAFB", error: "#EF4444", success: "#10B981", warning: "#F59E0B" }}
                   onChange={(colors) => setConfig({ ...config, colors })}
                 />
                 <ThemeTypographyEditor
-                  typography={themeConfig.typography}
+                  typography={themeConfig.typography || { headingFont: "Inter", bodyFont: "Inter", baseFontSize: 16, scale: 1.25, lineHeight: 1.5 }}
                   onChange={(typography) => setConfig({ ...config, typography })}
                 />
               </div>
@@ -177,10 +177,10 @@ export default function TemplateEditorPage() {
               <TemplatePagesEditor pages={pages} onChange={setPages} />
             )}
             {activeTab === "navigation" && (
-              <TemplateNavigationEditor data={navigation} onChange={setNavigation} />
+              <TemplateNavigationEditor data={{ ...navigation, links: navigation?.links || [] }} onChange={setNavigation} />
             )}
             {activeTab === "footer" && (
-              <TemplateFooterEditor data={footer} onChange={setFooter} />
+              <TemplateFooterEditor data={{ ...footer, columns: footer?.columns || [] }} onChange={setFooter} />
             )}
             {activeTab === "seo" && (
               <div className="space-y-4">
@@ -210,7 +210,7 @@ export default function TemplateEditorPage() {
                 <div>
                   <Label>Collections</Label>
                   <div className="mt-2 space-y-2">
-                    {demoContent.collections.map((coll, i) => (
+                    {(demoContent?.collections || []).map((coll, i) => (
                       <div key={i} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2">
                         <Input
                           value={coll.name}
@@ -246,7 +246,7 @@ export default function TemplateEditorPage() {
                     <button
                       onClick={() => setDemoContent({
                         ...demoContent,
-                        collections: [...demoContent.collections, { name: "", slug: "" }],
+                        collections: [...(demoContent?.collections || []), { name: "", slug: "" }],
                       })}
                       className="text-xs font-medium text-blue-600 hover:text-blue-700"
                     >
@@ -259,7 +259,7 @@ export default function TemplateEditorPage() {
                 <div>
                   <Label>Categories</Label>
                   <div className="mt-2 space-y-2">
-                    {demoContent.categories.map((cat, i) => (
+                    {(demoContent?.categories || []).map((cat, i) => (
                       <div key={i} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2">
                         <Input
                           value={cat.name}
@@ -295,7 +295,7 @@ export default function TemplateEditorPage() {
                     <button
                       onClick={() => setDemoContent({
                         ...demoContent,
-                        categories: [...demoContent.categories, { name: "", slug: "" }],
+                        categories: [...(demoContent?.categories || []), { name: "", slug: "" }],
                       })}
                       className="text-xs font-medium text-blue-600 hover:text-blue-700"
                     >
