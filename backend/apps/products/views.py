@@ -8,14 +8,26 @@ from rest_framework.response import Response
 
 from apps.core.viewsets import TenantViewSet
 
-from .models import Category, Collection, Product, ProductImage, ProductVariant
+from .models import (
+    Category,
+    Collection,
+    InventoryMovement,
+    Product,
+    ProductImage,
+    ProductOption,
+    ProductOptionValue,
+    ProductVariant,
+)
 from .serializers import (
     CategorySerializer,
     CollectionDetailSerializer,
     CollectionSerializer,
+    InventoryMovementSerializer,
     ProductDetailSerializer,
     ProductImageSerializer,
     ProductListSerializer,
+    ProductOptionSerializer,
+    ProductOptionValueSerializer,
     ProductVariantSerializer,
 )
 
@@ -130,7 +142,7 @@ class ProductViewSet(TenantViewSet):
     def get_queryset(self):
         qs = (
             Product.objects.select_related("store")
-            .prefetch_related("categories", "images", "variants")
+            .prefetch_related("categories", "images", "variants", "options__values")
             .filter(organization_id=self.request.org_id)
         )
 
@@ -208,7 +220,7 @@ class ProductViewSet(TenantViewSet):
 
     @action(detail=True, methods=["post"])
     def duplicate(self, request, pk=None):
-        """Duplicate a product with all its variants and images."""
+        """Duplicate a product with all its variants, images, and options."""
         product = self.get_object()
         new_product = Product.objects.create(
             organization=product.organization,
@@ -240,6 +252,7 @@ class ProductViewSet(TenantViewSet):
         for image in product.images.all():
             ProductImage.objects.create(
                 product=new_product,
+                media_asset=image.media_asset,
                 url=image.url,
                 alt_text=image.alt_text,
                 position=image.position,
@@ -263,6 +276,20 @@ class ProductViewSet(TenantViewSet):
                 sort_order=variant.sort_order,
             )
 
+        for option in product.options.all():
+            new_option = ProductOption.objects.create(
+                product=new_product,
+                name=option.name,
+                position=option.position,
+            )
+            for value in option.values.all():
+                ProductOptionValue.objects.create(
+                    option=new_option,
+                    value=value.value,
+                    swatch=value.swatch,
+                    sort_order=value.sort_order,
+                )
+
         self._log_audit(
             action="product.duplicate",
             resource_type="product",
@@ -277,12 +304,23 @@ class ProductViewSet(TenantViewSet):
 
     @action(detail=True, methods=["post"], url_path="inventory/update")
     def update_inventory(self, request, pk=None):
-        """Update inventory quantity for a product."""
+        """Update inventory quantity for a product and log the movement."""
         product = self.get_object()
         old_quantity = product.inventory_quantity
-        adjustment = request.data.get("adjustment", 0)
-        product.inventory_quantity = max(0, product.inventory_quantity + int(adjustment))
+        adjustment = int(request.data.get("adjustment", 0))
+        reason = request.data.get("reason", "adjustment")
+        reference = request.data.get("reference", "")
+        product.inventory_quantity = max(0, product.inventory_quantity + adjustment)
         product.save(update_fields=["inventory_quantity", "updated_at"])
+
+        InventoryMovement.objects.create(
+            product=product,
+            adjustment=adjustment,
+            reason=reason,
+            reference=reference,
+            created_by=request.user if request.user.is_authenticated else None,
+        )
+
         self._log_audit(
             action="product.inventory_update",
             resource_type="product",
@@ -413,3 +451,118 @@ class ProductVariantViewSet(TenantViewSet):
             old_value=ProductVariantSerializer(instance).data,
         )
         instance.delete()
+
+    @action(detail=True, methods=["post"], url_path="inventory/update")
+    def update_inventory(self, request, pk=None, product_pk=None):
+        """Update inventory for a specific variant and log the movement."""
+        variant = self.get_object()
+        old_quantity = variant.inventory_quantity
+        adjustment = int(request.data.get("adjustment", 0))
+        reason = request.data.get("reason", "adjustment")
+        reference = request.data.get("reference", "")
+        variant.inventory_quantity = max(0, variant.inventory_quantity + adjustment)
+        variant.save(update_fields=["inventory_quantity", "updated_at"])
+
+        product = Product.objects.get(id=product_pk, organization_id=self.request.org_id)
+        InventoryMovement.objects.create(
+            product=product,
+            variant=variant,
+            adjustment=adjustment,
+            reason=reason,
+            reference=reference,
+            created_by=request.user if request.user.is_authenticated else None,
+        )
+
+        self._log_audit(
+            action="product_variant.inventory_update",
+            resource_type="product_variant",
+            resource_id=variant.id,
+            old_value={"inventory_quantity": old_quantity},
+            new_value={"inventory_quantity": variant.inventory_quantity},
+        )
+        return Response(ProductVariantSerializer(variant).data)
+
+
+class ProductOptionViewSet(TenantViewSet):
+    """Product option management (Color, Size, etc.)."""
+
+    serializer_class = ProductOptionSerializer
+    required_permission = "products.update"
+
+    def get_queryset(self):
+        return ProductOption.objects.filter(
+            product__organization_id=self.request.org_id,
+            product_id=self.kwargs["product_pk"],
+        ).prefetch_related("values")
+
+    def perform_create(self, serializer):
+        product = Product.objects.get(
+            id=self.kwargs["product_pk"],
+            organization_id=self.request.org_id,
+        )
+        option = serializer.save(product=product)
+        self._log_audit(
+            action="product_option.create",
+            resource_type="product_option",
+            resource_id=option.id,
+            new_value=ProductOptionSerializer(option).data,
+        )
+
+    def perform_update(self, serializer):
+        old_data = ProductOptionSerializer(serializer.instance).data
+        option = serializer.save()
+        self._log_audit(
+            action="product_option.update",
+            resource_type="product_option",
+            resource_id=option.id,
+            old_value=old_data,
+            new_value=ProductOptionSerializer(option).data,
+        )
+
+    def perform_destroy(self, instance):
+        self._log_audit(
+            action="product_option.delete",
+            resource_type="product_option",
+            resource_id=instance.id,
+            old_value=ProductOptionSerializer(instance).data,
+        )
+        instance.delete()
+
+    @action(detail=True, methods=["post"], url_path="values")
+    def add_value(self, request, pk=None, product_pk=None):
+        """Add a value to this option."""
+        option = self.get_object()
+        serializer = ProductOptionValueSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        value = serializer.save(option=option)
+        return Response(ProductOptionValueSerializer(value).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["delete"], url_path=r"values/(?P<value_pk>[^/.]+)")
+    def delete_value(self, request, pk=None, product_pk=None, value_pk=None):
+        """Delete a value from this option."""
+        option = self.get_object()
+        value = option.values.get(id=value_pk)
+        value.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class InventoryMovementViewSet(TenantViewSet):
+    """Read-only inventory movement history."""
+
+    serializer_class = InventoryMovementSerializer
+    required_permission = "products.create"
+
+    def get_queryset(self):
+        qs = InventoryMovement.objects.select_related("product", "variant", "created_by").filter(
+            product__organization_id=self.request.org_id
+        )
+        product_id = self.request.query_params.get("product")
+        if product_id:
+            qs = qs.filter(product_id=product_id)
+        variant_id = self.request.query_params.get("variant")
+        if variant_id:
+            qs = qs.filter(variant_id=variant_id)
+        reason = self.request.query_params.get("reason")
+        if reason:
+            qs = qs.filter(reason=reason)
+        return qs
