@@ -74,8 +74,8 @@ export default function AttributesPage() {
 
       <div className="rounded-lg border bg-white p-4">
         <h2 className="font-semibold mb-3">Create New Option</h2>
-        <div className="flex flex-wrap gap-3 items-end">
-          <div className="flex-1 min-w-[200px]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="w-full sm:flex-1 sm:min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
             <select
               value={selectedProductId}
@@ -90,7 +90,7 @@ export default function AttributesPage() {
               ))}
             </select>
           </div>
-          <div className="flex-1 min-w-[150px]">
+          <div className="w-full sm:flex-1 sm:min-w-[150px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">Option Name</label>
             <input
               type="text"

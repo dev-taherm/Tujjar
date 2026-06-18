@@ -139,12 +139,12 @@ export default function SettingsPage() {
     <div className="max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
 
-      <div className="flex gap-2 border-b pb-2">
+      <div className="flex gap-2 border-b pb-2 overflow-x-auto">
         {(["profile", "security", "2fa"] as Tab[]).map((tabKey) => (
           <button
             key={tabKey}
             onClick={() => { setTab(tabKey); setMessage(null); }}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            className={`whitespace-nowrap px-4 py-2 text-sm font-medium rounded-t-lg ${
               tab === tabKey
                 ? "bg-primary-50 text-primary-700 border-b-2 border-primary-600"
                 : "text-gray-500 hover:text-gray-700"
@@ -172,7 +172,7 @@ export default function SettingsPage() {
           <CardContent>
             <form onSubmit={handleSubmitProfile((data) => updateProfile.mutate(data))} className="space-y-4">
               <Input label={t("email")} value={user?.email || ""} disabled />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label={t("firstName")} error={profileErrors.firstName?.message} {...registerProfile("firstName")} />
                 <Input label={t("lastName")} error={profileErrors.lastName?.message} {...registerProfile("lastName")} />
               </div>

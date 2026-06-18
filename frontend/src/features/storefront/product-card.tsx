@@ -7,7 +7,7 @@ export function StorefrontProductCard({ product, slug }: { product: Product; slu
     <Link href={href} className="group block">
       <div className="aspect-square overflow-hidden rounded-xl" style={{ background: "var(--color-surface)" }}>
         {product.primary_image ? (
-          <img src={product.primary_image.url} alt={product.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+          <img src={product.primary_image.url} alt={product.title} width={400} height={400} loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-105 active:scale-105" />
         ) : (
           <div className="flex h-full items-center justify-center" style={{ color: "var(--color-text-secondary)" }}>No Image</div>
         )}

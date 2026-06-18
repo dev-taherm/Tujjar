@@ -66,6 +66,9 @@ interface UIStore {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
+  mobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
+  toggleMobile: () => void;
   theme: "light" | "dark" | "system";
   setTheme: (theme: "light" | "dark" | "system") => void;
 }
@@ -74,6 +77,9 @@ export const useUIStore = create<UIStore>()((set) => ({
   sidebarOpen: true,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  mobileOpen: false,
+  setMobileOpen: (open) => set({ mobileOpen: open }),
+  toggleMobile: () => set((state) => ({ mobileOpen: !state.mobileOpen })),
   theme: "system",
   setTheme: (theme) => set({ theme }),
 }));

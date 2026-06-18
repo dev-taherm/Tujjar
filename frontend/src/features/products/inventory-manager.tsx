@@ -114,7 +114,7 @@ export function InventoryManager() {
         </button>
         {bulkMode && (
           <div className="p-4">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex flex-wrap items-center gap-3 mb-3">
               <input
                 type="number"
                 value={bulkAdjustment || ""}
@@ -336,7 +336,7 @@ export function InventoryManager() {
           <CardContent>
             <div className="space-y-3">
               {lowStockProducts.map((product) => (
-                <div key={product.id} className="flex items-center gap-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <div key={product.id} className="flex flex-wrap items-center gap-3 md:gap-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">{product.title}</p>
                     <p className="text-sm text-gray-500">

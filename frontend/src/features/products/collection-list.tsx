@@ -66,7 +66,7 @@ export function CollectionList() {
                     <Layers className="h-5 w-5 text-purple-500" />
                     <h3 className="font-semibold text-gray-900">{col.name}</h3>
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                  <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 opacity-100">
                     <button onClick={(e) => { e.stopPropagation(); router.push(`/${locale}/dashboard/products/collections/${col.id}`); }} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
                     <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="rounded p-1 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
                   </div>

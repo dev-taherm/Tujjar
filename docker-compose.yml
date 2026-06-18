@@ -6,6 +6,7 @@ services:
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./frontend/public:/usr/share/nginx/html:ro
+      - media_data:/media:ro
     depends_on:
       - backend
       - frontend
@@ -30,7 +31,17 @@ services:
     restart: unless-stopped
     command: >
       sh -c "python manage.py migrate --noinput &&
-             python manage.py runserver 0.0.0.0:8000"
+             gunicorn config.wsgi:application
+             --bind 0.0.0.0:8000
+             --workers 2
+             --worker-class gevent
+             --worker-connections 500
+             --timeout 120
+             --preload
+             --max-requests 1000
+             --max-requests-jitter 50
+             --access-logfile -
+             --error-logfile -"
 
   frontend:
     build:
@@ -54,6 +65,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -74,7 +87,7 @@ services:
       - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -92,36 +105,9 @@ services:
       - db
       - redis
     restart: unless-stopped
-    command: celery -A config worker -l info
-
-  celery-beat:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    volumes:
-      - ./backend:/app
-    env_file:
-      - .env
-    depends_on:
-      - redis
-    restart: unless-stopped
-    command: celery -A config beat -l info
-
-  minio:
-    image: minio/minio
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
-    command: server /data --console-address ":9001"
-    restart: unless-stopped
+    command: celery -A config worker -l info --concurrency=2 --max-tasks-per-child=1000
 
 volumes:
   pgdata:
   redis_data:
   media_data:
-  minio_data:

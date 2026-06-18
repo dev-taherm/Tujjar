@@ -141,14 +141,14 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => { setUseBackupCode(!useBackupCode); setError(null); }}
-              className="text-sm text-primary-600 hover:underline"
+              className="px-3 py-2 text-sm text-primary-600 hover:underline"
             >
               {useBackupCode ? t("useAuthenticator") : t("useBackupCode")}
             </button>
             <button
               type="button"
               onClick={() => { setRequires2FA(false); setTwoFactorCode(""); setBackupCode(""); setError(null); }}
-              className="text-sm text-gray-500 hover:underline"
+              className="px-3 py-2 text-sm text-gray-500 hover:underline"
             >
               {t("backToLogin")}
             </button>

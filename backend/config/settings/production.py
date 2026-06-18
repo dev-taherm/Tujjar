@@ -27,11 +27,14 @@ if "*" in _allowed_hosts:
     )
 ALLOWED_HOSTS = _allowed_hosts
 
-# Use S3 storage in production
-STORAGES["default"]["BACKEND"] = "storages.backends.s3boto3.S3Boto3Storage"  # noqa: F405
+# Use local filesystem for media storage (minimized infrastructure)
+STORAGES["default"]["BACKEND"] = "django.core.files.storage.FileSystemStorage"  # noqa: F405
 
 # Manifest static files for cache-busting
 STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"  # noqa: F405
+
+# Database connection pooling
+DATABASES["default"]["CONN_MAX_AGE"] = 600  # noqa: F405
 
 # Production cache (Redis)
 CACHES = {

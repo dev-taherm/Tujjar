@@ -304,7 +304,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -314,7 +314,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
             <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
               {isEditing ? `Edit ${initialData?.title}` : "Add product"}
             </h1>
           </div>
@@ -547,7 +547,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                           alt={image.alt_text}
                           className="h-full w-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors">
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">
                           <div className="absolute top-1 left-1">
                             <GripVertical className="h-4 w-4 text-white/70" />
                           </div>
@@ -558,7 +558,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                                 e.stopPropagation();
                                 handleSetPrimaryImage(image.id);
                               }}
-                              className={`rounded-full p-1 ${
+                              className={`rounded-full p-2 min-h-[44px] min-w-[44px] flex items-center justify-center ${
                                 image.is_primary
                                   ? "bg-yellow-400 text-yellow-900"
                                   : "bg-white/80 text-gray-600 hover:bg-white"
@@ -573,7 +573,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                                 e.stopPropagation();
                                 handleDeleteImage(image.id);
                               }}
-                              className="rounded-full bg-white/80 p-1 text-gray-600 hover:bg-red-500 hover:text-white"
+                              className="rounded-full bg-white/80 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-red-500 hover:text-white"
                               title="Delete image"
                             >
                               <X className="h-3 w-3" />

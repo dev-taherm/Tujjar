@@ -26,12 +26,12 @@ export default function ProductsPage() {
         <p className="text-sm text-gray-500">{t("description")}</p>
       </div>
 
-      <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1">
+      <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1 overflow-x-auto">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               tab === key ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
             }`}
           >

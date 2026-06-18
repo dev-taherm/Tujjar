@@ -26,6 +26,7 @@ import {
   ScrollText,
   PenTool,
   Settings2,
+  X,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
@@ -105,14 +106,35 @@ function getStoredExpanded(): string[] {
   return ["main"];
 }
 
+function getExpandedForPath(pathname: string, locale: string, stored: string[]): string[] {
+  for (const group of navigation) {
+    for (const item of group.items) {
+      const href = `/${locale}${item.href}`;
+      if (pathname === href || pathname.startsWith(href + "/")) {
+        if (!stored.includes(group.groupKey)) {
+          const next = [...stored, group.groupKey];
+          if (typeof window !== "undefined") {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          }
+          return next;
+        }
+        return stored;
+      }
+    }
+  }
+  return stored;
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const { user, organization } = useAuthStore();
-  const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { sidebarOpen, toggleSidebar, mobileOpen, setMobileOpen } = useUIStore();
   const t = useTranslations("dashboard.nav");
   const locale = useLocale();
 
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(getStoredExpanded);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(() =>
+    getExpandedForPath(pathname, locale, getStoredExpanded())
+  );
 
   const toggleGroup = useCallback((groupKey: string) => {
     setExpandedGroups((prev) => {
@@ -124,162 +146,175 @@ export function Sidebar() {
     });
   }, []);
 
-  // Auto-expand group containing active route
   useEffect(() => {
-    for (const group of navigation) {
-      for (const item of group.items) {
-        const href = `/${locale}${item.href}`;
-        if (pathname === href || pathname.startsWith(href + "/")) {
-          setExpandedGroups((prev) => {
-            if (prev.includes(group.groupKey)) return prev;
-            const next = [...prev, group.groupKey];
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-            return next;
+    setMobileOpen(false);
+  }, [pathname, setMobileOpen]);
+
+  const sidebarExpanded = sidebarOpen;
+
+  const sidebarContent = (
+    <div className="flex h-full flex-col">
+      <div className="flex h-16 items-center justify-between border-b border-gray-200 px-3 md:px-4">
+        {sidebarExpanded && (
+          <Link href={`/${locale}/dashboard`} className="text-xl font-bold text-primary-600">
+            Tujjar
+          </Link>
+        )}
+        <button
+          onClick={toggleSidebar}
+          className="hidden rounded-lg p-1.5 hover:bg-gray-100 active:scale-[0.98] active:bg-gray-100 md:block"
+        >
+          <ChevronLeft
+            className={cn("h-5 w-5 transition-transform rtl:rotate-180", !sidebarExpanded && "rotate-180")}
+          />
+        </button>
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="rounded-lg p-1.5 hover:bg-gray-100 active:scale-[0.98] active:bg-gray-100 md:hidden"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto px-2 py-4">
+        {navigation.map((group) => {
+          const isExpanded = expandedGroups.includes(group.groupKey);
+          const hasActiveItem = group.items.some((item) => {
+            const href = `/${locale}${item.href}`;
+            return pathname === href || pathname.startsWith(href + "/");
           });
-          return;
-        }
-      }
-    }
-  }, [pathname, locale]);
+
+          return (
+            <div key={group.groupKey} className="mb-1">
+              <button
+                onClick={() => (sidebarExpanded ? toggleGroup(group.groupKey) : undefined)}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-3 text-xs font-semibold uppercase tracking-wider transition-colors",
+                  sidebarExpanded ? "cursor-pointer hover:bg-gray-50 active:scale-[0.98] active:bg-gray-100" : "cursor-default",
+                  hasActiveItem ? "text-primary-600" : "text-gray-400"
+                )}
+                title={t(group.groupKey)}
+              >
+                {sidebarExpanded ? (
+                  <>
+                    <span className="flex-1 text-start">{t(group.groupKey)}</span>
+                    <ChevronRight
+                      className={cn(
+                        "h-3.5 w-3.5 transition-transform duration-200",
+                        isExpanded && "rotate-90"
+                      )}
+                    />
+                  </>
+                ) : (
+                  <span className="mx-auto text-[10px]">{t(group.groupKey).charAt(0)}</span>
+                )}
+              </button>
+
+              {(!sidebarExpanded || isExpanded) &&
+                group.items.map((item) => {
+                  const href = `/${locale}${item.href}`;
+                  const isActive = pathname === href || pathname.startsWith(href + "/");
+                  return (
+                    <Link
+                      key={item.nameKey}
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors active:scale-[0.98] active:bg-gray-100",
+                        sidebarExpanded ? "ms-2" : "justify-center",
+                        isActive
+                          ? "bg-primary-50 text-primary-700"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      )}
+                      title={!sidebarExpanded ? t(item.nameKey) : undefined}
+                    >
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {sidebarExpanded && <span>{t(item.nameKey)}</span>}
+                    </Link>
+                  );
+                })}
+            </div>
+          );
+        })}
+
+        {user?.is_staff && (
+          <>
+            <div className="my-3 border-t border-gray-200" />
+            <Link
+              href={`/${locale}/admin`}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors active:scale-[0.98] active:bg-gray-100",
+                sidebarExpanded ? "" : "justify-center",
+                pathname === `/${locale}/admin` || pathname.startsWith(`/${locale}/admin/`)
+                  ? "bg-red-50 text-red-700"
+                  : "text-red-600 hover:bg-red-50 hover:text-red-700"
+              )}
+              title={!sidebarExpanded ? t("adminPanel") : undefined}
+            >
+              <Shield className="h-5 w-5 flex-shrink-0" />
+              {sidebarExpanded && <span>{t("adminPanel")}</span>}
+            </Link>
+          </>
+        )}
+      </nav>
+
+      <div className="border-t border-gray-200 p-4">
+        {sidebarExpanded && user && (
+          <div className="mb-3">
+            <p className="truncate text-sm font-medium text-gray-900">
+              {user.full_name || user.email}
+            </p>
+            {organization && (
+              <p className="truncate text-xs text-gray-500">{organization.name}</p>
+            )}
+          </div>
+        )}
+        <LocaleSwitcher variant="sidebar" />
+        <button
+          onClick={() => {
+            useAuthStore.getState().logout();
+            window.location.href = `/${locale}/login`;
+          }}
+          className={cn(
+            "flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:scale-[0.98] active:bg-gray-100",
+            sidebarExpanded ? "" : "justify-center"
+          )}
+          title={!sidebarExpanded ? t("signOut") : undefined}
+        >
+          <LogOut className="h-5 w-5" />
+          {sidebarExpanded && <span>{t("signOut")}</span>}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <aside
-      className={cn(
-        "fixed start-0 top-0 z-40 h-screen border-e border-gray-200 bg-white transition-all",
-        sidebarOpen ? "w-64" : "w-16"
+    <>
+      <aside
+        className={cn(
+          "fixed start-0 top-0 z-40 hidden h-dvh border-e border-gray-200 bg-white transition-all md:block",
+          sidebarExpanded ? "w-64" : "w-16"
+        )}
+      >
+        {sidebarContent}
+      </aside>
+
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
-    >
-      <div className="flex h-full flex-col">
-        {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
-          {sidebarOpen && (
-            <Link href={`/${locale}/dashboard`} className="text-xl font-bold text-primary-600">
-              Tujjar
-            </Link>
-          )}
-          <button
-            onClick={toggleSidebar}
-            className="rounded-lg p-1.5 hover:bg-gray-100"
-          >
-            <ChevronLeft
-              className={cn("h-5 w-5 transition-transform rtl:rotate-180", !sidebarOpen && "rotate-180")}
-            />
-          </button>
-        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2 py-4">
-          {navigation.map((group) => {
-            const isExpanded = expandedGroups.includes(group.groupKey);
-            const hasActiveItem = group.items.some((item) => {
-              const href = `/${locale}${item.href}`;
-              return pathname === href || pathname.startsWith(href + "/");
-            });
-
-            return (
-              <div key={group.groupKey} className="mb-1">
-                {/* Group header */}
-                <button
-                  onClick={() => sidebarOpen && toggleGroup(group.groupKey)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors",
-                    sidebarOpen ? "cursor-pointer hover:bg-gray-50" : "cursor-default",
-                    hasActiveItem ? "text-primary-600" : "text-gray-400"
-                  )}
-                  title={t(group.groupKey)}
-                >
-                  {sidebarOpen ? (
-                    <>
-                      <span className="flex-1 text-start">{t(group.groupKey)}</span>
-                      <ChevronRight
-                        className={cn(
-                          "h-3.5 w-3.5 transition-transform duration-200",
-                          isExpanded && "rotate-90"
-                        )}
-                      />
-                    </>
-                  ) : (
-                    <span className="mx-auto text-[10px]">{t(group.groupKey).charAt(0)}</span>
-                  )}
-                </button>
-
-                {/* Group items */}
-                {(!sidebarOpen || isExpanded) &&
-                  group.items.map((item) => {
-                    const href = `/${locale}${item.href}`;
-                    const isActive = pathname === href || pathname.startsWith(href + "/");
-                    return (
-                      <Link
-                        key={item.nameKey}
-                        href={href}
-                        className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                          sidebarOpen ? "ms-2" : "justify-center",
-                          isActive
-                            ? "bg-primary-50 text-primary-700"
-                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                        )}
-                        title={!sidebarOpen ? t(item.nameKey) : undefined}
-                      >
-                        <item.icon className="h-5 w-5 flex-shrink-0" />
-                        {sidebarOpen && <span>{t(item.nameKey)}</span>}
-                      </Link>
-                    );
-                  })}
-              </div>
-            );
-          })}
-
-          {user?.is_staff && (
-            <>
-              <div className="my-3 border-t border-gray-200" />
-              <Link
-                href={`/${locale}/admin`}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  sidebarOpen ? "" : "justify-center",
-                  pathname === `/${locale}/admin` || pathname.startsWith(`/${locale}/admin/`)
-                    ? "bg-red-50 text-red-700"
-                    : "text-red-600 hover:bg-red-50 hover:text-red-700"
-                )}
-                title={!sidebarOpen ? t("adminPanel") : undefined}
-              >
-                <Shield className="h-5 w-5 flex-shrink-0" />
-                {sidebarOpen && <span>{t("adminPanel")}</span>}
-              </Link>
-            </>
-          )}
-        </nav>
-
-        {/* User section */}
-        <div className="border-t border-gray-200 p-4">
-          {sidebarOpen && user && (
-            <div className="mb-3">
-              <p className="truncate text-sm font-medium text-gray-900">
-                {user.full_name || user.email}
-              </p>
-              {organization && (
-                <p className="truncate text-xs text-gray-500">{organization.name}</p>
-              )}
-            </div>
-          )}
-          <LocaleSwitcher variant="sidebar" />
-          <button
-            onClick={() => {
-              useAuthStore.getState().logout();
-              window.location.href = `/${locale}/login`;
-            }}
-            className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900",
-              sidebarOpen ? "" : "justify-center"
-            )}
-            title={!sidebarOpen ? t("signOut") : undefined}
-          >
-            <LogOut className="h-5 w-5" />
-            {sidebarOpen && <span>{t("signOut")}</span>}
-          </button>
-        </div>
-      </div>
-    </aside>
+      <aside
+        className={cn(
+          "fixed start-0 top-0 z-50 h-dvh w-64 border-e border-gray-200 bg-white transition-transform duration-300 md:hidden",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

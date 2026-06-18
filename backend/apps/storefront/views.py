@@ -306,6 +306,17 @@ class StorefrontCategoryListView(generics.ListAPIView):
             return Category.objects.none()
         return Category.objects.filter(organization=store.organization, is_active=True)
 
+    def list(self, request, *args, **kwargs):
+        subdomain = self.kwargs.get("subdomain")
+        cache_key = f"storefront:categories:{subdomain}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            from rest_framework.response import Response as DRFResponse
+            return DRFResponse(cached)
+        response = super().list(request, *args, **kwargs)
+        cache.set(cache_key, response.data, 60)
+        return response
+
 
 class StorefrontCollectionListView(generics.ListAPIView):
     serializer_class = CollectionSerializer
@@ -317,6 +328,17 @@ class StorefrontCollectionListView(generics.ListAPIView):
         if not store:
             return Collection.objects.none()
         return Collection.objects.filter(organization=store.organization, is_active=True)
+
+    def list(self, request, *args, **kwargs):
+        subdomain = self.kwargs.get("subdomain")
+        cache_key = f"storefront:collections:{subdomain}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            from rest_framework.response import Response as DRFResponse
+            return DRFResponse(cached)
+        response = super().list(request, *args, **kwargs)
+        cache.set(cache_key, response.data, 60)
+        return response
 
 
 class StorefrontPageView(generics.RetrieveAPIView):
@@ -355,6 +377,11 @@ class StorefrontPageView(generics.RetrieveAPIView):
 @permission_classes([AllowAny])
 def robots_txt(request, subdomain=None):
     """Generate robots.txt for a store."""
+    cache_key = f"storefront:robots:{subdomain}"
+    cached = cache.get(cache_key)
+    if cached:
+        return HttpResponse(cached, content_type="text/plain")
+
     store = get_store_by_slug(subdomain)
     if not store:
         return HttpResponse("User-agent: *\nDisallow: /", content_type="text/plain", status=404)
@@ -373,13 +400,20 @@ def robots_txt(request, subdomain=None):
         lines.append(f"Disallow: /{slug}/" if slug != "home" else "")
     lines.append("")
     lines.append(f"Sitemap: https://{store.domain}/sitemap.xml")
-    return HttpResponse("\n".join(lines), content_type="text/plain")
+    content = "\n".join(lines)
+    cache.set(cache_key, content, 300)
+    return HttpResponse(content, content_type="text/plain")
 
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def sitemap_xml(request, subdomain=None):
     """Generate sitemap.xml for a store."""
+    cache_key = f"storefront:sitemap:{subdomain}"
+    cached = cache.get(cache_key)
+    if cached:
+        return HttpResponse(cached, content_type="application/xml")
+
     store = get_store_by_slug(subdomain)
     if not store:
         return HttpResponse(
@@ -456,6 +490,7 @@ def sitemap_xml(request, subdomain=None):
 {chr(10).join(urls)}
 </urlset>"""
 
+    cache.set(cache_key, xml, 300)
     return HttpResponse(xml, content_type="application/xml")
 
 

@@ -5,7 +5,7 @@ import type { Section } from "@/shared/types";
 
 function SectionFallback({ section }: { section: Section }) {
   return (
-    <div className="rounded-lg border border-dashed p-8 text-center text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
+    <div className="rounded-lg border border-dashed p-4 sm:p-8 text-center text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
       {section.type} section
     </div>
   );
@@ -23,12 +23,14 @@ export function StorefrontSectionRenderer({ sections }: { sections: Section[] })
           sectionStyle.backgroundColor = section.settings.backgroundColor as string;
         }
         if (section.settings?.paddingY != null) {
-          sectionStyle.paddingTop = `${section.settings.paddingY}px`;
-          sectionStyle.paddingBottom = `${section.settings.paddingY}px`;
+          const py = Math.min(Number(section.settings.paddingY) || 0, 80);
+          sectionStyle.paddingTop = `${py}px`;
+          sectionStyle.paddingBottom = `${py}px`;
         }
         if (section.settings?.paddingX != null) {
-          sectionStyle.paddingLeft = `${section.settings.paddingX}px`;
-          sectionStyle.paddingRight = `${section.settings.paddingX}px`;
+          const px = Math.min(Number(section.settings.paddingX) || 0, 40);
+          sectionStyle.paddingLeft = `${px}px`;
+          sectionStyle.paddingRight = `${px}px`;
         }
         return (
           <section
