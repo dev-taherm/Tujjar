@@ -1,0 +1,19 @@
+name: Sync to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout public repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to private repo
+        run: |
+          git remote add production https://x-access-token:${{ secrets.PRIVATE_REPO_TOKEN }}@github.com/dev-taherm/Tujjar-Production.git
+          git push production main --force
