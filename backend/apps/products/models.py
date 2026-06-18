@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -36,6 +37,8 @@ class Category(UUIDModel, TimeStampedModel):
     image = models.URLField(blank=True, default="")
     is_active = models.BooleanField(default=True)
     sort_order = models.IntegerField(default=0)
+    seo_title = models.CharField(max_length=255, blank=True, default="")
+    seo_description = models.TextField(blank=True, default="")
     translations = models.JSONField(
         default=dict,
         blank=True,
@@ -81,6 +84,8 @@ class Collection(UUIDModel, TimeStampedModel):
         blank=True,
         related_name="collection_set",
     )
+    seo_title = models.CharField(max_length=255, blank=True, default="")
+    seo_description = models.TextField(blank=True, default="")
     translations = models.JSONField(
         default=dict,
         blank=True,
@@ -212,6 +217,37 @@ class Product(UUIDModel, TimeStampedModel):
         return self.images.filter(is_primary=True).first() or self.images.first()
 
 
+class ProductOption(UUIDModel, TimeStampedModel):
+    """Named product option (e.g. Color, Size)."""
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="options")
+    name = models.CharField(max_length=100)
+    position = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ["position"]
+        unique_together = ["product", "name"]
+
+    def __str__(self) -> str:
+        return f"{self.product.title} - {self.name}"
+
+
+class ProductOptionValue(UUIDModel, TimeStampedModel):
+    """Value for a product option (e.g. Red, Blue for Color)."""
+
+    option = models.ForeignKey(ProductOption, on_delete=models.CASCADE, related_name="values")
+    value = models.CharField(max_length=100)
+    swatch = models.CharField(max_length=7, blank=True, default="", help_text="Hex color, e.g. #FF0000")
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "value"]
+        unique_together = ["option", "value"]
+
+    def __str__(self) -> str:
+        return f"{self.option.name}: {self.value}"
+
+
 class ProductVariant(UUIDModel, TimeStampedModel):
     """Product variant (size, color, etc.)."""
 
@@ -247,7 +283,14 @@ class ProductImage(UUIDModel, TimeStampedModel):
     """Product image with position ordering."""
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
-    url = models.URLField()
+    media_asset = models.ForeignKey(
+        "media.MediaAsset",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="product_images",
+    )
+    url = models.URLField(blank=True, default="")
     alt_text = models.CharField(max_length=255, blank=True, default="")
     position = models.PositiveIntegerField(default=0)
     is_primary = models.BooleanField(default=False)
@@ -260,3 +303,45 @@ class ProductImage(UUIDModel, TimeStampedModel):
 
     def __str__(self) -> str:
         return f"Image {self.position} for {self.product.title}"
+
+    @property
+    def file_url(self) -> str:
+        if self.media_asset:
+            return self.media_asset.file_url
+        return self.url
+
+
+class InventoryMovement(UUIDModel, TimeStampedModel):
+    """Track inventory changes for auditability."""
+
+    REASON_CHOICES = [
+        ("sale", "Sale"),
+        ("adjustment", "Manual Adjustment"),
+        ("restock", "Restock"),
+        ("correction", "Correction"),
+        ("return", "Return"),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="inventory_movements")
+    variant = models.ForeignKey(
+        ProductVariant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="inventory_movements",
+    )
+    adjustment = models.IntegerField(help_text="Positive for increase, negative for decrease")
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES, default="adjustment")
+    reference = models.CharField(max_length=255, blank=True, default="", help_text="Order ID or reference note")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.product.title}: {self.adjustment:+d} ({self.reason})"
