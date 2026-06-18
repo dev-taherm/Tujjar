@@ -134,7 +134,7 @@ export function TemplateCreateDialog({ open, onClose }: TemplateCreateDialogProp
           />
         </div>
         <div>
-          <Label>{t("category")}</Label>
+          <Label>{tc("category")}</Label>
           <Select
             options={categories}
             value={category}

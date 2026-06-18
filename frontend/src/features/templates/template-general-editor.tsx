@@ -12,6 +12,7 @@ interface TemplateGeneralEditorProps {
 
 export function TemplateGeneralEditor({ data, onChange }: TemplateGeneralEditorProps) {
   const t = useTranslations("dashboard.templates");
+  const tc = useTranslations("common");
 
   const categories = TEMPLATE_CATEGORIES.filter((c) => c.value).map((c) => ({
     value: c.value,
@@ -55,7 +56,7 @@ export function TemplateGeneralEditor({ data, onChange }: TemplateGeneralEditorP
         />
       </div>
       <div>
-        <Label>{t("category")}</Label>
+        <Label>{tc("category")}</Label>
         <Select
           options={categories}
           value={data.category || "general"}
@@ -63,7 +64,7 @@ export function TemplateGeneralEditor({ data, onChange }: TemplateGeneralEditorP
         />
       </div>
       <div>
-        <Label>{t("category") === "Category" ? "Author" : t("category")}</Label>
+        <Label>Author</Label>
         <Input
           value={data.author || ""}
           onChange={(e) => handleChange("author", e.target.value)}
