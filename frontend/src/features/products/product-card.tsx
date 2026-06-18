@@ -22,7 +22,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
   return (
     <div
       onClick={onClick}
-      className="group cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:shadow-md hover:border-primary-300"
+      className="group cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:shadow-md hover:border-primary-300 active:scale-[0.98] active:shadow-sm"
     >
       {/* Image */}
       <div className="relative aspect-square bg-gray-100">

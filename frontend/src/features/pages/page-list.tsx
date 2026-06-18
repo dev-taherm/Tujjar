@@ -36,7 +36,7 @@ export function PageList() {
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">{t("pages")}</h2>
           <p className="text-sm text-gray-500">{pages?.length || 0} {t("pages").toLowerCase()}{(pages?.length || 0) !== 1 ? "s" : ""}</p>

@@ -58,7 +58,7 @@ function SubscriptionCard() {
         <Crown className="h-5 w-5 text-yellow-500" />
         <h3 className="font-semibold">{t("currentSubscription")}</h3>
       </div>
-      <div className="grid grid-cols-2 gap-4 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         <div><span className="text-gray-500">{t("plan")}</span><p className="font-medium">{sub.plan_name}</p></div>
         <div><span className="text-gray-500">{t("status")}</span><p><Badge variant={(statusColors[sub.status] || "default") as "success"}>{sub.status}</Badge></p></div>
         <div><span className="text-gray-500">{t("price")}</span><p className="font-medium">${sub.plan_price}/mo</p></div>

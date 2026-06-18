@@ -33,13 +33,15 @@ function RevenueChart({ data }: { data: { date: string; revenue: number; orders:
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
       <h3 className="mb-4 text-sm font-semibold text-gray-900">{t("revenueLast30Days")}</h3>
-      <div className="flex items-end gap-1 h-48">
-        {data.map((d, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1">
-            <div className="w-full bg-primary-500 rounded-t" style={{ height: `${(d.revenue / maxRevenue) * 100}%`, minHeight: d.revenue > 0 ? 4 : 0 }} />
-            <span className="text-[10px] text-gray-400">{d.date.slice(5)}</span>
-          </div>
-        ))}
+      <div className="overflow-x-auto">
+        <div className="flex items-end gap-1 h-48 min-w-[400px]">
+          {data.map((d, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+              <div className="w-full bg-primary-500 rounded-t" style={{ height: `${(d.revenue / maxRevenue) * 100}%`, minHeight: d.revenue > 0 ? 4 : 0 }} />
+              <span className="text-[10px] sm:text-xs text-gray-400">{d.date.slice(5)}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

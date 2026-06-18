@@ -162,7 +162,7 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
   }
 
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col gap-6 lg:flex-row">
       <div className="flex-1 space-y-4">
         <div className="flex items-center gap-3">
           <button
@@ -205,7 +205,7 @@ export function BlogPostEditor({ postId }: BlogPostEditorProps) {
         />
       </div>
 
-      <div className="w-80 space-y-4">
+      <div className="w-full lg:w-80 space-y-4">
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Featured Image</h3>
           {featuredImageUrl ? (

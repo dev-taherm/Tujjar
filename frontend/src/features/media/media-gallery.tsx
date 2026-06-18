@@ -98,9 +98,9 @@ export function MediaGallery({ selectedStoreId, onStoreChange }: MediaGalleryPro
   const selected = assets?.find((a) => a.id === selectedAsset);
 
   return (
-    <div className="flex h-[calc(100vh-160px)] overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-160px)] overflow-hidden rounded-xl border border-gray-200 bg-white">
       {/* Sidebar */}
-      <div className="w-56 border-e border-gray-200 flex flex-col">
+      <div className="w-full md:w-56 border-e border-gray-200 flex flex-col">
         <div className="p-3 border-b border-gray-200 space-y-2">
           <Button onClick={() => fileInputRef.current?.click()} className="w-full" size="sm">
             <Upload className="me-1 h-4 w-4" /> {t("upload")}
@@ -173,7 +173,7 @@ export function MediaGallery({ selectedStoreId, onStoreChange }: MediaGalleryPro
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="aspect-square animate-pulse rounded-lg bg-gray-200" />)}
             </div>
           ) : !assets?.length ? (
@@ -182,7 +182,7 @@ export function MediaGallery({ selectedStoreId, onStoreChange }: MediaGalleryPro
               <p className="text-sm text-gray-500">{t("noFiles")}</p>
             </div>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {assets.map((asset) => (
                 <div key={asset.id} onClick={() => setSelectedAsset(asset.id)} className={`group relative aspect-square cursor-pointer rounded-lg border-2 overflow-hidden transition-colors ${selectedAsset === asset.id ? "border-blue-400" : "border-transparent hover:border-gray-200"}`}>
                   {asset.is_image ? (
@@ -190,7 +190,7 @@ export function MediaGallery({ selectedStoreId, onStoreChange }: MediaGalleryPro
                   ) : (
                     <div className="flex h-full items-center justify-center bg-gray-50">{typeIcons[asset.file_type]}</div>
                   )}
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100">
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2 md:opacity-0 md:group-hover:opacity-100 opacity-100">
                     <p className="text-xs text-white truncate">{asset.title || asset.original_filename}</p>
                     <p className="text-xs text-white/70">{asset.file_size_display}</p>
                   </div>
@@ -206,7 +206,7 @@ export function MediaGallery({ selectedStoreId, onStoreChange }: MediaGalleryPro
                     <p className="text-sm font-medium text-gray-900 truncate">{asset.title || asset.original_filename}</p>
                     <p className="text-xs text-gray-500">{asset.file_size_display} - {formatDateTime(asset.created_at)}</p>
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); handleDelete(asset.id); }} className="rounded p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
+                   <button onClick={(e) => { e.stopPropagation(); handleDelete(asset.id); }} className="rounded p-1 text-gray-400 md:opacity-0 md:group-hover:opacity-100 opacity-100 hover:bg-red-50 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
                 </div>
               ))}
             </div>
@@ -216,7 +216,7 @@ export function MediaGallery({ selectedStoreId, onStoreChange }: MediaGalleryPro
 
       {/* Detail Panel */}
       {selected && (
-        <div className="w-72 border-s border-gray-200 flex flex-col overflow-hidden">
+        <div className="w-full md:w-72 border-s border-gray-200 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between border-b border-gray-200 p-3">
             <h3 className="text-sm font-semibold">{t("details")}</h3>
             <button onClick={() => setSelectedAsset(null)} className="text-gray-400 hover:text-gray-600">&times;</button>

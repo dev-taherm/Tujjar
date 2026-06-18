@@ -519,7 +519,7 @@ function BrandingTab({ store }: { store: Store }) {
           <CardDescription>{t("logoDescription") || "Upload your store logo and favicon"}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Logo */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">{t("storeLogo") || "Store Logo"}</label>
@@ -918,8 +918,8 @@ function NavigationTab({ store }: { store: Store }) {
             </Button>
           </div>
           {navData.links?.map((link, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <GripVertical className="h-4 w-4 text-gray-300" />
+            <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <GripVertical className="h-4 w-4 text-gray-300 hidden sm:block" />
               <Input
                 placeholder="Label"
                 value={getNavLabel(link.label)}
@@ -935,7 +935,7 @@ function NavigationTab({ store }: { store: Store }) {
               <button
                 type="button"
                 onClick={() => removeNavLink(index)}
-                className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 sm:ml-auto"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -962,7 +962,7 @@ function NavigationTab({ store }: { store: Store }) {
                 }))
               } />
           {navData.cta_button?.enabled && (
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 placeholder="Button Label"
                 value={getNavLabel(navData.cta_button?.label || "")}
@@ -1032,7 +1032,7 @@ function NavigationTab({ store }: { store: Store }) {
               </div>
               <div className="space-y-2">
                 {col.links.map((link, linkIndex) => (
-                  <div key={linkIndex} className="flex items-center gap-2">
+                  <div key={linkIndex} className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Input
                       placeholder="Label"
                       value={getFooterTitle(link.label)}
@@ -1048,7 +1048,7 @@ function NavigationTab({ store }: { store: Store }) {
                     <button
                       type="button"
                       onClick={() => removeFooterLink(colIndex, linkIndex)}
-                      className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                      className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 sm:ml-auto"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -1168,7 +1168,7 @@ function AnnouncementBarSettings({ store }: { store: Store }) {
               <Label className="text-sm">{t("announcementText") || "Message Text"}</Label>
               <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Free shipping on orders over $50!" className="mt-1" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm">{t("announcementLink") || "Link URL"}</Label>
                 <Input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="/shop/sale" className="mt-1" />
@@ -1178,7 +1178,7 @@ function AnnouncementBarSettings({ store }: { store: Store }) {
                 <Input value={linkLabel} onChange={(e) => setLinkLabel(e.target.value)} placeholder="Shop Now" className="mt-1" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-2">
                 <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-8 w-8 cursor-pointer rounded border" />
                 <Label className="text-sm">{t("announcementBgColor") || "Background Color"}</Label>
@@ -1461,7 +1461,7 @@ function DangerZone({ store }: { store: Store }) {
             <p className="text-sm text-gray-600">
               {t("confirmSlugHint") || "Type"} <span className="font-mono font-bold">{store.slug}</span> {t("confirmSlugHintEnd") || "to confirm:"}
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 placeholder={store.slug}
                 value={confirmSlug}

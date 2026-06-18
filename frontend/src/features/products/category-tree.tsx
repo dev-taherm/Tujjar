@@ -23,9 +23,9 @@ function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodePro
 
   return (
     <div>
-      <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-50" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
+      <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-50 active:bg-gray-100" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
         {hasChildren ? (
-          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 hover:text-gray-600">
+          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 hover:text-gray-600 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
             {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </button>
         ) : (
@@ -43,9 +43,9 @@ function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodePro
         <span className="flex-1 text-sm font-medium text-gray-700">{category.name}</span>
         <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">#{category.sort_order}</span>
         <span className="text-xs text-gray-400">{category.product_count} {t("totalProducts").toLowerCase()}</span>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-          <button onClick={() => onEdit(category.id)} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
-          <button onClick={() => onDelete(category.id)} className="rounded p-1 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
+        <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 opacity-100">
+          <button onClick={() => onEdit(category.id)} className="rounded p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
+          <button onClick={() => onDelete(category.id)} className="rounded p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
         </div>
       </div>
       {expanded && hasChildren && (

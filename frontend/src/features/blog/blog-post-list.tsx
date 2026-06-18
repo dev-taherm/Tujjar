@@ -56,7 +56,7 @@ export function BlogPostList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3">
           {stores && stores.length > 1 && (
             <select
@@ -76,7 +76,7 @@ export function BlogPostList() {
               placeholder="Search posts..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-10 w-64 rounded-lg border border-gray-200 bg-white ps-10 text-sm focus:border-blue-500 focus:outline-none"
+              className="h-10 w-full sm:w-64 rounded-lg border border-gray-200 bg-white ps-10 text-sm focus:border-blue-500 focus:outline-none"
             />
           </div>
           <select

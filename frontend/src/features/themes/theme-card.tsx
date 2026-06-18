@@ -85,7 +85,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
   return (
     <>
     <Card
-      className={`group cursor-pointer transition-all hover:shadow-md ${
+      className={`group cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${
         isSelected ? "ring-2 ring-primary-500 border-primary-300" : "hover:border-primary-200"
       }`}
       onClick={() => onSelect?.(theme)}
@@ -127,7 +127,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
             {!theme.is_system && (
               <>
                 <Button
-                  size="sm"
+                  size="default"
                   variant="ghost"
                   onClick={handleExport}
                   className="shrink-0"
@@ -136,7 +136,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
                   <Download className="h-3.5 w-3.5" />
                 </Button>
                 <Button
-                  size="sm"
+                  size="default"
                   variant="ghost"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -148,7 +148,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
                   <Copy className="h-3.5 w-3.5" />
                 </Button>
                 <Button
-                  size="sm"
+                  size="default"
                   variant="ghost"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -162,7 +162,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
             )}
             {onApply && !isActive && (
               <Button
-                size="sm"
+                size="default"
                 variant="default"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -175,7 +175,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
             )}
             {onInstall && (
               <Button
-                size="sm"
+                size="default"
                 variant={isInstalled ? "secondary" : "default"}
                 disabled={isInstalling || isInstalled}
                 onClick={(e) => {

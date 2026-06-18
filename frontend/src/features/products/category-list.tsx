@@ -21,7 +21,7 @@ function CategoryRow({ category, depth = 0, onEdit, onDelete }: CategoryRowProps
 
   return (
     <>
-      <div className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
+      <div className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 active:bg-gray-100" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
         <GripVertical className="h-4 w-4 text-gray-300 shrink-0" />
         <FolderTree className="h-4 w-4 text-amber-500 shrink-0" />
         {category.image ? (
@@ -45,8 +45,8 @@ function CategoryRow({ category, depth = 0, onEdit, onDelete }: CategoryRowProps
         </div>
         <span className="text-xs text-gray-400 shrink-0">{category.product_count} {t("totalProducts").toLowerCase()}</span>
         <div className="flex items-center gap-1 shrink-0">
-          <button onClick={() => onEdit(category.id)} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
-          <button onClick={() => onDelete(category.id)} className="rounded p-1 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
+          <button onClick={() => onEdit(category.id)} className="rounded p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
+          <button onClick={() => onDelete(category.id)} className="rounded p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
         </div>
       </div>
       {category.children?.map((child: Category) => (

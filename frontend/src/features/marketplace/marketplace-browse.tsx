@@ -164,7 +164,7 @@ function ThemesTab() {
               key={cat.value}
               onClick={() => setThemeCategory(cat.value)}
               className={cn(
-                "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                "rounded-lg px-3 py-2 min-h-[44px] text-sm font-medium transition-colors",
                 themeCategory === cat.value
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -280,7 +280,7 @@ function TemplatesTab({
                 key={cat.value}
                 onClick={() => setCategory(cat.value)}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  "rounded-lg px-3 py-2 min-h-[44px] text-sm font-medium transition-colors",
                   category === cat.value
                     ? "bg-blue-600 text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"

@@ -33,7 +33,7 @@ export function TemplateCard({ template, onPreview, onInstall, onDuplicate, onDe
   const colors = (template.config as Record<string, unknown>)?.colors as Record<string, string> | undefined;
 
   return (
-    <div className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-lg">
+    <div className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-lg active:scale-[0.98]">
       {/* Thumbnail */}
       <div className="relative">
         <TemplateThumbnail template={template} />
@@ -108,7 +108,7 @@ export function TemplateCard({ template, onPreview, onInstall, onDuplicate, onDe
             {onDuplicate && (
               <button
                 onClick={() => onDuplicate(template)}
-                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
               >
                 <Copy className="h-3 w-3" />
                 {t("duplicate")}
@@ -117,7 +117,7 @@ export function TemplateCard({ template, onPreview, onInstall, onDuplicate, onDe
             {onDelete && (
               <button
                 onClick={() => onDelete(template)}
-                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
               >
                 <Trash2 className="h-3 w-3" />
                 {tc("delete")}

@@ -48,9 +48,9 @@ export function AIAssistant() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-160px)] overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-160px)] overflow-hidden rounded-xl border border-gray-200 bg-white">
       {/* Sidebar */}
-      <div className="w-64 border-e border-gray-200 flex flex-col">
+      <div className="w-full md:w-64 border-e border-gray-200 flex flex-col">
         <div className="p-3 border-b border-gray-200">
           <Button onClick={handleNewConversation} className="w-full" size="sm">
             <Plus className="me-1 h-4 w-4" /> {t("newChat")}
@@ -134,7 +134,7 @@ export function AIAssistant() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                   placeholder={t("askMeAnything")}
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
                 <Button onClick={handleSend} disabled={!input.trim() || sendMessage.isPending}>
                   <Send className="h-4 w-4" />
