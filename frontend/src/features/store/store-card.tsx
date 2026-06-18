@@ -45,7 +45,7 @@ export function StoreCard({ store }: StoreCardProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  window.open(`http://${store.domain}/`, "_blank", "noopener,noreferrer");
+                  window.open(`https://${store.domain}/`, "_blank", "noopener,noreferrer");
                 }}
                 className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 opacity-0 transition-all hover:bg-gray-50 group-hover:opacity-100"
               >

@@ -4,9 +4,10 @@ import { usePathname } from "next/navigation";
 
 export function getSubdomain(host: string): string | null {
   const hostname = host.split(":")[0];
-  const parts = hostname.split(".");
-  if (parts.length >= 2 && parts[parts.length - 1] === "localhost") {
-    return parts[0];
+  const storeDomain = process.env.NEXT_PUBLIC_STORE_DOMAIN || "localhost";
+  const baseDomain = storeDomain.startsWith(".") ? storeDomain.slice(1) : storeDomain;
+  if (hostname.endsWith(`.${baseDomain}`)) {
+    return hostname.slice(0, hostname.length - baseDomain.length - 1);
   }
   return null;
 }
