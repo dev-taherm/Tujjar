@@ -825,7 +825,9 @@
       "configureSection": "Configure this section",
       "noPages": "No pages yet. Click \"Add Page\" to get started.",
       "noSections": "No sections yet. Click \"Add Section\" to get started.",
-      "tags": "Tags"
+      "tags": "Tags",
+      "noLinks": "No links yet",
+      "noColumns": "No columns yet"
     },
     "marketplace": {
       "themes": "Themes",
