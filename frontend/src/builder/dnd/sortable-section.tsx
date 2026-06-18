@@ -4,6 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Eye, EyeOff, Copy, Trash2 } from "lucide-react";
 import { getRegistryEntry } from "@/builder/sections/registry";
+import { SectionResizeHandle } from "@/builder/components/section-resize-handle";
 import * as Icons from "lucide-react";
 import type { ComponentType } from "react";
 import type { Section } from "@/shared/types";
@@ -11,23 +12,31 @@ import type { Section } from "@/shared/types";
 interface SortableSectionProps {
   section: Section;
   isSelected: boolean;
-  onSelect: () => void;
+  onSelect: (e: React.MouseEvent) => void;
   onDuplicate: () => void;
   onRemove: () => void;
   onToggleVisibility: (device: string) => void;
+  onResize?: (minHeight: string) => void;
   children: React.ReactNode;
 }
 
 export function SortableSection({
-  section, isSelected, onSelect, onDuplicate, onRemove, onToggleVisibility, children,
+  section, isSelected, onSelect, onDuplicate, onRemove, onToggleVisibility, onResize, children,
 }: SortableSectionProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
 
-  const style = {
+  const styleData = (section.settings as Record<string, unknown>).__style as { height?: { minHeight?: string } } | undefined;
+  const minHeight = styleData?.height?.minHeight || "";
+
+  const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
+
+  if (minHeight) {
+    style.minHeight = minHeight;
+  }
 
   const def = getRegistryEntry(section.type);
   const IconComponent = def ? (Icons as unknown as Record<string, ComponentType<{ className?: string }>>)[def.icon] : Icons.Box;
@@ -37,7 +46,7 @@ export function SortableSection({
     <div
       ref={setNodeRef}
       style={style}
-      onClick={(e) => { e.stopPropagation(); onSelect(); }}
+      onClick={(e) => { e.stopPropagation(); onSelect(e); }}
       className={`group relative rounded-lg border-2 transition-colors ${
         isSelected ? "border-blue-400" : isDragging ? "border-blue-200 shadow-xl" : "border-transparent hover:border-gray-200"
       }`}
@@ -67,6 +76,15 @@ export function SortableSection({
       </div>
 
       {children}
+
+      {/* Resize handle */}
+      {onResize && (
+        <SectionResizeHandle
+          sectionId={section.id}
+          currentMinHeight={minHeight}
+          onResize={onResize}
+        />
+      )}
     </div>
   );
 }

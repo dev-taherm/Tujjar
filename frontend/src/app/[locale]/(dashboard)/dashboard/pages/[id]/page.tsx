@@ -6,18 +6,39 @@ import { apiClient } from "@/api/client";
 import { PageBuilderProvider } from "@/builder/providers/page-builder-context";
 import { SectionBuilder } from "@/features/pages/section-builder";
 import { DndPageBuilder } from "@/builder/dnd/dnd-page-builder";
+import { LightEditor } from "@/features/pages/light-editor";
 import type { Page } from "@/shared/types";
-import { useState } from "react";
-import { LayoutTemplate, MousePointerClick } from "lucide-react";
+import { useState, useEffect } from "react";
+import { LayoutTemplate, MousePointerClick, Zap, PenTool } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type BuilderMode = "section" | "dnd";
+type BuilderMode = "light" | "dnd" | "section";
+
+const MODE_KEY = "page-builder-mode";
+
+function getStoredMode(): BuilderMode {
+  if (typeof window === "undefined") return "light";
+  try {
+    const stored = localStorage.getItem(MODE_KEY);
+    if (stored === "light" || stored === "dnd" || stored === "section") return stored;
+  } catch {}
+  return "light";
+}
 
 export default function PageDetailPage() {
   const t = useTranslations("dashboard.pages");
   const params = useParams();
   const pageId = params.id as string;
-  const [builderMode, setBuilderMode] = useState<BuilderMode>("dnd");
+  const [builderMode, setBuilderMode] = useState<BuilderMode>("light");
+
+  useEffect(() => {
+    setBuilderMode(getStoredMode());
+  }, []);
+
+  const handleModeChange = (mode: BuilderMode) => {
+    setBuilderMode(mode);
+    try { localStorage.setItem(MODE_KEY, mode); } catch {}
+  };
 
   const { data: page, isLoading, error } = useQuery({
     queryKey: ["pages", pageId],
@@ -45,35 +66,36 @@ export default function PageDetailPage() {
     );
   }
 
+  const modes: { key: BuilderMode; label: string; icon: React.ElementType }[] = [
+    { key: "light", label: t("lightEditor"), icon: Zap },
+    { key: "dnd", label: t("dragDrop"), icon: MousePointerClick },
+    { key: "section", label: t("sectionBuilder"), icon: LayoutTemplate },
+  ];
+
   return (
     <div className="space-y-4">
-      {/* Builder mode toggle */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500">{t("builderMode")}:</span>
         <div className="flex rounded-lg border border-gray-200 bg-white p-0.5">
-          <button
-            onClick={() => setBuilderMode("dnd")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              builderMode === "dnd" ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            <MousePointerClick className="h-3.5 w-3.5" />
-            {t("dragDrop")}
-          </button>
-          <button
-            onClick={() => setBuilderMode("section")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              builderMode === "section" ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            <LayoutTemplate className="h-3.5 w-3.5" />
-            {t("sectionBuilder")}
-          </button>
+          {modes.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => handleModeChange(key)}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                builderMode === key ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
       <PageBuilderProvider page={page}>
-        {builderMode === "dnd" ? (
+        {builderMode === "light" ? (
+          <LightEditor pageId={pageId} />
+        ) : builderMode === "dnd" ? (
           <DndPageBuilder pageId={pageId} />
         ) : (
           <SectionBuilder pageId={pageId} />

@@ -132,6 +132,11 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     category: "content",
     icon: "Images",
     defaultSettings: { title: "Gallery", images: [], columns: 3, aspectRatio: "1/1", lightbox: true },
+    presets: [
+      { name: "grid-3", label: "3 Column Grid", settings: { title: "Gallery", images: [], columns: "3", aspectRatio: "1/1", lightbox: true } },
+      { name: "grid-4", label: "4 Column Grid", settings: { title: "Gallery", images: [], columns: "4", aspectRatio: "1/1", lightbox: true } },
+      { name: "masonry", label: "Masonry Layout", settings: { title: "Gallery", images: [], columns: "3", aspectRatio: "auto", lightbox: true } },
+    ],
     settingsSchema: [
       { key: "title", label: "Section Title", type: "text" },
       { key: "columns", label: "Columns", type: "select", options: [
@@ -155,6 +160,11 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
       ],
       layout: "carousel",
     },
+    presets: [
+      { name: "carousel", label: "Carousel", settings: { title: "What Our Customers Say", testimonials: [{ name: "John Doe", quote: "Great products!", rating: 5 }, { name: "Jane Smith", quote: "Best experience ever.", rating: 5 }], layout: "carousel" } },
+      { name: "grid", label: "Grid", settings: { title: "What Our Customers Say", testimonials: [{ name: "John Doe", quote: "Great products!", rating: 5 }, { name: "Jane Smith", quote: "Best experience ever.", rating: 5 }], layout: "grid" } },
+      { name: "minimal", label: "Minimal Quote", settings: { title: "Reviews", testimonials: [{ name: "John Doe", quote: "Amazing quality.", rating: 5 }], layout: "carousel" } },
+    ],
     settingsSchema: [
       { key: "title", label: "Section Title", type: "text" },
       { key: "layout", label: "Layout", type: "select", options: [
@@ -175,6 +185,10 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
         { question: "How long does shipping take?", answer: "3-5 business days." },
       ],
     },
+    presets: [
+      { name: "standard", label: "Standard", settings: { title: "Frequently Asked Questions", items: [{ question: "What is your return policy?", answer: "30-day return policy." }, { question: "How long does shipping take?", answer: "3-5 business days." }] } },
+      { name: "minimal", label: "Minimal", settings: { title: "FAQ", items: [{ question: "How do I contact support?", answer: "Email us at support@example.com" }] } },
+    ],
     settingsSchema: [
       { key: "title", label: "Section Title", type: "text" },
     ],
@@ -189,6 +203,11 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
       maxWidth: 800,
       alignment: "left",
     },
+    presets: [
+      { name: "about", label: "About Us", settings: { htmlContent: "<h2>About Us</h2><p>We are a leading ecommerce platform committed to delivering the best products and experiences.</p>", maxWidth: 800, alignment: "left" } },
+      { name: "story", label: "Our Story", settings: { htmlContent: "<h2>Our Story</h2><p>Founded in 2024, we set out to revolutionize the shopping experience with quality and innovation.</p>", maxWidth: 600, alignment: "center" } },
+      { name: "announcement", label: "Announcement", settings: { htmlContent: "<h2>We've Launched!</h2><p>Check out our new collection, now available in store.</p>", maxWidth: 800, alignment: "center" } },
+    ],
     settingsSchema: [
       { key: "htmlContent", label: "HTML Content", type: "textarea" },
       { key: "maxWidth", label: "Max Width (px)", type: "number" },
@@ -264,6 +283,11 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
       buttonText: "Subscribe",
       privacyText: "We respect your privacy.",
     },
+    presets: [
+      { name: "standard", label: "Standard", settings: { title: "Subscribe to Our Newsletter", subtitle: "Stay updated with the latest products", placeholder: "Enter your email", buttonText: "Subscribe", privacyText: "We respect your privacy." } },
+      { name: "minimal", label: "Minimal", settings: { title: "Stay in the Loop", subtitle: "", placeholder: "Your email", buttonText: "Join", privacyText: "" } },
+      { name: "discount", label: "With Discount", settings: { title: "Get 10% Off", subtitle: "Subscribe for exclusive deals", placeholder: "Enter your email", buttonText: "Get Discount", privacyText: "No spam, ever." } },
+    ],
     settingsSchema: [
       { key: "title", label: "Title", type: "text" },
       { key: "subtitle", label: "Subtitle", type: "text" },
@@ -278,6 +302,11 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     category: "content",
     icon: "Code",
     defaultSettings: { htmlContent: "<div>Custom HTML</div>" },
+    presets: [
+      { name: "divider", label: "Divider", settings: { htmlContent: "<hr style='border: none; border-top: 1px solid #e5e7eb; margin: 2rem 0;' />" } },
+      { name: "spacer", label: "Spacer", settings: { htmlContent: "<div style='height: 64px;'></div>" } },
+      { name: "badge", label: "Promo Badge", settings: { htmlContent: "<div style='text-align: center; padding: 12px; background: #fef3c7; border-radius: 8px;'><strong>🔥 Free Shipping on Orders Over $50</strong></div>" } },
+    ],
     settingsSchema: [
       { key: "htmlContent", label: "HTML Content", type: "textarea" },
     ],
@@ -288,6 +317,10 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     category: "content",
     icon: "Timer",
     defaultSettings: { title: "Sale Ends In", targetDate: "", showDays: true, showHours: true, showMinutes: true, showSeconds: true },
+    presets: [
+      { name: "sale", label: "Sale Countdown", settings: { title: "Sale Ends In", targetDate: "", showDays: true, showHours: true, showMinutes: true, showSeconds: true } },
+      { name: "launch", label: "Product Launch", settings: { title: "Launching In", targetDate: "", showDays: true, showHours: true, showMinutes: true, showSeconds: false } },
+    ],
     settingsSchema: [
       { key: "title", label: "Title", type: "text" },
       { key: "targetDate", label: "Target Date", type: "text" },
@@ -303,6 +336,10 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     category: "content",
     icon: "Play",
     defaultSettings: { videoUrl: "", title: "", autoplay: false, aspectRatio: "16/9" },
+    presets: [
+      { name: "youtube", label: "YouTube 16:9", settings: { videoUrl: "", title: "", autoplay: false, aspectRatio: "16/9" } },
+      { name: "square", label: "Square 1:1", settings: { videoUrl: "", title: "", autoplay: false, aspectRatio: "1/1" } },
+    ],
     settingsSchema: [
       { key: "videoUrl", label: "Video URL", type: "text" },
       { key: "title", label: "Title", type: "text" },
@@ -320,6 +357,11 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     category: "content",
     icon: "Image",
     defaultSettings: { imageUrl: "", altText: "", caption: "", alignment: "center", maxWidth: 100 },
+    presets: [
+      { name: "full-width", label: "Full Width", settings: { imageUrl: "", altText: "", caption: "", alignment: "center", maxWidth: 100 } },
+      { name: "centered", label: "Centered (80%)", settings: { imageUrl: "", altText: "", caption: "", alignment: "center", maxWidth: 80 } },
+      { name: "with-caption", label: "With Caption", settings: { imageUrl: "", altText: "", caption: "Image caption text", alignment: "center", maxWidth: 100 } },
+    ],
     settingsSchema: [
       { key: "imageUrl", label: "Image URL", type: "image" },
       { key: "altText", label: "Alt Text", type: "text" },
@@ -345,6 +387,10 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
         { name: "Enterprise", price: "$99", period: "/mo", features: ["Unlimited Users", "1TB Storage", "24/7 Support", "API Access", "Custom Integrations"], buttonText: "Contact Sales", highlighted: false },
       ],
     },
+    presets: [
+      { name: "3-plans", label: "3 Plans", settings: { title: "Choose Your Plan", plans: [{ name: "Basic", price: "$9", period: "/mo", features: ["1 User", "10GB Storage"], buttonText: "Get Started", highlighted: false }, { name: "Pro", price: "$29", period: "/mo", features: ["5 Users", "100GB Storage", "Priority Support"], buttonText: "Get Started", highlighted: true }, { name: "Enterprise", price: "$99", period: "/mo", features: ["Unlimited Users", "1TB Storage", "24/7 Support"], buttonText: "Contact Sales", highlighted: false }] } },
+      { name: "2-plans", label: "2 Plans", settings: { title: "Simple Pricing", plans: [{ name: "Starter", price: "$19", period: "/mo", features: ["1 User", "50GB Storage"], buttonText: "Start Free", highlighted: false }, { name: "Business", price: "$49", period: "/mo", features: ["10 Users", "500GB Storage", "Priority Support"], buttonText: "Get Started", highlighted: true }] } },
+    ],
     settingsSchema: [
       { key: "title", label: "Title", type: "text" },
     ],
@@ -355,6 +401,10 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     category: "content",
     icon: "Phone",
     defaultSettings: { title: "Contact Us", subtitle: "", email: "", phone: "", address: "", showForm: true },
+    presets: [
+      { name: "with-form", label: "With Form", settings: { title: "Contact Us", subtitle: "We'd love to hear from you", email: "", phone: "", address: "", showForm: true } },
+      { name: "info-only", label: "Info Only", settings: { title: "Get in Touch", subtitle: "Reach out to us anytime", email: "", phone: "", address: "", showForm: false } },
+    ],
     settingsSchema: [
       { key: "title", label: "Title", type: "text" },
       { key: "subtitle", label: "Subtitle", type: "text" },
@@ -370,6 +420,11 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
     category: "content",
     icon: "GalleryHorizontalEnd",
     defaultSettings: { title: "", images: [], autoplay: false, showDots: true, showArrows: true },
+    presets: [
+      { name: "standard", label: "Standard", settings: { title: "", images: [], autoplay: false, showDots: true, showArrows: true } },
+      { name: "autoplay", label: "Autoplay", settings: { title: "", images: [], autoplay: true, showDots: true, showArrows: false } },
+      { name: "minimal", label: "Minimal", settings: { title: "", images: [], autoplay: false, showDots: false, showArrows: true } },
+    ],
     settingsSchema: [
       { key: "title", label: "Title", type: "text" },
       { key: "autoplay", label: "Autoplay", type: "toggle" },
@@ -391,6 +446,10 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
       copyright: "All rights reserved.",
       socialLinks: { facebook: "#", twitter: "#", instagram: "#" },
     },
+    presets: [
+      { name: "3-col", label: "3 Columns", settings: { columns: [{ title: "Company", links: [{ label: "About", url: "/about" }, { label: "Contact", url: "/contact" }] }, { title: "Products", links: [{ label: "Features", url: "/features" }, { label: "Pricing", url: "/pricing" }] }, { title: "Legal", links: [{ label: "Privacy", url: "/privacy" }, { label: "Terms", url: "/terms" }] }], copyright: "All rights reserved.", socialLinks: { facebook: "#", twitter: "#", instagram: "#" } } },
+      { name: "minimal", label: "Minimal", settings: { columns: [{ title: "Links", links: [{ label: "About", url: "/about" }, { label: "Contact", url: "/contact" }, { label: "Privacy", url: "/privacy" }] }], copyright: "All rights reserved.", socialLinks: {} } },
+    ],
     settingsSchema: [
       { key: "copyright", label: "Copyright Text", type: "text" },
     ],

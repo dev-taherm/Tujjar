@@ -232,7 +232,7 @@ export interface Page {
   slug: string;
   page_type: "homepage" | "product" | "collection" | "blog" | "custom" | "legal";
   content_schema: PageSchema;
-  theme_override: Record<string, unknown> | null;
+  theme_override: ThemeOverride | null;
   seo_title: string;
   seo_description: string;
   translations?: Record<string, { title?: string; content_schema?: PageSchema; seo_title?: string; seo_description?: string }>;
@@ -842,4 +842,28 @@ export interface AuditLogEntry {
   user_agent: string;
   metadata: Record<string, unknown>;
   created_at: string;
+}
+
+export interface Template {
+  id: UUID;
+  name: string;
+  slug: string;
+  description: string;
+  version: string;
+  category: string;
+  author: string;
+  thumbnail: string;
+  preview_images: string[];
+  tags: string[];
+  is_system: boolean;
+  is_premium: boolean;
+  config: Record<string, unknown>;
+  presets: unknown[];
+  pages: unknown[];
+  navigation: Record<string, unknown>;
+  footer: Record<string, unknown>;
+  seo_defaults: Record<string, unknown>;
+  demo_content: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
 }

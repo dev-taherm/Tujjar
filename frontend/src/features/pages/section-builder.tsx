@@ -16,7 +16,7 @@ import { VersionHistory } from "./version-history";
 import { DeviceFrame } from "@/builder/components/device-frame";
 import { LayerTree } from "@/builder/components/layer-tree";
 import { sectionComponents } from "@/lib/section-registry";
-import type { Section } from "@/shared/types";
+import type { Section, PageSchema, ThemeOverride } from "@/shared/types";
 import { useTranslations } from "next-intl";
 
 function SectionRenderer({ section }: { section: Section }) {
@@ -60,14 +60,14 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
 
   const handleAutoSave = useCallback(async () => {
     if (!page) return;
-    const payload: { content_schema?: Record<string, unknown>; theme_override?: Record<string, unknown> } = {};
+    const payload: { content_schema?: PageSchema; theme_override?: ThemeOverride } = {};
     if (editLocale === "en") {
       payload.content_schema = page.content_schema;
     }
     if (themeOverride !== null) {
       payload.theme_override = themeOverride;
     }
-    await pagesApi.autoSave(page.id, payload);
+    await pagesApi.autoSave(page.id, payload as Record<string, unknown>);
   }, [page, editLocale, themeOverride]);
 
   const { isAutoSaving, lastSavedAt } = useAutoSave(handleAutoSave, isDirty, 5000);

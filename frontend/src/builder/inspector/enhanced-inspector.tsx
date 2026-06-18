@@ -5,12 +5,15 @@ import { Input, Textarea, Select, Label } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import type { Section, SettingField } from "@/shared/types";
 import { getRegistryEntry } from "@/builder/sections/registry";
+import { MediaPickerModal } from "@/features/media/media-picker-modal";
 import { useTranslations } from "next-intl";
+import { ImageIcon } from "lucide-react";
 
 type Tab = "content" | "style" | "advanced";
 
 interface InspectorStyle {
   spacing?: { padding?: string; margin?: string };
+  height?: { minHeight?: string; maxHeight?: string };
   background?: { color?: string; image?: string; size?: string; position?: string; repeat?: string };
   typography?: { fontFamily?: string; fontSize?: string; fontWeight?: string; lineHeight?: string; textAlign?: string; color?: string };
   animation?: { duration?: string; easing?: string; delay?: string };
@@ -29,6 +32,7 @@ interface EnhancedInspectorProps {
 export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps) {
   const t = useTranslations("dashboard.pages");
   const [activeTab, setActiveTab] = useState<Tab>("content");
+  const [mediaPickerField, setMediaPickerField] = useState<string | null>(null);
   const definition = getRegistryEntry(section.type);
 
   const style: InspectorStyle = (section.settings as Record<string, unknown>).__style as InspectorStyle || {};
@@ -130,6 +134,40 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
                     {field.type === "toggle" && (
                       <Toggle label={field.label} enabled={!!section.settings[field.key]} onToggle={() => handleChange(field.key, !section.settings[field.key])} />
                     )}
+                    {field.type === "image" && (
+                      <div>
+                        <Label>{field.label}</Label>
+                        <div className="mt-1 flex items-center gap-2">
+                          <div
+                            className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors overflow-hidden"
+                            onClick={() => setMediaPickerField(field.key)}
+                          >
+                            {(section.settings[field.key] as string) ? (
+                              <img
+                                src={section.settings[field.key] as string}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <ImageIcon className="h-6 w-6 text-gray-400" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <Input
+                              value={(section.settings[field.key] as string) || ""}
+                              onChange={(e) => handleChange(field.key, e.target.value)}
+                              placeholder="https://... or click to browse"
+                            />
+                            <button
+                              onClick={() => setMediaPickerField(field.key)}
+                              className="mt-1 text-xs text-blue-600 hover:text-blue-700"
+                            >
+                              {t("browseMedia")}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </>
@@ -139,8 +177,37 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
           </>
         )}
 
+        {mediaPickerField && (
+          <MediaPickerModal
+            open={!!mediaPickerField}
+            onClose={() => setMediaPickerField(null)}
+            onSelect={(asset) => {
+              handleChange(mediaPickerField, asset.file_url);
+              setMediaPickerField(null);
+            }}
+          />
+        )}
+
         {activeTab === "style" && (
           <>
+            <div>
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("height")}</h4>
+              <div className="space-y-2">
+                <Input
+                  label={t("minHeight")}
+                  value={style.height?.minHeight || ""}
+                  onChange={(e) => updateStyle({ height: { ...style.height, minHeight: e.target.value } })}
+                  placeholder="auto, 300px, 50vh"
+                />
+                <Input
+                  label={t("maxHeight")}
+                  value={style.height?.maxHeight || ""}
+                  onChange={(e) => updateStyle({ height: { ...style.height, maxHeight: e.target.value } })}
+                  placeholder="none, 800px, 100vh"
+                />
+              </div>
+            </div>
+
             <div>
               <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("spacing")}</h4>
               <div className="space-y-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useState } from "react";
 import type { Section } from "@/shared/types";
 
 const STORAGE_KEY = "page-builder-clipboard";
@@ -22,7 +22,9 @@ function readClipboard(): ClipboardData | null {
 }
 
 export function useClipboard() {
-  const clipboardData = useMemo(() => readClipboard(), []);
+  const [tick, setTick] = useState(0);
+
+  const clipboardData = tick >= 0 ? readClipboard() : null;
 
   const hasClipboard = clipboardData !== null;
   const clipboardPageId = clipboardData?.pageId ?? null;
@@ -36,9 +38,10 @@ export function useClipboard() {
       copiedAt: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    setTick((t) => t + 1);
   }, []);
 
-  const pasteSection = useCallback((): Section | null => {
+  const pasteSection = useCallback((): Section[] | null => {
     const data = readClipboard();
     if (!data?.sections?.length) return null;
 
@@ -47,7 +50,7 @@ export function useClipboard() {
       id: crypto.randomUUID(),
     }));
 
-    return cloned[0];
+    return cloned;
   }, []);
 
   return {

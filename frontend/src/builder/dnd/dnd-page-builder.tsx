@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   DndContext,
   DragOverlay as DndDragOverlay,
@@ -19,7 +19,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { usePageBuilder } from "@/builder/providers/page-builder-context";
-import { useUpdatePage, usePublishPage, useUnpublishPage, useAddSection, useUpdateSection, useRemoveSection, useDuplicateSection, useReorderSections, useToggleSectionVisibility } from "@/api/queries";
+import { useUpdatePage, usePublishPage, useUnpublishPage, useAddSection, useUpdateSection, useRemoveSection, useDuplicateSection, useReorderSections, useToggleSectionVisibility, useStores } from "@/api/queries";
 import { SortableSection } from "./sortable-section";
 import { DropZone } from "./drop-zone";
 import { SectionPalette } from "./section-palette";
@@ -30,13 +30,20 @@ import { PageToolbar } from "@/features/pages/page-toolbar";
 import { VersionHistory } from "@/features/pages/version-history";
 import { DeviceFrame } from "@/builder/components/device-frame";
 import { LayerTree } from "@/builder/components/layer-tree";
+import { PresetBrowser } from "@/builder/components/preset-browser";
+import { BulkActionsBar } from "@/builder/components/bulk-actions-bar";
+import { SnapGuides } from "./snap-guides";
+import { LivePreview } from "@/builder/components/live-preview";
 import { useHistory } from "@/builder/hooks/use-history";
 import { useAutoSave } from "@/builder/hooks/use-auto-save";
 import { useClipboard } from "@/builder/hooks/use-clipboard";
 import { useKeyboardShortcuts } from "@/builder/hooks/use-keyboard-shortcuts";
+import { useInlineEditing } from "@/builder/inline/use-inline-editing";
+import { FloatingToolbar } from "@/builder/inline/floating-toolbar";
+import { applyThemeVariables } from "@/lib/theme-css";
 import { pagesApi } from "@/api/pages";
 import { sectionComponents } from "@/lib/section-registry";
-import type { Section } from "@/shared/types";
+import type { Section, PageSchema, ThemeOverride, Page } from "@/shared/types";
 import { Undo2, Redo2 } from "lucide-react";
 
 function SectionRenderer({ section }: { section: Section }) {
@@ -52,13 +59,24 @@ interface DndPageBuilderProps {
 }
 
 export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
-  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isPreviewMode, togglePreviewMode, isDirty, editLocale, setEditLocale, themeOverride, setThemeOverride, getSavePayload, devicePreview, setDevicePreview } = usePageBuilder();
+  const { page, sections, selectedSectionId, selectedSectionIds, selectSection, toggleSelectSection, clearSelection, getSelectedSection, getSelectedSections, isPreviewMode, togglePreviewMode, isDirty, editLocale, setEditLocale, themeOverride, setThemeOverride, getSavePayload, devicePreview, setDevicePreview } = usePageBuilder();
   const [activeDragType, setActiveDragType] = useState<string | null>(null);
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showLayers, setShowLayers] = useState(false);
+  const [showPresets, setShowPresets] = useState(false);
+  const [showLivePreview, setShowLivePreview] = useState(false);
   const [insertPosition, setInsertPosition] = useState<number | null>(null);
+  const [sectionRects, setSectionRects] = useState<Array<{ id: string; top: number; bottom: number; centerY: number; left: number; right: number; centerX: number }>>([]);
+  const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (canvasRef.current && themeOverride) {
+      applyThemeVariables(themeOverride, canvasRef.current);
+    }
+  }, [themeOverride]);
 
   const initialSchema = useMemo(() => {
     return page?.content_schema || { sections: [] };
@@ -66,6 +84,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
   const { schema, set: setSchema, undo, redo, canUndo, canRedo } = useHistory(initialSchema);
   const { copySection, pasteSection, hasClipboard, clipboardSectionType } = useClipboard();
+  const { isInlineEditing, toggleInlineEditing, toolbarVisible, toolbarPosition, handleFormat } = useInlineEditing();
 
   const updatePage = useUpdatePage();
   const publishPage = usePublishPage();
@@ -82,9 +101,40 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  const { data: stores } = useStores();
+  const storeSlug = useMemo(() => {
+    if (!page?.store || !stores) return undefined;
+    const store = stores.find((s: { id: string; slug: string }) => s.id === page.store);
+    return store?.slug;
+  }, [page?.store, stores]);
+
   const sortedSections = useMemo(() => {
     return schema.sections || [];
   }, [schema.sections]);
+
+  useEffect(() => {
+    const updateRects = () => {
+      const rects: Array<{ id: string; top: number; bottom: number; centerY: number; left: number; right: number; centerX: number }> = [];
+      sectionRefs.current.forEach((el, id) => {
+        const rect = el.getBoundingClientRect();
+        rects.push({
+          id,
+          top: rect.top,
+          bottom: rect.bottom,
+          centerY: rect.top + rect.height / 2,
+          left: rect.left,
+          right: rect.right,
+          centerX: rect.left + rect.width / 2,
+        });
+      });
+      setSectionRects(rects);
+    };
+    updateRects();
+    const observer = new MutationObserver(updateRects);
+    const canvas = document.querySelector("[data-builder-canvas]");
+    if (canvas) observer.observe(canvas, { childList: true, subtree: true, attributes: true });
+    return () => observer.disconnect();
+  }, [sortedSections]);
 
   const handleAddSectionAtPosition = useCallback(async (type: string, position: number) => {
     await addSection.mutateAsync({ pageId, sectionType: type, position });
@@ -136,9 +186,19 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
     await addSection.mutateAsync({ pageId, sectionType: type });
   }, [pageId, addSection]);
 
+  const handlePresetSelect = useCallback(async (type: string, settings: Record<string, unknown>) => {
+    await addSection.mutateAsync({ pageId, sectionType: type });
+  }, [pageId, addSection]);
+
+  const handleFullPreview = useCallback(() => {
+    if (!storeSlug || !page?.slug) return;
+    const url = `/shop/${storeSlug}/${page.slug}/?preview=true`;
+    window.open(url, "_blank");
+  }, [storeSlug, page?.slug]);
+
   const handleSave = useCallback(async () => {
     if (!page) return;
-    const payload: { content_schema?: Record<string, unknown>; theme_override?: Record<string, unknown>; translations?: Record<string, unknown> } = {};
+    const payload: { content_schema?: PageSchema; theme_override?: ThemeOverride; translations?: Record<string, unknown> } = {};
     if (editLocale === "en") {
       payload.content_schema = schema;
     } else {
@@ -150,16 +210,16 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
     if (themeOverride !== null) {
       payload.theme_override = themeOverride;
     }
-    await updatePage.mutateAsync({ id: page.id, ...payload });
+    await updatePage.mutateAsync({ id: page.id, ...payload } as { id: string } & Partial<Page>);
   }, [page, schema, updatePage, editLocale, themeOverride]);
 
   const handleAutoSave = useCallback(async () => {
     if (!page) return;
-    const payload: { content_schema?: Record<string, unknown>; theme_override?: Record<string, unknown> } = { content_schema: schema };
+    const payload: { content_schema?: PageSchema; theme_override?: ThemeOverride } = { content_schema: schema };
     if (themeOverride !== null) {
       payload.theme_override = themeOverride;
     }
-    await pagesApi.autoSave(page.id, payload);
+    await pagesApi.autoSave(page.id, payload as Record<string, unknown>);
   }, [page, schema, themeOverride]);
 
   const { isAutoSaving, lastSavedAt } = useAutoSave(handleAutoSave, isDirty, 5000);
@@ -188,6 +248,61 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
   const handleToggleVisibility = useCallback(async (sectionId: string, device: string) => {
     await toggleVisibility.mutateAsync({ pageId, sectionId, device });
   }, [pageId, toggleVisibility]);
+
+  const handleResizeSection = useCallback(async (sectionId: string, minHeight: string) => {
+    const section = sortedSections.find((s) => s.id === sectionId);
+    if (!section) return;
+    const currentStyle = (section.settings as Record<string, unknown>).__style as Record<string, unknown> || {};
+    const currentHeight = (currentStyle.height as Record<string, unknown>) || {};
+    await updateSection.mutateAsync({
+      pageId,
+      sectionId,
+      settings: {
+        ...section.settings,
+        __style: {
+          ...currentStyle,
+          height: { ...currentHeight, minHeight },
+        },
+      },
+    });
+  }, [sortedSections, pageId, updateSection]);
+
+  const handleBulkDuplicate = useCallback(async (ids: string[]) => {
+    for (const id of ids) {
+      await duplicateSectionMut.mutateAsync({ pageId, sectionId: id });
+    }
+  }, [pageId, duplicateSectionMut]);
+
+  const handleBulkRemove = useCallback(async (ids: string[]) => {
+    for (const id of ids) {
+      await removeSectionMut.mutateAsync({ pageId, sectionId: id });
+    }
+    clearSelection();
+  }, [pageId, removeSectionMut, clearSelection]);
+
+  const handleBulkMoveUp = useCallback(async (ids: string[]) => {
+    const currentIds = sortedSections.map((s) => s.id);
+    const newIds = [...currentIds];
+    for (const id of ids) {
+      const idx = newIds.indexOf(id);
+      if (idx > 0 && !ids.includes(newIds[idx - 1])) {
+        [newIds[idx - 1], newIds[idx]] = [newIds[idx], newIds[idx - 1]];
+      }
+    }
+    await reorderSections.mutateAsync({ pageId, sectionIds: newIds });
+  }, [sortedSections, pageId, reorderSections]);
+
+  const handleBulkMoveDown = useCallback(async (ids: string[]) => {
+    const currentIds = sortedSections.map((s) => s.id);
+    const newIds = [...currentIds];
+    for (const id of [...ids].reverse()) {
+      const idx = newIds.indexOf(id);
+      if (idx < newIds.length - 1 && !ids.includes(newIds[idx + 1])) {
+        [newIds[idx], newIds[idx + 1]] = [newIds[idx + 1], newIds[idx]];
+      }
+    }
+    await reorderSections.mutateAsync({ pageId, sectionIds: newIds });
+  }, [sortedSections, pageId, reorderSections]);
 
   const handleCopySection = useCallback(() => {
     const section = getSelectedSection();
@@ -257,6 +372,11 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
         onDeviceChange={setDevicePreview}
         onToggleLayers={() => setShowLayers(!showLayers)}
         showLayers={showLayers}
+        onPresets={() => setShowPresets(true)}
+        onLivePreview={() => setShowLivePreview(true)}
+        onFullPreview={handleFullPreview}
+        isInlineEditing={isInlineEditing}
+        onToggleInlineEditing={toggleInlineEditing}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -302,29 +422,36 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                 >
-                  <SortableContext items={sortedSections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-2">
-                      <DropZone id="drop-zone-0" onAddSection={() => setShowTypePicker(true)} />
-                      {sortedSections.map((section, index) => (
-                        <div key={section.id}>
-                          <SortableSection
-                            section={section}
-                            isSelected={section.id === selectedSectionId}
-                            onSelect={() => selectSection(section.id)}
-                            onDuplicate={() => handleDuplicateSection(section.id)}
-                            onRemove={() => handleRemoveSection(section.id)}
-                            onToggleVisibility={(device) => handleToggleVisibility(section.id, device)}
+                  <div ref={canvasRef} data-builder-canvas className="relative">
+                    <SnapGuides sectionRects={sectionRects} />
+                    <SortableContext items={sortedSections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-2">
+                        <DropZone id="drop-zone-0" onAddSection={() => setShowTypePicker(true)} />
+                        {sortedSections.map((section, index) => (
+                          <div
+                            key={section.id}
+                            ref={(el) => { if (el) sectionRefs.current.set(section.id, el); else sectionRefs.current.delete(section.id); }}
                           >
-                            <SectionRenderer section={section} />
-                          </SortableSection>
-                          <DropZone id={`drop-zone-${index + 1}`} onAddSection={() => setShowTypePicker(true)} />
-                        </div>
-                      ))}
-                    </div>
-                  </SortableContext>
-                  <DndDragOverlay>
-                    {activeDragType ? <DragOverlay type={activeDragType} /> : null}
-                  </DndDragOverlay>
+                            <SortableSection
+                              section={section}
+                              isSelected={selectedSectionIds.has(section.id)}
+                              onSelect={(e) => toggleSelectSection(section.id, e.ctrlKey || e.metaKey, e.shiftKey)}
+                              onDuplicate={() => handleDuplicateSection(section.id)}
+                              onRemove={() => handleRemoveSection(section.id)}
+                              onToggleVisibility={(device) => handleToggleVisibility(section.id, device)}
+                              onResize={(minHeight) => handleResizeSection(section.id, minHeight)}
+                            >
+                              <SectionRenderer section={section} />
+                            </SortableSection>
+                            <DropZone id={`drop-zone-${index + 1}`} onAddSection={() => setShowTypePicker(true)} />
+                          </div>
+                        ))}
+                      </div>
+                    </SortableContext>
+                    <DndDragOverlay>
+                      {activeDragType ? <DragOverlay type={activeDragType} /> : null}
+                    </DndDragOverlay>
+                  </div>
                 </DndContext>
               </DeviceFrame>
             )}
@@ -363,6 +490,37 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
           onClose={() => setShowThemePicker(false)}
         />
       )}
+
+      {showPresets && (
+        <PresetBrowser
+          sections={sortedSections}
+          onSelect={handlePresetSelect}
+          onClose={() => setShowPresets(false)}
+        />
+      )}
+
+      <BulkActionsBar
+        onDuplicate={handleBulkDuplicate}
+        onRemove={handleBulkRemove}
+        onMoveUp={handleBulkMoveUp}
+        onMoveDown={handleBulkMoveDown}
+      />
+
+      {showLivePreview && (
+        <LivePreview
+          sections={sortedSections}
+          storeId={page?.store as string}
+          storeSlug={undefined}
+          device={devicePreview}
+          onClose={() => setShowLivePreview(false)}
+        />
+      )}
+
+      <FloatingToolbar
+        visible={isInlineEditing && toolbarVisible}
+        position={toolbarPosition}
+        onFormat={handleFormat}
+      />
     </div>
   );
 }

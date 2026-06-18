@@ -1,7 +1,7 @@
 "use client";
 import { Button, Badge } from "@/shared/ui";
 import { LocaleToggle } from "@/shared/ui/locale-toggle";
-import { Save, Eye, EyeOff, Plus, History, Palette, Monitor, Tablet, Smartphone, Layers } from "lucide-react";
+import { Save, Eye, EyeOff, Plus, History, Palette, Monitor, Tablet, Smartphone, Layers, LayoutGrid, Play, ExternalLink, PenTool } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface PageToolbarProps {
@@ -27,13 +27,18 @@ interface PageToolbarProps {
   onDeviceChange?: (device: "desktop" | "tablet" | "mobile") => void;
   onToggleLayers?: () => void;
   showLayers?: boolean;
+  onPresets?: () => void;
+  onLivePreview?: () => void;
+  onFullPreview?: () => void;
+  isInlineEditing?: boolean;
+  onToggleInlineEditing?: () => void;
 }
 
 export function PageToolbar({
   pageTitle, isPublished, version, isDirty, isPreviewMode, editLocale,
   onAddSection, onSave, onPublish, onUnpublish, onTogglePreview, onShowHistory, onLocaleChange,
   isSaving, isAutoSaving, lastSavedAt, onThemeClick, themeOverrideCount,
-  devicePreview = "desktop", onDeviceChange, onToggleLayers, showLayers,
+  devicePreview = "desktop", onDeviceChange, onToggleLayers, showLayers, onPresets, onLivePreview, onFullPreview, isInlineEditing, onToggleInlineEditing,
 }: PageToolbarProps) {
   const t = useTranslations("dashboard.pages");
   const tc = useTranslations("common");
@@ -81,6 +86,26 @@ export function PageToolbar({
         {onToggleLayers && (
           <Button variant={showLayers ? "default" : "outline"} size="sm" onClick={onToggleLayers}>
             <Layers className="me-1 h-4 w-4" /> {t("layers")}
+          </Button>
+        )}
+        {onPresets && (
+          <Button variant="outline" size="sm" onClick={onPresets}>
+            <LayoutGrid className="me-1 h-4 w-4" /> {t("presets")}
+          </Button>
+        )}
+        {onLivePreview && (
+          <Button variant="outline" size="sm" onClick={onLivePreview}>
+            <Play className="me-1 h-4 w-4" /> {t("livePreview")}
+          </Button>
+        )}
+        {onFullPreview && (
+          <Button variant="outline" size="sm" onClick={onFullPreview}>
+            <ExternalLink className="me-1 h-4 w-4" /> {t("fullPreview")}
+          </Button>
+        )}
+        {onToggleInlineEditing && (
+          <Button variant={isInlineEditing ? "default" : "outline"} size="sm" onClick={onToggleInlineEditing}>
+            <PenTool className="me-1 h-4 w-4" /> {t("inlineEdit")}
           </Button>
         )}
         {onThemeClick && (

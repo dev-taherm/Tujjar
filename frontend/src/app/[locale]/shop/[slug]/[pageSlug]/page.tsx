@@ -1,12 +1,13 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { StorefrontSectionRenderer } from "@/features/storefront/section-renderer";
 import { Button } from "@/shared/ui";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import type { Section } from "@/shared/types";
+import { applyThemeVariables } from "@/lib/theme-css";
+import type { Section, ThemeOverride } from "@/shared/types";
 
 interface PageData {
   id: string;
@@ -15,6 +16,7 @@ interface PageData {
   content_schema: { sections: Section[] };
   seo_title: string;
   seo_description: string;
+  theme_override: ThemeOverride | null;
 }
 
 export default function StorefrontPage({ params }: { params: Promise<{ slug: string; pageSlug: string }> }) {
@@ -31,6 +33,13 @@ export default function StorefrontPage({ params }: { params: Promise<{ slug: str
       return res.json();
     },
   });
+
+  // Apply page-level theme override (layered on top of store theme from layout)
+  useEffect(() => {
+    if (data?.theme_override) {
+      applyThemeVariables(data.theme_override);
+    }
+  }, [data?.theme_override]);
 
   if (isLoading) {
     return (

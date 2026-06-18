@@ -1,12 +1,13 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState, useMemo } from "react";
+import { createContext, useCallback, useContext, useState, useMemo, useEffect, useRef } from "react";
 import type { Page, Section, PageSchema, ThemeOverride } from "@/shared/types";
 
 interface PageBuilderState {
   page: Page | null;
   sections: Section[];
   selectedSectionId: string | null;
+  selectedSectionIds: Set<string>;
   isDirty: boolean;
   isPreviewMode: boolean;
   editLocale: string;
@@ -17,7 +18,10 @@ interface PageBuilderState {
 interface PageBuilderContextType extends PageBuilderState {
   setPage: (page: Page | null) => void;
   selectSection: (id: string | null) => void;
+  toggleSelectSection: (id: string, ctrlKey: boolean, shiftKey: boolean) => void;
+  clearSelection: () => void;
   getSelectedSection: () => Section | null;
+  getSelectedSections: () => Section[];
   updatePageSchema: (schema: PageSchema) => void;
   togglePreviewMode: () => void;
   setEditLocale: (locale: string) => void;
@@ -44,16 +48,20 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
     (initialPage?.theme_override as ThemeOverride) || null
   );
   const [devicePreview, setDevicePreview] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [selectedSectionIds, setSelectedSectionIds] = useState<Set<string>>(new Set());
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
   const pageId = initialPage?.id;
 
-  const [syncedPageId, setSyncedPageId] = useState<string | undefined>(undefined);
-  if (pageId !== syncedPageId) {
-    setSyncedPageId(pageId);
-    setPageState(initialPage);
-    setIsDirty(false);
-    setLocaleSchemas({});
-  }
+  const syncedPageIdRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (pageId !== syncedPageIdRef.current) {
+      syncedPageIdRef.current = pageId;
+      setPageState(initialPage);
+      setIsDirty(false);
+      setLocaleSchemas({});
+    }
+  }, [pageId, initialPage]);
 
   const setEditLocale = useCallback((locale: string) => {
     setEditLocaleState(locale);
@@ -69,12 +77,56 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
 
   const selectSection = useCallback((id: string | null) => {
     setSelectedSectionId(id);
+    setSelectedSectionIds(id ? new Set([id]) : new Set());
+    setLastSelectedIndex(null);
+  }, []);
+
+  const toggleSelectSection = useCallback((id: string, ctrlKey: boolean, shiftKey: boolean) => {
+    if (shiftKey && lastSelectedIndex !== null) {
+      const currentIndex = sections.findIndex((s) => s.id === id);
+      if (currentIndex === -1) return;
+      const start = Math.min(lastSelectedIndex, currentIndex);
+      const end = Math.max(lastSelectedIndex, currentIndex);
+      const rangeIds = sections.slice(start, end + 1).map((s) => s.id);
+      setSelectedSectionIds((prev) => {
+        const next = new Set(prev);
+        rangeIds.forEach((rid) => next.add(rid));
+        return next;
+      });
+      setSelectedSectionId(id);
+    } else if (ctrlKey) {
+      setSelectedSectionIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+      setSelectedSectionId(id);
+      setLastSelectedIndex(sections.findIndex((s) => s.id === id));
+    } else {
+      setSelectedSectionId(id);
+      setSelectedSectionIds(new Set([id]));
+      setLastSelectedIndex(sections.findIndex((s) => s.id === id));
+    }
+  }, [sections, lastSelectedIndex]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedSectionId(null);
+    setSelectedSectionIds(new Set());
+    setLastSelectedIndex(null);
   }, []);
 
   const getSelectedSection = useCallback((): Section | null => {
     if (!selectedSectionId) return null;
     return sections.find((s) => s.id === selectedSectionId) || null;
   }, [sections, selectedSectionId]);
+
+  const getSelectedSections = useCallback((): Section[] => {
+    return sections.filter((s) => selectedSectionIds.has(s.id));
+  }, [sections, selectedSectionIds]);
 
   const updatePageSchema = useCallback((schema: PageSchema) => {
     if (!page) return;
@@ -121,6 +173,7 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
   const setPageData = useCallback((newPage: Page | null) => {
     setPageState(newPage);
     setSelectedSectionId(null);
+    setSelectedSectionIds(new Set());
     setIsDirty(false);
     setLocaleSchemas({});
     setThemeOverrideState((newPage?.theme_override as ThemeOverride) || null);
@@ -132,6 +185,7 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
         page,
         sections,
         selectedSectionId,
+        selectedSectionIds,
         isDirty,
         isPreviewMode,
         editLocale,
@@ -139,7 +193,10 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
         devicePreview,
         setPage: setPageData,
         selectSection,
+        toggleSelectSection,
+        clearSelection,
         getSelectedSection,
+        getSelectedSections,
         updatePageSchema,
         togglePreviewMode,
         setEditLocale,

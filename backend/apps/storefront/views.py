@@ -67,6 +67,7 @@ def _resolve_page(page: Page, locale: str) -> dict:
             "content_schema": locale_data.get("content_schema") or page.content_schema,
             "seo_title": locale_data.get("seo_title") or page.seo_title or "",
             "seo_description": locale_data.get("seo_description") or page.seo_description or "",
+            "theme_override": page.theme_override or None,
         }
     return {
         "id": str(page.id),
@@ -75,6 +76,7 @@ def _resolve_page(page: Page, locale: str) -> dict:
         "content_schema": page.content_schema,
         "seo_title": page.seo_title or "",
         "seo_description": page.seo_description or "",
+        "theme_override": page.theme_override or None,
     }
 
 
@@ -175,12 +177,15 @@ def storefront_home(request, subdomain=None):
         status="active",
     )[:8]
 
-    homepage = Page.objects.filter(
+    is_preview = request.query_params.get("preview") == "true"
+    homepage_qs = Page.objects.filter(
         organization=store.organization,
         store=store,
         page_type="homepage",
-        is_published=True,
-    ).first()
+    )
+    if not is_preview:
+        homepage_qs = homepage_qs.filter(is_published=True)
+    homepage = homepage_qs.first()
 
     serialized_products = ProductListSerializer(featured_products, many=True).data
     if locale != DEFAULT_LOCALE:
@@ -325,12 +330,15 @@ class StorefrontPageView(generics.RetrieveAPIView):
             from rest_framework.exceptions import NotFound
 
             raise NotFound("Store not found")
-        page = Page.objects.filter(
+        is_preview = self.request.query_params.get("preview") == "true"
+        qs = Page.objects.filter(
             organization=store.organization,
             store=store,
             slug=slug,
-            is_published=True,
-        ).first()
+        )
+        if not is_preview:
+            qs = qs.filter(is_published=True)
+        page = qs.first()
         if not page:
             from rest_framework.exceptions import NotFound
 

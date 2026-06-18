@@ -102,7 +102,7 @@ function SectionCard({
       {PreviewComponent && (
         <div className="border-t border-gray-100 bg-gray-50 px-3 py-2">
           <div className="pointer-events-none scale-95 origin-top-left">
-            <PreviewComponent section={section} />
+            <PreviewComponent section={section as Section} />
           </div>
         </div>
       )}
@@ -433,7 +433,7 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
                     {selectedSectionIndex === j && showSectionSettings && (
                       <div className="mt-2 rounded-lg border border-gray-200 p-3">
                         <SectionSettingsPanel
-                          section={section}
+                          section={section as Section}
                           onUpdate={handleSectionUpdate}
                         />
                       </div>

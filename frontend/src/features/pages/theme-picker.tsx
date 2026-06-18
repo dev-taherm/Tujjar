@@ -62,6 +62,14 @@ export function ThemePicker({ currentOverride, onSelect, onClose }: ThemePickerP
     currentOverride ? "custom" : "default"
   );
 
+  const handleApply = () => {
+    const preset = PRESET_OVERRIDES.find((p) => p.name === selectedPreset);
+    if (preset) {
+      onSelect(preset.name === "default" ? null : preset.override);
+    }
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
@@ -81,10 +89,7 @@ export function ThemePicker({ currentOverride, onSelect, onClose }: ThemePickerP
           {PRESET_OVERRIDES.map((preset) => (
             <button
               key={preset.name}
-              onClick={() => {
-                setSelectedPreset(preset.name);
-                onSelect(preset.name === "default" ? null : preset.override);
-              }}
+              onClick={() => setSelectedPreset(preset.name)}
               className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
                 selectedPreset === preset.name
                   ? "border-blue-500 bg-blue-50"
@@ -132,6 +137,9 @@ export function ThemePicker({ currentOverride, onSelect, onClose }: ThemePickerP
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="outline" size="sm" onClick={onClose}>
             {t("cancel")}
+          </Button>
+          <Button size="sm" onClick={handleApply}>
+            {t("apply")}
           </Button>
         </div>
       </div>
