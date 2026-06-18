@@ -96,7 +96,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def _send_verification_email(self, user: User, token: str) -> None:
         try:
-            verify_url = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
+            verify_url = f"{settings.FRONTEND_URL}/en/verify-email/?token={token}"
             send_mail(
                 subject="Verify your Tujjar account",
                 message=f"Click the link to verify your account: {verify_url}",
@@ -228,7 +228,7 @@ class RequestPasswordResetSerializer(serializers.Serializer):
             ]
         )
         try:
-            reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?token={token}"
+            reset_url = f"{settings.FRONTEND_URL}/en/reset-password/?token={token}"
             send_mail(
                 subject="Reset your Tujjar password",
                 message=f"Click the link to reset your password: {reset_url}",
@@ -337,7 +337,7 @@ class ResendVerificationSerializer(serializers.Serializer):
             ]
         )
         try:
-            verify_url = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
+            verify_url = f"{settings.FRONTEND_URL}/en/verify-email/?token={token}"
             send_mail(
                 subject="Verify your Tujjar account",
                 message=f"Click the link to verify your account: {verify_url}",
