@@ -6,60 +6,57 @@ import { Button, Input, Card, CardContent, CardHeader, CardTitle } from "@/share
 import { slugify } from "@/lib/utils";
 import { useCategories, useCreateCategory, useDeleteCategory } from "@/api/queries";
 import type { Category } from "@/shared/types";
-import { Plus, ChevronRight, ChevronDown, FolderTree, Trash2, Edit, GripVertical, Image } from "lucide-react";
+import { Plus, GripVertical, Image, Trash2, Edit, FolderTree } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 
-interface CategoryNodeProps {
+interface CategoryRowProps {
   category: Category;
   depth?: number;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-function CategoryNode({ category, depth = 0, onEdit, onDelete }: CategoryNodeProps) {
+function CategoryRow({ category, depth = 0, onEdit, onDelete }: CategoryRowProps) {
   const t = useTranslations("dashboard.products");
-  const [expanded, setExpanded] = useState(true);
-  const hasChildren = category.children && category.children.length > 0;
 
   return (
-    <div>
-      <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-50" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
-        {hasChildren ? (
-          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 hover:text-gray-600">
-            {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </button>
-        ) : (
-          <div className="w-4" />
-        )}
-        <GripVertical className="h-4 w-4 text-gray-300" />
-        <FolderTree className="h-4 w-4 text-amber-500" />
+    <>
+      <div className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
+        <GripVertical className="h-4 w-4 text-gray-300 shrink-0" />
+        <FolderTree className="h-4 w-4 text-amber-500 shrink-0" />
         {category.image ? (
-          <img src={category.image} alt={category.name} className="h-6 w-6 rounded object-cover" />
+          <img
+            src={category.image}
+            alt={category.name}
+            className="h-8 w-8 rounded object-cover shrink-0"
+          />
         ) : (
-          <div className="h-6 w-6 rounded bg-gray-100 flex items-center justify-center">
-            <Image className="h-3 w-3 text-gray-400" />
+          <div className="h-8 w-8 rounded bg-gray-100 flex items-center justify-center shrink-0">
+            <Image className="h-4 w-4 text-gray-400" />
           </div>
         )}
-        <span className="flex-1 text-sm font-medium text-gray-700">{category.name}</span>
-        <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">#{category.sort_order}</span>
-        <span className="text-xs text-gray-400">{category.product_count} {t("totalProducts").toLowerCase()}</span>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 truncate">{category.name}</span>
+            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+              #{category.sort_order}
+            </span>
+          </div>
+        </div>
+        <span className="text-xs text-gray-400 shrink-0">{category.product_count} {t("totalProducts").toLowerCase()}</span>
+        <div className="flex items-center gap-1 shrink-0">
           <button onClick={() => onEdit(category.id)} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
           <button onClick={() => onDelete(category.id)} className="rounded p-1 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
         </div>
       </div>
-      {expanded && hasChildren && (
-        <div>
-          {category.children.map((child: Category) => (
-            <CategoryNode key={child.id} category={child} depth={depth + 1} onEdit={onEdit} onDelete={onDelete} />
-          ))}
-        </div>
-      )}
-    </div>
+      {category.children?.map((child: Category) => (
+        <CategoryRow key={child.id} category={child} depth={depth + 1} onEdit={onEdit} onDelete={onDelete} />
+      ))}
+    </>
   );
 }
 
-export function CategoryTree() {
+export function CategoryList() {
   const t = useTranslations("dashboard.products");
   const tc = useTranslations("common");
   const locale = useLocale();
@@ -108,13 +105,12 @@ export function CategoryTree() {
         ) : (
           <div className="space-y-0.5">
             {categories.map((cat) => (
-              <div key={cat.id} className="group">
-                <CategoryNode
-                  category={cat}
-                  onEdit={(id) => router.push(`/${locale}/dashboard/products/categories/${id}`)}
-                  onDelete={handleDelete}
-                />
-              </div>
+              <CategoryRow
+                key={cat.id}
+                category={cat}
+                onEdit={(id) => router.push(`/${locale}/dashboard/products/categories/${id}`)}
+                onDelete={handleDelete}
+              />
             ))}
           </div>
         )}

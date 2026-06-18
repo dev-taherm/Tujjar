@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, CardContent, CardHeader, CardTitle, Dialog, Input, EmptyState } from "@/shared/ui";
+import { Button, Card, CardContent, Dialog, Input, EmptyState } from "@/shared/ui";
 import { slugify } from "@/lib/utils";
 import { useCollections, useCreateCollection, useDeleteCollection } from "@/api/queries";
 import type { Collection } from "@/shared/types";
