@@ -116,6 +116,7 @@
       "dashboard": "لوحة التحكم",
       "stores": "المتاجر",
       "products": "المنتجات",
+      "attributes": "السمات",
       "orders": "الطلبات",
       "customers": "العملاء",
       "pages": "الصفحات",
@@ -138,7 +139,8 @@
       "sales": "المبيعات",
       "design": "التصميم",
       "engagement": "التفاعل",
-      "business": "الأعمال"
+      "business": "الأعمال",
+      "inventory_movements": "حركات المخزون"
     },
     "page": {
       "title": "لوحة التحكم",
@@ -223,7 +225,34 @@
       "notFound": "المنتج غير موجود.",
       "editProduct": "تعديل المنتج",
       "createFirst": "أنشئ أول منتج لبدء البيع.",
-      "statusDraft": { "draft": "مسودة", "active": "نشط", "archived": "مؤرشف" }
+      "statusDraft": { "draft": "مسودة", "active": "نشط", "archived": "مؤرشف" },
+      "bulkAdjustInventory": "تعديل المخزون بالجملة",
+      "bulkAdjustApply": "تطبيق على {{count}} منتجات",
+      "noInventoryMovements": "لم تُسجَّل حركات مخزون بعد.",
+      "loadMore": "تحميل المزيد ({{count}} متبقي)",
+      "clearFilters": "مسح الفلاتر",
+      "searchEnginePreview": "معاينة محرك البحث",
+      "titleLengthWarning": "العنوان {{count}} حرفًا. يُنصح بالاحتفاظ بـ 60 حرفًا أو أقل.",
+      "descriptionLengthWarning": "الوصف {{count}} حرفًا. يُنصح بالاحتفاظ بـ 160 حرفًا أو أقل.",
+      "categoryImage": "صورة التصنيف",
+      "uploadImage": "رفع صورة",
+      "sortOrder": "ترتيب الفرز",
+      "collectionImage": "صورة المجموعة",
+      "mediaAndProducts": "الوسائط والمنتجات",
+      "productsInCollection": "المنتجات في المجموعة ({{count}} محددة)",
+      "noProductsAvailable": "لا توجد منتجات متاحة.",
+      "noCategoryImage": "لم يتم تعيين صورة للتصنيف.",
+      "noCollectionImage": "لم يتم تعيين صورة للمجموعة.",
+      "from": "من",
+      "to": "إلى",
+      "reason": "السبب",
+      "all": "الكل",
+      "dateRange": "نطاق التاريخ",
+      "variantInventory": "مخزون المتغيرات",
+      "noneTopLevel": "بدون (أعلى مستوى)",
+      "parentCategory": "التصنيف الأب",
+      "active": "نشط",
+      "newCategory": "تصنيف جديد"
     },
     "category": {
       "edit": "تعديل الفئة",
@@ -244,6 +273,17 @@
       "description": "الوصف",
       "active": "نشط",
       "products": "منتج"
+    },
+    "attribute": {
+      "attributes": "سمات المنتج",
+      "manageAttributes": "إدارة خيارات المنتج (مثل اللون، الحجم، المادة) المستخدمة في منتجاتك.",
+      "createNewOption": "إنشاء خيار جديد",
+      "optionName": "اسم الخيار",
+      "position": "الموضع",
+      "newValue": "قيمة جديدة",
+      "hexColor": "#hex",
+      "deleteOptionConfirm": "هل تريد حذف هذا الخيار وجميع قيمه؟",
+      "noProductOptions": "لم يتم إنشاء أي خيارات منتج بعد."
     },
     "inventory": {
       "title": "المخزون",

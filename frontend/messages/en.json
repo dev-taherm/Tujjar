@@ -116,6 +116,7 @@
       "dashboard": "Dashboard",
       "stores": "Stores",
       "products": "Products",
+      "attributes": "Attributes",
       "orders": "Orders",
       "customers": "Customers",
       "pages": "Pages",
@@ -138,7 +139,8 @@
       "sales": "Sales",
       "design": "Design",
       "engagement": "Engagement",
-      "business": "Business"
+      "business": "Business",
+      "inventory_movements": "Inventory Movements"
     },
     "page": {
       "title": "Dashboard",
@@ -223,7 +225,34 @@
       "notFound": "Product not found.",
       "editProduct": "Edit Product",
       "createFirst": "Create your first product to start selling.",
-      "statusDraft": { "draft": "Draft", "active": "Active", "archived": "Archived" }
+      "statusDraft": { "draft": "Draft", "active": "Active", "archived": "Archived" },
+      "bulkAdjustInventory": "Bulk Adjust Inventory",
+      "bulkAdjustApply": "Apply to {{count}} products",
+      "noInventoryMovements": "No inventory movements recorded yet.",
+      "loadMore": "Load more ({{count}} remaining)",
+      "clearFilters": "Clear filters",
+      "searchEnginePreview": "Search Engine Preview",
+      "titleLengthWarning": "Title is {{count}} characters. Consider keeping it under 60.",
+      "descriptionLengthWarning": "Description is {{count}} characters. Consider keeping it under 160.",
+      "categoryImage": "Category Image",
+      "uploadImage": "Upload Image",
+      "sortOrder": "Sort Order",
+      "collectionImage": "Collection Image",
+      "mediaAndProducts": "Media & Products",
+      "productsInCollection": "Products in Collection ({{count}} selected)",
+      "noProductsAvailable": "No products available.",
+      "noCategoryImage": "No category image set.",
+      "noCollectionImage": "No collection image set.",
+      "from": "From",
+      "to": "To",
+      "reason": "Reason",
+      "all": "All",
+      "dateRange": "Date Range",
+      "variantInventory": "Variant Inventory",
+      "noneTopLevel": "None (Top Level)",
+      "parentCategory": "Parent Category",
+      "active": "Active",
+      "newCategory": "New Category"
     },
     "category": {
       "edit": "Edit Category",
@@ -244,6 +273,17 @@
       "description": "Description",
       "active": "Active",
       "products": "products"
+    },
+    "attribute": {
+      "attributes": "Product Attributes",
+      "manageAttributes": "Manage product options (e.g., Color, Size, Material) that are used across your products.",
+      "createNewOption": "Create New Option",
+      "optionName": "Option Name",
+      "position": "Position",
+      "newValue": "New value",
+      "hexColor": "#hex",
+      "deleteOptionConfirm": "Delete this option and all its values?",
+      "noProductOptions": "No product options created yet."
     },
     "inventory": {
       "title": "Inventory",

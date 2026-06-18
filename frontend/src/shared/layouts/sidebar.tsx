@@ -25,6 +25,7 @@ import {
   LayoutTemplate,
   ScrollText,
   PenTool,
+  Settings2,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
@@ -53,6 +54,7 @@ const navigation: NavGroup[] = [
     groupKey: "catalog",
     items: [
       { nameKey: "products", href: "/dashboard/products", icon: Package },
+      { nameKey: "attributes", href: "/dashboard/products/attributes", icon: Settings2 },
       { nameKey: "pages", href: "/dashboard/pages", icon: FileText },
       { nameKey: "blog", href: "/dashboard/blog", icon: PenTool },
       { nameKey: "media", href: "/dashboard/media", icon: Image },
