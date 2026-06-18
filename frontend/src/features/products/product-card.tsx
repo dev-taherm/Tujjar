@@ -3,7 +3,7 @@
 import { Badge } from "@/shared/ui";
 import { formatCurrency } from "@/lib/utils";
 import type { Product } from "@/shared/types";
-import { Package, Tag, AlertTriangle } from "lucide-react";
+import { Package, Tag } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface ProductCardProps {
@@ -13,7 +13,6 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
   const t = useTranslations("dashboard.products");
-  const tc = useTranslations("common");
   const statusColors: Record<string, string> = {
     draft: "bg-gray-100 text-gray-700",
     active: "bg-green-100 text-green-700",

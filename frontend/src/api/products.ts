@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
 import { unwrapResults } from "./helpers";
-import type { Product, Category, Collection, ProductImage, ProductVariant } from "@/shared/types";
+import type { Product, Category, Collection, ProductImage, ProductVariant, ProductOption, ProductOptionValue, InventoryMovement } from "@/shared/types";
 
 export const productsApi = {
   list: async (params?: { store?: string; status?: string; search?: string; category?: string; collection?: string }): Promise<Product[]> => {
@@ -50,7 +50,7 @@ export const productsApi = {
     return unwrapResults(data);
   },
 
-  addImage: async (productId: string, payload: { url: string; alt_text?: string; is_primary?: boolean }): Promise<ProductImage> => {
+  addImage: async (productId: string, payload: { url: string; alt_text?: string; is_primary?: boolean; media_asset?: string }): Promise<ProductImage> => {
     const { data } = await apiClient.post(`/products/${productId}/images/`, payload);
     return data;
   },
@@ -76,6 +76,47 @@ export const productsApi = {
 
   deleteVariant: async (productId: string, variantId: string) => {
     await apiClient.delete(`/products/${productId}/variants/${variantId}/`);
+  },
+
+  reorderImages: async (productId: string, imagePositions: { id: string; position: number }[]): Promise<void> => {
+    await Promise.all(
+      imagePositions.map(({ id, position }) =>
+        apiClient.patch(`/products/${productId}/images/${id}/`, { position })
+      )
+    );
+  },
+
+  listOptions: async (productId: string): Promise<ProductOption[]> => {
+    const { data } = await apiClient.get(`/products/${productId}/options/`);
+    return unwrapResults(data);
+  },
+
+  createOption: async (productId: string, payload: { name: string; position: number }): Promise<ProductOption> => {
+    const { data } = await apiClient.post(`/products/${productId}/options/`, payload);
+    return data;
+  },
+
+  updateOption: async (productId: string, optionId: string, payload: Partial<ProductOption>): Promise<ProductOption> => {
+    const { data } = await apiClient.patch(`/products/${productId}/options/${optionId}/`, payload);
+    return data;
+  },
+
+  deleteOption: async (productId: string, optionId: string): Promise<void> => {
+    await apiClient.delete(`/products/${productId}/options/${optionId}/`);
+  },
+
+  addOptionValue: async (productId: string, optionId: string, payload: { value: string; swatch?: string }): Promise<ProductOptionValue> => {
+    const { data } = await apiClient.post(`/products/${productId}/options/${optionId}/values/`, payload);
+    return data;
+  },
+
+  deleteOptionValue: async (productId: string, optionId: string, valueId: string): Promise<void> => {
+    await apiClient.delete(`/products/${productId}/options/${optionId}/values/${valueId}/`);
+  },
+
+  variantInventoryUpdate: async (productId: string, variantId: string, adjustment: number, reason?: string): Promise<ProductVariant> => {
+    const { data } = await apiClient.post(`/products/${productId}/variants/${variantId}/inventory/update/`, { adjustment, reason });
+    return data;
   },
 };
 
@@ -133,6 +174,18 @@ export const collectionsApi = {
 
   delete: async (id: string) => {
     await apiClient.delete(`/collections/${id}/`);
+  },
+};
+
+export const inventoryMovementsApi = {
+  list: async (params?: { product?: string; variant?: string; reason?: string }): Promise<InventoryMovement[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.product) searchParams.set("product", params.product);
+    if (params?.variant) searchParams.set("variant", params.variant);
+    if (params?.reason) searchParams.set("reason", params.reason);
+    const qs = searchParams.toString();
+    const { data } = await apiClient.get(`/inventory-movements/${qs ? `?${qs}` : ""}`);
+    return unwrapResults(data);
   },
 };
 
@@ -294,6 +347,113 @@ export function useDeleteCollection() {
     mutationFn: collectionsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collections"] });
+    },
+  });
+}
+
+export function useProductOptions(productId: string) {
+  return useQuery({
+    queryKey: ["product-options", productId],
+    queryFn: () => productsApi.listOptions(productId),
+    enabled: !!productId,
+  });
+}
+
+export function useCreateProductOption() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, ...payload }: { productId: string; name: string; position: number }) =>
+      productsApi.createOption(productId, payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["product-options", variables.productId] });
+      queryClient.invalidateQueries({ queryKey: ["products", variables.productId] });
+    },
+  });
+}
+
+export function useDeleteProductOption() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, optionId }: { productId: string; optionId: string }) =>
+      productsApi.deleteOption(productId, optionId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["product-options", variables.productId] });
+      queryClient.invalidateQueries({ queryKey: ["products", variables.productId] });
+    },
+  });
+}
+
+export function useAddOptionValue() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, optionId, ...payload }: { productId: string; optionId: string; value: string; swatch?: string }) =>
+      productsApi.addOptionValue(productId, optionId, payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["product-options", variables.productId] });
+      queryClient.invalidateQueries({ queryKey: ["products", variables.productId] });
+    },
+  });
+}
+
+export function useDeleteOptionValue() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, optionId, valueId }: { productId: string; optionId: string; valueId: string }) =>
+      productsApi.deleteOptionValue(productId, optionId, valueId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["product-options", variables.productId] });
+      queryClient.invalidateQueries({ queryKey: ["products", variables.productId] });
+    },
+  });
+}
+
+export function useAddProductImage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, ...payload }: { productId: string; url: string; alt_text?: string; is_primary?: boolean; media_asset?: string }) =>
+      productsApi.addImage(productId, payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["products", variables.productId] });
+    },
+  });
+}
+
+export function useDeleteProductImage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, imageId }: { productId: string; imageId: string }) =>
+      productsApi.deleteImage(productId, imageId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["products", variables.productId] });
+    },
+  });
+}
+
+export function useSetPrimaryProductImage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, imageId }: { productId: string; imageId: string }) =>
+      productsApi.setPrimaryImage(productId, imageId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["products", variables.productId] });
+    },
+  });
+}
+
+export function useInventoryMovements(params?: { product?: string; variant?: string; reason?: string }) {
+  return useQuery({
+    queryKey: ["inventory-movements", params],
+    queryFn: () => inventoryMovementsApi.list(params),
+  });
+}
+
+export function useVariantInventoryUpdate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, variantId, adjustment, reason }: { productId: string; variantId: string; adjustment: number; reason?: string }) =>
+      productsApi.variantInventoryUpdate(productId, variantId, adjustment, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 }

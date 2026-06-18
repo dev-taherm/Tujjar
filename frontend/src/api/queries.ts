@@ -40,6 +40,17 @@ export {
   useCreateCollection,
   useUpdateCollection,
   useDeleteCollection,
+  useProductOptions,
+  useCreateProductOption,
+  useDeleteProductOption,
+  useAddOptionValue,
+  useDeleteOptionValue,
+  useAddProductImage,
+  useDeleteProductImage,
+  useSetPrimaryProductImage,
+  useInventoryMovements,
+  useVariantInventoryUpdate,
+  inventoryMovementsApi,
 } from "./products";
 export {
   ordersApi,

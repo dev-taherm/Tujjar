@@ -299,6 +299,8 @@ export interface Category {
   image: string;
   is_active: boolean;
   sort_order: number;
+  seo_title: string;
+  seo_description: string;
   translations?: Record<string, { name?: string; description?: string }>;
   children: Category[];
   product_count: number;
@@ -316,6 +318,8 @@ export interface Collection {
   image: string;
   is_active: boolean;
   sort_order: number;
+  seo_title: string;
+  seo_description: string;
   products: Product[];
   product_count: number;
   translations?: Record<string, { name?: string; description?: string }>;
@@ -323,12 +327,44 @@ export interface Collection {
   updated_at: string;
 }
 
+export interface ProductOption {
+  id: UUID;
+  product: UUID;
+  name: string;
+  position: number;
+  values: ProductOptionValue[];
+  created_at: string;
+}
+
+export interface ProductOptionValue {
+  id: UUID;
+  option: UUID;
+  value: string;
+  swatch: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface InventoryMovement {
+  id: UUID;
+  product: UUID;
+  variant: UUID | null;
+  adjustment: number;
+  reason: "sale" | "adjustment" | "restock" | "correction" | "return";
+  reference: string;
+  created_by: UUID | null;
+  created_by_email: string;
+  created_at: string;
+}
+
 export interface ProductImage {
   id: UUID;
+  media_asset: UUID | null;
   url: string;
   alt_text: string;
   position: number;
   is_primary: boolean;
+  file_url: string;
   created_at: string;
 }
 
@@ -360,6 +396,7 @@ export interface Product {
   title: string;
   slug: string;
   description: string;
+  short_description: string;
   product_type: "physical" | "digital" | "service";
   status: "draft" | "active" | "archived";
   price: number;
@@ -369,12 +406,15 @@ export interface Product {
   barcode: string;
   track_inventory: boolean;
   inventory_quantity: number;
+  quantity: number;
   allow_backorder: boolean;
   low_stock_threshold: number;
   weight: number | null;
+  weight_unit: string;
   requires_shipping: boolean;
   seo_title: string;
   seo_description: string;
+  handle: string;
   is_taxable: boolean;
   tax_code: string;
   categories: Category[];
@@ -382,6 +422,7 @@ export interface Product {
   tags: string[];
   images: ProductImage[];
   variants: ProductVariant[];
+  options: ProductOption[];
   is_in_stock: boolean;
   is_on_sale: boolean;
   primary_image: ProductImage | null;
