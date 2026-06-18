@@ -1,11 +1,13 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
+
+RUN corepack enable
 
 WORKDIR /app
 
 # --- Dependencies ---
 FROM base AS deps
 COPY package.json pnpm-lock.yaml* ./
-RUN corepack enable && pnpm install --frozen-lockfile 2>/dev/null || pnpm install
+RUN pnpm install --frozen-lockfile 2>/dev/null || pnpm install
 
 # --- Development ---
 FROM base AS development
@@ -22,7 +24,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 
 # --- Production Runner ---
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
