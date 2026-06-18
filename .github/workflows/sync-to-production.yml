@@ -15,5 +15,5 @@ jobs:
 
       - name: Push to private repo
         run: |
-          git remote add production https://x-access-token:${{ secrets.PRIVATE_REPO_TOKEN }}@github.com/dev-taherm/Tujjar-Production.git
+          git remote add production https://x-access-token:${{ secrets.PRIVATE_REPO_TOKEN }}@github.com/dev-taherm/Tujjar-production.git
           git push production main --force
