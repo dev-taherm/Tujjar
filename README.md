@@ -428,5 +428,5 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 </p>
 
 <p align="center">
-  If you find Tujjar useful, please give it a ⭐ on GitHub — it helps others discover the project!
+  If you find Tujjar useful, please give it a ⭐ on GitHub — it helps others discover the project!?
 </p>
