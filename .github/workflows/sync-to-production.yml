@@ -15,6 +15,7 @@ jobs:
 
       - name: Push to production repo
         run: |
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
           git remote add production "https://x-access-token:${TOKEN}@github.com/dev-taherm/Tujjar-production.git"
           git push production main --force
         env:
