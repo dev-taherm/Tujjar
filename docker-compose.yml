@@ -27,7 +27,7 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
-    command: sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gevent --worker-connections 500 --timeout 120 --preload --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile -"
+    command: sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gevent --worker-connections 500 --timeout 120 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile -"
 
   frontend:
     build:
