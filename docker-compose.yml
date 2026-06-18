@@ -87,6 +87,20 @@ services:
     restart: unless-stopped
     command: celery -A config worker -l info --concurrency=2 --max-tasks-per-child=1000
 
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    command: celery -A config beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info
+
 volumes:
   pgdata:
   redis_data:
