@@ -463,6 +463,101 @@ export interface Customer {
   updated_at: string;
 }
 
+// Address Types
+export interface Address {
+  id: UUID;
+  organization: UUID;
+  store: UUID;
+  customer: UUID;
+  label: string;
+  first_name: string;
+  last_name: string;
+  company: string;
+  phone: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Wishlist Types
+export interface WishlistItem {
+  id: UUID;
+  organization: UUID;
+  store: UUID;
+  customer: UUID;
+  product: UUID;
+  product_title: string;
+  product_price: number;
+  product_thumbnail_url: string | null;
+  note: string;
+  created_at: string;
+}
+
+// Review Types
+export interface Review {
+  id: UUID;
+  organization: UUID;
+  store: UUID;
+  customer: UUID;
+  product: UUID;
+  order_item: UUID | null;
+  rating: number;
+  title: string;
+  body: string;
+  is_approved: boolean;
+  helpful_count: number;
+  customer_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Loyalty Types
+export interface LoyaltyTransaction {
+  id: UUID;
+  organization: UUID;
+  store: UUID;
+  customer: UUID;
+  customer_name: string;
+  type: "earned" | "adjusted" | "redeemed" | "expired";
+  points: number;
+  balance: number;
+  description: string;
+  reference_id: UUID | null;
+  created_by: UUID | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Saved Cart Types
+export interface SavedCartItem {
+  id: UUID;
+  saved_cart: UUID;
+  product: UUID;
+  product_title: string;
+  product_thumbnail_url: string | null;
+  variant: UUID | null;
+  quantity: number;
+  unit_price: number;
+}
+
+export interface SavedCart {
+  id: UUID;
+  organization: UUID;
+  store: UUID;
+  customer: UUID;
+  name: string;
+  items: SavedCartItem[];
+  item_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // Cart Types
 export interface CartItem {
   id: UUID;

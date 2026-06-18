@@ -12,6 +12,7 @@ from apps.orders.models import Order
 def update_customer_stats_on_save(sender, instance, created, **kwargs):
     """Update customer stats when an order is created or its total changes."""
     _update_customer_stats(instance)
+    _earn_loyalty_points(instance)
 
 
 @receiver(post_delete, sender=Order)
@@ -39,3 +40,39 @@ def _update_customer_stats(order):
         total_spent=stats["total_spent"] or Decimal("0"),
         last_order_date=order.created_at,
     )
+
+
+def _earn_loyalty_points(order):
+    """When an order is delivered, award loyalty points (1 point per unit of total)."""
+    if order.status != "delivered" or not order.customer_id:
+        return
+    from apps.customers.models import Customer, LoyaltyTransaction
+
+    # Check if points were already earned for this order
+    existing = LoyaltyTransaction.objects.filter(
+        reference_id=order.id,
+        type="earned",
+    ).exists()
+    if existing:
+        return
+
+    points = int(order.total)
+    if points <= 0:
+        return
+
+    customer = Customer.objects.filter(id=order.customer_id).first()
+    if not customer:
+        return
+
+    new_balance = customer.loyalty_points + points
+    LoyaltyTransaction.objects.create(
+        organization_id=order.organization_id,
+        store_id=order.store_id,
+        customer_id=customer.id,
+        type="earned",
+        points=points,
+        balance=new_balance,
+        description=f"Earned from order #{order.order_number}",
+        reference_id=order.id,
+    )
+    Customer.objects.filter(id=customer.id).update(loyalty_points=new_balance)
