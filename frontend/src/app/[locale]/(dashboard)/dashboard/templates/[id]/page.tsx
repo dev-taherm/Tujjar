@@ -328,8 +328,8 @@ export default function TemplateEditorPage() {
               )}
               <div className="space-y-1.5 text-xs text-gray-500">
                 <p>Pages: <span className="font-medium text-gray-700">{pages.length}</span></p>
-                <p>Navigation: <span className="font-medium text-gray-700">{navigation.links.length} links</span></p>
-                <p>Footer: <span className="font-medium text-gray-700">{footer.columns.length} columns</span></p>
+                <p>Navigation: <span className="font-medium text-gray-700">{navigation?.links?.length ?? 0} links</span></p>
+                <p>Footer: <span className="font-medium text-gray-700">{footer?.columns?.length ?? 0} columns</span></p>
               </div>
             </div>
             <Button

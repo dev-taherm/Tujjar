@@ -5,4 +5,5 @@ export const TEMPLATE_CATEGORIES = [
   { value: "restaurant", label: "Restaurant" },
   { value: "pharmacy", label: "Pharmacy" },
   { value: "furniture", label: "Furniture" },
+  { value: "general", label: "General" },
 ];

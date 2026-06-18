@@ -25,6 +25,7 @@
     "next": "Next",
     "yes": "Yes",
     "no": "No",
+    "category": "Category",
     "items": "items",
     "each": "each",
     "published": "Published",
@@ -823,7 +824,8 @@
       "duplicateSection": "Duplicate Section",
       "configureSection": "Configure this section",
       "noPages": "No pages yet. Click \"Add Page\" to get started.",
-      "noSections": "No sections yet. Click \"Add Section\" to get started."
+      "noSections": "No sections yet. Click \"Add Section\" to get started.",
+      "tags": "Tags"
     },
     "marketplace": {
       "themes": "Themes",
