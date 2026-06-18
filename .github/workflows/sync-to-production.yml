@@ -13,14 +13,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Push to private repo
-        uses: cpina/github-action-push-to-another-repository@v1
-        with:
-          source-directory: '.'
-          destination-github-username: 'dev-taherm'
-          destination-repository-name: 'Tujjar-production'
-          user-email: 'taher@dev.com'
-          target-branch: 'main'
-          commit-message: 'sync from public repo'
+      - name: Push to production repo
+        run: |
+          git remote add production "https://x-access-token:${TOKEN}@github.com/dev-taherm/Tujjar-production.git"
+          git push production main --force
         env:
-          GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
