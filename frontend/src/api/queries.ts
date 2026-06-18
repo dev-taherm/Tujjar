@@ -51,6 +51,12 @@ export {
   useInventoryMovements,
   useVariantInventoryUpdate,
   inventoryMovementsApi,
+  optionsApi,
+  useGlobalOptions,
+  useCreateGlobalOption,
+  useDeleteGlobalOption,
+  useAddGlobalOptionValue,
+  useDeleteGlobalOptionValue,
 } from "./products";
 export {
   ordersApi,

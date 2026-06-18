@@ -126,54 +126,54 @@ export const categoriesApi = {
     if (params?.store) searchParams.set("store", params.store);
     if (params?.parent !== undefined) searchParams.set("parent", params.parent);
     const qs = searchParams.toString();
-    const { data } = await apiClient.get(`/categories/${qs ? `?${qs}` : ""}`);
+    const { data } = await apiClient.get(`/products/categories/${qs ? `?${qs}` : ""}`);
     return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Category> => {
-    const { data } = await apiClient.get(`/categories/${id}/`);
+    const { data } = await apiClient.get(`/products/categories/${id}/`);
     return data;
   },
 
   create: async (payload: Partial<Category>): Promise<Category> => {
-    const { data } = await apiClient.post("/categories/", payload);
+    const { data } = await apiClient.post("/products/categories/", payload);
     return data;
   },
 
   update: async (id: string, payload: Partial<Category>): Promise<Category> => {
-    const { data } = await apiClient.patch(`/categories/${id}/`, payload);
+    const { data } = await apiClient.patch(`/products/categories/${id}/`, payload);
     return data;
   },
 
   delete: async (id: string) => {
-    await apiClient.delete(`/categories/${id}/`);
+    await apiClient.delete(`/products/categories/${id}/`);
   },
 };
 
 export const collectionsApi = {
   list: async (params?: { store?: string }): Promise<Collection[]> => {
     const qs = params?.store ? `?store=${params.store}` : "";
-    const { data } = await apiClient.get(`/collections/${qs}`);
+    const { data } = await apiClient.get(`/products/collections/${qs}`);
     return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Collection> => {
-    const { data } = await apiClient.get(`/collections/${id}/`);
+    const { data } = await apiClient.get(`/products/collections/${id}/`);
     return data;
   },
 
   create: async (payload: Partial<Collection>): Promise<Collection> => {
-    const { data } = await apiClient.post("/collections/", payload);
+    const { data } = await apiClient.post("/products/collections/", payload);
     return data;
   },
 
   update: async (id: string, payload: Partial<Collection>): Promise<Collection> => {
-    const { data } = await apiClient.patch(`/collections/${id}/`, payload);
+    const { data } = await apiClient.patch(`/products/collections/${id}/`, payload);
     return data;
   },
 
   delete: async (id: string) => {
-    await apiClient.delete(`/collections/${id}/`);
+    await apiClient.delete(`/products/collections/${id}/`);
   },
 };
 
@@ -184,8 +184,33 @@ export const inventoryMovementsApi = {
     if (params?.variant) searchParams.set("variant", params.variant);
     if (params?.reason) searchParams.set("reason", params.reason);
     const qs = searchParams.toString();
-    const { data } = await apiClient.get(`/inventory-movements/${qs ? `?${qs}` : ""}`);
+    const { data } = await apiClient.get(`/products/inventory-movements/${qs ? `?${qs}` : ""}`);
     return unwrapResults(data);
+  },
+};
+
+export const optionsApi = {
+  list: async (): Promise<ProductOption[]> => {
+    const { data } = await apiClient.get("/products/options/");
+    return unwrapResults(data);
+  },
+
+  create: async (payload: { product: string; name: string; position: number }): Promise<ProductOption> => {
+    const { data } = await apiClient.post("/products/options/", payload);
+    return data;
+  },
+
+  delete: async (optionId: string): Promise<void> => {
+    await apiClient.delete(`/products/options/${optionId}/`);
+  },
+
+  addValue: async (optionId: string, payload: { value: string; swatch?: string }): Promise<ProductOptionValue> => {
+    const { data } = await apiClient.post(`/products/options/${optionId}/values/`, payload);
+    return data;
+  },
+
+  deleteValue: async (optionId: string, valueId: string): Promise<void> => {
+    await apiClient.delete(`/products/options/${optionId}/values/${valueId}/`);
   },
 };
 
@@ -454,6 +479,55 @@ export function useVariantInventoryUpdate() {
       productsApi.variantInventoryUpdate(productId, variantId, adjustment, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+export function useGlobalOptions() {
+  return useQuery({
+    queryKey: ["global-options"],
+    queryFn: () => optionsApi.list(),
+  });
+}
+
+export function useCreateGlobalOption() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: optionsApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["global-options"] });
+    },
+  });
+}
+
+export function useDeleteGlobalOption() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: optionsApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["global-options"] });
+    },
+  });
+}
+
+export function useAddGlobalOptionValue() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ optionId, ...payload }: { optionId: string; value: string; swatch?: string }) =>
+      optionsApi.addValue(optionId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["global-options"] });
+    },
+  });
+}
+
+export function useDeleteGlobalOptionValue() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ optionId, valueId }: { optionId: string; valueId: string }) =>
+      optionsApi.deleteValue(optionId, valueId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["global-options"] });
     },
   });
 }

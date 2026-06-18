@@ -8,6 +8,7 @@ from .views import (
     CollectionViewSet,
     InventoryMovementViewSet,
     ProductImageViewSet,
+    ProductOptionGlobalViewSet,
     ProductOptionViewSet,
     ProductVariantViewSet,
     ProductViewSet,
@@ -19,6 +20,7 @@ router = DefaultRouter()
 router.register("categories", CategoryViewSet, basename="category")
 router.register("collections", CollectionViewSet, basename="collection")
 router.register("inventory-movements", InventoryMovementViewSet, basename="inventory-movement")
+router.register("options", ProductOptionGlobalViewSet, basename="option-global")
 router.register("", ProductViewSet, basename="product")
 
 urlpatterns = [
