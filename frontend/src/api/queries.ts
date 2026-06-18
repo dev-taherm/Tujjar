@@ -123,6 +123,8 @@ export {
   useCreateTemplateSnapshot,
   useExportTemplate,
   useImportTemplate,
+  useTemplateBackups,
+  useRestoreBackup,
 } from "./templates";
 export {
   blogCategoriesApi,

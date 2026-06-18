@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.contrib import admin
 
-from .models import Template, TemplateVersion
+from .models import StoreBackup, Template, TemplateVersion
 
 
 class TemplateVersionInline(admin.TabularInline):
@@ -44,3 +44,27 @@ class TemplateVersionAdmin(admin.ModelAdmin):
         "created_by",
         "created_at",
     ]
+
+
+@admin.register(StoreBackup)
+class StoreBackupAdmin(admin.ModelAdmin):
+    list_display = ["store", "template", "page_count", "note", "created_by", "created_at"]
+    list_filter = ["store", "template"]
+    search_fields = ["note", "store__name"]
+    readonly_fields = [
+        "store",
+        "template",
+        "pages",
+        "navigation",
+        "footer",
+        "seo_defaults",
+        "theme_config",
+        "note",
+        "created_by",
+        "created_at",
+    ]
+
+    def page_count(self, obj):
+        return len(obj.pages) if obj.pages else 0
+
+    page_count.short_description = "Pages"

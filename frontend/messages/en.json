@@ -827,7 +827,14 @@
       "noSections": "No sections yet. Click \"Add Section\" to get started.",
       "tags": "Tags",
       "noLinks": "No links yet",
-      "noColumns": "No columns yet"
+      "noColumns": "No columns yet",
+      "backups": "Backups",
+      "noBackups": "No backups yet",
+      "restoreBackup": "Restore Backup",
+      "restoreBackupDescription": "This will restore your store to a previous state. Current content will be backed up automatically.",
+      "backupCreated": "Backup created successfully",
+      "backupRestored": "Store restored from backup",
+      "backupRestoreNote": "Restored from backup created {date}"
     },
     "marketplace": {
       "themes": "Themes",

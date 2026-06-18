@@ -4,6 +4,7 @@ import { Badge } from "@/shared/ui";
 import { Eye, Check, Loader2, Copy, Trash2 } from "lucide-react";
 import type { Template } from "@/api/templates";
 import { useTranslations } from "next-intl";
+import { TemplateThumbnail } from "./template-thumbnail";
 
 const CATEGORY_COLORS: Record<string, string> = {
   fashion: "bg-pink-100 text-pink-800",
@@ -12,15 +13,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   pharmacy: "bg-emerald-100 text-emerald-800",
   furniture: "bg-amber-100 text-amber-800",
   general: "bg-gray-100 text-gray-800",
-};
-
-const CATEGORY_GRADIENTS: Record<string, string> = {
-  fashion: "from-rose-100 via-rose-50 to-white",
-  electronics: "from-blue-900 via-blue-800 to-slate-900",
-  restaurant: "from-amber-100 via-orange-50 to-white",
-  pharmacy: "from-teal-100 via-emerald-50 to-white",
-  furniture: "from-stone-100 via-amber-50 to-white",
-  general: "from-gray-100 to-white",
 };
 
 interface TemplateCardProps {
@@ -36,7 +28,6 @@ interface TemplateCardProps {
 export function TemplateCard({ template, onPreview, onInstall, onDuplicate, onDelete, isInstalling, showInstallButton = true }: TemplateCardProps) {
   const t = useTranslations("dashboard.templates");
   const tc = useTranslations("common");
-  const gradient = CATEGORY_GRADIENTS[template.category] || CATEGORY_GRADIENTS.general;
   const colorClass = CATEGORY_COLORS[template.category] || CATEGORY_COLORS.general;
 
   const colors = (template.config as Record<string, unknown>)?.colors as Record<string, string> | undefined;
@@ -44,7 +35,8 @@ export function TemplateCard({ template, onPreview, onInstall, onDuplicate, onDe
   return (
     <div className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-lg">
       {/* Thumbnail */}
-      <div className={`relative h-48 bg-gradient-to-br ${gradient} p-6`}>
+      <div className="relative">
+        <TemplateThumbnail template={template} />
         <div className="absolute bottom-4 left-4 flex gap-2">
           {colors && (
             <>

@@ -86,3 +86,33 @@ class TemplateVersion(UUIDModel, TimeStampedModel):
 
     def __str__(self):
         return f"{self.template.name} v{self.version}"
+
+
+class StoreBackup(UUIDModel, TimeStampedModel):
+    """Pre-install snapshot of a store's state for safe overwrite/restore."""
+
+    store = models.ForeignKey(
+        "stores.Store", on_delete=models.CASCADE, related_name="template_backups"
+    )
+    template = models.ForeignKey(
+        Template, on_delete=models.SET_NULL, null=True, blank=True, related_name="store_backups"
+    )
+    pages = models.JSONField(default=list, blank=True)
+    navigation = models.JSONField(default=dict, blank=True)
+    footer = models.JSONField(default=dict, blank=True)
+    seo_defaults = models.JSONField(default=dict, blank=True)
+    theme_config = models.JSONField(default=dict, blank=True)
+    note = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        "authentication.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="template_backups",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Backup for {self.store.name} ({self.created_at:%Y-%m-%d %H:%M})"

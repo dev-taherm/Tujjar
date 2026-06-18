@@ -69,6 +69,31 @@ export interface TemplateVersionDetail extends TemplateVersion {
   store_settings: Record<string, unknown>;
 }
 
+export interface StoreBackup {
+  id: UUID;
+  store: UUID;
+  template: UUID | null;
+  template_name: string;
+  pages: Array<{
+    title: string;
+    slug: string;
+    page_type: string;
+    content_schema: Record<string, unknown>;
+    seo_title: string;
+    seo_description: string;
+    is_published: boolean;
+  }>;
+  navigation: Record<string, unknown>;
+  footer: Record<string, unknown>;
+  seo_defaults: Record<string, string>;
+  theme_config: Record<string, unknown>;
+  note: string;
+  created_by: UUID | null;
+  created_by_email: string;
+  page_count: number;
+  created_at: string;
+}
+
 export const templatesApi = {
   list: (params?: Record<string, string>) =>
     apiClient.get<{ results: Template[] }>("/templates/", { params }).then((r) => r.data),
@@ -123,6 +148,15 @@ export const templatesApi = {
 
   createSnapshot: (id: UUID, note: string) =>
     apiClient.post<Template>(`/templates/${id}/snapshot/`, { note }).then((r) => r.data),
+
+  getBackups: () =>
+    apiClient.get<StoreBackup[]>("/templates/backups/").then((r) => r.data),
+
+  getBackup: (backupId: UUID) =>
+    apiClient.get<StoreBackup>(`/templates/backups/${backupId}/`).then((r) => r.data),
+
+  restoreBackup: (backupId: UUID) =>
+    apiClient.post(`/templates/backups/${backupId}/restore/`).then((r) => r.data),
 };
 
 export function useTemplates(category?: string) {
@@ -270,6 +304,25 @@ export function useImportTemplate() {
     mutationFn: (data: Record<string, unknown>) => templatesApi.importTemplate(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["templates"] });
+    },
+  });
+}
+
+export function useTemplateBackups() {
+  return useQuery({
+    queryKey: ["templates", "backups"],
+    queryFn: () => templatesApi.getBackups(),
+  });
+}
+
+export function useRestoreBackup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (backupId: UUID) => templatesApi.restoreBackup(backupId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      queryClient.invalidateQueries({ queryKey: ["pages"] });
+      queryClient.invalidateQueries({ queryKey: ["templates", "backups"] });
     },
   });
 }

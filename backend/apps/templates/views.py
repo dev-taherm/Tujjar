@@ -11,12 +11,14 @@ from rest_framework.response import Response
 
 from apps.core.viewsets import TenantViewSet
 
-from .models import Template, TemplateVersion
+from .models import StoreBackup, Template, TemplateVersion
 from .serializers import (
+    StoreBackupSerializer,
     TemplateCreateSerializer,
     TemplateDetailSerializer,
     TemplateExportSerializer,
     TemplateImportSerializer,
+    TemplateInstallSerializer,
     TemplateListSerializer,
     TemplateUpdateSerializer,
 )
@@ -108,12 +110,9 @@ class TemplateViewSet(TenantViewSet):
     def install(self, request, pk=None):
         """Install a template into the current store."""
         template = self.get_object()
-        store_id = request.data.get("store_id")
-        if not store_id:
-            return Response(
-                {"detail": "store_id is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        serializer = TemplateInstallSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        store_id = serializer.validated_data["store_id"]
 
         from apps.stores.models import Store
         from apps.themes.models import Theme, ThemePreset
@@ -141,6 +140,34 @@ class TemplateViewSet(TenantViewSet):
         ).count()
 
         with transaction.atomic():
+            # 0. Create backup of current store state before destructive changes
+            existing_pages = list(Page.objects.filter(organization_id=request.org_id, store=store))
+            backup = StoreBackup.objects.create(
+                store=store,
+                template=template,
+                pages=[
+                    {
+                        "title": p.title,
+                        "slug": p.slug,
+                        "page_type": p.page_type,
+                        "content_schema": p.content_schema,
+                        "seo_title": p.seo_title,
+                        "seo_description": p.seo_description,
+                        "is_published": p.is_published,
+                    }
+                    for p in existing_pages
+                ],
+                navigation=copy.deepcopy(store.navigation),
+                footer=copy.deepcopy(store.footer_config),
+                seo_defaults={
+                    "title_pattern": store.seo_title,
+                    "description_pattern": store.seo_description,
+                },
+                theme_config=copy.deepcopy(store.theme.config) if store.theme else {},
+                note=f"Pre-install backup for template '{template.name}'",
+                created_by=request.user,
+            )
+
             # 1. Create theme for the org (delete old if re-installing)
             theme_data = copy.deepcopy(template.config)
             theme_slug = f"{template.slug}-theme-{request.org_id}"
@@ -268,6 +295,7 @@ class TemplateViewSet(TenantViewSet):
                 "theme_id": str(theme.id),
                 "pages_created": len(created_pages),
                 "store_id": str(store.id),
+                "backup_id": str(backup.id),
                 "replaced": {
                     "pages": existing_page_count,
                     "collections": existing_collection_count,
@@ -536,3 +564,105 @@ class TemplateViewSet(TenantViewSet):
         )
 
         return Response(TemplateDetailSerializer(template).data)
+
+    @action(detail=False, methods=["get"], url_path="backups")
+    def backups(self, request):
+        """List all store backups for the current organization."""
+        backups = StoreBackup.objects.filter(store__organization_id=request.org_id).select_related(
+            "template", "created_by"
+        )[:50]
+        serializer = StoreBackupSerializer(backups, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path=r"backups/(?P<backup_id>[^/.]+)")
+    def backup_detail(self, request, backup_id=None):
+        """Get backup detail."""
+        try:
+            backup = StoreBackup.objects.get(
+                id=backup_id,
+                store__organization_id=request.org_id,
+            )
+        except StoreBackup.DoesNotExist:
+            return Response(
+                {"detail": "Backup not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = StoreBackupSerializer(backup)
+        return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path=r"backups/(?P<backup_id>[^/.]+)/restore",
+    )
+    def restore_backup(self, request, backup_id=None):
+        """Restore a store from a backup snapshot."""
+        from apps.pages.models import Page
+
+        try:
+            backup = StoreBackup.objects.get(
+                id=backup_id,
+                store__organization_id=request.org_id,
+            )
+        except StoreBackup.DoesNotExist:
+            return Response(
+                {"detail": "Backup not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        store = backup.store
+
+        with transaction.atomic():
+            # 1. Delete current pages
+            Page.objects.filter(organization_id=request.org_id, store=store).delete()
+
+            # 2. Restore pages from backup
+            created_pages = []
+            for page_data in backup.pages:
+                page = Page.objects.create(
+                    organization_id=request.org_id,
+                    store=store,
+                    title=page_data["title"],
+                    slug=page_data["slug"],
+                    page_type=page_data.get("page_type", "custom"),
+                    content_schema=page_data.get("content_schema", {}),
+                    seo_title=page_data.get("seo_title", ""),
+                    seo_description=page_data.get("seo_description", ""),
+                    is_published=page_data.get("is_published", True),
+                )
+                created_pages.append(page)
+
+            # 3. Restore navigation + footer
+            store.navigation = copy.deepcopy(backup.navigation)
+            store.footer_config = copy.deepcopy(backup.footer)
+
+            # 4. Restore SEO defaults
+            store.seo_title = backup.seo_defaults.get("title_pattern", "")
+            store.seo_description = backup.seo_defaults.get("description_pattern", "")
+
+            # 5. Restore theme config
+            if backup.theme_config and store.theme:
+                store.theme.config = copy.deepcopy(backup.theme_config)
+                store.theme.save()
+
+            store.save()
+
+            # 6. Audit log
+            self._log_audit(
+                action="template.restore_backup",
+                resource_type="template_backup",
+                resource_id=backup.id,
+                new_value={
+                    "store": store.name,
+                    "pages_restored": len(created_pages),
+                },
+            )
+
+        return Response(
+            {
+                "detail": f"Store '{store.name}' restored from backup.",
+                "pages_restored": len(created_pages),
+                "store_id": str(store.id),
+            },
+            status=status.HTTP_200_OK,
+        )

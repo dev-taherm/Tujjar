@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import Template
+from .models import StoreBackup, Template
 
 
 class TemplateListSerializer(serializers.ModelSerializer):
@@ -187,3 +187,36 @@ class TemplateImportSerializer(serializers.Serializer):
             if field not in value:
                 raise serializers.ValidationError(f"Missing required field: {field}")
         return value
+
+
+class TemplateInstallSerializer(serializers.Serializer):
+    store_id = serializers.UUIDField()
+
+
+class StoreBackupSerializer(serializers.ModelSerializer):
+    template_name = serializers.CharField(source="template.name", read_only=True, default="")
+    created_by_email = serializers.CharField(source="created_by.email", read_only=True, default="")
+    page_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StoreBackup
+        fields = [
+            "id",
+            "store",
+            "template",
+            "template_name",
+            "pages",
+            "navigation",
+            "footer",
+            "seo_defaults",
+            "theme_config",
+            "note",
+            "created_by",
+            "created_by_email",
+            "page_count",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+    def get_page_count(self, obj):
+        return len(obj.pages) if obj.pages else 0

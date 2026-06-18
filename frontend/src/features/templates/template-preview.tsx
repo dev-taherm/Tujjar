@@ -5,6 +5,7 @@ import { Loader2, Download, History } from "lucide-react";
 import type { Template } from "@/api/templates";
 import { Dialog } from "@/shared/ui";
 import { useTranslations } from "next-intl";
+import { TemplateThumbnail } from "./template-thumbnail";
 
 interface TemplatePreviewProps {
   template: Template;
@@ -28,6 +29,9 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
       <p className="text-sm text-gray-500 -mt-2 mb-4">v{template.version} by {template.author}</p>
 
       <div className="overflow-y-auto" style={{ maxHeight: "calc(90vh - 140px)" }}>
+        {/* Thumbnail */}
+        <TemplateThumbnail template={template} />
+
         {/* Color Palette */}
         {colors && (
           <div className="border-b -mx-6 px-6 py-4">

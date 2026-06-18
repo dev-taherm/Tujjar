@@ -82,28 +82,21 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
   const handleConfirmInstall = async (selectedStoreId: string) => {
     if (!storeDialogTemplate) return;
 
-    // If installing on a store that already has content, show overwrite warning
-    if (storeId && selectedStoreId === storeId) {
-      setStoreDialogTemplate(null);
-      setOverwriteTemplate(storeDialogTemplate);
-      setOverwriteStoreId(selectedStoreId);
-      setOverwriteReplaced(null);
+    // Always fetch preview-install data and show overwrite warning
+    setStoreDialogTemplate(null);
+    setOverwriteTemplate(storeDialogTemplate);
+    setOverwriteStoreId(selectedStoreId);
+    setOverwriteReplaced(null);
 
-      // Fetch preview-install data
-      try {
-        const data = await previewInstall.mutateAsync({
-          templateId: storeDialogTemplate.id,
-          storeId: selectedStoreId,
-        });
-        setOverwriteReplaced(data.replaced);
-      } catch {
-        setOverwriteReplaced({ pages: 0, collections: 0, categories: 0 });
-      }
-      return;
+    try {
+      const data = await previewInstall.mutateAsync({
+        templateId: storeDialogTemplate.id,
+        storeId: selectedStoreId,
+      });
+      setOverwriteReplaced(data.replaced);
+    } catch {
+      setOverwriteReplaced({ pages: 0, collections: 0, categories: 0 });
     }
-
-    // Different store or no existing content — install directly
-    await doInstall(storeDialogTemplate, selectedStoreId);
   };
 
   const doInstall = async (template: Template, targetStoreId: string) => {

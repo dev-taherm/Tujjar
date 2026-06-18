@@ -35,10 +35,10 @@ export function TemplateOverwriteWarning({
                 <p>{replaced.pages} existing page{replaced.pages !== 1 ? "s" : ""} will be replaced</p>
               )}
               {replaced.collections > 0 && (
-                <p>{replaced.collections} collection{replaced.collections !== 1 ? "s" : ""} will be replaced</p>
+                <p>{replaced.collections} existing collection{replaced.collections !== 1 ? "s" : ""} will be added alongside existing</p>
               )}
               {replaced.categories > 0 && (
-                <p>{replaced.categories} categor{replaced.categories !== 1 ? "ies" : "y"} will be replaced</p>
+                <p>{replaced.categories} existing categor{replaced.categories !== 1 ? "ies" : "y"} will be added alongside existing</p>
               )}
             </div>
           ) : (
