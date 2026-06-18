@@ -1,5 +1,13 @@
+x-logging: &default-logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
 services:
   nginx:
+    <<: *default-logging
     image: nginx:alpine
     ports:
       - "9080:80"
@@ -13,6 +21,7 @@ services:
     restart: unless-stopped
 
   backend:
+    <<: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -30,6 +39,7 @@ services:
     command: sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gevent --worker-connections 500 --timeout 120 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile -"
 
   frontend:
+    <<: *default-logging
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -43,6 +53,7 @@ services:
     restart: unless-stopped
 
   db:
+    <<: *default-logging
     image: pgvector/pgvector:pg16
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -61,6 +72,7 @@ services:
     restart: unless-stopped
 
   redis:
+    <<: *default-logging
     image: redis:7-alpine
     volumes:
       - redis_data:/data
@@ -74,6 +86,7 @@ services:
     restart: unless-stopped
 
   celery-worker:
+    <<: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -88,6 +101,7 @@ services:
     command: celery -A config worker -l info --concurrency=2 --max-tasks-per-child=1000
 
   celery-beat:
+    <<: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
