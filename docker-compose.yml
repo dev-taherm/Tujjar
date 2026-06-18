@@ -2,7 +2,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - "9080:80"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./frontend/public:/usr/share/nginx/html:ro
@@ -16,8 +16,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     volumes:
       - ./backend:/app
       - media_data:/app/media
@@ -29,26 +27,12 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
-    command: >
-      sh -c "python manage.py migrate --noinput &&
-             gunicorn config.wsgi:application
-             --bind 0.0.0.0:8000
-             --workers 2
-             --worker-class gevent
-             --worker-connections 500
-             --timeout 120
-             --preload
-             --max-requests 1000
-             --max-requests-jitter 50
-             --access-logfile -
-             --error-logfile -"
+    command: sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gevent --worker-connections 500 --timeout 120 --preload --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile -"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
@@ -60,8 +44,6 @@ services:
 
   db:
     image: pgvector/pgvector:pg16
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -80,8 +62,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
       - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
