@@ -297,6 +297,104 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
       { key: "showSeconds", label: "Show Seconds", type: "toggle" },
     ],
   },
+  video: {
+    type: "video",
+    label: "Video Embed",
+    category: "content",
+    icon: "Play",
+    defaultSettings: { videoUrl: "", title: "", autoplay: false, aspectRatio: "16/9" },
+    settingsSchema: [
+      { key: "videoUrl", label: "Video URL", type: "text" },
+      { key: "title", label: "Title", type: "text" },
+      { key: "autoplay", label: "Autoplay", type: "toggle" },
+      { key: "aspectRatio", label: "Aspect Ratio", type: "select", options: [
+        { value: "16/9", label: "16:9" },
+        { value: "4/3", label: "4:3" },
+        { value: "1/1", label: "1:1" },
+      ]},
+    ],
+  },
+  image: {
+    type: "image",
+    label: "Image",
+    category: "content",
+    icon: "Image",
+    defaultSettings: { imageUrl: "", altText: "", caption: "", alignment: "center", maxWidth: 100 },
+    settingsSchema: [
+      { key: "imageUrl", label: "Image URL", type: "image" },
+      { key: "altText", label: "Alt Text", type: "text" },
+      { key: "caption", label: "Caption", type: "text" },
+      { key: "alignment", label: "Alignment", type: "select", options: [
+        { value: "left", label: "Left" },
+        { value: "center", label: "Center" },
+        { value: "right", label: "Right" },
+      ]},
+      { key: "maxWidth", label: "Max Width (%)", type: "number" },
+    ],
+  },
+  pricing: {
+    type: "pricing",
+    label: "Pricing Table",
+    category: "content",
+    icon: "CreditCard",
+    defaultSettings: {
+      title: "Choose Your Plan",
+      plans: [
+        { name: "Basic", price: "$9", period: "/mo", features: ["1 User", "10GB Storage", "Email Support"], buttonText: "Get Started", highlighted: false },
+        { name: "Pro", price: "$29", period: "/mo", features: ["5 Users", "100GB Storage", "Priority Support", "API Access"], buttonText: "Get Started", highlighted: true },
+        { name: "Enterprise", price: "$99", period: "/mo", features: ["Unlimited Users", "1TB Storage", "24/7 Support", "API Access", "Custom Integrations"], buttonText: "Contact Sales", highlighted: false },
+      ],
+    },
+    settingsSchema: [
+      { key: "title", label: "Title", type: "text" },
+    ],
+  },
+  contact: {
+    type: "contact",
+    label: "Contact Section",
+    category: "content",
+    icon: "Phone",
+    defaultSettings: { title: "Contact Us", subtitle: "", email: "", phone: "", address: "", showForm: true },
+    settingsSchema: [
+      { key: "title", label: "Title", type: "text" },
+      { key: "subtitle", label: "Subtitle", type: "text" },
+      { key: "email", label: "Email", type: "text" },
+      { key: "phone", label: "Phone", type: "text" },
+      { key: "address", label: "Address", type: "text" },
+      { key: "showForm", label: "Show Form", type: "toggle" },
+    ],
+  },
+  carousel: {
+    type: "carousel",
+    label: "Image Carousel",
+    category: "content",
+    icon: "GalleryHorizontalEnd",
+    defaultSettings: { title: "", images: [], autoplay: false, showDots: true, showArrows: true },
+    settingsSchema: [
+      { key: "title", label: "Title", type: "text" },
+      { key: "autoplay", label: "Autoplay", type: "toggle" },
+      { key: "showDots", label: "Show Dots", type: "toggle" },
+      { key: "showArrows", label: "Show Arrows", type: "toggle" },
+    ],
+  },
+  footer: {
+    type: "footer",
+    label: "Footer",
+    category: "layout",
+    icon: "PanelBottom",
+    defaultSettings: {
+      columns: [
+        { title: "Company", links: [{ label: "About", url: "/about" }, { label: "Careers", url: "/careers" }, { label: "Contact", url: "/contact" }] },
+        { title: "Products", links: [{ label: "Features", url: "/features" }, { label: "Pricing", url: "/pricing" }, { label: "Docs", url: "/docs" }] },
+        { title: "Legal", links: [{ label: "Privacy", url: "/privacy" }, { label: "Terms", url: "/terms" }] },
+      ],
+      copyright: "All rights reserved.",
+      socialLinks: { facebook: "#", twitter: "#", instagram: "#" },
+    },
+    settingsSchema: [
+      { key: "copyright", label: "Copyright Text", type: "text" },
+    ],
+  },
 };
 
 export function getRegistryEntry(type: string): SectionDefinition | undefined {

@@ -67,6 +67,15 @@ class PageViewSet(TenantViewSet):
         page.unpublish()
         return Response(PageSerializer(page).data)
 
+    @action(detail=True, methods=["post"], url_path="auto-save")
+    def auto_save(self, request, pk=None):
+        """Auto-save page content without version increment."""
+        page = self.get_object()
+        content_schema = request.data.get("content_schema")
+        theme_override = request.data.get("theme_override")
+        page.auto_save(content_schema=content_schema, theme_override=theme_override)
+        return Response({"detail": "Auto-saved.", "updated_at": page.updated_at.isoformat()})
+
     @action(detail=True, methods=["get"])
     def versions(self, request, pk=None):
         """List all versions of the page."""

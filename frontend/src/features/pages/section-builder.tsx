@@ -3,11 +3,18 @@
 import { useState, useCallback } from "react";
 import { usePageBuilder } from "@/builder/providers/page-builder-context";
 import { useUpdatePage, usePublishPage, useUnpublishPage, useAddSection, useUpdateSection, useRemoveSection, useDuplicateSection, useReorderSections, useToggleSectionVisibility } from "@/api/queries";
+import { useAutoSave } from "@/builder/hooks/use-auto-save";
+import { useClipboard } from "@/builder/hooks/use-clipboard";
+import { useKeyboardShortcuts } from "@/builder/hooks/use-keyboard-shortcuts";
+import { pagesApi } from "@/api/pages";
+import { ThemePicker } from "./theme-picker";
 import { SectionList } from "./section-list";
-import { SectionSettingsPanel } from "./section-settings-panel";
+import { EnhancedInspector } from "@/builder/inspector/enhanced-inspector";
 import { SectionTypePicker } from "./section-type-picker";
 import { PageToolbar } from "./page-toolbar";
 import { VersionHistory } from "./version-history";
+import { DeviceFrame } from "@/builder/components/device-frame";
+import { LayerTree } from "@/builder/components/layer-tree";
 import { sectionComponents } from "@/lib/section-registry";
 import type { Section } from "@/shared/types";
 import { useTranslations } from "next-intl";
@@ -28,9 +35,11 @@ interface SectionBuilderProps {
 export function SectionBuilder({ pageId }: SectionBuilderProps) {
   const t = useTranslations("dashboard.pages");
   const tc = useTranslations("common");
-  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isDirty, isPreviewMode, togglePreviewMode, editLocale, setEditLocale, getSavePayload } = usePageBuilder();
+  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isDirty, isPreviewMode, togglePreviewMode, editLocale, setEditLocale, themeOverride, setThemeOverride, getSavePayload, devicePreview, setDevicePreview } = usePageBuilder();
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showLayers, setShowLayers] = useState(false);
 
   const updatePage = useUpdatePage();
   const publishPage = usePublishPage();
@@ -48,6 +57,20 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
     if (Object.keys(payload).length === 0) return;
     await updatePage.mutateAsync({ id: page.id, ...payload });
   }, [page, updatePage, getSavePayload]);
+
+  const handleAutoSave = useCallback(async () => {
+    if (!page) return;
+    const payload: { content_schema?: Record<string, unknown>; theme_override?: Record<string, unknown> } = {};
+    if (editLocale === "en") {
+      payload.content_schema = page.content_schema;
+    }
+    if (themeOverride !== null) {
+      payload.theme_override = themeOverride;
+    }
+    await pagesApi.autoSave(page.id, payload);
+  }, [page, editLocale, themeOverride]);
+
+  const { isAutoSaving, lastSavedAt } = useAutoSave(handleAutoSave, isDirty, 5000);
 
   const handlePublish = useCallback(async () => {
     await publishPage.mutateAsync(pageId);
@@ -92,6 +115,39 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
     await toggleVisibility.mutateAsync({ pageId, sectionId, device });
   }, [pageId, toggleVisibility]);
 
+  const { copySection, pasteSection } = useClipboard();
+
+  const handleCopySection = useCallback(() => {
+    const section = getSelectedSection();
+    if (section) copySection(section, pageId);
+  }, [getSelectedSection, copySection, pageId]);
+
+  const handlePasteSection = useCallback(async () => {
+    const pasted = pasteSection();
+    if (pasted && pasted.length > 0) {
+      for (const s of pasted) {
+        await addSection.mutateAsync({ pageId, sectionType: s.type });
+      }
+    }
+  }, [pasteSection, addSection, pageId]);
+
+  const handleDeleteSection = useCallback(() => {
+    if (selectedSectionId) handleRemoveSection(selectedSectionId);
+  }, [selectedSectionId, handleRemoveSection]);
+
+  const handleDuplicateSelected = useCallback(() => {
+    if (selectedSectionId) handleDuplicateSection(selectedSectionId);
+  }, [selectedSectionId, handleDuplicateSection]);
+
+  useKeyboardShortcuts({
+    save: handleSave,
+    copy: handleCopySection,
+    paste: handlePasteSection,
+    duplicate: handleDuplicateSelected,
+    delete: handleDeleteSection,
+    escape: () => selectSection(null),
+  });
+
   const selectedSection = getSelectedSection();
 
   return (
@@ -111,23 +167,41 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
         onShowHistory={() => setShowHistory(!showHistory)}
         onLocaleChange={setEditLocale}
         isSaving={updatePage.isPending}
+        isAutoSaving={isAutoSaving}
+        lastSavedAt={lastSavedAt}
+        onThemeClick={() => setShowThemePicker(true)}
+        themeOverrideCount={themeOverride ? Object.keys(themeOverride).length : 0}
+        devicePreview={devicePreview}
+        onDeviceChange={setDevicePreview}
+        onToggleLayers={() => setShowLayers(!showLayers)}
+        showLayers={showLayers}
       />
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Section List */}
+        {/* Left: Section List OR Layer Tree */}
         <div className="w-64 border-e border-gray-200 overflow-y-auto p-3">
-          <SectionList
-            sections={sections}
-            selectedSectionId={selectedSectionId}
-            onSelect={selectSection}
-            onMoveUp={handleMoveUp}
-            onMoveDown={handleMoveDown}
-            onDuplicate={handleDuplicateSection}
-            onRemove={handleRemoveSection}
-            onToggleVisibility={handleToggleVisibility}
-          />
+          {showLayers ? (
+            <LayerTree
+              sections={sections}
+              selectedSectionId={selectedSectionId}
+              onSelect={(id) => selectSection(id)}
+              onToggleVisibility={handleToggleVisibility}
+              device={devicePreview}
+            />
+          ) : (
+            <SectionList
+              sections={sections}
+              selectedSectionId={selectedSectionId}
+              onSelect={selectSection}
+              onMoveUp={handleMoveUp}
+              onMoveDown={handleMoveDown}
+              onDuplicate={handleDuplicateSection}
+              onRemove={handleRemoveSection}
+              onToggleVisibility={handleToggleVisibility}
+            />
+          )}
         </div>
 
-        {/* Center: Preview */}
+        {/* Center: Preview with Device Frame */}
         <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
           {sections.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center">
@@ -137,26 +211,28 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
               </button>
             </div>
           ) : (
-            <div className="mx-auto max-w-3xl space-y-4">
-              {sections.map((section) => (
-                <div
-                  key={section.id}
-                  onClick={() => selectSection(section.id)}
-                  className={`cursor-pointer rounded-lg border-2 transition-colors ${
-                    section.id === selectedSectionId ? "border-blue-400" : "border-transparent hover:border-gray-300"
-                  }`}
-                >
-                  <SectionRenderer section={section} />
-                </div>
-              ))}
-            </div>
+            <DeviceFrame device={devicePreview}>
+              <div className="mx-auto max-w-3xl space-y-4">
+                {sections.map((section) => (
+                  <div
+                    key={section.id}
+                    onClick={() => selectSection(section.id)}
+                    className={`cursor-pointer rounded-lg border-2 transition-colors ${
+                      section.id === selectedSectionId ? "border-blue-400" : "border-transparent hover:border-gray-300"
+                    }`}
+                  >
+                    <SectionRenderer section={section} />
+                  </div>
+                ))}
+              </div>
+            </DeviceFrame>
           )}
         </div>
 
         {/* Right: Inspector */}
         {selectedSection && !isPreviewMode && (
           <div className="w-80 border-s border-gray-200 overflow-y-auto p-4">
-            <SectionSettingsPanel
+            <EnhancedInspector
               section={selectedSection}
               onUpdate={(settings) => handleUpdateSection(selectedSection.id, settings)}
             />
@@ -170,6 +246,14 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
 
       {showHistory && (
         <VersionHistory pageId={pageId} onClose={() => setShowHistory(false)} />
+      )}
+
+      {showThemePicker && (
+        <ThemePicker
+          currentOverride={themeOverride}
+          onSelect={setThemeOverride}
+          onClose={() => setShowThemePicker(false)}
+        />
       )}
     </div>
   );

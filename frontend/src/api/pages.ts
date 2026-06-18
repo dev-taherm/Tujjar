@@ -39,6 +39,11 @@ export const pagesApi = {
     return data;
   },
 
+  autoSave: async (id: string, payload: { content_schema?: Record<string, unknown>; theme_override?: Record<string, unknown> }): Promise<{ detail: string; updated_at: string }> => {
+    const { data } = await apiClient.post(`/pages/${id}/auto-save/`, payload);
+    return data;
+  },
+
   getVersions: async (id: string): Promise<PageVersion[]> => {
     const { data } = await apiClient.get(`/pages/${id}/versions/`);
     return data;

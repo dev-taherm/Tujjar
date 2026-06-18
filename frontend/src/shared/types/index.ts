@@ -280,6 +280,13 @@ export interface SectionDefinition {
   }>;
 }
 
+export interface ThemeOverride {
+  colors?: Partial<ThemeConfig["colors"]>;
+  typography?: Partial<ThemeConfig["typography"]>;
+  spacing?: Partial<ThemeConfig["spacing"]>;
+  borderRadius?: Partial<ThemeConfig["borderRadius"]>;
+}
+
 // Product Types
 export interface Category {
   id: UUID;

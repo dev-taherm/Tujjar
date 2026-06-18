@@ -112,6 +112,17 @@ class Page(UUIDModel, TimeStampedModel):
         self.is_published = False
         self.save(update_fields=["is_published", "updated_at"])
 
+    def auto_save(self, content_schema=None, theme_override=None):
+        """Save without incrementing version (auto-save)."""
+        update_fields = ["updated_at"]
+        if content_schema is not None:
+            self.content_schema = content_schema
+            update_fields.append("content_schema")
+        if theme_override is not None:
+            self.theme_override = theme_override
+            update_fields.append("theme_override")
+        self.save(update_fields=update_fields)
+
     def restore_version(self, version_number: int, user=None):
         """Restore page to a specific version."""
         version = PageVersion.objects.get(page=self, version=version_number)

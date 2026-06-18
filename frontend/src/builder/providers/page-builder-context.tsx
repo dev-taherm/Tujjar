@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useState, useMemo } from "react";
-import type { Page, Section, PageSchema } from "@/shared/types";
+import type { Page, Section, PageSchema, ThemeOverride } from "@/shared/types";
 
 interface PageBuilderState {
   page: Page | null;
@@ -10,6 +10,8 @@ interface PageBuilderState {
   isDirty: boolean;
   isPreviewMode: boolean;
   editLocale: string;
+  themeOverride: ThemeOverride | null;
+  devicePreview: "desktop" | "tablet" | "mobile";
 }
 
 interface PageBuilderContextType extends PageBuilderState {
@@ -19,7 +21,9 @@ interface PageBuilderContextType extends PageBuilderState {
   updatePageSchema: (schema: PageSchema) => void;
   togglePreviewMode: () => void;
   setEditLocale: (locale: string) => void;
-  getSavePayload: () => { content_schema?: PageSchema; translations?: Record<string, { title?: string; content_schema?: PageSchema; seo_title?: string; seo_description?: string }> };
+  setThemeOverride: (override: ThemeOverride | null) => void;
+  setDevicePreview: (device: "desktop" | "tablet" | "mobile") => void;
+  getSavePayload: () => { content_schema?: PageSchema; theme_override?: ThemeOverride | null; translations?: Record<string, { title?: string; content_schema?: PageSchema; seo_title?: string; seo_description?: string }> };
 }
 
 const PageBuilderContext = createContext<PageBuilderContextType | null>(null);
@@ -36,6 +40,10 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [editLocale, setEditLocaleState] = useState("en");
   const [localeSchemas, setLocaleSchemas] = useState<Record<string, PageSchema>>({});
+  const [themeOverride, setThemeOverrideState] = useState<ThemeOverride | null>(
+    (initialPage?.theme_override as ThemeOverride) || null
+  );
+  const [devicePreview, setDevicePreview] = useState<"desktop" | "tablet" | "mobile">("desktop");
 
   const pageId = initialPage?.id;
 
@@ -78,26 +86,36 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
     setIsDirty(true);
   }, [page, editLocale]);
 
-  const getSavePayload = useCallback((): { content_schema?: PageSchema; translations?: Record<string, { title?: string; content_schema?: PageSchema; seo_title?: string; seo_description?: string }> } => {
+  const getSavePayload = useCallback((): { content_schema?: PageSchema; theme_override?: ThemeOverride | null; translations?: Record<string, { title?: string; content_schema?: PageSchema; seo_title?: string; seo_description?: string }> } => {
     if (!page) return {};
+    const payload: { content_schema?: PageSchema; theme_override?: ThemeOverride | null; translations?: Record<string, { title?: string; content_schema?: PageSchema; seo_title?: string; seo_description?: string }> } = {};
     if (editLocale === "en") {
-      return { content_schema: page.content_schema };
+      payload.content_schema = page.content_schema;
+    } else {
+      const localeSchema = localeSchemas[editLocale];
+      if (localeSchema) {
+        payload.translations = {
+          ...page.translations,
+          [editLocale]: {
+            ...(page.translations?.[editLocale] || {}),
+            content_schema: localeSchema,
+          },
+        };
+      }
     }
-    const localeSchema = localeSchemas[editLocale];
-    if (!localeSchema) return {};
-    return {
-      translations: {
-        ...page.translations,
-        [editLocale]: {
-          ...(page.translations?.[editLocale] || {}),
-          content_schema: localeSchema,
-        },
-      },
-    };
-  }, [page, editLocale, localeSchemas]);
+    if (themeOverride !== null) {
+      payload.theme_override = themeOverride;
+    }
+    return payload;
+  }, [page, editLocale, localeSchemas, themeOverride]);
 
   const togglePreviewMode = useCallback(() => {
     setIsPreviewMode((prev) => !prev);
+  }, []);
+
+  const setThemeOverride = useCallback((override: ThemeOverride | null) => {
+    setThemeOverrideState(override);
+    setIsDirty(true);
   }, []);
 
   const setPageData = useCallback((newPage: Page | null) => {
@@ -105,6 +123,7 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
     setSelectedSectionId(null);
     setIsDirty(false);
     setLocaleSchemas({});
+    setThemeOverrideState((newPage?.theme_override as ThemeOverride) || null);
   }, []);
 
   return (
@@ -116,12 +135,16 @@ export function PageBuilderProvider({ page: initialPage, children }: PageBuilder
         isDirty,
         isPreviewMode,
         editLocale,
+        themeOverride,
+        devicePreview,
         setPage: setPageData,
         selectSection,
         getSelectedSection,
         updatePageSchema,
         togglePreviewMode,
         setEditLocale,
+        setThemeOverride,
+        setDevicePreview,
         getSavePayload,
       }}
     >

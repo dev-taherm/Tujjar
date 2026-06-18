@@ -24,10 +24,17 @@ import { SortableSection } from "./sortable-section";
 import { DropZone } from "./drop-zone";
 import { SectionPalette } from "./section-palette";
 import { DragOverlay } from "./drag-overlay";
-import { SectionSettingsPanel } from "@/features/pages/section-settings-panel";
+import { EnhancedInspector } from "@/builder/inspector/enhanced-inspector";
+import { ThemePicker } from "@/features/pages/theme-picker";
 import { PageToolbar } from "@/features/pages/page-toolbar";
 import { VersionHistory } from "@/features/pages/version-history";
+import { DeviceFrame } from "@/builder/components/device-frame";
+import { LayerTree } from "@/builder/components/layer-tree";
 import { useHistory } from "@/builder/hooks/use-history";
+import { useAutoSave } from "@/builder/hooks/use-auto-save";
+import { useClipboard } from "@/builder/hooks/use-clipboard";
+import { useKeyboardShortcuts } from "@/builder/hooks/use-keyboard-shortcuts";
+import { pagesApi } from "@/api/pages";
 import { sectionComponents } from "@/lib/section-registry";
 import type { Section } from "@/shared/types";
 import { Undo2, Redo2 } from "lucide-react";
@@ -45,10 +52,12 @@ interface DndPageBuilderProps {
 }
 
 export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
-  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isPreviewMode, togglePreviewMode, isDirty, editLocale, setEditLocale, getSavePayload } = usePageBuilder();
+  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isPreviewMode, togglePreviewMode, isDirty, editLocale, setEditLocale, themeOverride, setThemeOverride, getSavePayload, devicePreview, setDevicePreview } = usePageBuilder();
   const [activeDragType, setActiveDragType] = useState<string | null>(null);
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showLayers, setShowLayers] = useState(false);
   const [insertPosition, setInsertPosition] = useState<number | null>(null);
 
   const initialSchema = useMemo(() => {
@@ -56,6 +65,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
   }, [page?.content_schema]);
 
   const { schema, set: setSchema, undo, redo, canUndo, canRedo } = useHistory(initialSchema);
+  const { copySection, pasteSection, hasClipboard, clipboardSectionType } = useClipboard();
 
   const updatePage = useUpdatePage();
   const publishPage = usePublishPage();
@@ -99,21 +109,18 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
     const data = active.data.current;
 
-    // Dropping from palette
     if (data?.type === "palette") {
       const overId = String(over.id);
       if (overId.startsWith("drop-zone-")) {
         const position = parseInt(overId.replace("drop-zone-", ""), 10);
         handleAddSectionAtPosition(data.sectionType, position);
       } else {
-        // Dropped on a section - insert after it
         const idx = sortedSections.findIndex((s) => s.id === over.id);
         handleAddSectionAtPosition(data.sectionType, idx + 1);
       }
       return;
     }
 
-    // Reordering existing sections
     if (active.id !== over.id) {
       const oldIndex = sortedSections.findIndex((s) => s.id === active.id);
       const newIndex = sortedSections.findIndex((s) => s.id === over.id);
@@ -131,18 +138,31 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
   const handleSave = useCallback(async () => {
     if (!page) return;
+    const payload: { content_schema?: Record<string, unknown>; theme_override?: Record<string, unknown>; translations?: Record<string, unknown> } = {};
     if (editLocale === "en") {
-      await updatePage.mutateAsync({ id: page.id, content_schema: schema });
+      payload.content_schema = schema;
     } else {
-      await updatePage.mutateAsync({
-        id: page.id,
-        translations: {
-          ...page.translations,
-          [editLocale]: { ...(page.translations?.[editLocale] || {}), content_schema: schema },
-        },
-      });
+      payload.translations = {
+        ...page.translations,
+        [editLocale]: { ...(page.translations?.[editLocale] || {}), content_schema: schema },
+      };
     }
-  }, [page, schema, updatePage, editLocale]);
+    if (themeOverride !== null) {
+      payload.theme_override = themeOverride;
+    }
+    await updatePage.mutateAsync({ id: page.id, ...payload });
+  }, [page, schema, updatePage, editLocale, themeOverride]);
+
+  const handleAutoSave = useCallback(async () => {
+    if (!page) return;
+    const payload: { content_schema?: Record<string, unknown>; theme_override?: Record<string, unknown> } = { content_schema: schema };
+    if (themeOverride !== null) {
+      payload.theme_override = themeOverride;
+    }
+    await pagesApi.autoSave(page.id, payload);
+  }, [page, schema, themeOverride]);
+
+  const { isAutoSaving, lastSavedAt } = useAutoSave(handleAutoSave, isDirty, 5000);
 
   const handlePublish = useCallback(async () => {
     await publishPage.mutateAsync(pageId);
@@ -169,7 +189,48 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
     await toggleVisibility.mutateAsync({ pageId, sectionId, device });
   }, [pageId, toggleVisibility]);
 
+  const handleCopySection = useCallback(() => {
+    const section = getSelectedSection();
+    if (section) copySection(section, pageId);
+  }, [getSelectedSection, copySection, pageId]);
+
+  const handlePasteSection = useCallback(async () => {
+    const sections = pasteSection();
+    if (sections && sections.length > 0) {
+      for (const s of sections) {
+        await addSection.mutateAsync({ pageId, sectionType: s.type });
+      }
+    }
+  }, [pasteSection, addSection, pageId]);
+
+  const handleDeleteSection = useCallback(() => {
+    if (selectedSectionId) {
+      handleRemoveSection(selectedSectionId);
+    }
+  }, [selectedSectionId, handleRemoveSection]);
+
+  const handleDuplicateSelected = useCallback(() => {
+    if (selectedSectionId) {
+      handleDuplicateSection(selectedSectionId);
+    }
+  }, [selectedSectionId, handleDuplicateSection]);
+
+  useKeyboardShortcuts({
+    undo,
+    redo,
+    save: handleSave,
+    copy: handleCopySection,
+    paste: handlePasteSection,
+    duplicate: handleDuplicateSelected,
+    delete: handleDeleteSection,
+    escape: () => selectSection(null),
+  });
+
   const selectedSection = getSelectedSection();
+
+  const sortedSectionsForLayers = useMemo(() => {
+    return sortedSections;
+  }, [sortedSections]);
 
   return (
     <div className="flex h-[calc(100vh-120px)] flex-col rounded-xl border border-gray-200 bg-white overflow-hidden">
@@ -188,18 +249,35 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
         onShowHistory={() => setShowHistory(!showHistory)}
         onLocaleChange={setEditLocale}
         isSaving={updatePage.isPending}
+        isAutoSaving={isAutoSaving}
+        lastSavedAt={lastSavedAt}
+        onThemeClick={() => setShowThemePicker(true)}
+        themeOverrideCount={themeOverride ? Object.keys(themeOverride).length : 0}
+        devicePreview={devicePreview}
+        onDeviceChange={setDevicePreview}
+        onToggleLayers={() => setShowLayers(!showLayers)}
+        showLayers={showLayers}
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Section Palette */}
+        {/* Left: Section Palette OR Layer Tree */}
         <div className="w-56 border-e border-gray-200 overflow-y-auto p-3">
-          <SectionPalette onAddSection={handleAddSection} sections={sortedSections} />
+          {showLayers ? (
+            <LayerTree
+              sections={sortedSectionsForLayers}
+              selectedSectionId={selectedSectionId}
+              onSelect={(id) => selectSection(id)}
+              onToggleVisibility={handleToggleVisibility}
+              device={devicePreview}
+            />
+          ) : (
+            <SectionPalette onAddSection={handleAddSection} sections={sortedSections} />
+          )}
         </div>
 
-        {/* Center: DnD Canvas */}
+        {/* Center: DnD Canvas with Device Frame */}
         <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
           <div className="mx-auto max-w-3xl">
-            {/* Undo/Redo Bar */}
             <div className="mb-4 flex items-center justify-end gap-2">
               <button onClick={undo} disabled={!canUndo} className="rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-50 disabled:opacity-30">
                 <Undo2 className="h-4 w-4" />
@@ -217,36 +295,38 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
                 </button>
               </div>
             ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext items={sortedSections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-                  <div className="space-y-2">
-                    <DropZone id="drop-zone-0" onAddSection={() => setShowTypePicker(true)} />
-                    {sortedSections.map((section, index) => (
-                      <div key={section.id}>
-                        <SortableSection
-                          section={section}
-                          isSelected={section.id === selectedSectionId}
-                          onSelect={() => selectSection(section.id)}
-                          onDuplicate={() => handleDuplicateSection(section.id)}
-                          onRemove={() => handleRemoveSection(section.id)}
-                          onToggleVisibility={(device) => handleToggleVisibility(section.id, device)}
-                        >
-                          <SectionRenderer section={section} />
-                        </SortableSection>
-                        <DropZone id={`drop-zone-${index + 1}`} onAddSection={() => setShowTypePicker(true)} />
-                      </div>
-                    ))}
-                  </div>
-                </SortableContext>
-                <DndDragOverlay>
-                  {activeDragType ? <DragOverlay type={activeDragType} /> : null}
-                </DndDragOverlay>
-              </DndContext>
+              <DeviceFrame device={devicePreview}>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext items={sortedSections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-2">
+                      <DropZone id="drop-zone-0" onAddSection={() => setShowTypePicker(true)} />
+                      {sortedSections.map((section, index) => (
+                        <div key={section.id}>
+                          <SortableSection
+                            section={section}
+                            isSelected={section.id === selectedSectionId}
+                            onSelect={() => selectSection(section.id)}
+                            onDuplicate={() => handleDuplicateSection(section.id)}
+                            onRemove={() => handleRemoveSection(section.id)}
+                            onToggleVisibility={(device) => handleToggleVisibility(section.id, device)}
+                          >
+                            <SectionRenderer section={section} />
+                          </SortableSection>
+                          <DropZone id={`drop-zone-${index + 1}`} onAddSection={() => setShowTypePicker(true)} />
+                        </div>
+                      ))}
+                    </div>
+                  </SortableContext>
+                  <DndDragOverlay>
+                    {activeDragType ? <DragOverlay type={activeDragType} /> : null}
+                  </DndDragOverlay>
+                </DndContext>
+              </DeviceFrame>
             )}
           </div>
         </div>
@@ -254,7 +334,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
         {/* Right: Inspector */}
         {selectedSection && !isPreviewMode && (
           <div className="w-80 border-s border-gray-200 overflow-y-auto p-4">
-            <SectionSettingsPanel
+            <EnhancedInspector
               section={selectedSection}
               onUpdate={(settings) => handleUpdateSection(selectedSection.id, settings)}
             />
@@ -274,6 +354,14 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
       {showHistory && (
         <VersionHistory pageId={pageId} onClose={() => setShowHistory(false)} />
+      )}
+
+      {showThemePicker && (
+        <ThemePicker
+          currentOverride={themeOverride}
+          onSelect={setThemeOverride}
+          onClose={() => setShowThemePicker(false)}
+        />
       )}
     </div>
   );
