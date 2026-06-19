@@ -47,7 +47,7 @@ import {
   User,
 } from "lucide-react";
 import { useState } from "react";
-import type { Customer, Address, Review, LoyaltyTransaction, SavedCart } from "@/shared/types";
+import type { Customer, Address, LoyaltyTransaction, SavedCart } from "@/shared/types";
 import { useTranslations } from "next-intl";
 
 type TabId = "overview" | "addresses" | "wishlist" | "reviews" | "loyalty" | "saved-carts";
@@ -129,13 +129,13 @@ export default function CustomerDetailPage() {
       </div>
 
       {activeTab === "overview" && (
-        <OverviewTab customer={customer} customerId={customerId} updateCustomer={updateCustomer} t={t} tc={tc} router={router} />
+        <OverviewTab customer={customer} customerId={customerId} updateCustomer={updateCustomer} t={t} tc={tc} />
       )}
       {activeTab === "addresses" && <AddressesTab customerId={customerId} storeId={customer.store} t={t} tc={tc} />}
-      {activeTab === "wishlist" && <WishlistTab customerId={customerId} t={t} tc={tc} />}
-      {activeTab === "reviews" && <ReviewsTab customerId={customerId} t={t} tc={tc} />}
+      {activeTab === "wishlist" && <WishlistTab customerId={customerId} t={t} />}
+      {activeTab === "reviews" && <ReviewsTab customerId={customerId} t={t} />}
       {activeTab === "loyalty" && <LoyaltyTab customer={customer} customerId={customerId} t={t} tc={tc} />}
-      {activeTab === "saved-carts" && <SavedCartsTab customerId={customerId} storeId={customer.store} t={t} tc={tc} />}
+      {activeTab === "saved-carts" && <SavedCartsTab customerId={customerId} t={t} />}
     </div>
   );
 }
@@ -150,14 +150,12 @@ function OverviewTab({
   updateCustomer,
   t,
   tc,
-  router,
 }: {
   customer: Customer;
   customerId: string;
   updateCustomer: ReturnType<typeof useUpdateCustomer>;
   t: ReturnType<typeof useTranslations>;
   tc: ReturnType<typeof useTranslations>;
-  router: ReturnType<typeof useRouter>;
 }) {
   const [firstName, setFirstName] = useState(customer.first_name);
   const [lastName, setLastName] = useState(customer.last_name);
@@ -367,11 +365,9 @@ function AddressesTab({
 function WishlistTab({
   customerId,
   t,
-  tc,
 }: {
   customerId: string;
   t: ReturnType<typeof useTranslations>;
-  tc: ReturnType<typeof useTranslations>;
 }) {
   const { data: items = [], isLoading } = useWishlist(customerId);
   const removeFromWishlist = useRemoveFromWishlist();
@@ -418,11 +414,9 @@ function WishlistTab({
 function ReviewsTab({
   customerId,
   t,
-  tc,
 }: {
   customerId: string;
   t: ReturnType<typeof useTranslations>;
-  tc: ReturnType<typeof useTranslations>;
 }) {
   const { data: reviews = [], isLoading } = useCustomerReviews(customerId);
   const approveReview = useApproveReview();
@@ -621,14 +615,10 @@ function LoyaltyTab({
 
 function SavedCartsTab({
   customerId,
-  storeId,
   t,
-  tc,
 }: {
   customerId: string;
-  storeId: string;
   t: ReturnType<typeof useTranslations>;
-  tc: ReturnType<typeof useTranslations>;
 }) {
   const { data: carts = [], isLoading } = useSavedCarts(customerId);
   const deleteSavedCart = useDeleteSavedCart();

@@ -78,9 +78,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
         )
         # Auto-create organization for the user
         org_name = f"{user.first_name or user.email}'s Organization"
+        base_slug = slugify(org_name) or f"user-{user.id}"
+        slug = base_slug
+        counter = 1
+        while Organization.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
         org = Organization.objects.create(
             name=org_name,
-            slug=slugify(org_name) or f"user-{user.id}",
+            slug=slug,
         )
         owner_role = Role.objects.filter(slug="owner", organization=None, is_system=True).first()
         if owner_role:
