@@ -14,6 +14,13 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# CSRF Trusted Origins (required for cross-origin POST requests like admin login)
+CSRF_TRUSTED_ORIGINS: list[str] = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="http://localhost:3000",
+    cast=Csv(),
+)
+
 # Enforce explicit ALLOWED_HOSTS — never allow wildcard in production
 _allowed_hosts = config(
     "DJANGO_ALLOWED_HOSTS", default="*", cast=lambda v: [s.strip() for s in v.split(",")]
@@ -27,8 +34,12 @@ if "*" in _allowed_hosts:
     )
 ALLOWED_HOSTS = _allowed_hosts
 
-# Use local filesystem for media storage (minimized infrastructure)
-STORAGES["default"]["BACKEND"] = "django.core.files.storage.FileSystemStorage"  # noqa: F405
+# Stricter rate limits for production
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["anon"] = "100/hour"  # noqa: F405
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["user"] = "1000/hour"  # noqa: F405
+
+# Use S3 storage in production
+STORAGES["default"]["BACKEND"] = "storages.backends.s3boto3.S3Boto3Storage"  # noqa: F405
 
 # Manifest static files for cache-busting
 STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"  # noqa: F405

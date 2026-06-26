@@ -1,6 +1,7 @@
 "use client";
 
 import { Sidebar } from "./sidebar";
+import { VerificationBanner } from "@/shared/components/verification-banner";
 import { useUIStore } from "@/stores";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
@@ -26,6 +27,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           sidebarOpen ? "md:ms-64" : "md:ms-16"
         )}
       >
+        <VerificationBanner />
         <div className="p-4 md:p-8">{children}</div>
       </main>
     </div>

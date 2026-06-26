@@ -67,11 +67,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <nav className="flex-1 space-y-1 px-3 py-4">
           {adminNav.map((item) => {
-            const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
+            const href = `/${locale}${item.href}`;
+            const isActive = pathname === href || (item.href !== "/admin" && pathname.startsWith(href));
             return (
               <Link
                 key={item.name}
-                href={item.href}
+                href={href}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   isActive

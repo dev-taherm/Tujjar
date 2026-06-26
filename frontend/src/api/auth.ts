@@ -3,14 +3,14 @@ import { apiClient, setTokens, clearTokens } from "./client";
 import type { AuthTokens, User } from "@/shared/types";
 
 export const authApi = {
-  login: async (email: string, password: string): Promise<{ user: User; tokens: AuthTokens; requires_2fa?: boolean; two_factor_session_token?: string }> => {
+  login: async (email: string, password: string): Promise<{ user: User; tokens: AuthTokens; requires_2fa?: boolean; two_factor_session_token?: string; requires_email_verification?: boolean }> => {
     const { data } = await apiClient.post("/auth/login/", { email, password });
     if (data.requires_2fa) {
       return { user: data.user, tokens: { access: "", refresh: "" }, requires_2fa: true, two_factor_session_token: data.two_factor_session_token };
     }
     const tokens = data.tokens || { access: data.access, refresh: data.refresh };
     setTokens(tokens.access, tokens.refresh);
-    return { user: data.user, tokens };
+    return { user: data.user, tokens, requires_email_verification: data.requires_email_verification };
   },
 
   register: async (payload: {

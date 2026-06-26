@@ -143,11 +143,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         cache.delete(cache_key)
         user = self.user
 
-        if not user.is_verified:
-            raise serializers.ValidationError(
-                {"detail": "Email not verified. Please check your inbox."}
-            )
-
         if user.two_factor_enabled:
             import secrets as _secrets
 
@@ -162,6 +157,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             }
 
         data["user"] = UserSerializer(user).data
+        data["requires_email_verification"] = not user.is_verified
         return data
 
     @classmethod

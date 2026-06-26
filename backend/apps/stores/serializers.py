@@ -245,7 +245,7 @@ class StoreWizardSerializer(serializers.Serializer):
     description = serializers.CharField(required=False, default="")
     template_id = serializers.UUIDField(required=False, allow_null=True)
     logo_id = serializers.UUIDField(required=False, allow_null=True)
-    custom_domain = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    custom_domain = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
     home_page = serializers.ChoiceField(
         choices=["/", "/shop", "/shop/blog"],
         default="/",
@@ -267,7 +267,7 @@ class StoreWizardSerializer(serializers.Serializer):
         return slug
 
     def validate_custom_domain(self, value):
-        if value and Store.objects.filter(custom_domain=value).exists():
+        if value and Store.unscoped.filter(custom_domain=value).exists():
             raise serializers.ValidationError("This domain is already in use.")
         return value
 

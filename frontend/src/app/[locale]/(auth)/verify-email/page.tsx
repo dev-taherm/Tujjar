@@ -1,9 +1,13 @@
 "use client";
 
-import { use, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
 import { authApi } from "@/api/queries";
 import { useTranslations, useLocale } from "next-intl";
 
@@ -13,18 +17,42 @@ export default function VerifyEmailPage() {
   const t = useTranslations("auth.verifyEmail");
   const token = searchParams.get("token");
 
-  const result = use(
-    useMemo(() => {
-      if (!token) return Promise.resolve({ ok: false, message: t("noToken") });
-      return authApi
-        .verifyEmail(token)
-        .then(() => ({ ok: true, message: t("success") }))
-        .catch(() => ({ ok: false, message: t("invalid") }));
-    }, [token, t])
+  const [status, setStatus] = useState<"verifying" | "success" | "error" | "no-token">(
+    token ? "verifying" : "no-token"
   );
+  const [message, setMessage] = useState(token ? "" : t("noToken"));
 
-  const status = result.ok ? ("success" as const) : ("error" as const);
-  const message = result.message;
+  useEffect(() => {
+    if (!token) return;
+    authApi
+      .verifyEmail(token)
+      .then(() => {
+        setStatus("success");
+        setMessage(t("success"));
+      })
+      .catch(() => {
+        setStatus("error");
+        setMessage(t("invalid"));
+      });
+  }, [token, t]);
+
+  const resendSchema = z.object({ email: z.string().email(t("emailInvalid") || "Invalid email") });
+  type ResendForm = z.infer<typeof resendSchema>;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ResendForm>({ resolver: zodResolver(resendSchema) });
+
+  const onResend = async (data: ResendForm) => {
+    try {
+      await authApi.resendVerification(data.email);
+      toast.success(t("resent") || "Verification email sent. Please check your inbox.");
+    } catch {
+      toast.error(t("resendFailed") || "Failed to send verification email.");
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -51,6 +79,28 @@ export default function VerifyEmailPage() {
             </Link>
           )}
         </CardContent>
+        {(status === "no-token" || status === "error") && (
+          <form onSubmit={handleSubmit(onResend)}>
+            <CardFooter className="flex flex-col gap-3">
+              <Input
+                label={t("email") || "Email"}
+                type="email"
+                placeholder={t("emailPlaceholder") || "you@example.com"}
+                error={errors.email?.message}
+                {...register("email")}
+              />
+              <Button type="submit" className="w-full" isLoading={isSubmitting}>
+                {t("resend") || "Resend Verification Email"}
+              </Button>
+              <Link
+                href={`/${locale}/login`}
+                className="text-sm text-primary-600 hover:underline"
+              >
+                {t("backToLogin") || "Back to Sign In"}
+              </Link>
+            </CardFooter>
+          </form>
+        )}
       </Card>
     </div>
   );

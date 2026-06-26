@@ -298,7 +298,7 @@ class StoreDomainViewSet(TenantViewSet):
                 if remaining:
                     store.custom_domain = remaining.domain
                 else:
-                    store.custom_domain = ""
+                    store.custom_domain = None
                 store.save(update_fields=["custom_domain", "updated_at"])
                 cache.delete(f"storefront:store:{store.slug}")
 

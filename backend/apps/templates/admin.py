@@ -24,6 +24,11 @@ class TemplateAdmin(admin.ModelAdmin):
     readonly_fields = ["created_at", "updated_at"]
     inlines = [TemplateVersionInline]
 
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None and obj.is_system:
+            return False
+        return super().has_delete_permission(request, obj)
+
 
 @admin.register(TemplateVersion)
 class TemplateVersionAdmin(admin.ModelAdmin):

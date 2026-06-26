@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd --system app && useradd --system --ingroup app app
+RUN (getent group app || groupadd --system app) && \
+    (id -u app >/dev/null 2>&1 || useradd -r -g app -d /app app)
 
 COPY pyproject.toml .
 RUN pip install --no-cache-dir -e ".[dev]"
@@ -39,7 +40,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd --system app && useradd --system --ingroup app app
+RUN (getent group app || groupadd --system app) && \
+    (id -u app >/dev/null 2>&1 || useradd -r -g app -d /app app)
 
 COPY pyproject.toml .
 RUN pip install --no-cache-dir . && rm -rf /root/.cache

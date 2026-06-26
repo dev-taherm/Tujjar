@@ -97,7 +97,13 @@
       "verifying": "Verifying your email...",
       "noToken": "No verification token provided.",
       "success": "Your email has been verified successfully.",
-      "invalid": "Invalid or expired verification link."
+      "invalid": "Invalid or expired verification link.",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "resend": "Resend Verification Email",
+      "resent": "Verification email sent. Please check your inbox.",
+      "resendFailed": "Failed to send verification email.",
+      "backToLogin": "Back to Sign In"
     },
     "resetPassword": {
       "title": "Reset Password",
@@ -108,7 +114,18 @@
       "checkEmail": "Check Your Email",
       "checkEmailDescription": "If an account exists with that email, we've sent a password reset link.",
       "emailInvalid": "Invalid email address",
-      "error": "Something went wrong. Please try again."
+      "error": "Something went wrong. Please try again.",
+      "confirmSubtitle": "Enter your new password below.",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "resetPassword": "Reset Password",
+      "resetSuccess": "Password Reset Successfully",
+      "resetSuccessDescription": "Your password has been reset. You can now sign in with your new password.",
+      "proceedToSignIn": "Proceed to Sign In",
+      "invalidToken": "Invalid or expired reset link.",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordsNoMatch": "Passwords do not match",
+      "backToLogin": "Back to Sign In"
     }
   },
   "dashboard": {
