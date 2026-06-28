@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { setTokens as setApiTokens, clearTokens as clearApiTokens } from "@/api/client";
+import { setCustomerTokens, clearCustomerTokens } from "@/api/customer-client";
 import type { CustomerProfile, CustomerAuthTokens } from "@/api/customer-auth";
 
 interface CustomerAuthState {
@@ -21,12 +21,12 @@ export const useCustomerAuthStore = create<CustomerAuthState>()(
       setCustomer: (customer) => set({ customer, isAuthenticated: !!customer }),
       setTokens: (tokens) => {
         if (tokens) {
-          setApiTokens(tokens.access, tokens.refresh, "customer");
+          setCustomerTokens(tokens.access, tokens.refresh);
         }
         set({ tokens });
       },
       logout: () => {
-        clearApiTokens();
+        clearCustomerTokens();
         set({
           customer: null,
           tokens: null,
@@ -43,7 +43,7 @@ export const useCustomerAuthStore = create<CustomerAuthState>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.tokens?.access && state?.tokens?.refresh) {
-          setApiTokens(state.tokens.access, state.tokens.refresh, "customer");
+          setCustomerTokens(state.tokens.access, state.tokens.refresh);
         }
       },
     },

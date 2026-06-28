@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { customerClient } from "./customer-client";
 
 export interface CustomerProfile {
   id: string;
@@ -35,7 +35,7 @@ export const customerAuthApi = {
       phone?: string;
     },
   ): Promise<CustomerAuthResponse> => {
-    const { data } = await apiClient.post(
+    const { data } = await customerClient.post(
       `/customers/auth/${storeSlug}/register/`,
       payload,
     );
@@ -46,7 +46,7 @@ export const customerAuthApi = {
     storeSlug: string,
     payload: { email: string; password: string },
   ): Promise<CustomerAuthResponse> => {
-    const { data } = await apiClient.post(
+    const { data } = await customerClient.post(
       `/customers/auth/${storeSlug}/login/`,
       payload,
     );
@@ -54,12 +54,12 @@ export const customerAuthApi = {
   },
 
   me: async (): Promise<CustomerProfile> => {
-    const { data } = await apiClient.get("/customers/auth/me/");
+    const { data } = await customerClient.get("/customers/auth/me/");
     return data;
   },
 
   logout: async (refreshToken?: string): Promise<void> => {
-    await apiClient.post("/customers/auth/logout/", {
+    await customerClient.post("/customers/auth/logout/", {
       refresh: refreshToken,
     });
   },

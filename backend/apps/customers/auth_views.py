@@ -30,7 +30,7 @@ class CustomerTokenAuthentication(BaseAuthentication):
             customer_id = validated.get("customer_id")
             if not customer_id:
                 return None
-            customer = Customer.objects.get(pk=customer_id)
+            customer = Customer.unscoped.get(pk=customer_id)
             return (customer, validated)
         except Exception:
             raise AuthenticationFailed("Invalid or expired token.")
@@ -98,6 +98,7 @@ def _customer_tokens(customer: Customer) -> dict:
     refresh = RefreshToken()
     refresh["customer_id"] = str(customer.id)
     refresh["store_id"] = str(customer.store_id)
+    refresh["org_id"] = str(customer.organization_id)
     refresh["email"] = customer.email
     return {
         "access": str(refresh.access_token),
@@ -116,7 +117,7 @@ class CustomerRegisterView(APIView):
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            customer = Customer.objects.create(
+            customer = Customer.unscoped.create(
                 organization=serializer.validated_data["organization"],
                 store=serializer.validated_data["store"],
                 email=serializer.validated_data["email"],
@@ -201,7 +202,7 @@ class CustomerTokenRefreshView(APIView):
                     {"detail": "Invalid token type."},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
-            customer = Customer.objects.get(pk=customer_id)
+            customer = Customer.unscoped.get(pk=customer_id)
             new_access = str(refresh.access_token)
             return Response(
                 {

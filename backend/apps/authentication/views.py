@@ -66,6 +66,9 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         tokens = RefreshToken.for_user(user)
+        membership = user.memberships.filter(is_accepted=True).select_related("organization").first()
+        if membership:
+            tokens["org_id"] = str(membership.organization.id)
         log_action(
             action="user.register",
             resource_type="user",

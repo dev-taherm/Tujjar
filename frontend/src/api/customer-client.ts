@@ -4,7 +4,7 @@ import type { ApiError } from "@/shared/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-export const apiClient = axios.create({
+export const customerClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
@@ -12,7 +12,7 @@ export const apiClient = axios.create({
   timeout: 30000,
 });
 
-// Token management — platform admin only
+// Token management — isolated from platform tokens
 let accessToken: string | null = null;
 let refreshToken: string | null = null;
 let isRefreshing = false;
@@ -32,38 +32,37 @@ function processQueue(error: unknown) {
   failedQueue = [];
 }
 
-export function setTokens(access: string, refresh: string) {
+export function setCustomerTokens(access: string, refresh: string) {
   accessToken = access;
   refreshToken = refresh;
   if (typeof window !== "undefined") {
-    localStorage.setItem("access_token", access);
-    localStorage.setItem("refresh_token", refresh);
+    localStorage.setItem("customer_access_token", access);
+    localStorage.setItem("customer_refresh_token", refresh);
   }
 }
 
-export function clearTokens() {
+export function clearCustomerTokens() {
   accessToken = null;
   refreshToken = null;
   if (typeof window !== "undefined") {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("tujjar-auth");
+    localStorage.removeItem("customer_access_token");
+    localStorage.removeItem("customer_refresh_token");
   }
 }
 
-export function loadTokens() {
+export function loadCustomerTokens() {
   if (typeof window !== "undefined") {
-    accessToken = localStorage.getItem("access_token");
-    refreshToken = localStorage.getItem("refresh_token");
+    accessToken = localStorage.getItem("customer_access_token");
+    refreshToken = localStorage.getItem("customer_refresh_token");
   }
   return { accessToken, refreshToken };
 }
 
-// Request interceptor - attach JWT
-apiClient.interceptors.request.use(
+// Request interceptor - attach customer JWT
+customerClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (!accessToken) {
-      loadTokens();
+      loadCustomerTokens();
     }
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -73,8 +72,8 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle token refresh with race condition protection
-apiClient.interceptors.response.use(
+// Response interceptor - handle token refresh
+customerClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiError>) => {
     const originalRequest = error.config;
@@ -83,36 +82,48 @@ apiClient.interceptors.response.use(
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(() => apiClient(originalRequest));
+        }).then(() => customerClient(originalRequest));
       }
 
       isRefreshing = true;
 
       if (!refreshToken) {
         isRefreshing = false;
-        clearTokens();
+        clearCustomerTokens();
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          const path = window.location.pathname;
+          const shopMatch = path.match(/\/shop\/([^/]+)/);
+          if (shopMatch) {
+            window.location.href = `/shop/${shopMatch[1]}/login`;
+          } else {
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(error);
       }
 
       try {
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+        const response = await axios.post(`${API_BASE_URL}/customers/auth/token/refresh/`, {
           refresh: refreshToken,
         });
-        const { access } = response.data;
-        setTokens(access, refreshToken);
+        const { access, refresh: newRefresh } = response.data;
+        setCustomerTokens(access, newRefresh || refreshToken);
         processQueue(null);
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${access}`;
         }
-        return apiClient(originalRequest);
+        return customerClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        clearTokens();
+        clearCustomerTokens();
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          const path = window.location.pathname;
+          const shopMatch = path.match(/\/shop\/([^/]+)/);
+          if (shopMatch) {
+            window.location.href = `/shop/${shopMatch[1]}/login`;
+          } else {
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(refreshError);
       } finally {
@@ -124,7 +135,7 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Suppress expected errors (404 on optional resources, 409 on duplicates)
+// Suppress expected errors
 const SUPPRESSED_PATTERNS = ["/search/index/search_suggestions/"];
 
 function shouldSuppress(error: AxiosError<ApiError>): boolean {
@@ -133,7 +144,7 @@ function shouldSuppress(error: AxiosError<ApiError>): boolean {
 }
 
 // Global error response interceptor — toast for unhandled API errors
-apiClient.interceptors.response.use(
+customerClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiError>) => {
     if (shouldSuppress(error)) {
@@ -145,7 +156,6 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Don't double-toast for 401 (already handled above) or when running in server
     if (status === 401 || typeof window === "undefined") {
       return Promise.reject(error);
     }
@@ -164,7 +174,6 @@ apiClient.interceptors.response.use(
             return String(err);
           })()
         : null);
-    // Sanitize: only show messages that look like user-facing text, not stack traces or paths
     const message = rawMessage && !rawMessage.includes("/") && !rawMessage.includes("\\") && rawMessage.length < 200
       ? rawMessage
       : null;
@@ -195,4 +204,4 @@ apiClient.interceptors.response.use(
   }
 );
 
-export default apiClient;
+export default customerClient;

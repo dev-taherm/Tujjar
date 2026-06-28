@@ -4,7 +4,7 @@ import { use, useState } from "react";
 import { Button } from "@/shared/ui";
 import { ShoppingBag, Plus, Minus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { apiClient } from "@/api/client";
+import { customerClient } from "@/api/customer-client";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from "next-intl";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,7 +35,7 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
     queryKey: ["cart", slug],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get("/orders/carts/", { params: { store: slug } });
+        const { data } = await customerClient.get("/orders/carts/", { params: { store: slug } });
         const results = data.results || data;
         return results.length > 0 ? results[0] : null;
       } catch {
@@ -48,9 +48,9 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
     if (!cart) return;
     try {
       if (quantity <= 0) {
-        await apiClient.post(`/orders/carts/${cart.id}/items/remove/`, { item_id: itemId });
+        await customerClient.post(`/orders/carts/${cart.id}/items/remove/`, { item_id: itemId });
       } else {
-        await apiClient.post(`/orders/carts/${cart.id}/items/update/`, {
+        await customerClient.post(`/orders/carts/${cart.id}/items/update/`, {
           item_id: itemId,
           quantity,
         });
