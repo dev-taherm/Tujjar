@@ -25,7 +25,7 @@ function detectLocale(request: NextRequest): string {
   return DEFAULT_LOCALE;
 }
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const host = request.headers.get("host") || "";
   const subdomain = getSubdomain(host);
   const pathname = request.nextUrl.pathname;

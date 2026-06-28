@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useLocale } from "next-intl";
 
 export default function NotFound() {
+  const locale = useLocale();
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="text-center">
@@ -10,7 +14,7 @@ export default function NotFound() {
           The page you are looking for does not exist or has been moved.
         </p>
         <Link
-          href="/"
+          href={`/${locale}`}
           className="mt-4 inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
         >
           Go Home
