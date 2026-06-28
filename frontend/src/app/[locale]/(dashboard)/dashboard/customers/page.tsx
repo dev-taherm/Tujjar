@@ -1,6 +1,6 @@
 "use client";
 
-import { CustomerList } from "@/features/orders/customer-list";
+import { CustomerList } from "@/features/customers/customer-list";
 import { useTranslations } from "next-intl";
 
 export default function CustomersPage() {

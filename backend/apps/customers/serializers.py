@@ -104,10 +104,7 @@ class WishlistItemSerializer(serializers.ModelSerializer):
         decimal_places=2,
         read_only=True,
     )
-    product_thumbnail_url = serializers.URLField(
-        source="product.thumbnail_url",
-        read_only=True,
-    )
+    product_thumbnail_url = serializers.SerializerMethodField()
 
     class Meta:
         model = WishlistItem
@@ -124,6 +121,10 @@ class WishlistItemSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "organization"]
+
+    def get_product_thumbnail_url(self, obj):
+        image = obj.product.primary_image
+        return image.file_url if image else ""
 
     def validate(self, attrs):
         if self.instance is None:
@@ -240,10 +241,7 @@ class LoyaltyAdjustSerializer(serializers.Serializer):
 
 class SavedCartItemSerializer(serializers.ModelSerializer):
     product_title = serializers.CharField(source="product.title", read_only=True)
-    product_thumbnail_url = serializers.URLField(
-        source="product.thumbnail_url",
-        read_only=True,
-    )
+    product_thumbnail_url = serializers.SerializerMethodField()
 
     class Meta:
         model = SavedCartItem
@@ -258,6 +256,10 @@ class SavedCartItemSerializer(serializers.ModelSerializer):
             "unit_price",
         ]
         read_only_fields = ["id"]
+
+    def get_product_thumbnail_url(self, obj):
+        image = obj.product.primary_image
+        return image.file_url if image else ""
 
 
 class SavedCartSerializer(serializers.ModelSerializer):

@@ -5,10 +5,11 @@ import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
-import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon } from "lucide-react";
+import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon, LogOut } from "lucide-react";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 import { generateColorShades } from "@/lib/color-palette";
 import { AnnouncementBar } from "@/features/store/announcement-bar";
+import { useCustomerAuthStore } from "@/stores/customer-auth";
 
 interface NavLink {
   label: string;
@@ -104,6 +105,8 @@ export default function StorefrontLayout({
   );
 
   const slug = subdomainSlug || pathSlug;
+
+  const { customer: customerAuth, isAuthenticated: isCustomerAuth } = useCustomerAuthStore();
 
   const { data } = useQuery<{ store: StorefrontStore }>({
     queryKey: ["storefront", slug, locale],
@@ -457,15 +460,42 @@ export default function StorefrontLayout({
                 0
               </span>
             </Link>
-            <Link
-              href={`/${locale}/login`}
-              className="rounded-lg p-2 transition-colors"
-              style={{ color: "var(--color-text-secondary)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              <User className="h-5 w-5" />
-            </Link>
+            {isCustomerAuth && customerAuth ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={slug ? (subdomainSlug ? `/${locale}/shop/account` : `/${locale}/shop/${slug}/account`) : "#"}
+                  className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
+                  style={{ color: "var(--color-text-secondary)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">{customerAuth.first_name || customerAuth.email}</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    useCustomerAuthStore.getState().logout();
+                    window.location.reload();
+                  }}
+                  className="rounded-lg p-2 transition-colors"
+                  style={{ color: "var(--color-text-secondary)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href={slug ? (subdomainSlug ? `/${locale}/shop/login` : `/${locale}/shop/${slug}/login`) : "#"}
+                className="rounded-lg p-2 transition-colors"
+                style={{ color: "var(--color-text-secondary)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <User className="h-5 w-5" />
+              </Link>
+            )}
           </div>
         </div>
       </header>

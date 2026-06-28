@@ -3,6 +3,13 @@ from __future__ import annotations
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from .auth_views import (
+    CustomerLoginView,
+    CustomerLogoutView,
+    CustomerMeView,
+    CustomerRegisterView,
+    CustomerTokenRefreshView,
+)
 from .views import (
     AddressViewSet,
     CustomerViewSet,
@@ -24,4 +31,10 @@ router.register("saved-carts", SavedCartViewSet, basename="saved-cart")
 
 urlpatterns = [
     path("", include(router.urls)),
+    # Storefront customer auth (public)
+    path("auth/<str:store_slug>/register/", CustomerRegisterView.as_view(), name="customer-register"),
+    path("auth/<str:store_slug>/login/", CustomerLoginView.as_view(), name="customer-login"),
+    path("auth/me/", CustomerMeView.as_view(), name="customer-me"),
+    path("auth/token/refresh/", CustomerTokenRefreshView.as_view(), name="customer-token-refresh"),
+    path("auth/logout/", CustomerLogoutView.as_view(), name="customer-logout"),
 ]

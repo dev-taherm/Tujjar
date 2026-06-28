@@ -13,8 +13,10 @@ export const apiClient = axios.create({
 });
 
 // Token management
+type TokenType = "platform" | "customer";
 let accessToken: string | null = null;
 let refreshToken: string | null = null;
+let tokenType: TokenType = "platform";
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value: unknown) => void;
@@ -32,21 +34,25 @@ function processQueue(error: unknown) {
   failedQueue = [];
 }
 
-export function setTokens(access: string, refresh: string) {
+export function setTokens(access: string, refresh: string, type: TokenType = "platform") {
   accessToken = access;
   refreshToken = refresh;
+  tokenType = type;
   if (typeof window !== "undefined") {
     localStorage.setItem("access_token", access);
     localStorage.setItem("refresh_token", refresh);
+    localStorage.setItem("token_type", type);
   }
 }
 
 export function clearTokens() {
   accessToken = null;
   refreshToken = null;
+  tokenType = "platform";
   if (typeof window !== "undefined") {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    localStorage.removeItem("token_type");
     localStorage.removeItem("tujjar-auth");
   }
 }
@@ -55,6 +61,7 @@ export function loadTokens() {
   if (typeof window !== "undefined") {
     accessToken = localStorage.getItem("access_token");
     refreshToken = localStorage.getItem("refresh_token");
+    tokenType = (localStorage.getItem("token_type") as TokenType) || "platform";
   }
   return { accessToken, refreshToken };
 }
@@ -92,17 +99,26 @@ apiClient.interceptors.response.use(
         isRefreshing = false;
         clearTokens();
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          const path = window.location.pathname;
+          const shopMatch = path.match(/\/shop\/([^/]+)/);
+          if (shopMatch) {
+            window.location.href = `/shop/${shopMatch[1]}/login`;
+          } else {
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(error);
       }
 
       try {
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+        const refreshUrl = tokenType === "customer"
+          ? `${API_BASE_URL}/customers/auth/token/refresh/`
+          : `${API_BASE_URL}/auth/refresh/`;
+        const response = await axios.post(refreshUrl, {
           refresh: refreshToken,
         });
-        const { access } = response.data;
-        setTokens(access, refreshToken);
+        const { access, refresh: newRefresh } = response.data;
+        setTokens(access, newRefresh || refreshToken, tokenType);
         processQueue(null);
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${access}`;
@@ -112,7 +128,13 @@ apiClient.interceptors.response.use(
         processQueue(refreshError);
         clearTokens();
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          const path = window.location.pathname;
+          const shopMatch = path.match(/\/shop\/([^/]+)/);
+          if (shopMatch) {
+            window.location.href = `/shop/${shopMatch[1]}/login`;
+          } else {
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(refreshError);
       } finally {
