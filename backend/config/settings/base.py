@@ -12,6 +12,8 @@ if not SECRET_KEY:
 
 DEBUG = config("DJANGO_DEBUG", default="False", cast=bool)
 
+EMAIL_VERIFICATION_REQUIRED = config("EMAIL_VERIFICATION_REQUIRED", default="True", cast=bool)
+
 ALLOWED_HOSTS: list[str] = config("DJANGO_ALLOWED_HOSTS", default="*", cast=Csv())
 
 INSTALLED_APPS = [

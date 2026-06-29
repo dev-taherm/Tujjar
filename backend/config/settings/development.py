@@ -43,5 +43,18 @@ MEDIA_URL = "/media/"
 # No password restrictions in local dev
 AUTH_PASSWORD_VALIDATORS = []
 
+# Disable email verification in local dev
+EMAIL_VERIFICATION_REQUIRED = False
+
 # Store domain for local dev (stores become {slug}.localhost)
 STORE_DOMAIN = "localhost"
+
+# Disable rate limiting in local dev
+REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {}
+
+AUTH_LOGIN_THROTTLE_RATE = "10000/hour"
+AUTH_REGISTER_THROTTLE_RATE = "10000/hour"
+AUTH_PASSWORD_RESET_THROTTLE_RATE = "10000/hour"
+AUTH_TOTP_THROTTLE_RATE = "10000/hour"
+AUTH_ANON_THROTTLE_RATE = "10000/hour"

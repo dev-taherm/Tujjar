@@ -21,6 +21,19 @@ let failedQueue: Array<{
   reject: (reason?: unknown) => void;
 }> = [];
 
+function extractStoreSlug(): string | null {
+  if (typeof window === "undefined") return null;
+  const hostname = window.location.hostname;
+  const storeDomain = process.env.NEXT_PUBLIC_STORE_DOMAIN || "localhost";
+  const baseDomain = storeDomain.startsWith(".") ? storeDomain.slice(1) : storeDomain;
+  if (hostname.endsWith(`.${baseDomain}`)) {
+    return hostname.slice(0, hostname.length - baseDomain.length - 1);
+  }
+  const path = window.location.pathname;
+  const shopMatch = path.match(/\/shop\/([^/]+)/);
+  return shopMatch ? shopMatch[1] : null;
+}
+
 function processQueue(error: unknown) {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -91,10 +104,9 @@ customerClient.interceptors.response.use(
         isRefreshing = false;
         clearCustomerTokens();
         if (typeof window !== "undefined") {
-          const path = window.location.pathname;
-          const shopMatch = path.match(/\/shop\/([^/]+)/);
-          if (shopMatch) {
-            window.location.href = `/shop/${shopMatch[1]}/login`;
+          const storeSlug = extractStoreSlug();
+          if (storeSlug) {
+            window.location.href = `/shop/${storeSlug}/login`;
           } else {
             window.location.href = "/login";
           }

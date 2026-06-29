@@ -63,19 +63,25 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         validated_data.pop("password_confirm")
         user = User.objects.create_user(**validated_data)
-        # Generate verification token and store hash with expiry
-        from .crypto import generate_verification_token
 
-        token, _ = generate_verification_token()
-        user.set_verification_token(token)
-        user.verification_token_expires = timezone.now() + timezone.timedelta(hours=24)
-        user.save(
-            update_fields=[
-                "verification_token",
-                "verification_token_hash",
-                "verification_token_expires",
-            ]
-        )
+        if settings.EMAIL_VERIFICATION_REQUIRED:
+            # Generate verification token and store hash with expiry
+            from .crypto import generate_verification_token
+
+            token, _ = generate_verification_token()
+            user.set_verification_token(token)
+            user.verification_token_expires = timezone.now() + timezone.timedelta(hours=24)
+            user.save(
+                update_fields=[
+                    "verification_token",
+                    "verification_token_hash",
+                    "verification_token_expires",
+                ]
+            )
+        else:
+            user.is_verified = True
+            user.save(update_fields=["is_verified"])
+
         # Auto-create organization for the user
         org_name = f"{user.first_name or user.email}'s Organization"
         base_slug = slugify(org_name) or f"user-{user.id}"
@@ -97,7 +103,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 is_accepted=True,
             )
         # Send verification email
-        self._send_verification_email(user, token)
+        if settings.EMAIL_VERIFICATION_REQUIRED:
+            self._send_verification_email(user, token)
         return user
 
     def _send_verification_email(self, user: User, token: str) -> None:
@@ -157,7 +164,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             }
 
         data["user"] = UserSerializer(user).data
-        data["requires_email_verification"] = not user.is_verified
+        data["requires_email_verification"] = (
+            settings.EMAIL_VERIFICATION_REQUIRED and not user.is_verified
+        )
         return data
 
     @classmethod
@@ -165,7 +174,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
         token["user_id"] = str(user.id)
         token["email"] = user.email
-        token["is_verified"] = user.is_verified
+        token["is_verified"] = settings.EMAIL_VERIFICATION_REQUIRED and user.is_verified
         token["is_staff"] = user.is_staff
         # Include org_id from user's first organization membership
         membership = (
