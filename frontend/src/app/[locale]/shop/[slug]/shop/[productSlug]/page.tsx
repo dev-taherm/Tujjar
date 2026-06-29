@@ -1,10 +1,14 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/shared/ui";
 import { ShoppingCart, Heart, Minus, Plus } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import { toast } from "sonner";
+import { useCustomerAuthStore } from "@/stores/customer-auth";
+import { useGuestCartStore } from "@/stores/guest-cart";
+import { customerClient } from "@/api/customer-client";
 
 interface StorefrontVariant {
   id: string;
@@ -23,6 +27,10 @@ export default function StorefrontProductDetailPage({
   const tCommon = useTranslations("common");
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated);
+  const addItem = useGuestCartStore((s) => s.addItem);
+  const queryClient = useQueryClient();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["storefront", slug, "product", productSlug, locale],
@@ -58,6 +66,40 @@ export default function StorefrontProductDetailPage({
       setMeta("og:title", product.seo_title || product.title || "");
     }
   }, [product]);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    setAdding(true);
+    try {
+      if (isAuthenticated) {
+        await customerClient.post("/orders/carts/add/", {
+          store: slug,
+          product: product.id,
+          variant: selectedVariant || undefined,
+          quantity,
+        });
+        queryClient.invalidateQueries({ queryKey: ["cart", slug] });
+      } else {
+        const variant = selectedVariant
+          ? product.variants?.find((v: StorefrontVariant) => v.id === selectedVariant)
+          : undefined;
+        addItem({
+          productId: product.id,
+          productTitle: product.title,
+          variantId: selectedVariant || undefined,
+          variantName: variant?.name,
+          unitPrice: variant?.price ?? parseFloat(product.price),
+          imageUrl: product.primary_image?.url,
+          quantity,
+        });
+      }
+      toast.success(t("addedToCart"));
+    } catch {
+      toast.error(t("addToCartFailed"));
+    } finally {
+      setAdding(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -146,7 +188,7 @@ export default function StorefrontProductDetailPage({
                 <Plus className="h-4 w-4" />
               </button>
             </div>
-            <Button className="flex-1" size="lg">
+            <Button className="flex-1" size="lg" onClick={handleAddToCart} isLoading={adding}>
               <ShoppingCart className="me-2 h-4 w-4" /> {t("addToCart")}
             </Button>
             <Button variant="outline" size="lg">

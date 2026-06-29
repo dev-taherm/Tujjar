@@ -129,10 +129,9 @@ customerClient.interceptors.response.use(
         processQueue(refreshError);
         clearCustomerTokens();
         if (typeof window !== "undefined") {
-          const path = window.location.pathname;
-          const shopMatch = path.match(/\/shop\/([^/]+)/);
-          if (shopMatch) {
-            window.location.href = `/shop/${shopMatch[1]}/login`;
+          const storeSlug = extractStoreSlug();
+          if (storeSlug) {
+            window.location.href = `/shop/${storeSlug}/login`;
           } else {
             window.location.href = "/login";
           }

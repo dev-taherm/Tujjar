@@ -51,10 +51,14 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
       setDomainError(null);
     },
     onError: (error: unknown) => {
-      const msg = (error && typeof error === "object" && "response" in error)
-        ? (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.error
-          || (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.detail
+      const data = (error && typeof error === "object" && "response" in error)
+        ? (error as { response?: { data?: Record<string, unknown> } })?.response?.data
         : undefined;
+      const msg =
+        (typeof data?.error === "object" && data.error !== null && "message" in data.error
+          ? String((data.error as { message: unknown }).message)
+          : typeof data?.error === "string" ? data.error : null)
+        || (typeof data?.detail === "string" ? data.detail : null);
       toast.error(msg || "Failed to add domain");
     },
   });
@@ -67,10 +71,14 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
       queryClient.invalidateQueries({ queryKey: ["stores", storeId, "domains"] });
     },
     onError: (error: unknown) => {
-      const msg = (error && typeof error === "object" && "response" in error)
-        ? (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.error
-          || (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.detail
+      const data = (error && typeof error === "object" && "response" in error)
+        ? (error as { response?: { data?: Record<string, unknown> } })?.response?.data
         : undefined;
+      const msg =
+        (typeof data?.error === "object" && data.error !== null && "message" in data.error
+          ? String((data.error as { message: unknown }).message)
+          : typeof data?.error === "string" ? data.error : null)
+        || (typeof data?.detail === "string" ? data.detail : null);
       toast.error(msg || "Failed to remove domain");
     },
   });
@@ -86,10 +94,14 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
       toast.success(t("primarySet") || "Primary domain updated");
     },
     onError: (error: unknown) => {
-      const msg = (error && typeof error === "object" && "response" in error)
-        ? (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.error
-          || (error as { response?: { data?: { error?: string; detail?: string } } })?.response?.data?.detail
+      const data = (error && typeof error === "object" && "response" in error)
+        ? (error as { response?: { data?: Record<string, unknown> } })?.response?.data
         : undefined;
+      const msg =
+        (typeof data?.error === "object" && data.error !== null && "message" in data.error
+          ? String((data.error as { message: unknown }).message)
+          : typeof data?.error === "string" ? data.error : null)
+        || (typeof data?.detail === "string" ? data.detail : null);
       toast.error(msg || "Failed to set primary domain");
     },
   });

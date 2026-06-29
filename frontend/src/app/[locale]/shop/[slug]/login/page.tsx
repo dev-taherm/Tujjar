@@ -11,6 +11,8 @@ import { useTranslations, useLocale } from "next-intl";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
 import { customerAuthApi } from "@/api/customer-auth";
 import { useCustomerAuthStore } from "@/stores/customer-auth";
+import { useGuestCartStore } from "@/stores/guest-cart";
+import { customerClient } from "@/api/customer-client";
 
 export default function StorefrontLoginPage() {
   const params = useParams();
@@ -44,6 +46,25 @@ export default function StorefrontLoginPage() {
       });
       useCustomerAuthStore.getState().setCustomer(result.customer);
       useCustomerAuthStore.getState().setTokens(result.tokens);
+
+      // Merge guest cart into backend cart
+      const guestItems = useGuestCartStore.getState().items;
+      if (guestItems.length > 0) {
+        for (const item of guestItems) {
+          try {
+            await customerClient.post("/orders/carts/add/", {
+              store: slug,
+              product: item.productId,
+              variant: item.variantId || undefined,
+              quantity: item.quantity,
+            });
+          } catch {
+            // Silently skip items that fail to merge
+          }
+        }
+        useGuestCartStore.getState().clearCart();
+      }
+
       toast.success(t("welcomeBack"));
       router.push(`/${locale}/shop/${slug}`);
     } catch (err: unknown) {

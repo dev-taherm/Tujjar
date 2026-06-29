@@ -146,12 +146,15 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
       onClose();
       onSuccess?.();
     } catch (error: unknown) {
+      const data = (error && typeof error === "object" && "response" in error)
+        ? (error as { response?: { data?: Record<string, unknown> } })?.response?.data
+        : undefined;
       const message =
-        (error && typeof error === "object" && "response" in error)
-          ? (error as { response?: { data?: { error?: string; detail?: string; slug?: string } } })?.response?.data?.error
-            || (error as { response?: { data?: { error?: string; detail?: string; slug?: string } } })?.response?.data?.detail
-            || (error as { response?: { data?: { error?: string; detail?: string; slug?: string } } })?.response?.data?.slug
-          : undefined;
+        (typeof data?.error === "object" && data.error !== null && "message" in data.error
+          ? String((data.error as { message: unknown }).message)
+          : typeof data?.error === "string" ? data.error : null)
+        || (typeof data?.detail === "string" ? data.detail : null)
+        || (typeof data?.slug === "string" ? data.slug : null);
       toast.error(message || "Failed to create store. Please try again.");
     }
   };

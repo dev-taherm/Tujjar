@@ -10,6 +10,7 @@ import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 import { generateColorShades } from "@/lib/color-palette";
 import { AnnouncementBar } from "@/features/store/announcement-bar";
 import { useCustomerAuthStore } from "@/stores/customer-auth";
+import { useGuestCartStore } from "@/stores/guest-cart";
 
 interface NavLink {
   label: string;
@@ -107,6 +108,8 @@ export default function StorefrontLayout({
   const slug = subdomainSlug || pathSlug;
 
   const { customer: customerAuth, isAuthenticated: isCustomerAuth } = useCustomerAuthStore();
+  const guestCartItems = useGuestCartStore((s) => s.items);
+  const guestCartCount = guestCartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const { data } = useQuery<{ store: StorefrontStore }>({
     queryKey: ["storefront", slug, locale],
@@ -457,7 +460,7 @@ export default function StorefrontLayout({
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white"
                 style={{ background: "var(--color-primary)" }}>
-                0
+                {isCustomerAuth ? 0 : guestCartCount}
               </span>
             </Link>
             {isCustomerAuth && customerAuth ? (

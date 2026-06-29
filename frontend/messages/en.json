@@ -240,13 +240,21 @@
       "sale": "Sale",
       "outOfStockBadge": "Out of Stock",
       "categoryHelp": "Organize your products into categories to help customers find what they need.",
-      "tabs": { "products": "Products", "categories": "Categories", "collections": "Collections" },
+      "tabs": {
+        "products": "Products",
+        "categories": "Categories",
+        "collections": "Collections"
+      },
       "title": "Products",
       "selectCategory": "Select a category to manage its products, or create a new category to organize your catalog.",
       "notFound": "Product not found.",
       "editProduct": "Edit Product",
       "createFirst": "Create your first product to start selling.",
-      "statusDraft": { "draft": "Draft", "active": "Active", "archived": "Archived" },
+      "statusDraft": {
+        "draft": "Draft",
+        "active": "Active",
+        "archived": "Archived"
+      },
       "bulkAdjustInventory": "Bulk Adjust Inventory",
       "bulkAdjustApply": "Apply to {{count}} products",
       "noInventoryMovements": "No inventory movements recorded yet.",
@@ -272,7 +280,6 @@
       "variantInventory": "Variant Inventory",
       "noneTopLevel": "None (Top Level)",
       "parentCategory": "Parent Category",
-      "active": "Active",
       "newCategory": "New Category"
     },
     "category": {
@@ -423,11 +430,10 @@
       },
       "categories": {
         "title": "Categories",
-        "description": "Organize your posts into categories.",
+        "description": "Description",
         "addCategory": "Add Category",
         "name": "Name",
         "slug": "Slug",
-        "description": "Description",
         "postCount": "Posts",
         "noCategories": "No categories yet",
         "createFirstCategory": "Create your first category to organize posts."
@@ -475,7 +481,7 @@
     },
     "customer": {
       "title": "Customers",
-      "description": "Manage your customer data",
+      "description": "Description",
       "searchPlaceholder": "Search customers...",
       "noCustomers": "No customers yet",
       "customerDataWillAppear": "Customer data will appear as orders are placed.",
@@ -531,7 +537,6 @@
       "type": "Type",
       "points": "Points",
       "balance": "Balance",
-      "description": "Description",
       "reason": "Reason",
       "noSavedCarts": "No saved carts",
       "noSavedCartsDesc": "This customer has no saved carts.",
@@ -591,7 +596,7 @@
       "saveChanges": "Save Changes",
       "applyToStore": "Apply to Store",
       "active": "Active",
-      "themeApplied": "Theme applied to store",
+      "themeApplied": "Theme applied",
       "sampleHeading": "Sample Heading",
       "previewDescription": "This is a preview of how your theme will look with the current settings.",
       "primaryButton": "Primary Button",
@@ -606,9 +611,6 @@
       "inherits": "Inherits",
       "activeTheme": "Active Theme",
       "noThemeDescription": "Install a theme from the marketplace to get started",
-      "themeApplied": "Theme applied",
-      "applyToStore": "Apply to Store",
-      "active": "Active",
       "darkModeColors": "Dark Mode Colors",
       "darkModeColorsDescription": "Optional overrides for dark mode. Leave empty to auto-generate from the light color.",
       "sectionPresets": "Section Presets",
@@ -737,8 +739,17 @@
         "metaDescription": "Meta Description",
         "keyFeatures": "Key Features",
         "emptyState": "Enter product details and click Generate to create AI-powered content.",
-        "types": { "physical": "Physical", "digital": "Digital", "service": "Service" },
-        "tones": { "professional": "Professional", "casual": "Casual", "luxury": "Luxury", "playful": "Playful" }
+        "types": {
+          "physical": "Physical",
+          "digital": "Digital",
+          "service": "Service"
+        },
+        "tones": {
+          "professional": "Professional",
+          "casual": "Casual",
+          "luxury": "Luxury",
+          "playful": "Playful"
+        }
       },
       "providers": {
         "title": "AI Providers",
@@ -966,7 +977,6 @@
       "export": "Export",
       "importTemplate": "Import Template",
       "templateManager": "Template Manager",
-      "createTemplate": "Create Template",
       "templateEditor": "Template Editor",
       "general": "General",
       "themeConfig": "Theme Config",
@@ -1122,8 +1132,8 @@
     "createFirstStore": "Create your first store to get started.",
     "createStore": "Create Store",
     "yourStores": "Your Stores",
-      "storeCount": "store",
-      "storeCountPlural": "stores",
+    "storeCount": "store",
+    "storeCountPlural": "stores",
     "storeName": "Store Name",
     "slug": "Slug (URL)",
     "slugPlaceholder": "my-store",
@@ -1265,7 +1275,9 @@
     "product": {
       "options": "Options",
       "addToCart": "Add to Cart",
-      "notFound": "Product not found"
+      "notFound": "Product not found",
+      "addedToCart": "Added to cart",
+      "addToCartFailed": "Failed to add to cart"
     },
     "cart": {
       "title": "Shopping Cart",
@@ -1277,7 +1289,9 @@
       "shipping": "Shipping",
       "calculatedAtCheckout": "Calculated at checkout",
       "total": "Total",
-      "updateFailed": "Failed to update cart"
+      "updateFailed": "Failed to update cart",
+      "guestCartNotice": "Sign in to save your cart and proceed to checkout.",
+      "signInToCheckout": "Sign in to checkout"
     },
     "collections": {
       "title": "Collections",

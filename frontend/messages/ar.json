@@ -240,13 +240,21 @@
       "sale": "تخفيض",
       "outOfStockBadge": "نفذ من المخزون",
       "categoryHelp": "نظّم منتجاتك في فئات لمساعدة الزبائن في العثور على ما يبحثون عنه.",
-      "tabs": { "products": "المنتجات", "categories": "الفئات", "collections": "المجموعات" },
+      "tabs": {
+        "products": "المنتجات",
+        "categories": "الفئات",
+        "collections": "المجموعات"
+      },
       "title": "المنتجات",
       "selectCategory": "اختر فئة لإدارة منتجاتها، أو أنشئ فئة جديدة لتنظيم كتالوجك.",
       "notFound": "المنتج غير موجود.",
       "editProduct": "تعديل المنتج",
       "createFirst": "أنشئ أول منتج لبدء البيع.",
-      "statusDraft": { "draft": "مسودة", "active": "نشط", "archived": "مؤرشف" },
+      "statusDraft": {
+        "draft": "مسودة",
+        "active": "نشط",
+        "archived": "مؤرشف"
+      },
       "bulkAdjustInventory": "تعديل المخزون بالجملة",
       "bulkAdjustApply": "تطبيق على {{count}} منتجات",
       "noInventoryMovements": "لم تُسجَّل حركات مخزون بعد.",
@@ -272,7 +280,6 @@
       "variantInventory": "مخزون المتغيرات",
       "noneTopLevel": "بدون (أعلى مستوى)",
       "parentCategory": "التصنيف الأب",
-      "active": "نشط",
       "newCategory": "تصنيف جديد"
     },
     "category": {
@@ -423,11 +430,10 @@
       },
       "categories": {
         "title": "التصنيفات",
-        "description": "تنظيم مقالاتك في تصنيفات.",
+        "description": "الوصف",
         "addCategory": "إضافة تصنيف",
         "name": "الاسم",
         "slug": "الرابط",
-        "description": "الوصف",
         "postCount": "المقالات",
         "noCategories": "لا توجد تصنيفات بعد",
         "createFirstCategory": "أنشئ أول تصنيف لتنظيم مقالاتك."
@@ -475,7 +481,7 @@
     },
     "customer": {
       "title": "العملاء",
-      "description": "إدارة بيانات عملائك",
+      "description": "الوصف",
       "searchPlaceholder": "بحث في العملاء...",
       "noCustomers": "لا يوجد عملاء بعد",
       "customerDataWillAppear": "ستظهر بيانات العملاء مع وضع الطلبات.",
@@ -531,7 +537,6 @@
       "type": "النوع",
       "points": "النقاط",
       "balance": "الرصيد",
-      "description": "الوصف",
       "reason": "السبب",
       "noSavedCarts": "لا توجد سلال محفوظة",
       "noSavedCartsDesc": "ليس لدى هذا العميل سلال محفوظة.",
@@ -591,7 +596,7 @@
       "saveChanges": "حفظ التغييرات",
       "applyToStore": "تطبيق على المتجر",
       "active": "نشط",
-      "themeApplied": "تم تطبيق السمة على المتجر",
+      "themeApplied": "تم تطبيق السمة",
       "sampleHeading": "عنوان تجريبي",
       "previewDescription": "هذه معاينة لكيفية ظهور سمتك بالإعدادات الحالية.",
       "primaryButton": "الزر الرئيسي",
@@ -606,9 +611,6 @@
       "inherits": "يرث من",
       "activeTheme": "السمة النشطة",
       "noThemeDescription": "قم بتثبيت سمة من سوق السمات للبدء",
-      "themeApplied": "تم تطبيق السمة",
-      "applyToStore": "تطبيق على المتجر",
-      "active": "نشط",
       "versionHistory": "سجل الإصدارات",
       "restoreVersion": "استعادة الإصدار",
       "restoreVersionConfirm": "هل أنت متأكد أنك تريد استعادة الإصدار {version}؟ سيتم حفظ الحالة الحالية كنقطة مرجعية أولاً.",
@@ -731,8 +733,17 @@
         "metaDescription": "الوصف الميتا",
         "keyFeatures": "الميزات الرئيسية",
         "emptyState": "أدخل تفاصيل المنتج واضغط توليد لإنشاء محتوى بالذكاء الاصطناعي.",
-        "types": { "physical": "مادي", "digital": "رقمي", "service": "خدمة" },
-        "tones": { "professional": "مهني", "casual": "غير رسمي", "luxury": "فاخر", "playful": "مرح" }
+        "types": {
+          "physical": "مادي",
+          "digital": "رقمي",
+          "service": "خدمة"
+        },
+        "tones": {
+          "professional": "مهني",
+          "casual": "غير رسمي",
+          "luxury": "فاخر",
+          "playful": "مرح"
+        }
       },
       "providers": {
         "title": "مزودو الذكاء الاصطناعي",
@@ -960,7 +971,6 @@
       "export": "تصدير",
       "importTemplate": "استيراد القالب",
       "templateManager": "مدير القوالب",
-      "createTemplate": "إنشاء قالب",
       "templateEditor": "محرر القالب",
       "general": "عام",
       "themeConfig": "إعدادات السمة",
@@ -1257,7 +1267,9 @@
     "product": {
       "options": "الخيارات",
       "addToCart": "أضف إلى السلة",
-      "notFound": "المنتج غير موجود"
+      "notFound": "المنتج غير موجود",
+      "addedToCart": "تمت الإضافة إلى السلة",
+      "addToCartFailed": "فشل الإضافة إلى السلة"
     },
     "cart": {
       "title": "سلة التسوق",
@@ -1269,7 +1281,9 @@
       "shipping": "الشحن",
       "calculatedAtCheckout": "يُحسب عند الدفع",
       "total": "الإجمالي",
-      "updateFailed": "فشل تحديث سلة التسوق"
+      "updateFailed": "فشل تحديث سلة التسوق",
+      "guestCartNotice": "سجّل الدخول لحفظ سلة التسوق والمتابعة إلى الدفع.",
+      "signInToCheckout": "سجّل الدخول للدفع"
     },
     "collections": {
       "title": "المجموعات",
