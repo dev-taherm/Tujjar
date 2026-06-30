@@ -94,14 +94,18 @@ class UserCreateSerializer(serializers.ModelSerializer):
             name=org_name,
             slug=slug,
         )
-        owner_role = Role.objects.filter(slug="owner", organization=None, is_system=True).first()
-        if owner_role:
-            OrganizationMembership.objects.create(
-                user=user,
-                organization=org,
-                role=owner_role,
-                is_accepted=True,
-            )
+        owner_role, _ = Role.objects.get_or_create(
+            slug="owner",
+            organization=None,
+            is_system=True,
+            defaults={"name": "Owner"},
+        )
+        OrganizationMembership.objects.create(
+            user=user,
+            organization=org,
+            role=owner_role,
+            is_accepted=True,
+        )
         # Send verification email
         if settings.EMAIL_VERIFICATION_REQUIRED:
             self._send_verification_email(user, token)
