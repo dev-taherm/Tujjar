@@ -1,12 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useHistory } from "../use-history";
-import type { PageSchema } from "@/shared/types";
+import type { PageSchema, Section } from "@/shared/types";
 
 function makeSchema(overrides: Partial<PageSchema> = {}): PageSchema {
   return {
     sections: overrides.sections || [],
   };
+}
+
+function makeSection(id: string, type: string): Section {
+  return { id, type } as Section;
 }
 
 describe("useHistory", () => {
@@ -20,10 +24,10 @@ describe("useHistory", () => {
   });
 
   it("set updates the present schema", () => {
-    const initial = makeSchema({ sections: [{ id: "s1", type: "hero" } as any] });
+    const initial = makeSchema({ sections: [makeSection("s1", "hero")] });
     const { result } = renderHook(() => useHistory(initial));
 
-    const updated = makeSchema({ sections: [{ id: "s2", type: "features" } as any] });
+    const updated = makeSchema({ sections: [makeSection("s2", "features")] });
     act(() => {
       result.current.set(updated);
     });
@@ -33,10 +37,10 @@ describe("useHistory", () => {
   });
 
   it("undo reverts to previous schema", () => {
-    const initial = makeSchema({ sections: [{ id: "s1" } as any] });
+    const initial = makeSchema({ sections: [makeSection("s1", "hero")] });
     const { result } = renderHook(() => useHistory(initial));
 
-    const updated = makeSchema({ sections: [{ id: "s2" } as any] });
+    const updated = makeSchema({ sections: [makeSection("s2", "features")] });
     act(() => {
       result.current.set(updated);
     });
@@ -51,10 +55,10 @@ describe("useHistory", () => {
   });
 
   it("redo moves forward to undone schema", () => {
-    const initial = makeSchema({ sections: [{ id: "s1" } as any] });
+    const initial = makeSchema({ sections: [makeSection("s1", "hero")] });
     const { result } = renderHook(() => useHistory(initial));
 
-    const updated = makeSchema({ sections: [{ id: "s2" } as any] });
+    const updated = makeSchema({ sections: [makeSection("s2", "features")] });
     act(() => {
       result.current.set(updated);
     });
@@ -94,11 +98,11 @@ describe("useHistory", () => {
   });
 
   it("set clears future history", () => {
-    const initial = makeSchema({ sections: [{ id: "s1" } as any] });
+    const initial = makeSchema({ sections: [makeSection("s1", "hero")] });
     const { result } = renderHook(() => useHistory(initial));
 
-    const v2 = makeSchema({ sections: [{ id: "s2" } as any] });
-    const v3 = makeSchema({ sections: [{ id: "s3" } as any] });
+    const v2 = makeSchema({ sections: [makeSection("s2", "features")] });
+    const v3 = makeSchema({ sections: [makeSection("s3", "faq")] });
 
     act(() => {
       result.current.set(v2);
@@ -117,9 +121,9 @@ describe("useHistory", () => {
   });
 
   it("supports multiple undo/redo steps", () => {
-    const initial = makeSchema({ sections: [{ id: "s1" } as any] });
-    const v2 = makeSchema({ sections: [{ id: "s2" } as any] });
-    const v3 = makeSchema({ sections: [{ id: "s3" } as any] });
+    const initial = makeSchema({ sections: [makeSection("s1", "hero")] });
+    const v2 = makeSchema({ sections: [makeSection("s2", "features")] });
+    const v3 = makeSchema({ sections: [makeSection("s3", "faq")] });
 
     const { result } = renderHook(() => useHistory(initial));
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useTemplate, useUpdateTemplate } from "@/api/queries";
@@ -14,7 +14,7 @@ import { ThemeTypographyEditor } from "@/features/themes/theme-typography-editor
 import { Button, Skeleton, Input, Label, Textarea } from "@/shared/ui";
 import { Save, ArrowLeft, History, Eye } from "lucide-react";
 import { toast } from "sonner";
-import type { Template, TemplateVersionDetail } from "@/api/templates";
+import type { Template } from "@/api/templates";
 import type { ThemeConfig } from "@/shared/types";
 
 type EditorTab = "general" | "theme" | "pages" | "navigation" | "footer" | "seo" | "demo";
@@ -52,25 +52,23 @@ export default function TemplateEditorPage() {
   const [demoContent, setDemoContent] = useState<Template["demo_content"]>({ collections: [], categories: [] });
   const [initialized, setInitialized] = useState(false);
 
-  useEffect(() => {
-    if (template && !initialized) {
-      setGeneralData({
-        name: template.name,
-        slug: template.slug,
-        description: template.description,
-        category: template.category,
-        author: template.author,
-        tags: template.tags,
-      });
-      setConfig(template.config as Record<string, unknown>);
-      setPages(template.pages);
-      setNavigation(template.navigation);
-      setFooter(template.footer);
-      setSeoDefaults(template.seo_defaults as Record<string, string>);
-      setDemoContent(template.demo_content);
-      setInitialized(true);
-    }
-  }, [template, initialized]);
+  if (template && !initialized) {
+    setInitialized(true);
+    setGeneralData({
+      name: template.name,
+      slug: template.slug,
+      description: template.description,
+      category: template.category,
+      author: template.author,
+      tags: template.tags,
+    });
+    setConfig(template.config as Record<string, unknown>);
+    setPages(template.pages);
+    setNavigation(template.navigation);
+    setFooter(template.footer);
+    setSeoDefaults(template.seo_defaults as Record<string, string>);
+    setDemoContent(template.demo_content);
+  }
 
   const handleSave = async () => {
     if (!template) return;

@@ -106,7 +106,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
     if (!page?.store || !stores) return undefined;
     const store = stores.find((s: { id: string; slug: string }) => s.id === page.store);
     return store?.slug;
-  }, [page?.store, stores]);
+  }, [page, stores]);
 
   const sortedSections = useMemo(() => {
     return schema.sections || [];
@@ -194,7 +194,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
     if (!storeSlug || !page?.slug) return;
     const url = `/shop/${storeSlug}/${page.slug}/?preview=true`;
     window.open(url, "_blank");
-  }, [storeSlug, page?.slug]);
+  }, [storeSlug, page]);
 
   const handleSave = useCallback(async () => {
     if (!page) return;

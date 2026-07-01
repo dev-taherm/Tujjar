@@ -213,7 +213,7 @@ describe("toggleSectionVisibility", () => {
   });
 
   it("defaults to true when visibility is undefined", () => {
-    const section = makeSection({ id: "s1", visibility: undefined as any });
+    const section = makeSection({ id: "s1", visibility: undefined as unknown as Section["visibility"] });
     const result = toggleSectionVisibility([section], "s1", "desktop");
     expect(result[0].visibility.desktop).toBe(false);
   });

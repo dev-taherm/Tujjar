@@ -8,8 +8,8 @@ import { SectionBuilder } from "@/features/pages/section-builder";
 import { DndPageBuilder } from "@/builder/dnd/dnd-page-builder";
 import { LightEditor } from "@/features/pages/light-editor";
 import type { Page } from "@/shared/types";
-import { useState, useEffect } from "react";
-import { LayoutTemplate, MousePointerClick, Zap, PenTool } from "lucide-react";
+import { useState } from "react";
+import { LayoutTemplate, MousePointerClick, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 type BuilderMode = "light" | "dnd" | "section";
@@ -29,11 +29,7 @@ export default function PageDetailPage() {
   const t = useTranslations("dashboard.pages");
   const params = useParams();
   const pageId = params.id as string;
-  const [builderMode, setBuilderMode] = useState<BuilderMode>("light");
-
-  useEffect(() => {
-    setBuilderMode(getStoredMode());
-  }, []);
+  const [builderMode, setBuilderMode] = useState<BuilderMode>(getStoredMode);
 
   const handleModeChange = (mode: BuilderMode) => {
     setBuilderMode(mode);

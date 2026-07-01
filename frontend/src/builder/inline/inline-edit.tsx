@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface InlineEditProps {
   value: string;
@@ -14,11 +14,15 @@ interface InlineEditProps {
 export function InlineEdit({ value, onChange, tag: Tag = "p", className = "", placeholder = "Click to edit...", isEditing = false }: InlineEditProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [localValue, setLocalValue] = useState(value);
+  const [prevPropValue, setPrevPropValue] = useState(value);
   const ref = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
+  if (prevPropValue !== value) {
+    setPrevPropValue(value);
+    if (!isFocused) {
+      setLocalValue(value);
+    }
+  }
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
@@ -50,7 +54,7 @@ export function InlineEdit({ value, onChange, tag: Tag = "p", className = "", pl
 
   return (
     <Tag
-      ref={ref as any}
+      ref={ref as React.Ref<HTMLHeadingElement>}
       contentEditable
       suppressContentEditableWarning
       className={`${className} cursor-text outline-none rounded px-1 -mx-1 transition-colors ${
