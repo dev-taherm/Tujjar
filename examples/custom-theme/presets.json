@@ -1,0 +1,83 @@
+{
+  "presets": [
+    {
+      "name": "Ocean Breeze",
+      "config": {
+        "colors": {
+          "primary": "#0ea5e9",
+          "secondary": "#06b6d4",
+          "accent": "#8b5cf6",
+          "background": "#f0f9ff",
+          "surface": "#ffffff",
+          "text": "#0c4a6e",
+          "textSecondary": "#0369a1",
+          "border": "#bae6fd"
+        },
+        "typography": {
+          "headingFont": "Poppins",
+          "bodyFont": "Inter"
+        }
+      }
+    },
+    {
+      "name": "Forest",
+      "config": {
+        "colors": {
+          "primary": "#15803d",
+          "secondary": "#166534",
+          "accent": "#65a30d",
+          "background": "#f0fdf4",
+          "surface": "#ffffff",
+          "text": "#14532d",
+          "textSecondary": "#166534",
+          "border": "#bbf7d0"
+        },
+        "typography": {
+          "headingFont": "Merriweather",
+          "bodyFont": "Source Sans 3"
+        }
+      }
+    },
+    {
+      "name": "Rose Gold",
+      "config": {
+        "colors": {
+          "primary": "#be185d",
+          "secondary": "#9d174d",
+          "accent": "#ec4899",
+          "background": "#fdf2f8",
+          "surface": "#ffffff",
+          "text": "#831843",
+          "textSecondary": "#9d174d",
+          "border": "#fbcfe8"
+        },
+        "typography": {
+          "headingFont": "Playfair Display",
+          "bodyFont": "Lato"
+        }
+      }
+    },
+    {
+      "name": "Midnight",
+      "config": {
+        "colors": {
+          "primary": "#6366f1",
+          "secondary": "#8b5cf6",
+          "accent": "#a78bfa",
+          "background": "#0f172a",
+          "surface": "#1e293b",
+          "text": "#f1f5f9",
+          "textSecondary": "#94a3b8",
+          "border": "#334155"
+        },
+        "typography": {
+          "headingFont": "Inter",
+          "bodyFont": "Inter"
+        },
+        "darkMode": {
+          "default": true
+        }
+      }
+    }
+  ]
+}

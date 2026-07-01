@@ -1,0 +1,83 @@
+{
+  "sections": [
+    {
+      "type": "hero",
+      "settings": {
+        "title": "Welcome to Our Store",
+        "subtitle": "Discover amazing products at great prices",
+        "primaryButtonText": "Shop Now",
+        "primaryButtonLink": "/products",
+        "secondaryButtonText": "Learn More",
+        "secondaryButtonLink": "/about",
+        "backgroundImage": "",
+        "textAlign": "center",
+        "overlayOpacity": 40
+      },
+      "visibility": {
+        "desktop": true,
+        "tablet": true,
+        "mobile": true
+      }
+    },
+    {
+      "type": "product-grid",
+      "settings": {
+        "title": "Featured Products",
+        "layout": "grid",
+        "columns": 4,
+        "showPrices": true,
+        "showRatings": true,
+        "limit": 8
+      },
+      "visibility": {
+        "desktop": true,
+        "tablet": true,
+        "mobile": true
+      }
+    },
+    {
+      "type": "banner",
+      "settings": {
+        "title": "Summer Sale - Up to 50% Off",
+        "subtitle": "Limited time offer",
+        "buttonText": "Shop Sale",
+        "buttonLink": "/sale",
+        "backgroundImage": "",
+        "textAlign": "center"
+      },
+      "visibility": {
+        "desktop": true,
+        "tablet": true,
+        "mobile": true
+      }
+    },
+    {
+      "type": "testimonials",
+      "settings": {
+        "title": "What Our Customers Say",
+        "layout": "carousel",
+        "showRatings": true,
+        "autoplay": true
+      },
+      "visibility": {
+        "desktop": true,
+        "tablet": true,
+        "mobile": true
+      }
+    },
+    {
+      "type": "newsletter",
+      "settings": {
+        "title": "Stay in the Loop",
+        "description": "Subscribe to our newsletter for exclusive deals and updates",
+        "buttonText": "Subscribe",
+        "placeholderText": "Enter your email"
+      },
+      "visibility": {
+        "desktop": true,
+        "tablet": true,
+        "mobile": true
+      }
+    }
+  ]
+}
