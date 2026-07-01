@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import logging
 from datetime import timedelta
 
@@ -23,7 +24,7 @@ def aggregate_daily_stats(self, date_str: str | None = None):
         target_date = (timezone.now() - timedelta(days=1)).date()
 
     day_start = timezone.datetime.combine(target_date, timezone.datetime.min.time()).replace(
-        tzinfo=timezone.utc
+        tzinfo=datetime.timezone.utc
     )
     day_end = day_start + timedelta(days=1)
 

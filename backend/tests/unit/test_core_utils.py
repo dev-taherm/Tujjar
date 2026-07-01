@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock
 
+import pytest
 from django.test import TestCase
 
 from apps.core.utils import (
@@ -14,13 +15,24 @@ from apps.core.utils import (
 )
 
 
-class TestSanitizeHtml(TestCase):
+class TestSanitizeHtmlBasic(TestCase):
     def test_none_returns_empty(self):
         assert sanitize_html(None) == ""
 
     def test_empty_string(self):
         assert sanitize_html("") == ""
 
+
+try:
+    import bleach  # noqa: F401
+
+    has_bleach = True
+except ImportError:
+    has_bleach = False
+
+
+@pytest.mark.skipif(not has_bleach, reason="bleach not installed")
+class TestSanitizeHtml(TestCase):
     def test_allowed_tags_pass_through(self):
         result = sanitize_html("<p>Hello <strong>world</strong></p>")
         assert "<p>" in result

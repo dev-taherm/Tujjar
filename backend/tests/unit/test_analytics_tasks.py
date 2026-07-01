@@ -1,4 +1,5 @@
 from datetime import timedelta
+from datetime import timezone as dt_timezone
 
 from django.test import TestCase
 from django.utils import timezone
@@ -23,7 +24,7 @@ class TestAggregateDailyStats(TestCase):
         self.date_str = str(self.target_date)
         self.day_start = timezone.datetime.combine(
             self.target_date, timezone.datetime.min.time()
-        ).replace(tzinfo=timezone.utc)
+        ).replace(tzinfo=dt_timezone.utc)
 
     def _create_event(self, **kwargs):
         event = Event.objects.create(
