@@ -1,0 +1,89 @@
+{
+  "name": "Sunset Glow",
+  "slug": "sunset-glow",
+  "config": {
+    "colors": {
+      "primary": "#ea580c",
+      "secondary": "#dc2626",
+      "accent": "#f59e0b",
+      "background": "#fffbeb",
+      "surface": "#ffffff",
+      "text": "#1c1917",
+      "textSecondary": "#78716c",
+      "border": "#e7e5e4",
+      "error": "#dc2626",
+      "success": "#16a34a",
+      "warning": "#f59e0b",
+      "primaryDark": "#fb923c",
+      "secondaryDark": "#f87171",
+      "accentDark": "#fbbf24",
+      "backgroundDark": "#1c1917",
+      "surfaceDark": "#292524",
+      "textDark": "#fafaf9",
+      "textSecondaryDark": "#a8a29e",
+      "borderDark": "#44403c"
+    },
+    "typography": {
+      "headingFont": "Playfair Display",
+      "bodyFont": "Inter",
+      "baseFontSize": 16,
+      "scale": 1.25,
+      "lineHeight": 1.6
+    },
+    "spacing": {
+      "sectionPaddingY": 80,
+      "sectionPaddingX": 24,
+      "containerMaxWidth": 1200,
+      "gridGap": 24
+    },
+    "borderRadius": {
+      "small": 6,
+      "medium": 12,
+      "large": 20,
+      "full": 9999
+    },
+    "animations": {
+      "enabled": true,
+      "duration": "normal",
+      "easing": "cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    "darkMode": {
+      "enabled": true,
+      "default": false,
+      "toggle": true
+    }
+  },
+  "category": "fashion",
+  "presets": [
+    {
+      "name": "Dark",
+      "config": {
+        "colors": {
+          "background": "#1c1917",
+          "surface": "#292524",
+          "text": "#fafaf9",
+          "textSecondary": "#a8a29e",
+          "border": "#44403c",
+          "primary": "#fb923c",
+          "secondary": "#f87171",
+          "accent": "#fbbf24"
+        }
+      }
+    },
+    {
+      "name": "Light",
+      "config": {
+        "colors": {
+          "background": "#fffbeb",
+          "surface": "#ffffff",
+          "text": "#1c1917",
+          "textSecondary": "#78716c",
+          "border": "#e7e5e4",
+          "primary": "#ea580c",
+          "secondary": "#dc2626",
+          "accent": "#f59e0b"
+        }
+      }
+    }
+  ]
+}
