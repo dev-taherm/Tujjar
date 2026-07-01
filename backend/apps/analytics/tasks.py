@@ -72,7 +72,7 @@ def aggregate_daily_stats(self, date_str: str | None = None):
                 "total_revenue": order_stats["revenue"] or 0,
                 "total_orders": order_stats["orders_count"] or 0,
                 "total_visitors": visitors,
-                "page_views": events.filter(event_type="page_view").count(),
+                "total_page_views": events.filter(event_type="page_view").count(),
                 "total_products_sold": sum(
                     items["count"]
                     for items in orders.values("items__product_id").annotate(count=Count("id"))

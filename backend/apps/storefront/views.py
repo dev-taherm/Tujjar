@@ -223,7 +223,7 @@ class StorefrontProductListView(generics.ListAPIView):
         if category:
             qs = qs.filter(categories__slug=category)
         if collection:
-            qs = qs.filter(collections__slug=collection)
+            qs = qs.filter(collection_set__slug=collection)
         if search:
             qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
 
