@@ -79,7 +79,16 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductImage
-        fields = ["id", "media_asset", "url", "alt_text", "position", "is_primary", "file_url", "created_at"]
+        fields = [
+            "id",
+            "media_asset",
+            "url",
+            "alt_text",
+            "position",
+            "is_primary",
+            "file_url",
+            "created_at",
+        ]
         read_only_fields = ["id", "created_at", "file_url"]
 
     def get_file_url(self, obj) -> str:

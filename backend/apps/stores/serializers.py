@@ -245,7 +245,9 @@ class StoreWizardSerializer(serializers.Serializer):
     description = serializers.CharField(required=False, default="")
     template_id = serializers.UUIDField(required=False, allow_null=True)
     logo_id = serializers.UUIDField(required=False, allow_null=True)
-    custom_domain = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+    custom_domain = serializers.CharField(
+        max_length=255, required=False, allow_blank=True, allow_null=True
+    )
     home_page = serializers.ChoiceField(
         choices=["/", "/shop", "/shop/blog"],
         default="/",

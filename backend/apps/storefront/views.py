@@ -312,6 +312,7 @@ class StorefrontCategoryListView(generics.ListAPIView):
         cached = cache.get(cache_key)
         if cached is not None:
             from rest_framework.response import Response as DRFResponse
+
             return DRFResponse(cached)
         response = super().list(request, *args, **kwargs)
         cache.set(cache_key, response.data, 60)
@@ -335,6 +336,7 @@ class StorefrontCollectionListView(generics.ListAPIView):
         cached = cache.get(cache_key)
         if cached is not None:
             from rest_framework.response import Response as DRFResponse
+
             return DRFResponse(cached)
         response = super().list(request, *args, **kwargs)
         cache.set(cache_key, response.data, 60)

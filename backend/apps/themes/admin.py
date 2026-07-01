@@ -41,4 +41,13 @@ class ThemeVersionAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ["theme", "version", "note", "created_by", "created_at"]
     list_filter = ["theme"]
     search_fields = ["version", "note"]
-    readonly_fields = ["theme", "version", "config", "sections_schema", "assets", "note", "created_by", "created_at"]
+    readonly_fields = [
+        "theme",
+        "version",
+        "config",
+        "sections_schema",
+        "assets",
+        "note",
+        "created_by",
+        "created_at",
+    ]

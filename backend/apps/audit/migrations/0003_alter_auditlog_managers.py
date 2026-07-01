@@ -5,16 +5,15 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('audit', '0002_initial'),
+        ("audit", "0002_initial"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='auditlog',
+            name="auditlog",
             managers=[
-                ('unscoped', django.db.models.manager.Manager()),
+                ("unscoped", django.db.models.manager.Manager()),
             ],
         ),
     ]

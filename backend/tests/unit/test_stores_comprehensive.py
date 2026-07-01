@@ -371,7 +371,7 @@ class TestStoreDomains:
         response = api_client.delete(f"/api/v1/stores/{store.id}/domains/{domain.id}/")
         assert response.status_code == status.HTTP_204_NO_CONTENT
         store.refresh_from_db()
-        assert store.custom_domain == ""
+        assert store.custom_domain is None
 
     def test_set_primary_domain(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("domain-primary@example.com")

@@ -42,9 +42,7 @@ class TenantMiddleware(MiddlewareMixin):
                     if org_active is None:
                         from apps.organizations.models import Organization
 
-                        org_active = Organization.objects.filter(
-                            id=org_id, is_active=True
-                        ).exists()
+                        org_active = Organization.objects.filter(id=org_id, is_active=True).exists()
                         cache.set(cache_key, org_active, ORG_CACHE_TTL)
                     request.org_id = org_id if org_active else None
                 set_current_org_id(request.org_id)

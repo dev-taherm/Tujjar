@@ -237,7 +237,9 @@ class ProductOptionValue(UUIDModel, TimeStampedModel):
 
     option = models.ForeignKey(ProductOption, on_delete=models.CASCADE, related_name="values")
     value = models.CharField(max_length=100)
-    swatch = models.CharField(max_length=7, blank=True, default="", help_text="Hex color, e.g. #FF0000")
+    swatch = models.CharField(
+        max_length=7, blank=True, default="", help_text="Hex color, e.g. #FF0000"
+    )
     sort_order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -322,7 +324,9 @@ class InventoryMovement(UUIDModel, TimeStampedModel):
         ("return", "Return"),
     ]
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="inventory_movements")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="inventory_movements"
+    )
     variant = models.ForeignKey(
         ProductVariant,
         on_delete=models.CASCADE,
@@ -332,7 +336,9 @@ class InventoryMovement(UUIDModel, TimeStampedModel):
     )
     adjustment = models.IntegerField(help_text="Positive for increase, negative for decrease")
     reason = models.CharField(max_length=20, choices=REASON_CHOICES, default="adjustment")
-    reference = models.CharField(max_length=255, blank=True, default="", help_text="Order ID or reference note")
+    reference = models.CharField(
+        max_length=255, blank=True, default="", help_text="Order ID or reference note"
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

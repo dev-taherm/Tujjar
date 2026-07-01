@@ -50,8 +50,9 @@ class TestTemplateVersionModel:
         TemplateVersion.objects.create(template=t, version="1.0.0")
         TemplateVersion.objects.create(template=t, version="1.0.1")
         assert TemplateVersion.objects.filter(template=t).count() == 2
+        t_id = t.pk
         t.delete()
-        assert TemplateVersion.objects.filter(template=t).count() == 0
+        assert TemplateVersion.objects.filter(template_id=t_id).count() == 0
 
     def test_ordering(self):
         t = Template.objects.create(name="Order Store", slug="order-store", config={"a": 1})

@@ -566,6 +566,8 @@ class InventoryMovementViewSet(TenantViewSet):
         if reason:
             qs = qs.filter(reason=reason)
 
+        return qs
+
 
 class ProductOptionGlobalViewSet(TenantViewSet):
     """Global product option management (not scoped to a single product)."""
@@ -574,22 +576,26 @@ class ProductOptionGlobalViewSet(TenantViewSet):
     required_permission = "products.update"
 
     def get_queryset(self):
-        return ProductOption.objects.filter(
-            product__organization_id=self.request.org_id,
-        ).select_related("product").prefetch_related("values")
+        return (
+            ProductOption.objects.filter(
+                product__organization_id=self.request.org_id,
+            )
+            .select_related("product")
+            .prefetch_related("values")
+        )
 
     def perform_create(self, serializer):
         product_id = self.request.data.get("product")
         if not product_id:
             from rest_framework.exceptions import ValidationError
+
             raise ValidationError({"product": "This field is required."})
         product = Product.objects.get(
             id=product_id,
             organization_id=self.request.org_id,
         )
-        option = serializer.save(product=product)
+        serializer.save(product=product)
 
     def perform_destroy(self, instance):
         instance.values.all().delete()
         instance.delete()
-        return qs

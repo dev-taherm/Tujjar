@@ -22,6 +22,7 @@ pytestmark = pytest.mark.django_db
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _create_product(org, store, **kwargs):
     defaults = {
         "organization": org,
@@ -39,6 +40,7 @@ def _create_product(org, store, **kwargs):
 # ===========================================================================
 # Product CRUD
 # ===========================================================================
+
 
 class TestProductCRUD:
     def test_create_product(self, api_client):
@@ -122,9 +124,14 @@ class TestProductCRUD:
         user, org, store, token = create_org_with_owner_and_store("dup@example.com")
         product = _create_product(org, store, title="Original", slug="original", sku="ORI-001")
         ProductVariant.objects.create(
-            product=product, title="Small", price=Decimal("19.99"), option1="Small",
+            product=product,
+            title="Small",
+            price=Decimal("19.99"),
+            option1="Small",
         )
-        ProductImage.objects.create(product=product, url="https://example.com/img.jpg", position=0, is_primary=True)
+        ProductImage.objects.create(
+            product=product, url="https://example.com/img.jpg", position=0, is_primary=True
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(f"/api/v1/products/{product.id}/duplicate/", format="json")
         assert response.status_code == status.HTTP_201_CREATED
@@ -177,11 +184,26 @@ class TestProductCRUD:
 # Product Filtering
 # ===========================================================================
 
+
 class TestProductFiltering:
     def _setup(self, email):
         user, org, store, token = create_org_with_owner_and_store(email)
-        _create_product(org, store, title="Active Product", slug=f"active-{email.split('@')[0]}", status="active", price=Decimal("10.00"))
-        _create_product(org, store, title="Draft Product", slug=f"draft-{email.split('@')[0]}", status="draft", price=Decimal("20.00"))
+        _create_product(
+            org,
+            store,
+            title="Active Product",
+            slug=f"active-{email.split('@')[0]}",
+            status="active",
+            price=Decimal("10.00"),
+        )
+        _create_product(
+            org,
+            store,
+            title="Draft Product",
+            slug=f"draft-{email.split('@')[0]}",
+            status="draft",
+            price=Decimal("20.00"),
+        )
         return token, org, store
 
     def test_filter_by_status(self, api_client):
@@ -211,7 +233,14 @@ class TestProductFiltering:
 
     def test_filter_in_stock(self, api_client):
         token, org, store = self._setup("filter4@example.com")
-        _create_product(org, store, title="InStock", slug="in-stock", inventory_quantity=10, track_inventory=True)
+        _create_product(
+            org,
+            store,
+            title="InStock",
+            slug="in-stock",
+            inventory_quantity=10,
+            track_inventory=True,
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get("/api/v1/products/", {"in_stock": "true"})
         assert response.status_code == status.HTTP_200_OK
@@ -227,14 +256,25 @@ class TestProductFiltering:
 
     def test_low_stock_endpoint(self, api_client):
         token, org, store = self._setup("filter6@example.com")
-        _create_product(org, store, title="LowStock", slug="low-stock", inventory_quantity=2, low_stock_threshold=5, track_inventory=True, status="active")
+        _create_product(
+            org,
+            store,
+            title="LowStock",
+            slug="low-stock",
+            inventory_quantity=2,
+            low_stock_threshold=5,
+            track_inventory=True,
+            status="active",
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get("/api/v1/products/low-stock/")
         assert response.status_code == status.HTTP_200_OK
 
     def test_inventory_update(self, api_client):
         token, org, store = self._setup("filter7@example.com")
-        product = _create_product(org, store, title="InvUpdate", slug="inv-update", inventory_quantity=10)
+        product = _create_product(
+            org, store, title="InvUpdate", slug="inv-update", inventory_quantity=10
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(
             f"/api/v1/products/{product.id}/inventory/update/",
@@ -249,6 +289,7 @@ class TestProductFiltering:
 # ===========================================================================
 # Category CRUD
 # ===========================================================================
+
 
 class TestCategoryCRUD:
     def test_create_category(self, api_client):
@@ -296,15 +337,21 @@ class TestCategoryCRUD:
 
     def test_delete_category(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("cat4@example.com")
-        cat = Category.objects.create(organization=org, store=store, name="Delete Me", slug="del-cat")
+        cat = Category.objects.create(
+            organization=org, store=store, name="Delete Me", slug="del-cat"
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.delete(f"/api/v1/products/categories/{cat.id}/")
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_category_hierarchy(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("cat5@example.com")
-        parent = Category.objects.create(organization=org, store=store, name="Parent", slug="parent-cat")
-        child = Category.objects.create(organization=org, store=store, name="Child", slug="child-cat", parent=parent)
+        parent = Category.objects.create(
+            organization=org, store=store, name="Parent", slug="parent-cat"
+        )
+        _child = Category.objects.create(
+            organization=org, store=store, name="Child", slug="child-cat", parent=parent
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.get(f"/api/v1/products/categories/{parent.id}/")
         assert response.status_code == status.HTTP_200_OK
@@ -331,7 +378,9 @@ class TestCategoryCRUD:
 
     def test_category_product_count(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("cat8@example.com")
-        cat = Category.objects.create(organization=org, store=store, name="CountCat", slug="count-cat")
+        cat = Category.objects.create(
+            organization=org, store=store, name="CountCat", slug="count-cat"
+        )
         product = _create_product(org, store)
         product.categories.add(cat)
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
@@ -343,6 +392,7 @@ class TestCategoryCRUD:
 # ===========================================================================
 # Collection CRUD
 # ===========================================================================
+
 
 class TestCollectionCRUD:
     def test_create_collection(self, api_client):
@@ -361,7 +411,11 @@ class TestCollectionCRUD:
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(
             "/api/v1/products/collections/",
-            {"store": str(store.id), "name": "Winter Collection 2024", "slug": "winter-collection-2024"},
+            {
+                "store": str(store.id),
+                "name": "Winter Collection 2024",
+                "slug": "winter-collection-2024",
+            },
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED
@@ -376,7 +430,9 @@ class TestCollectionCRUD:
 
     def test_retrieve_collection_with_products(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("col3@example.com")
-        col = Collection.objects.create(organization=org, store=store, name="DetailCol", slug="detail-col")
+        col = Collection.objects.create(
+            organization=org, store=store, name="DetailCol", slug="detail-col"
+        )
         product = _create_product(org, store, title="Col Product", slug="col-prod")
         col.products.add(product)
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
@@ -387,7 +443,9 @@ class TestCollectionCRUD:
 
     def test_update_collection_product_ids(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("col4@example.com")
-        col = Collection.objects.create(organization=org, store=store, name="UpdCol", slug="upd-col")
+        col = Collection.objects.create(
+            organization=org, store=store, name="UpdCol", slug="upd-col"
+        )
         product = _create_product(org, store, title="AddMe", slug="add-me")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.patch(
@@ -400,14 +458,18 @@ class TestCollectionCRUD:
 
     def test_delete_collection(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("col5@example.com")
-        col = Collection.objects.create(organization=org, store=store, name="DelCol", slug="del-col")
+        col = Collection.objects.create(
+            organization=org, store=store, name="DelCol", slug="del-col"
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.delete(f"/api/v1/products/collections/{col.id}/")
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_collection_seo_fields(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("col6@example.com")
-        col = Collection.objects.create(organization=org, store=store, name="SeoCol", slug="seo-col")
+        col = Collection.objects.create(
+            organization=org, store=store, name="SeoCol", slug="seo-col"
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.patch(
             f"/api/v1/products/collections/{col.id}/",
@@ -421,6 +483,7 @@ class TestCollectionCRUD:
 # ===========================================================================
 # Product Variants
 # ===========================================================================
+
 
 class TestProductVariantCRUD:
     def test_create_variant(self, api_client):
@@ -448,7 +511,9 @@ class TestProductVariantCRUD:
     def test_update_variant(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("var3@example.com")
         product = _create_product(org, store)
-        variant = ProductVariant.objects.create(product=product, title="Old", price=Decimal("10.00"))
+        variant = ProductVariant.objects.create(
+            product=product, title="Old", price=Decimal("10.00")
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.put(
             f"/api/v1/products/{product.id}/variants/{variant.id}/",
@@ -469,7 +534,9 @@ class TestProductVariantCRUD:
     def test_variant_inventory_update(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("var5@example.com")
         product = _create_product(org, store)
-        variant = ProductVariant.objects.create(product=product, title="InvVar", price=Decimal("10.00"), inventory_quantity=20)
+        variant = ProductVariant.objects.create(
+            product=product, title="InvVar", price=Decimal("10.00"), inventory_quantity=20
+        )
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(
             f"/api/v1/products/{product.id}/variants/{variant.id}/inventory/update/",
@@ -484,6 +551,7 @@ class TestProductVariantCRUD:
 # ===========================================================================
 # Product Images
 # ===========================================================================
+
 
 class TestProductImageCRUD:
     def test_add_image(self, api_client):
@@ -500,7 +568,9 @@ class TestProductImageCRUD:
     def test_set_primary_image(self, api_client):
         user, org, store, token = create_org_with_owner_and_store("img2@example.com")
         product = _create_product(org, store)
-        img1 = ProductImage.objects.create(product=product, url="https://a.com/1.jpg", position=0, is_primary=True)
+        img1 = ProductImage.objects.create(
+            product=product, url="https://a.com/1.jpg", position=0, is_primary=True
+        )
         img2 = ProductImage.objects.create(product=product, url="https://a.com/2.jpg", position=1)
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         response = api_client.post(f"/api/v1/products/{product.id}/images/{img2.id}/set-primary/")
@@ -528,6 +598,7 @@ class TestProductImageCRUD:
 # ===========================================================================
 # Product Options (Attributes)
 # ===========================================================================
+
 
 class TestProductOptionCRUD:
     def test_create_option(self, api_client):
@@ -591,6 +662,7 @@ class TestProductOptionCRUD:
 # ===========================================================================
 # Inventory Movements
 # ===========================================================================
+
 
 class TestInventoryMovement:
     def test_movement_created_on_inventory_update(self, api_client):

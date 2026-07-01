@@ -4,15 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('search', '0001_initial'),
+        ("search", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='searchindex',
-            name='entity_type',
-            field=models.CharField(choices=[('product', 'Product'), ('page', 'Page'), ('collection', 'Collection'), ('category', 'Category'), ('customer', 'Customer'), ('blog_post', 'Blog Post')], max_length=50),
+            model_name="searchindex",
+            name="entity_type",
+            field=models.CharField(
+                choices=[
+                    ("product", "Product"),
+                    ("page", "Page"),
+                    ("collection", "Collection"),
+                    ("category", "Category"),
+                    ("customer", "Customer"),
+                    ("blog_post", "Blog Post"),
+                ],
+                max_length=50,
+            ),
         ),
     ]

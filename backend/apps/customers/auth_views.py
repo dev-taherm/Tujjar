@@ -55,7 +55,9 @@ class CustomerRegisterSerializer(serializers.Serializer):
         attrs["store"] = store
         attrs["organization"] = store.organization
         if Customer.unscoped.filter(store=store, email=attrs["email"]).exists():
-            raise serializers.ValidationError({"email": "An account with this email already exists for this store."})
+            raise serializers.ValidationError(
+                {"email": "An account with this email already exists for this store."}
+            )
         return attrs
 
 
@@ -142,9 +144,7 @@ class CustomerLoginView(APIView):
     throttle_classes = []
 
     def post(self, request, store_slug: str):
-        serializer = CustomerLoginSerializer(
-            data=request.data, context={"store_slug": store_slug}
-        )
+        serializer = CustomerLoginSerializer(data=request.data, context={"store_slug": store_slug})
         serializer.is_valid(raise_exception=True)
 
         store = serializer.validated_data["store"]
