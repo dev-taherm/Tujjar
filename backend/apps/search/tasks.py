@@ -18,7 +18,7 @@ def update_search_index_for_product(self, product_id: str):
     except Product.DoesNotExist:
         return
 
-    tags = " ".join(product.tags) if isinstance(product.tags, list) else ""
+    tags = product.tags if isinstance(product.tags, list) else []
     SearchIndex.objects.update_or_create(
         organization_id=product.organization_id,
         store_id=product.store_id,
