@@ -77,15 +77,16 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiError>) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    if (error.response?.status === 401 && originalRequest) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then(() => apiClient(originalRequest));
       }
 
+      originalRequest._retry = true;
       isRefreshing = true;
 
       if (!refreshToken) {
