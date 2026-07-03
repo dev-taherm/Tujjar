@@ -130,7 +130,13 @@ class OrganizationViewSet(AuditLogMixin, viewsets.ModelViewSet):
         from django.contrib.auth import get_user_model
 
         User = get_user_model()
-        user = User.objects.get(email=serializer.validated_data["email"])
+        try:
+            user = User.objects.get(email=serializer.validated_data["email"])
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "No user found with this email. They must register first."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         role = serializer.role
 
         membership, created = OrganizationMembership.objects.get_or_create(
