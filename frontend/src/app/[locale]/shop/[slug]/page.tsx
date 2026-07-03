@@ -51,7 +51,11 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
 
   useEffect(() => {
     if (store) {
-      const title = store.seo_title || store.name;
+      const resolveSeoTitle = (template: string | undefined, pageName: string, storeName: string): string => {
+        if (!template) return storeName;
+        return template.replace(/\{\{page_title\}\}/g, pageName).replace(/\{\{store_name\}\}/g, storeName);
+      };
+      const title = resolveSeoTitle(store.seo_title, "Home", store.name);
       document.title = title;
       const setMeta = (name: string, content: string) => {
         let el = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`) as HTMLMetaElement;

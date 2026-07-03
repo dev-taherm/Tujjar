@@ -116,10 +116,14 @@ export default function StorefrontLayout({
     queryFn: async () => {
       if (!slug) return { items_count: 0 };
       const { customerClient } = await import("@/api/customer-client");
-      const { data } = await customerClient.get(`/store/${slug}/carts/`, { params: { status: "active" } });
-      const carts = data.results || data || [];
-      const activeCart = Array.isArray(carts) ? carts[0] : null;
-      return { items_count: activeCart?.items?.length ?? 0 };
+      try {
+        const { data } = await customerClient.get(`/orders/carts/`, { params: { status: "active", store: slug } });
+        const carts = data.results || data || [];
+        const activeCart = Array.isArray(carts) ? carts[0] : null;
+        return { items_count: activeCart?.items?.length ?? 0 };
+      } catch {
+        return { items_count: 0 };
+      }
     },
     enabled: isCustomerAuth && !!slug,
     staleTime: 30_000,
@@ -281,7 +285,7 @@ export default function StorefrontLayout({
   // Apply SEO metadata
   useEffect(() => {
     if (store) {
-      document.title = store.seo_title || store.name;
+      document.title = resolveSeoTitle(store.seo_title, "Home", store.name);
       const setMeta = (name: string, content: string) => {
         let el = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`) as HTMLMetaElement;
         if (!el) {
@@ -348,7 +352,13 @@ export default function StorefrontLayout({
   const prefixLink = (url: string) => {
     if (url.startsWith("http")) return url;
     if (subdomainSlug) return `/${locale}${url}`;
-    if (pathSlug) return `/${locale}/shop/${pathSlug}${url}`;
+    if (pathSlug) {
+      if (url === "/blog") return `/${locale}/shop/${pathSlug}/shop/blog`;
+      if (url === "/shop") return `/${locale}/shop/${pathSlug}/shop`;
+      if (url.startsWith("/shop/")) return `/${locale}/shop/${pathSlug}${url}`;
+      if (url === "/collections") return `/${locale}/shop/${pathSlug}/shop/collections`;
+      return `/${locale}/shop/${pathSlug}${url}`;
+    }
     return url;
   };
 
@@ -403,6 +413,11 @@ export default function StorefrontLayout({
     : defaultFooterColumns;
 
   const logoText = resolveLabel(navigation.logo_text as string | Record<string, string> | undefined) || store?.name || tNav("store");
+  const resolveSeoTitle = (template: string | undefined, pageName: string, storeName: string): string => {
+    if (!template) return storeName;
+    return template.replace(/\{\{page_title\}\}/g, pageName).replace(/\{\{store_name\}\}/g, storeName);
+  };
+
   const copyrightText = resolveField(footerConfig.copyright as string | Record<string, string> | undefined, tNav("poweredBy"));
 
   return (

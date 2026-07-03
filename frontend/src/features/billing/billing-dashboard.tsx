@@ -60,7 +60,7 @@ function SubscriptionCard() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         <div><span className="text-gray-500">{t("plan")}</span><p className="font-medium">{sub.plan_name}</p></div>
-        <div><span className="text-gray-500">{t("status")}</span><p><Badge variant={(statusColors[sub.status] || "default") as "success"}>{sub.status}</Badge></p></div>
+        <div><span className="text-gray-500">{t("status")}</span><div className="font-medium"><Badge variant={(statusColors[sub.status] || "default") as "success"}>{sub.status}</Badge></div></div>
         <div><span className="text-gray-500">{t("price")}</span><p className="font-medium">${sub.plan_price}/mo</p></div>
         <div><span className="text-gray-500">{t("currentPeriod")}</span><p>{formatDateTime(sub.current_period_start)} - {formatDateTime(sub.current_period_end)}</p></div>
       </div>
