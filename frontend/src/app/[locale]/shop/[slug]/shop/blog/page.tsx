@@ -1,9 +1,10 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { Calendar, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { customerClient } from "@/api/customer-client";
 import type { BlogPostListItem } from "@/shared/types/blog";
 
 interface BlogListResponse {
@@ -26,25 +27,28 @@ async function fetchBlogPosts(
 ): Promise<BlogListResponse> {
   const params = new URLSearchParams({ locale, page: String(page) });
   if (category) params.set("category", category);
-  const res = await fetch(`http://localhost:8000/api/v1/store/${slug}/blog/?${params}`);
-  if (!res.ok) throw new Error("Failed to fetch blog posts");
-  return res.json();
+  const { data } = await customerClient.get(`/store/${slug}/blog/`, { params });
+  return data;
 }
 
 async function fetchBlogCategories(slug: string, locale: string) {
-  const res = await fetch(`http://localhost:8000/api/v1/store/${slug}/blog/categories/?locale=${locale}`);
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const { data } = await customerClient.get(`/store/${slug}/blog/categories/`, { params: { locale } });
+    return data;
+  } catch {
+    return [];
+  }
 }
 
 export default function StorefrontBlogPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string; locale: string }>;
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string; category?: string }>;
 }) {
-  const { slug, locale } = use(params);
+  const { slug } = use(params);
+  const locale = useLocale();
   const { page: pageParam, category } = use(searchParams);
   const currentPage = Number(pageParam) || 1;
 
@@ -52,22 +56,26 @@ export default function StorefrontBlogPage({
   const [categories, setCategories] = useState<Array<{ name: string; slug: string; post_count: number }>>([]);
   const [loading, setLoading] = useState(true);
 
-  useState(() => {
+  useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const [posts, cats] = await Promise.all([
           fetchBlogPosts(slug, locale, currentPage, category),
           fetchBlogCategories(slug, locale),
         ]);
-        setBlogData(posts);
-        setCategories(cats);
+        if (!cancelled) {
+          setBlogData(posts);
+          setCategories(cats);
+        }
       } catch {
         // ignore
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  });
+    return () => { cancelled = true; };
+  }, [slug, locale, currentPage, category]);
 
   if (loading) {
     return (
