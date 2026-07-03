@@ -128,6 +128,10 @@ export default function AdminPlansPage() {
               <label className="mb-1 block text-sm font-medium text-gray-700">Slug</label>
               <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
             </div>
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="Optional plan description..." />
+            </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Price ($)</label>
               <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
