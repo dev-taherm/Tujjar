@@ -111,6 +111,21 @@ export default function StorefrontLayout({
   const guestCartItems = useGuestCartStore((s) => s.items);
   const guestCartCount = guestCartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  const { data: customerCart } = useQuery<{ items_count: number }>({
+    queryKey: ["customer-cart-count", slug],
+    queryFn: async () => {
+      if (!slug) return { items_count: 0 };
+      const { customerClient } = await import("@/api/customer-client");
+      const { data } = await customerClient.get(`/store/${slug}/carts/`, { params: { status: "active" } });
+      const carts = data.results || data || [];
+      const activeCart = Array.isArray(carts) ? carts[0] : null;
+      return { items_count: activeCart?.items?.length ?? 0 };
+    },
+    enabled: isCustomerAuth && !!slug,
+    staleTime: 30_000,
+  });
+  const cartCount = isCustomerAuth ? (customerCart?.items_count ?? 0) : guestCartCount;
+
   const { data } = useQuery<{ store: StorefrontStore }>({
     queryKey: ["storefront", slug, locale],
     queryFn: async () => {
@@ -460,7 +475,7 @@ export default function StorefrontLayout({
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white"
                 style={{ background: "var(--color-primary)" }}>
-                {isCustomerAuth ? 0 : guestCartCount}
+                {cartCount}
               </span>
             </Link>
             {isCustomerAuth && customerAuth ? (
