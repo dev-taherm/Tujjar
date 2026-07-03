@@ -170,7 +170,7 @@ class CustomerLoginView(APIView):
 
 class CustomerMeView(APIView):
     authentication_classes = [CustomerTokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
 
     def get(self, request):
         customer = request.user
@@ -236,3 +236,73 @@ class CustomerLogoutView(APIView):
         except Exception:
             pass
         return Response({"detail": "Logged out."}, status=status.HTTP_200_OK)
+
+
+class CustomerMergeCartView(APIView):
+    """Merge guest cart items into the customer's authenticated cart."""
+
+    authentication_classes = [CustomerTokenAuthentication]
+    permission_classes = []  # Auth handled manually via CustomerTokenAuthentication
+
+    def post(self, request):
+        customer = request.user
+        if not isinstance(customer, Customer):
+            return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+        store_slug = request.data.get("store")
+        items = request.data.get("items", [])
+
+        if not store_slug:
+            return Response({"detail": "store is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not items:
+            return Response({"detail": "items list is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        from apps.orders.models import Cart, CartItem
+        from apps.products.models import Product, ProductVariant
+        from apps.stores.models import Store
+
+        try:
+            store = Store.unscoped.get(slug=store_slug)
+        except Store.DoesNotExist:
+            return Response({"detail": "Store not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        cart, _ = Cart.objects.get_or_create(
+            organization=customer.organization,
+            store=store,
+            customer=customer,
+            status="active",
+            defaults={"currency": "USD"},
+        )
+
+        added = 0
+        for item in items:
+            product_id = item.get("product")
+            variant_id = item.get("variant")
+            quantity = int(item.get("quantity", 1))
+
+            try:
+                product = Product.objects.get(id=product_id, store=store)
+            except Product.DoesNotExist:
+                continue
+
+            unit_price = product.price
+            variant = None
+            if variant_id:
+                try:
+                    variant = ProductVariant.objects.get(id=variant_id, product=product)
+                    unit_price = variant.price
+                except ProductVariant.DoesNotExist:
+                    continue
+
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                product=product,
+                variant=variant,
+                defaults={"quantity": quantity, "unit_price": unit_price},
+            )
+            if not created:
+                cart_item.quantity += quantity
+                cart_item.save(update_fields=["quantity", "updated_at"])
+            added += 1
+
+        cart.recalculate()
+        return Response({"detail": f"Merged {added} items.", "cart_id": str(cart.id)}, status=status.HTTP_200_OK)

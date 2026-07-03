@@ -47,22 +47,18 @@ export default function StorefrontLoginPage() {
       useCustomerAuthStore.getState().setCustomer(result.customer);
       useCustomerAuthStore.getState().setTokens(result.tokens);
 
-      // Merge guest cart into backend cart
+      // Merge guest cart into backend cart (fire-and-forget, don't block navigation)
       const guestItems = useGuestCartStore.getState().items;
+      useGuestCartStore.getState().clearCart();
       if (guestItems.length > 0) {
-        for (const item of guestItems) {
-          try {
-            await customerClient.post("/orders/carts/add/", {
-              store: slug,
-              product: item.productId,
-              variant: item.variantId || undefined,
-              quantity: item.quantity,
-            });
-          } catch {
-            // Silently skip items that fail to merge
-          }
-        }
-        useGuestCartStore.getState().clearCart();
+        customerClient.post("/customers/auth/merge-cart/", {
+          store: slug,
+          items: guestItems.map((item) => ({
+            product: item.productId,
+            variant: item.variantId || undefined,
+            quantity: item.quantity,
+          })),
+        }).catch(() => {});
       }
 
       toast.success(t("welcomeBack"));

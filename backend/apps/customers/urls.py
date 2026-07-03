@@ -7,6 +7,7 @@ from .auth_views import (
     CustomerLoginView,
     CustomerLogoutView,
     CustomerMeView,
+    CustomerMergeCartView,
     CustomerRegisterView,
     CustomerTokenRefreshView,
 )
@@ -39,4 +40,5 @@ urlpatterns = [
     path("auth/me/", CustomerMeView.as_view(), name="customer-me"),
     path("auth/token/refresh/", CustomerTokenRefreshView.as_view(), name="customer-token-refresh"),
     path("auth/logout/", CustomerLogoutView.as_view(), name="customer-logout"),
+    path("auth/merge-cart/", CustomerMergeCartView.as_view(), name="customer-merge-cart"),
 ]
