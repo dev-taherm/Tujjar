@@ -129,6 +129,8 @@ class CustomerRegisterView(APIView):
                 phone=serializer.validated_data.get("phone", ""),
                 is_verified=False,
             )
+            customer.set_password(serializer.validated_data["password"])
+            customer.save(update_fields=["password"])
 
         tokens = _customer_tokens(customer)
         return Response(
@@ -151,10 +153,17 @@ class CustomerLoginView(APIView):
 
         store = serializer.validated_data["store"]
         email = serializer.validated_data["email"].lower().strip()
+        password = serializer.validated_data.get("password", "")
 
         try:
             customer = Customer.unscoped.get(store=store, email=email)
         except Customer.DoesNotExist:
+            return Response(
+                {"detail": "Invalid email or password."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not customer.check_password(password):
             return Response(
                 {"detail": "Invalid email or password."},
                 status=status.HTTP_401_UNAUTHORIZED,
