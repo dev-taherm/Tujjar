@@ -28,11 +28,11 @@ class EventViewSet(TenantViewSet):
         return EventSerializer
 
     def perform_create(self, serializer):
-        org = getattr(self.request, "organization", None)
-        store = getattr(self.request, "store", None)
+        org_id = self.request.org_id
+        store_id = getattr(self.request, "store_id", None)
         Event.objects.create(
-            organization=org,
-            store=store,
+            organization_id=org_id,
+            store_id=store_id,
             ip_address=self.request.META.get("REMOTE_ADDR"),
             user_agent=self.request.META.get("HTTP_USER_AGENT", ""),
             **serializer.validated_data,
