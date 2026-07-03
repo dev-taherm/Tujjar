@@ -44,7 +44,9 @@ class CartViewSet(TenantViewSet):
         try:
             quantity = int(request.data.get("quantity", 1))
         except (TypeError, ValueError):
-            return Response({"detail": "Quantity must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Quantity must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             product = Product.objects.get(id=product_id, store=cart.store)

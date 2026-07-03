@@ -811,3 +811,239 @@ class TestAddressModel:
         addr1.refresh_from_db()
         assert addr1.is_default is False
         assert addr2.is_default is True
+
+
+class TestCustomerCartView:
+    def _get_customer_token(self, customer):
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        refresh = RefreshToken()
+        refresh["customer_id"] = str(customer.id)
+        refresh["store_id"] = str(customer.store_id)
+        refresh["org_id"] = str(customer.organization_id)
+        refresh["email"] = customer.email
+        return str(refresh.access_token)
+
+    def test_cart_view_requires_auth(self, api_client):
+        response = api_client.get("/api/v1/customers/cart/?store=any")
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_cart_view_missing_store_param(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("cart-missing-store@test.com")
+        customer = _create_customer(org, store, email="cc1@test.com")
+        token = self._get_customer_token(customer)
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get("/api/v1/customers/cart/")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_cart_view_store_not_found(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("cart-store-nf@test.com")
+        customer = _create_customer(org, store, email="cc2@test.com")
+        token = self._get_customer_token(customer)
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get("/api/v1/customers/cart/?store=nonexistent")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_cart_view_empty_cart(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("cart-empty@test.com")
+        customer = _create_customer(org, store, email="cc3@test.com")
+        token = self._get_customer_token(customer)
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get(f"/api/v1/customers/cart/?store={store.slug}")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["results"] == []
+
+    def test_cart_view_with_items(self, api_client):
+        from apps.orders.models import Cart
+
+        user, org, store, _ = create_org_with_owner_and_store("cart-with-items@test.com")
+        customer = _create_customer(org, store, email="cc4@test.com")
+        token = self._get_customer_token(customer)
+        product = _create_product(org, store, title="Cart Prod", sku="CP-1")
+        cart = Cart.objects.create(
+            organization=org, store=store, customer=customer, status="active"
+        )
+        from apps.orders.models import CartItem
+
+        CartItem.objects.create(cart=cart, product=product, quantity=2, unit_price=product.price)
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get(f"/api/v1/customers/cart/?store={store.slug}")
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 1
+
+    def test_cart_actions_not_found(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("cart-notfound@test.com")
+        customer = _create_customer(org, store, email="cc9@test.com")
+        token = self._get_customer_token(customer)
+        import uuid
+
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.post(
+            f"/api/v1/customers/cart/{uuid.uuid4()}/add/",
+            {"product_id": str(uuid.uuid4()), "quantity": 1},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+class TestCustomerMergeCartView:
+    def _get_customer_token(self, customer):
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        refresh = RefreshToken()
+        refresh["customer_id"] = str(customer.id)
+        refresh["store_id"] = str(customer.store_id)
+        refresh["org_id"] = str(customer.organization_id)
+        refresh["email"] = customer.email
+        return str(refresh.access_token)
+
+    def test_merge_cart_requires_auth(self, api_client):
+        response = api_client.post("/api/v1/customers/auth/merge-cart/", {})
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_merge_cart_missing_store(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("merge-nostore@test.com")
+        customer = _create_customer(org, store, email="mc1@test.com")
+        token = self._get_customer_token(customer)
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.post(
+            "/api/v1/customers/auth/merge-cart/",
+            {"items": [{"product": "x", "quantity": 1}]},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_merge_cart_missing_items(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("merge-noitems@test.com")
+        customer = _create_customer(org, store, email="mc2@test.com")
+        token = self._get_customer_token(customer)
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.post(
+            "/api/v1/customers/auth/merge-cart/",
+            {"store": store.slug},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_merge_cart_store_not_found(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("merge-storernf@test.com")
+        customer = _create_customer(org, store, email="mc3@test.com")
+        token = self._get_customer_token(customer)
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.post(
+            "/api/v1/customers/auth/merge-cart/",
+            {"store": "nonexistent", "items": [{"product": "x", "quantity": 1}]},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_merge_cart_success(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("merge-ok@test.com")
+        customer = _create_customer(org, store, email="mc4@test.com")
+        token = self._get_customer_token(customer)
+        product = _create_product(org, store, title="Merge Prod", sku="MRG-1")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.post(
+            "/api/v1/customers/auth/merge-cart/",
+            {
+                "store": store.slug,
+                "items": [{"product": str(product.id), "quantity": 3}],
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert "cart_id" in response.data
+
+
+class TestCustomerAuthViews:
+    def test_register(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("cust-reg@test.com")
+        response = api_client.post(
+            f"/api/v1/customers/auth/{store.slug}/register/",
+            {
+                "email": "newcust@test.com",
+                "password": "securepass123",
+                "first_name": "New",
+                "last_name": "Cust",
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert "tokens" in response.data
+        assert "customer" in response.data
+
+    def test_login(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("cust-login@test.com")
+        api_client.post(
+            f"/api/v1/customers/auth/{store.slug}/register/",
+            {
+                "email": "logincust@test.com",
+                "password": "securepass123",
+            },
+            format="json",
+        )
+        response = api_client.post(
+            f"/api/v1/customers/auth/{store.slug}/login/",
+            {"email": "logincust@test.com", "password": "securepass123"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert "tokens" in response.data
+
+    def test_login_wrong_password(self, api_client):
+        user, org, store, _ = create_org_with_owner_and_store("cust-login2@test.com")
+        api_client.post(
+            f"/api/v1/customers/auth/{store.slug}/register/",
+            {"email": "badpw@test.com", "password": "securepass123"},
+            format="json",
+        )
+        response = api_client.post(
+            f"/api/v1/customers/auth/{store.slug}/login/",
+            {"email": "badpw@test.com", "password": "wrongpassword"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_me_view(self, api_client):
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        user, org, store, _ = create_org_with_owner_and_store("cust-me@test.com")
+        customer = _create_customer(org, store, email="me-cust@test.com")
+        refresh = RefreshToken()
+        refresh["customer_id"] = str(customer.id)
+        refresh["store_id"] = str(customer.store_id)
+        refresh["org_id"] = str(customer.organization_id)
+        refresh["email"] = customer.email
+        token = str(refresh.access_token)
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get("/api/v1/customers/auth/me/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["email"] == "me-cust@test.com"
+
+    def test_token_refresh(self, api_client):
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        user, org, store, _ = create_org_with_owner_and_store("cust-refresh@test.com")
+        customer = _create_customer(org, store, email="refresh-cust@test.com")
+        refresh = RefreshToken()
+        refresh["customer_id"] = str(customer.id)
+        refresh["store_id"] = str(customer.store_id)
+        refresh["org_id"] = str(customer.organization_id)
+        refresh["email"] = customer.email
+        response = api_client.post(
+            "/api/v1/customers/auth/token/refresh/",
+            {"refresh": str(refresh)},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert "access" in response.data
+
+    def test_logout(self, api_client):
+        user, org, store, token = create_org_with_owner_and_store("cust-logout@test.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.post(
+            "/api/v1/customers/auth/logout/",
+            {},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK

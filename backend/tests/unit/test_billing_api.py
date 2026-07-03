@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+import pytest
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -7,6 +8,8 @@ from rest_framework.test import APIClient
 from apps.billing.models import Invoice, PaymentMethod, Plan, Subscription
 from apps.billing.views import check_plan_limits
 from tests.factories import create_org_with_owner
+
+pytestmark = pytest.mark.django_db
 
 
 class TestCheckPlanLimits(TestCase):
@@ -167,3 +170,59 @@ class TestPaymentMethodViewSet(TestCase):
         self.pm.refresh_from_db()
         assert pm2.is_default is True
         assert self.pm.is_default is False
+
+
+class TestCheckTrialExpiry:
+    def test_expired_trials_updated(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.billing.models import Plan, Subscription
+        from apps.billing.tasks import check_trial_expiry
+        from tests.factories import create_org_with_owner
+
+        user, org, _ = create_org_with_owner("trial-expiry@example.com")
+        plan = Plan.objects.create(
+            name="Trial Plan", slug="trial-plan", price=Decimal("0"), trial_days=14
+        )
+        sub = Subscription.objects.create(
+            organization=org,
+            plan=plan,
+            status="trialing",
+            trial_end=timezone.now() - timedelta(days=1),
+        )
+        result = check_trial_expiry()
+        sub.refresh_from_db()
+        assert sub.status == "past_due"
+        assert "1" in result
+
+    def test_non_expired_trials_not_affected(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.billing.models import Plan, Subscription
+        from apps.billing.tasks import check_trial_expiry
+        from tests.factories import create_org_with_owner
+
+        user, org, _ = create_org_with_owner("trial-active@example.com")
+        plan = Plan.objects.create(
+            name="Active Trial", slug="active-trial", price=Decimal("0"), trial_days=14
+        )
+        sub = Subscription.objects.create(
+            organization=org,
+            plan=plan,
+            status="trialing",
+            trial_end=timezone.now() + timedelta(days=5),
+        )
+        result = check_trial_expiry()
+        sub.refresh_from_db()
+        assert sub.status == "trialing"
+        assert "0" in result
+
+    def test_no_expired_trials(self):
+        from apps.billing.tasks import check_trial_expiry
+
+        result = check_trial_expiry()
+        assert "0" in result

@@ -328,7 +328,9 @@ class StorefrontCollectionListView(generics.ListAPIView):
         store = get_store_by_slug(subdomain)
         if not store:
             return Collection.objects.none()
-        return Collection.objects.filter(organization=store.organization, store=store, is_active=True)
+        return Collection.objects.filter(
+            organization=store.organization, store=store, is_active=True
+        )
 
     def list(self, request, *args, **kwargs):
         subdomain = self.kwargs.get("subdomain")

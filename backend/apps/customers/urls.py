@@ -44,5 +44,9 @@ urlpatterns = [
     path("auth/logout/", CustomerLogoutView.as_view(), name="customer-logout"),
     path("auth/merge-cart/", CustomerMergeCartView.as_view(), name="customer-merge-cart"),
     path("cart/", CustomerCartView.as_view(), name="customer-cart"),
-    path("cart/<uuid:cart_id>/<str:action>/", CustomerCartActionsView.as_view(), name="customer-cart-actions"),
+    path(
+        "cart/<uuid:cart_id>/<str:action>/",
+        CustomerCartActionsView.as_view(),
+        name="customer-cart-actions",
+    ),
 ]

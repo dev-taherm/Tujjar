@@ -32,6 +32,7 @@ class EventViewSet(TenantViewSet):
         store_id = getattr(self.request, "store_id", None)
         if not store_id:
             from apps.stores.models import Store
+
             first_store = Store.unscoped.filter(organization_id=org_id).first()
             if first_store:
                 store_id = str(first_store.id)

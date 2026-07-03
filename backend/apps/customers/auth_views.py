@@ -263,11 +263,15 @@ class CustomerCartView(APIView):
 
         customer = request.user
         if not isinstance(customer, Customer):
-            return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED
+            )
 
         store_slug = request.query_params.get("store")
         if not store_slug:
-            return Response({"detail": "store query param is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "store query param is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             store = Store.unscoped.get(slug=store_slug)
@@ -294,6 +298,7 @@ class CustomerCartActionsView(APIView):
 
     def _get_cart(self, request, cart_id):
         from apps.orders.models import Cart
+
         customer = request.user
         if not isinstance(customer, Customer):
             return None
@@ -327,10 +332,14 @@ class CustomerCartActionsView(APIView):
                     variant = ProductVariant.objects.get(id=variant_id, product=product)
                     unit_price = variant.price
                 except ProductVariant.DoesNotExist:
-                    return Response({"detail": "Variant not found."}, status=status.HTTP_404_NOT_FOUND)
+                    return Response(
+                        {"detail": "Variant not found."}, status=status.HTTP_404_NOT_FOUND
+                    )
 
             cart_item, created = CartItem.objects.get_or_create(
-                cart=cart, product=product, variant=variant,
+                cart=cart,
+                product=product,
+                variant=variant,
                 defaults={"quantity": quantity, "unit_price": unit_price},
             )
             if not created:
@@ -339,6 +348,7 @@ class CustomerCartActionsView(APIView):
 
             cart.recalculate()
             from apps.orders.serializers import CartSerializer
+
             return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
 
         elif action == "items/update":
@@ -357,6 +367,7 @@ class CustomerCartActionsView(APIView):
 
             cart.recalculate()
             from apps.orders.serializers import CartSerializer
+
             return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
 
         elif action == "items/remove":
@@ -369,6 +380,7 @@ class CustomerCartActionsView(APIView):
 
             cart.recalculate()
             from apps.orders.serializers import CartSerializer
+
             return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
 
         return Response({"detail": "Unknown action."}, status=status.HTTP_400_BAD_REQUEST)
@@ -383,14 +395,18 @@ class CustomerMergeCartView(APIView):
     def post(self, request):
         customer = request.user
         if not isinstance(customer, Customer):
-            return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED
+            )
         store_slug = request.data.get("store")
         items = request.data.get("items", [])
 
         if not store_slug:
             return Response({"detail": "store is required."}, status=status.HTTP_400_BAD_REQUEST)
         if not items:
-            return Response({"detail": "items list is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "items list is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         from apps.orders.models import Cart, CartItem
         from apps.products.models import Product, ProductVariant
@@ -441,4 +457,6 @@ class CustomerMergeCartView(APIView):
             added += 1
 
         cart.recalculate()
-        return Response({"detail": f"Merged {added} items.", "cart_id": str(cart.id)}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": f"Merged {added} items.", "cart_id": str(cart.id)}, status=status.HTTP_200_OK
+        )

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('customers', '0005_customer_experience'),
+        ("customers", "0005_customer_experience"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customer',
-            name='password',
-            field=models.CharField(blank=True, default='', max_length=128),
+            model_name="customer",
+            name="password",
+            field=models.CharField(blank=True, default="", max_length=128),
         ),
     ]

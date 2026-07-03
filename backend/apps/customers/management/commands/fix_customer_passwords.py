@@ -28,6 +28,4 @@ class Command(BaseCommand):
             customer.set_password(password)
             customer.save(update_fields=["password"])
 
-        self.stdout.write(
-            self.style.SUCCESS(f"Set temporary password for {count} customer(s).")
-        )
+        self.stdout.write(self.style.SUCCESS(f"Set temporary password for {count} customer(s)."))

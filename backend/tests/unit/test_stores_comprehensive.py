@@ -430,3 +430,97 @@ class TestStoreDomains:
         assert response.data["verified"] is False
         assert "details" in response.data
         assert response.data["details"]["txt"] is False
+
+
+class TestStoreSerializerComputedFields:
+    def test_logo_url_none(self, api_client):
+        user, org, store, token = create_org_with_owner_and_store("logo-none@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get(f"/api/v1/stores/{store.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["logo_url"] is None
+
+    def test_favicon_url_none(self, api_client):
+        user, org, store, token = create_org_with_owner_and_store("favicon-none@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get(f"/api/v1/stores/{store.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["favicon_url"] is None
+
+    def test_og_image_url_none(self, api_client):
+        user, org, store, token = create_org_with_owner_and_store("og-none@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get(f"/api/v1/stores/{store.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["og_image_url"] is None
+
+    def test_logo_url_with_asset(self, api_client):
+        from apps.media.models import MediaAsset
+
+        user, org, store, token = create_org_with_owner_and_store("logo-asset@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        asset = MediaAsset.objects.create(
+            organization=org,
+            filename="test-logo.png",
+            file_type="image",
+            file_size=1024,
+            file_url="https://cdn.example.com/test-logo.png",
+        )
+        store.logo = asset
+        store.save(update_fields=["logo"])
+
+        response = api_client.get(f"/api/v1/stores/{store.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["logo_url"] == "https://cdn.example.com/test-logo.png"
+
+    def test_favicon_url_with_asset(self, api_client):
+        from apps.media.models import MediaAsset
+
+        user, org, store, token = create_org_with_owner_and_store("favicon-asset@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        asset = MediaAsset.objects.create(
+            organization=org,
+            filename="test-favicon.ico",
+            file_type="image",
+            file_size=512,
+            file_url="https://cdn.example.com/test-favicon.ico",
+        )
+        store.favicon = asset
+        store.save(update_fields=["favicon"])
+
+        response = api_client.get(f"/api/v1/stores/{store.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["favicon_url"] == "https://cdn.example.com/test-favicon.ico"
+
+    def test_og_image_url_with_asset(self, api_client):
+        from apps.media.models import MediaAsset
+
+        user, org, store, token = create_org_with_owner_and_store("og-asset@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        asset = MediaAsset.objects.create(
+            organization=org,
+            filename="test-og.png",
+            file_type="image",
+            file_size=2048,
+            file_url="https://cdn.example.com/test-og.png",
+        )
+        store.og_image = asset
+        store.save(update_fields=["og_image"])
+
+        response = api_client.get(f"/api/v1/stores/{store.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["og_image_url"] == "https://cdn.example.com/test-og.png"
+
+
+class TestSlugCheckSerializer:
+    def test_slug_reserved(self, api_client):
+        user, org, token = create_org_with_owner("slug-reserved-ser@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get("/api/v1/stores/check-slug/?slug=www")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_slug_short(self, api_client):
+        user, org, token = create_org_with_owner("slug-short-ser@example.com")
+        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = api_client.get("/api/v1/stores/check-slug/?slug=ab")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
