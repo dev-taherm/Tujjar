@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import subprocess
 
 from django.conf import settings as django_settings
 from django.core.cache import cache
