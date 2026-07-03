@@ -11,14 +11,20 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.text import slugify
 
+from apps.analytics.models import DailyStats, Event
+from apps.blog.models import (
+    BlogAuthor,
+    BlogCategory,
+    BlogPost,
+    BlogPostCategory,
+    BlogPostTag,
+    BlogTag,
+)
 from apps.core.threadlocals import set_current_org_id
-from apps.stores.models import Store
-from apps.products.models import Category, Collection, Product, ProductImage, ProductVariant
-from apps.blog.models import BlogAuthor, BlogCategory, BlogPost, BlogPostCategory, BlogPostTag, BlogTag
 from apps.customers.models import Customer
 from apps.orders.models import Order, OrderItem, OrderStatusHistory
-from apps.analytics.models import Event, DailyStats
-
+from apps.products.models import Category, Collection, Product, ProductImage, ProductVariant
+from apps.stores.models import Store
 
 PRODUCTS = [
     {"title": "Classic Leather Watch", "price": "149.99", "compare_at_price": "199.99", "category": "Accessories", "tags": ["watch", "leather", "classic"], "description": "Elegant leather-strap watch with Swiss movement and sapphire crystal glass."},
@@ -151,7 +157,7 @@ class Command(BaseCommand):
             return
 
         self.products = []
-        for i, p in enumerate(PRODUCTS):
+        for _i, p in enumerate(PRODUCTS):
             cat_name = p.pop("category")
             tags = p.pop("tags")
             price = Decimal(p["price"])
@@ -363,7 +369,7 @@ class Command(BaseCommand):
         status_weights = [5, 10, 15, 25, 45]
 
         self.orders = []
-        for i in range(25):
+        for _i in range(25):
             customer = random.choice(self.customers)
             status = random.choices(statuses, weights=status_weights, k=1)[0]
             payment_status = "paid" if status in ("shipped", "delivered") else random.choice(["pending", "paid"])

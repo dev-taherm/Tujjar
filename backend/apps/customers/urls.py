@@ -8,8 +8,8 @@ from .auth_views import (
     CustomerCartView,
     CustomerLoginView,
     CustomerLogoutView,
-    CustomerMeView,
     CustomerMergeCartView,
+    CustomerMeView,
     CustomerRegisterView,
     CustomerTokenRefreshView,
 )

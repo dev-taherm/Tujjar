@@ -257,8 +257,7 @@ class CustomerCartView(APIView):
     permission_classes = []
 
     def get(self, request):
-        from django.db.models import Count
-        from apps.orders.models import Cart, CartItem
+        from apps.orders.models import Cart
         from apps.orders.serializers import CartSerializer
         from apps.stores.models import Store
 
