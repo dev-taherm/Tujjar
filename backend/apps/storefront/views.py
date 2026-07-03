@@ -399,7 +399,8 @@ def robots_txt(request, subdomain=None):
         is_published=True,
     ).values_list("slug", flat=True)
     for slug in pages:
-        lines.append(f"Disallow: /{slug}/" if slug != "home" else "")
+        if slug != "home":
+            lines.append(f"Allow: /{slug}/")
     lines.append("")
     lines.append(f"Sitemap: https://{store.domain}/sitemap.xml")
     content = "\n".join(lines)
