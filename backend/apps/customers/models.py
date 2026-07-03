@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.contrib.auth.hashers import check_password, make_password
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -31,6 +32,7 @@ class Customer(UUIDModel, TimeStampedModel):
         related_name="customer_profiles",
     )
     email = models.EmailField(db_index=True)
+    password = models.CharField(max_length=128, blank=True, default="")
     first_name = models.CharField(max_length=150, blank=True, default="")
     last_name = models.CharField(max_length=150, blank=True, default="")
     phone = models.CharField(max_length=30, blank=True, default="")
@@ -68,6 +70,12 @@ class Customer(UUIDModel, TimeStampedModel):
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
+
+    def set_password(self, raw_password: str) -> None:
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password: str) -> bool:
+        return check_password(raw_password, self.password)
 
 
 class Address(UUIDModel, TimeStampedModel):
