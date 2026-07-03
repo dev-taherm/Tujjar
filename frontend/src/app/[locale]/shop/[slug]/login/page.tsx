@@ -49,7 +49,6 @@ export default function StorefrontLoginPage() {
 
       // Merge guest cart into backend cart (fire-and-forget, don't block navigation)
       const guestItems = useGuestCartStore.getState().items;
-      useGuestCartStore.getState().clearCart();
       if (guestItems.length > 0) {
         customerClient.post("/customers/auth/merge-cart/", {
           store: slug,
@@ -58,6 +57,8 @@ export default function StorefrontLoginPage() {
             variant: item.variantId || undefined,
             quantity: item.quantity,
           })),
+        }).then(() => {
+          useGuestCartStore.getState().clearCart();
         }).catch(() => {});
       }
 
