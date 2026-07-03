@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { Calendar, Clock, Eye, ArrowLeft, Tag, ChevronRight } from "lucide-react";
+import { customerClient } from "@/api/customer-client";
 
 interface StorefrontBlogPost {
   id: string;
@@ -26,37 +27,46 @@ interface StorefrontBlogPost {
 }
 
 async function fetchBlogPost(slug: string, postSlug: string, locale: string): Promise<StorefrontBlogPost> {
-  const res = await fetch(`http://localhost:8000/api/v1/store/${slug}/blog/${postSlug}/?locale=${locale}`);
-  if (!res.ok) throw new Error("Post not found");
-  return res.json();
+  const { data } = await customerClient.get(`/store/${slug}/blog/${postSlug}/`, { params: { locale } });
+  return data;
 }
 
 async function fetchComments(postId: string): Promise<unknown[]> {
-  const res = await fetch(`http://localhost:8000/api/v1/blog/posts/${postId}/public-comment/`, {
-    method: "GET",
-  });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const { data } = await customerClient.get(`/blog/posts/${postId}/public-comment/`);
+    return data;
+  } catch {
+    return [];
+  }
 }
 
 async function submitComment(
   postId: string,
   data: { content: string; author_name?: string; author_email?: string },
 ): Promise<void> {
-  const res = await fetch(`http://localhost:8000/api/v1/blog/posts/${postId}/public-comment/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Failed to submit comment");
+  await customerClient.post(`/blog/posts/${postId}/public-comment/`, data);
+}
+
+function sanitizeHtml(html: string): string {
+  if (typeof window === "undefined") return html;
+  try {
+    const DOMPurify = require("dompurify");
+    return DOMPurify.default.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "em", "a", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "code", "pre", "img", "figure", "figcaption", "table", "thead", "tbody", "tr", "th", "td", "div", "span", "hr"],
+      ALLOWED_ATTR: ["href", "src", "alt", "title", "class", "target", "rel"],
+    });
+  } catch {
+    return html;
+  }
 }
 
 export default function StorefrontBlogPostPage({
   params,
 }: {
-  params: Promise<{ slug: string; locale: string; postSlug: string }>;
+  params: Promise<{ slug: string; postSlug: string }>;
 }) {
-  const { slug, locale, postSlug } = use(params);
+  const { slug, postSlug } = use(params);
+  const locale = useLocale();
   const [post, setPost] = useState<StorefrontBlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [commentContent, setCommentContent] = useState("");
@@ -193,7 +203,7 @@ export default function StorefrontBlogPostPage({
 
       <div
         className="prose prose-lg max-w-none"
-        dangerouslySetInnerHTML={{ __html: post.content }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
       />
 
       {post.tags.length > 0 && (
