@@ -4,6 +4,8 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .auth_views import (
+    CustomerCartActionsView,
+    CustomerCartView,
     CustomerLoginView,
     CustomerLogoutView,
     CustomerMeView,
@@ -41,4 +43,6 @@ urlpatterns = [
     path("auth/token/refresh/", CustomerTokenRefreshView.as_view(), name="customer-token-refresh"),
     path("auth/logout/", CustomerLogoutView.as_view(), name="customer-logout"),
     path("auth/merge-cart/", CustomerMergeCartView.as_view(), name="customer-merge-cart"),
+    path("cart/", CustomerCartView.as_view(), name="customer-cart"),
+    path("cart/<uuid:cart_id>/<str:action>/", CustomerCartActionsView.as_view(), name="customer-cart-actions"),
 ]

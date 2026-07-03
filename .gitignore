@@ -156,6 +156,7 @@ cypress/screenshots/
 # Playwright
 playwright-report/
 test-results/
+.playwright-mcp/
 
 # ==================================================
 # IDES

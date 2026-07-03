@@ -250,6 +250,131 @@ class CustomerLogoutView(APIView):
         return Response({"detail": "Logged out."}, status=status.HTTP_200_OK)
 
 
+class CustomerCartView(APIView):
+    """Return the active cart for an authenticated customer on a given store."""
+
+    authentication_classes = [CustomerTokenAuthentication]
+    permission_classes = []
+
+    def get(self, request):
+        from django.db.models import Count
+        from apps.orders.models import Cart, CartItem
+        from apps.orders.serializers import CartSerializer
+        from apps.stores.models import Store
+
+        customer = request.user
+        if not isinstance(customer, Customer):
+            return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        store_slug = request.query_params.get("store")
+        if not store_slug:
+            return Response({"detail": "store query param is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            store = Store.unscoped.get(slug=store_slug)
+        except Store.DoesNotExist:
+            return Response({"detail": "Store not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        cart = (
+            Cart.unscoped.filter(customer=customer, store=store, status="active")
+            .prefetch_related("items__product")
+            .first()
+        )
+
+        if not cart:
+            return Response({"results": []}, status=status.HTTP_200_OK)
+
+        return Response({"results": [CartSerializer(cart).data]}, status=status.HTTP_200_OK)
+
+
+class CustomerCartActionsView(APIView):
+    """Add, update, or remove items from a customer's active cart."""
+
+    authentication_classes = [CustomerTokenAuthentication]
+    permission_classes = []
+
+    def _get_cart(self, request, cart_id):
+        from apps.orders.models import Cart
+        customer = request.user
+        if not isinstance(customer, Customer):
+            return None
+        try:
+            return Cart.unscoped.get(id=cart_id, customer=customer, status="active")
+        except Cart.DoesNotExist:
+            return None
+
+    def post(self, request, cart_id: str, action: str):
+        from apps.orders.models import CartItem
+        from apps.products.models import Product, ProductVariant
+
+        cart = self._get_cart(request, cart_id)
+        if not cart:
+            return Response({"detail": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if action == "items/add":
+            product_id = request.data.get("product_id")
+            variant_id = request.data.get("variant_id")
+            quantity = int(request.data.get("quantity", 1))
+
+            try:
+                product = Product.objects.get(id=product_id, store=cart.store)
+            except Product.DoesNotExist:
+                return Response({"detail": "Product not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            unit_price = product.price
+            variant = None
+            if variant_id:
+                try:
+                    variant = ProductVariant.objects.get(id=variant_id, product=product)
+                    unit_price = variant.price
+                except ProductVariant.DoesNotExist:
+                    return Response({"detail": "Variant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart, product=product, variant=variant,
+                defaults={"quantity": quantity, "unit_price": unit_price},
+            )
+            if not created:
+                cart_item.quantity += quantity
+                cart_item.save(update_fields=["quantity", "updated_at"])
+
+            cart.recalculate()
+            from apps.orders.serializers import CartSerializer
+            return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
+
+        elif action == "items/update":
+            item_id = request.data.get("item_id")
+            quantity = int(request.data.get("quantity", 1))
+            try:
+                cart_item = CartItem.objects.get(id=item_id, cart=cart)
+            except CartItem.DoesNotExist:
+                return Response({"detail": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            if quantity <= 0:
+                cart_item.delete()
+            else:
+                cart_item.quantity = quantity
+                cart_item.save(update_fields=["quantity", "updated_at"])
+
+            cart.recalculate()
+            from apps.orders.serializers import CartSerializer
+            return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
+
+        elif action == "items/remove":
+            item_id = request.data.get("item_id")
+            try:
+                cart_item = CartItem.objects.get(id=item_id, cart=cart)
+                cart_item.delete()
+            except CartItem.DoesNotExist:
+                pass
+
+            cart.recalculate()
+            from apps.orders.serializers import CartSerializer
+            return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
+
+        return Response({"detail": "Unknown action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class CustomerMergeCartView(APIView):
     """Merge guest cart items into the customer's authenticated cart."""
 

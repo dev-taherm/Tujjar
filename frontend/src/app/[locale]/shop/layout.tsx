@@ -115,9 +115,9 @@ export default function StorefrontLayout({
     queryKey: ["customer-cart-count", slug],
     queryFn: async () => {
       if (!slug) return { items_count: 0 };
-      const { customerClient } = await import("@/api/customer-client");
       try {
-        const { data } = await customerClient.get(`/orders/carts/`, { params: { status: "active", store: slug } });
+        const { customerClient } = await import("@/api/customer-client");
+        const { data } = await customerClient.get(`/customers/cart/`, { params: { store: slug } });
         const carts = data.results || data || [];
         const activeCart = Array.isArray(carts) ? carts[0] : null;
         return { items_count: activeCart?.items?.length ?? 0 };

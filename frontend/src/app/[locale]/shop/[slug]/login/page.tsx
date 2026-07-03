@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from "next-intl";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
 import { customerAuthApi } from "@/api/customer-auth";
 import { useCustomerAuthStore } from "@/stores/customer-auth";
@@ -20,6 +21,7 @@ export default function StorefrontLoginPage() {
   const locale = useLocale();
   const slug = params.slug as string;
   const t = useTranslations("auth.login");
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   const loginSchema = z.object({
@@ -59,6 +61,7 @@ export default function StorefrontLoginPage() {
           })),
         }).then(() => {
           useGuestCartStore.getState().clearCart();
+          queryClient.invalidateQueries({ queryKey: ["customer-cart-count", slug] });
         }).catch(() => {});
       }
 

@@ -30,6 +30,11 @@ class EventViewSet(TenantViewSet):
     def perform_create(self, serializer):
         org_id = self.request.org_id
         store_id = getattr(self.request, "store_id", None)
+        if not store_id:
+            from apps.stores.models import Store
+            first_store = Store.unscoped.filter(organization_id=org_id).first()
+            if first_store:
+                store_id = str(first_store.id)
         Event.objects.create(
             organization_id=org_id,
             store_id=store_id,
@@ -52,6 +57,7 @@ class EventViewSet(TenantViewSet):
             revenue=Sum("total_revenue"),
             orders=Sum("total_orders"),
             customers=Sum("total_visitors"),
+            products_sold=Sum("total_products_sold"),
         )
         prev_stats = DailyStats.objects.filter(
             organization_id=org_id,
@@ -61,6 +67,7 @@ class EventViewSet(TenantViewSet):
             revenue=Sum("total_revenue"),
             orders=Sum("total_orders"),
             customers=Sum("total_visitors"),
+            products_sold=Sum("total_products_sold"),
         )
 
         def pct_change(curr, prev):
@@ -107,7 +114,7 @@ class EventViewSet(TenantViewSet):
                 "total_revenue": total_revenue,
                 "total_orders": total_orders,
                 "total_customers": total_customers,
-                "total_products_sold": 0,
+                "total_products_sold": current_stats["products_sold"] or 0,
                 "revenue_change_pct": pct_change(total_revenue, prev_revenue),
                 "orders_change_pct": pct_change(total_orders, prev_orders),
                 "customers_change_pct": pct_change(total_customers, prev_customers),

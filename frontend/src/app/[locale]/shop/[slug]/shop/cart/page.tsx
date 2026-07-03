@@ -43,7 +43,7 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
     queryKey: ["cart", slug],
     queryFn: async () => {
       try {
-        const { data } = await customerClient.get("/orders/carts/", { params: { store: slug } });
+        const { data } = await customerClient.get("/customers/cart/", { params: { store: slug } });
         const results = data.results || data;
         return results.length > 0 ? results[0] : null;
       } catch {
@@ -57,14 +57,15 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
     if (!cart) return;
     try {
       if (quantity <= 0) {
-        await customerClient.post(`/orders/carts/${cart.id}/items/remove/`, { item_id: itemId });
+        await customerClient.post(`/customers/cart/${cart.id}/items/remove/`, { item_id: itemId });
       } else {
-        await customerClient.post(`/orders/carts/${cart.id}/items/update/`, {
+        await customerClient.post(`/customers/cart/${cart.id}/items/update/`, {
           item_id: itemId,
           quantity,
         });
       }
       queryClient.invalidateQueries({ queryKey: ["cart", slug] });
+      queryClient.invalidateQueries({ queryKey: ["customer-cart-count", slug] });
     } catch {
       toast.error(t("updateFailed"));
     }
