@@ -41,7 +41,10 @@ class CartViewSet(TenantViewSet):
         cart = self.get_object()
         product_id = request.data.get("product")
         variant_id = request.data.get("variant")
-        quantity = int(request.data.get("quantity", 1))
+        try:
+            quantity = int(request.data.get("quantity", 1))
+        except (TypeError, ValueError):
+            return Response({"detail": "Quantity must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             product = Product.objects.get(id=product_id, store=cart.store)
@@ -135,6 +138,7 @@ class CartViewSet(TenantViewSet):
                 store=cart.store,
                 customer=cart.customer,
                 customer_email=customer_email,
+                currency=cart.currency,
                 customer_first_name=request.data.get(
                     "customer_first_name", cart.customer.first_name if cart.customer else ""
                 ),
