@@ -282,6 +282,11 @@ export default function StorefrontLayout({
     }
   }, [store?.favicon_url]);
 
+  const resolveSeoTitle = (template: string | undefined, pageName: string, storeName: string): string => {
+    if (!template) return storeName;
+    return template.replace(/\{\{page_title\}\}/g, pageName).replace(/\{\{store_name\}\}/g, storeName);
+  };
+
   // Apply SEO metadata
   useEffect(() => {
     if (store) {
@@ -413,10 +418,6 @@ export default function StorefrontLayout({
     : defaultFooterColumns;
 
   const logoText = resolveLabel(navigation.logo_text as string | Record<string, string> | undefined) || store?.name || tNav("store");
-  const resolveSeoTitle = (template: string | undefined, pageName: string, storeName: string): string => {
-    if (!template) return storeName;
-    return template.replace(/\{\{page_title\}\}/g, pageName).replace(/\{\{store_name\}\}/g, storeName);
-  };
 
   const copyrightText = resolveField(footerConfig.copyright as string | Record<string, string> | undefined, tNav("poweredBy"));
 

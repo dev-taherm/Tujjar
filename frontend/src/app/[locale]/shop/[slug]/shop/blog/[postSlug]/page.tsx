@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { Calendar, Clock, Eye, ArrowLeft, Tag, ChevronRight } from "lucide-react";
+import DOMPurify from "dompurify";
 import { customerClient } from "@/api/customer-client";
 
 interface StorefrontBlogPost {
@@ -50,8 +51,7 @@ async function submitComment(
 function sanitizeHtml(html: string): string {
   if (typeof window === "undefined") return html;
   try {
-    const DOMPurify = require("dompurify");
-    return DOMPurify.default.sanitize(html, {
+    return DOMPurify.sanitize(html, {
       ALLOWED_TAGS: ["p", "br", "strong", "em", "a", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "code", "pre", "img", "figure", "figcaption", "table", "thead", "tbody", "tr", "th", "td", "div", "span", "hr"],
       ALLOWED_ATTR: ["href", "src", "alt", "title", "class", "target", "rel"],
     });
