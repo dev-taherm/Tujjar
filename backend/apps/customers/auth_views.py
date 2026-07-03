@@ -109,6 +109,7 @@ def _customer_tokens(customer: Customer) -> dict:
 
 
 class CustomerRegisterView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
     throttle_classes = []
 
@@ -140,6 +141,7 @@ class CustomerRegisterView(APIView):
 
 
 class CustomerLoginView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
     throttle_classes = []
 
@@ -187,6 +189,7 @@ class CustomerTokenRefreshSerializer(serializers.Serializer):
 
 
 class CustomerTokenRefreshView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
     throttle_classes = []
 
