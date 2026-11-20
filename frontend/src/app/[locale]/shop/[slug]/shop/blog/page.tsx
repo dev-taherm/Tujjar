@@ -1,108 +1,60 @@
-"use client";
-
-import { use, useState, useEffect } from "react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
-import { Calendar, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
-import { customerClient } from "@/api/customer-client";
-import type { BlogPostListItem } from "@/shared/types/blog";
+import { Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { getLocale } from "next-intl/server";
+import type { Metadata } from "next";
+import {
+  getStore,
+  getStoreBlogCategories,
+  getStoreBlogPosts,
+  storefrontUrl,
+} from "@/lib/server/storefront-api";
 
-interface BlogListResponse {
-  posts: BlogPostListItem[];
-  pagination: {
-    page: number;
-    per_page: number;
-    total: number;
-    total_pages: number;
-    has_next: boolean;
-    has_previous: boolean;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const store = await getStore(slug, locale);
+  const title = store ? `${store.name} — Blog` : "Blog";
+  return {
+    title,
+    description: store?.seo_description || store?.description || "",
+    alternates: { canonical: storefrontUrl(slug, "shop/blog", locale) },
   };
 }
 
-async function fetchBlogPosts(
-  slug: string,
-  locale: string,
-  page: number = 1,
-  category?: string,
-): Promise<BlogListResponse> {
-  const params = new URLSearchParams({ locale, page: String(page) });
-  if (category) params.set("category", category);
-  const { data } = await customerClient.get(`/store/${slug}/blog/`, { params });
-  return data;
-}
-
-async function fetchBlogCategories(slug: string, locale: string) {
-  try {
-    const { data } = await customerClient.get(`/store/${slug}/blog/categories/`, { params: { locale } });
-    return data;
-  } catch {
-    return [];
-  }
-}
-
-export default function StorefrontBlogPage({
+export default async function StorefrontBlogPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string; category?: string }>;
 }) {
-  const { slug } = use(params);
-  const locale = useLocale();
-  const { page: pageParam, category } = use(searchParams);
+  const { slug } = await params;
+  const { page: pageParam, category } = await searchParams;
+  const locale = await getLocale();
   const currentPage = Number(pageParam) || 1;
 
-  const [blogData, setBlogData] = useState<BlogListResponse | null>(null);
-  const [categories, setCategories] = useState<Array<{ name: string; slug: string; post_count: number }>>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [posts, cats] = await Promise.all([
-          fetchBlogPosts(slug, locale, currentPage, category),
-          fetchBlogCategories(slug, locale),
-        ]);
-        if (!cancelled) {
-          setBlogData(posts);
-          setCategories(cats);
-        }
-      } catch {
-        // ignore
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [slug, locale, currentPage, category]);
-
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-12">
-        <div className="space-y-6">
-          <div className="h-10 w-48 animate-pulse rounded bg-gray-200" />
-          <div className="grid gap-6 sm:grid-cols-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-64 animate-pulse rounded-xl bg-gray-100" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const [blogData, categories, store] = await Promise.all([
+    getStoreBlogPosts(slug, locale, { page: currentPage, category }),
+    getStoreBlogCategories(slug, locale),
+    getStore(slug, locale),
+  ]);
 
   const posts = blogData?.posts || [];
   const pagination = blogData?.pagination;
+  const blogBase = `/${locale}/shop/${slug}/shop/blog`;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
-      <h1 className="mb-8 text-3xl font-bold text-gray-900">Blog</h1>
+      <h1 className="mb-8 text-3xl font-bold" style={{ color: "var(--color-text)" }}>Blog</h1>
 
       {categories.length > 0 && (
         <div className="mb-8 flex flex-wrap gap-2">
           <Link
-            href={`/${locale}/shop/${slug}/shop/blog`}
+            href={blogBase}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
               !category ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
@@ -112,7 +64,7 @@ export default function StorefrontBlogPage({
           {categories.map((cat) => (
             <Link
               key={cat.slug}
-              href={`/${locale}/shop/${slug}/shop/blog?category=${cat.slug}`}
+              href={`${blogBase}?category=${cat.slug}`}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 category === cat.slug
                   ? "bg-blue-600 text-white"
@@ -126,8 +78,8 @@ export default function StorefrontBlogPage({
       )}
 
       {posts.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
-          <p className="text-gray-500">No blog posts yet.</p>
+        <div className="rounded-xl border border-dashed p-12 text-center" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
+          No blog posts yet.
         </div>
       ) : (
         <>
@@ -135,41 +87,47 @@ export default function StorefrontBlogPage({
             {posts.map((post) => (
               <Link
                 key={post.id}
-                href={`/${locale}/shop/${slug}/shop/blog/${post.slug}`}
-                className="group overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-md"
+                href={`${blogBase}/${post.slug}`}
+                className="group overflow-hidden rounded-xl border transition-shadow hover:shadow-md"
+                style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}
               >
-                {post.featured_image_url ? (
-                  <img
-                    src={post.featured_image_url}
-                    alt={post.title}
-                    className="h-48 w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-48 w-full items-center justify-center bg-gray-100 text-gray-300">
-                    No image
-                  </div>
-                )}
+                <div className="h-48 w-full overflow-hidden" style={{ background: "var(--color-bg)" }}>
+                  {post.featured_image_url ? (
+                    <img
+                      src={post.featured_image_url}
+                      alt={post.featured_image_alt || post.title}
+                      width={600}
+                      height={400}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center" style={{ color: "var(--color-text-secondary)" }}>
+                      No image
+                    </div>
+                  )}
+                </div>
                 <div className="p-5">
-                  <h2 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600">
+                  <h2 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
                     {post.title}
                   </h2>
                   {post.excerpt && (
-                    <p className="mt-2 line-clamp-2 text-sm text-gray-500">{post.excerpt}</p>
+                    <p className="mt-2 line-clamp-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>{post.excerpt}</p>
                   )}
-                  <div className="mt-4 flex items-center gap-4 text-xs text-gray-400">
-                    {post.author_name && <span>{post.author_name}</span>}
+                  <div className="mt-4 flex items-center gap-4 text-xs" style={{ color: "var(--color-text-secondary)" }}>
+                    {(post.author?.name || post.author_name) && <span>{post.author?.name || post.author_name}</span>}
                     {post.published_at && (
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(post.published_at).toLocaleDateString()}
+                        {new Date(post.published_at).toLocaleDateString(locale)}
                       </span>
                     )}
-                    {post.reading_time > 0 && (
+                    {post.reading_time ? (
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {post.reading_time} min read
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </Link>
@@ -180,19 +138,21 @@ export default function StorefrontBlogPage({
             <div className="mt-8 flex items-center justify-center gap-2">
               {pagination.has_previous && (
                 <Link
-                  href={`/${locale}/shop/${slug}/shop/blog?page=${currentPage - 1}${category ? `&category=${category}` : ""}`}
-                  className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                  href={`${blogBase}?page=${currentPage - 1}${category ? `&category=${category}` : ""}`}
+                  className="flex items-center gap-1 rounded-lg border px-4 py-2 text-sm"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}
                 >
                   <ChevronLeft className="h-4 w-4" /> Previous
                 </Link>
               )}
-              <span className="px-4 text-sm text-gray-500">
+              <span className="px-4 text-sm" style={{ color: "var(--color-text-secondary)" }}>
                 Page {pagination.page} of {pagination.total_pages}
               </span>
               {pagination.has_next && (
                 <Link
-                  href={`/${locale}/shop/${slug}/shop/blog?page=${currentPage + 1}${category ? `&category=${category}` : ""}`}
-                  className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                  href={`${blogBase}?page=${currentPage + 1}${category ? `&category=${category}` : ""}`}
+                  className="flex items-center gap-1 rounded-lg border px-4 py-2 text-sm"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}
                 >
                   Next <ChevronRight className="h-4 w-4" />
                 </Link>

@@ -29,3 +29,18 @@ def blog_post_deleted(sender, instance, **kwargs):
         entity_type="blog_post",
         entity_id=instance.id,
     ).delete()
+
+    if instance.store_id:
+        from apps.storefront.cache import invalidate_store_seo
+
+        invalidate_store_seo(instance.store.slug)
+
+
+@receiver(post_save, sender="blog.BlogPost")
+def invalidate_store_seo_on_blog_post_save(sender, instance, **kwargs):
+    """Published posts appear in the sitemap."""
+    if not instance.store_id:
+        return
+    from apps.storefront.cache import invalidate_store_seo
+
+    invalidate_store_seo(instance.store.slug)

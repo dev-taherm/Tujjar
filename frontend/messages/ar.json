@@ -1269,7 +1269,9 @@
       "addToCart": "أضف إلى السلة",
       "notFound": "المنتج غير موجود",
       "addedToCart": "تمت الإضافة إلى السلة",
-      "addToCartFailed": "فشل الإضافة إلى السلة"
+      "addToCartFailed": "فشل الإضافة إلى السلة",
+      "decreaseQuantity": "تقليل الكمية",
+      "increaseQuantity": "زيادة الكمية"
     },
     "cart": {
       "title": "سلة التسوق",
@@ -1287,7 +1289,8 @@
     },
     "collections": {
       "title": "المجموعات",
-      "noCollections": "لا توجد مجموعات متاحة بعد."
+      "noCollections": "لا توجد مجموعات متاحة بعد.",
+      "productsCount": "{count, plural, =1 {منتج واحد} other {# منتجات}}"
     },
     "notFound": {
       "title": "المتجر غير موجود",

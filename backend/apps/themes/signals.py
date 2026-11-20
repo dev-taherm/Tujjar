@@ -1217,3 +1217,42 @@ def create_default_themes(sender, **kwargs):
             if homepage:
                 theme.sections_schema = homepage
                 theme.save(update_fields=["sections_schema"])
+
+
+# ---------------------------------------------------------------------------
+# Storefront cache invalidation — theme config changes affect every store
+# using the theme (or one of its descendants).
+# ---------------------------------------------------------------------------
+
+from django.db.models.signals import post_delete, post_save  # noqa: E402
+from django.dispatch import receiver  # noqa: E402
+
+
+@receiver(post_save, sender="themes.Theme")
+def invalidate_storefront_cache_on_theme_save(sender, instance, **kwargs):
+    from apps.storefront.cache import invalidate_stores_for_theme
+
+    invalidate_stores_for_theme(instance)
+
+
+@receiver(post_delete, sender="themes.Theme")
+def invalidate_storefront_cache_on_theme_delete(sender, instance, **kwargs):
+    from apps.storefront.cache import invalidate_stores_for_theme
+
+    invalidate_stores_for_theme(instance)
+
+
+@receiver(post_save, sender="themes.ThemePreset")
+def invalidate_storefront_cache_on_preset_save(sender, instance, **kwargs):
+    if instance.theme_id:
+        from apps.storefront.cache import invalidate_stores_for_theme
+
+        invalidate_stores_for_theme(instance.theme)
+
+
+@receiver(post_delete, sender="themes.ThemePreset")
+def invalidate_storefront_cache_on_preset_delete(sender, instance, **kwargs):
+    if instance.theme_id:
+        from apps.storefront.cache import invalidate_stores_for_theme
+
+        invalidate_stores_for_theme(instance.theme)

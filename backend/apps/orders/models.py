@@ -177,6 +177,27 @@ class Order(UUIDModel, TimeStampedModel):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default="USD")
 
+    # Commerce details
+    discount_code = models.CharField(max_length=50, blank=True, default="")
+    discount = models.ForeignKey(
+        "commerce.Discount",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
+    shipping_method_name = models.CharField(max_length=100, blank=True, default="")
+    payment_method = models.CharField(
+        max_length=20,
+        choices=[
+            ("cod", "Cash on delivery"),
+            ("card", "Card"),
+            ("bank_transfer", "Bank transfer"),
+        ],
+        blank=True,
+        default="cod",
+    )
+
     # Customer info (denormalized at time of order)
     customer_email = models.EmailField()
     customer_first_name = models.CharField(max_length=150, blank=True, default="")

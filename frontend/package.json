@@ -35,6 +35,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.9",
+    "isomorphic-dompurify": "^4.8.0",
     "lowlight": "^3.3.0",
     "lucide-react": "^0.460.0",
     "next": "16.2.9",

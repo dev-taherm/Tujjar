@@ -118,9 +118,24 @@ class CartViewSet(TenantViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        from apps.commerce.services import QuoteInput, build_quote
+
+        shipping_country = (request.data.get("shipping_country") or "").strip()
+        shipping_state = (request.data.get("shipping_state") or "").strip()
+        shipping_postal_code = (request.data.get("shipping_postal_code") or "").strip()
+        discount_code = (request.data.get("discount_code") or "").strip()
+        shipping_rate_id = request.data.get("shipping_rate_id") or None
+        payment_method = request.data.get("payment_method") or "cod"
+
+        cart_items = list(cart.items.select_related("product", "variant").all())
+        quote_items = [
+            (str(item.product_id), item.quantity, Decimal(str(item.line_total)))
+            for item in cart_items
+        ]
+
         with transaction.atomic():
             # Validate inventory before creating order
-            for cart_item in cart.items.select_related("product", "variant").all():
+            for cart_item in cart_items:
                 product = cart_item.product
                 if product.track_inventory:
                     locked_product = Product.objects.select_for_update().get(id=product.id)
@@ -134,6 +149,20 @@ class CartViewSet(TenantViewSet):
                             },
                             status=status.HTTP_400_BAD_REQUEST,
                         )
+
+            quote = build_quote(
+                cart.organization_id,
+                QuoteInput(
+                    subtotal=cart.subtotal,
+                    country=shipping_country,
+                    state=shipping_state,
+                    postal_code=shipping_postal_code,
+                    discount_code=discount_code,
+                    shipping_rate_id=shipping_rate_id,
+                    customer_id=str(cart.customer_id) if cart.customer_id else None,
+                    items=quote_items,
+                ),
+            )
 
             order = Order.objects.create(
                 organization=cart.organization,
@@ -151,25 +180,39 @@ class CartViewSet(TenantViewSet):
                     "customer_phone", cart.customer.phone if cart.customer else ""
                 ),
                 subtotal=cart.subtotal,
-                tax_amount=Decimal("0"),
-                shipping_amount=Decimal("0"),
-                discount_amount=Decimal("0"),
+                tax_amount=quote.tax,
+                shipping_amount=quote.shipping,
+                discount_amount=quote.discount,
+                discount_code=quote.discount_code,
+                discount_id=quote.discount_id,
+                shipping_method_name=quote.shipping_rate_name,
+                payment_method=payment_method,
                 total=Decimal("0"),
                 shipping_address_line1=request.data.get("shipping_address_line1", ""),
                 shipping_address_line2=request.data.get("shipping_address_line2", ""),
                 shipping_city=request.data.get("shipping_city", ""),
-                shipping_state=request.data.get("shipping_state", ""),
-                shipping_postal_code=request.data.get("shipping_postal_code", ""),
-                shipping_country=request.data.get("shipping_country", ""),
+                shipping_state=shipping_state,
+                shipping_postal_code=shipping_postal_code,
+                shipping_country=shipping_country,
             )
 
-            # Calculate totals server-side
-            order.total = (
-                order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
-            )
+            # Total: inclusive tax already sits inside the subtotal
+            if quote.tax_inclusive:
+                order.total = order.subtotal - order.discount_amount + order.shipping_amount
+            else:
+                order.total = order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
+            order.total = order.total.quantize(Decimal("0.01"))
             order.save(update_fields=["total"])
 
-            for cart_item in cart.items.select_related("product", "variant").all():
+            # Record discount usage
+            if quote.discount_id and quote.discount:
+                from apps.commerce.models import Discount
+
+                Discount.objects.filter(id=quote.discount_id).update(
+                    used_count=F("used_count") + 1
+                )
+
+            for cart_item in cart_items:
                 product = cart_item.product
                 if product.track_inventory:
                     Product.objects.filter(id=product.id).update(

@@ -4,12 +4,34 @@ import copy
 import uuid as _uuid
 
 from django.core.validators import RegexValidator
+from django.db.models import Q
 from django.utils.text import slugify
 from rest_framework import serializers
 
 from apps.organizations.models import Organization
 
 from .models import Store, StoreDomain
+
+
+class ThemeAssignField(serializers.PrimaryKeyRelatedField):
+    """Theme picker that sees system themes (organization=None) as well as
+    the requesting organization's own themes.
+
+    The Theme default manager is tenant-scoped, which hides system themes
+    from the PK lookup during validation; this field widens the queryset so
+    merchants can actually assign them.
+    """
+
+    def get_queryset(self):
+        from apps.themes.models import Theme
+
+        request = self.context.get("request")
+        org_id = getattr(request, "org_id", None) if request is not None else None
+        qs = Theme.unscoped.all()
+        if org_id:
+            qs = qs.filter(Q(organization_id=org_id) | Q(organization__isnull=True))
+        return qs
+
 
 RESERVED_SLUGS = {
     "admin",
@@ -109,6 +131,7 @@ class StoreSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
     favicon_url = serializers.SerializerMethodField()
     og_image_url = serializers.SerializerMethodField()
+    theme = ThemeAssignField()
 
     class Meta:
         model = Store

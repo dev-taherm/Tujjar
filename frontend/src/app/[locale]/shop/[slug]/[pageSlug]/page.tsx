@@ -1,62 +1,56 @@
-"use client";
-
-import { use, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { StorefrontSectionRenderer } from "@/features/storefront/section-renderer";
 import { Button } from "@/shared/ui";
-import Link from "next/link";
-import { useTranslations, useLocale } from "next-intl";
-import { applyThemeVariables } from "@/lib/theme-css";
+import {
+  getStorePage,
+  storefrontUrl,
+} from "@/lib/server/storefront-api";
+import { collectThemeVars } from "@/lib/theme-css";
 import type { Section, ThemeOverride } from "@/shared/types";
 
-interface PageData {
-  id: string;
-  title: string;
-  slug: string;
-  content_schema: { sections: Section[] };
-  seo_title: string;
-  seo_description: string;
-  theme_override: ThemeOverride | null;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; pageSlug: string }>;
+}): Promise<Metadata> {
+  const { slug, pageSlug } = await params;
+  const locale = await getLocale();
+  const page = await getStorePage(slug, pageSlug, locale);
+  if (!page) return {};
+
+  const title = page.seo_title || page.title;
+  const description = page.seo_description || "";
+  return {
+    title: page.seo_title ? { absolute: page.seo_title } : title,
+    description,
+    alternates: { canonical: storefrontUrl(slug, pageSlug, locale) },
+    openGraph: {
+      title,
+      description,
+      url: storefrontUrl(slug, pageSlug, locale),
+    },
+  };
 }
 
-export default function StorefrontPage({ params }: { params: Promise<{ slug: string; pageSlug: string }> }) {
-  const { slug, pageSlug } = use(params);
-  const locale = useLocale();
-  const tNotFound = useTranslations("storefront.pageNotFound");
-  const tCommon = useTranslations("common");
+export default async function StorefrontPage({
+  params,
+}: {
+  params: Promise<{ slug: string; pageSlug: string }>;
+}) {
+  const { slug, pageSlug } = await params;
+  const locale = await getLocale();
+  const tNotFound = await getTranslations({ locale, namespace: "storefront.pageNotFound" });
+  const tCommon = await getTranslations({ locale, namespace: "common" });
 
-  const { data, isLoading } = useQuery<PageData | null>({
-    queryKey: ["storefront-page", slug, pageSlug, locale],
-    queryFn: async () => {
-      const res = await fetch(`/api/v1/store/${slug}/pages/${pageSlug}/?locale=${locale}`);
-      if (!res.ok) return null;
-      return res.json();
-    },
-  });
+  const page = await getStorePage(slug, pageSlug, locale);
 
-  // Apply page-level theme override (layered on top of store theme from layout)
-  useEffect(() => {
-    if (data?.theme_override) {
-      applyThemeVariables(data.theme_override);
-    }
-  }, [data?.theme_override]);
-
-  if (isLoading) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-1/3 rounded bg-gray-200" />
-          <div className="h-4 w-1/2 rounded bg-gray-200" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) {
+  if (!page) {
     return (
       <div className="flex flex-col items-center justify-center py-24">
-        <h1 className="text-2xl font-bold text-gray-900">{tNotFound("title")}</h1>
-        <p className="mt-2 text-gray-500">{tNotFound("description")}</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{tNotFound("title")}</h1>
+        <p className="mt-2" style={{ color: "var(--color-text-secondary)" }}>{tNotFound("description")}</p>
         <Link href={`/${locale}/shop/${slug}`} className="mt-6">
           <Button>{tCommon("backToStore")}</Button>
         </Link>
@@ -64,17 +58,32 @@ export default function StorefrontPage({ params }: { params: Promise<{ slug: str
     );
   }
 
-  const sections = data.content_schema?.sections || [];
+  const sections = (page.content_schema?.sections || []) as unknown as Section[];
 
   return (
-    <div className="space-y-8 py-8">
-      {sections.length > 0 ? (
+    <>
+      {/* Page-level theme override — rendered after the layout's theme style
+          tag, so its declarations take precedence (same selector, later wins). */}
+      {page.theme_override ? (
+        <ThemeOverrideStyle override={page.theme_override as ThemeOverride} />
+      ) : null}
+      <div className="py-8">
         <StorefrontSectionRenderer sections={sections} />
-      ) : (
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">{data.title}</h1>
-        </div>
-      )}
-    </div>
+        {sections.length === 0 && (
+          <div className="mx-auto max-w-3xl px-4 text-center" style={{ color: "var(--color-text-secondary)" }}>
+            {page.title}
+          </div>
+        )}
+      </div>
+    </>
   );
+}
+
+function ThemeOverrideStyle({ override }: { override: ThemeOverride }) {
+  const vars = collectThemeVars(override, false);
+  if (Object.keys(vars).length === 0) return null;
+  const css = Object.entries(vars)
+    .map(([name, value]) => `  ${name}: ${value};`)
+    .join("\n");
+  return <style dangerouslySetInnerHTML={{ __html: `:root {\n${css}\n}` }} />;
 }

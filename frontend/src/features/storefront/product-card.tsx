@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n";
 import type { Product } from "@/shared/types";
 
 export function StorefrontProductCard({ product, slug }: { product: Product; slug?: string }) {

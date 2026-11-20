@@ -1,52 +1,40 @@
-"use client";
-
-import { use, useState, useEffect } from "react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
-import { customerClient } from "@/api/customer-client";
-import { useTranslations } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
+import { getStore, getStoreCollections, storefrontUrl } from "@/lib/server/storefront-api";
 
-interface Collection {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  image_url: string | null;
-  products_count: number;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const store = await getStore(slug, locale);
+  const t = await getTranslations({ locale, namespace: "storefront.collections" });
+  return {
+    title: t("title"),
+    description: store?.seo_description || store?.description || "",
+    alternates: { canonical: storefrontUrl(slug, "shop/collections", locale) },
+  };
 }
 
-export default function CollectionsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
-  const locale = useLocale();
-  const t = useTranslations("storefront.collections");
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function CollectionsPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "storefront.collections" });
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await customerClient.get(`/store/${slug}/collections/`, { params: { locale } });
-        setCollections(data.results || data || []);
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [slug, locale]);
+  const collections = await getStoreCollections(slug, locale);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-
-      {loading ? (
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-64 animate-pulse rounded-xl bg-gray-200" />
-          ))}
-        </div>
-      ) : collections.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-gray-300 p-12 text-center text-gray-500">
+      <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("title")}</h1>
+      {collections.length === 0 ? (
+        <div className="mt-6 rounded-xl border border-dashed p-12 text-center" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
           {t("noCollections")}
         </div>
       ) : (
@@ -55,28 +43,34 @@ export default function CollectionsPage({ params }: { params: Promise<{ slug: st
             <Link
               key={collection.id}
               href={`/${locale}/shop/${slug}/shop/collections/${collection.slug}`}
-              className="group overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-md"
+              className="group overflow-hidden rounded-xl border transition-shadow hover:shadow-md"
+              style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}
             >
-              {collection.image_url ? (
-                <img
-                  src={collection.image_url}
-                  alt={collection.name}
-                  className="h-48 w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-48 w-full items-center justify-center bg-gray-100 text-gray-400">
-                  No image
-                </div>
-              )}
-              <div className="p-5">
-                <h2 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600">
-                  {collection.name}
-                </h2>
-                {collection.description && (
-                  <p className="mt-2 line-clamp-2 text-sm text-gray-500">{collection.description}</p>
+              <div className="aspect-video overflow-hidden" style={{ background: "var(--color-bg)" }}>
+                {collection.image_url ? (
+                  <img
+                    src={collection.image_url}
+                    alt={collection.name}
+                    width={600}
+                    height={340}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center" style={{ color: "var(--color-text-secondary)" }}>
+                    {t("title")}
+                  </div>
                 )}
-                <p className="mt-2 text-xs text-gray-400">
-                  {collection.products_count} {collection.products_count === 1 ? "product" : "products"}
+              </div>
+              <div className="p-4">
+                <h2 className="font-semibold" style={{ color: "var(--color-text)" }}>{collection.name}</h2>
+                {collection.description && (
+                  <p className="mt-1 line-clamp-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                    {collection.description}
+                  </p>
+                )}
+                <p className="mt-2 text-xs" style={{ color: "var(--color-text-secondary)" }}>
+                  {t("productsCount", { count: collection.products_count })}
                 </p>
               </div>
             </Link>

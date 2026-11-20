@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const LOCALES = ["en", "ar"];
 const DEFAULT_LOCALE = "en";
 const EXCLUDED_PREFIXES = ["/api", "/_next", "/favicon.ico", "/media"];
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
 function getSubdomain(host: string): string | null {
   const hostname = host.split(":")[0];
@@ -34,6 +35,18 @@ export function middleware(request: NextRequest) {
   const hasLocalePrefix = LOCALES.includes(firstSegment);
 
   if (EXCLUDED_PREFIXES.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
+  // SEO files: never locale-prefix. On store subdomains, proxy directly to the
+  // backend's per-store endpoints; otherwise let next.config rewrites handle
+  // path-based /:slug/robots.txt and /:slug/sitemap.xml.
+  if (pathname.endsWith("/robots.txt") || pathname.endsWith("/sitemap.xml")) {
+    if (subdomain) {
+      return NextResponse.rewrite(
+        new URL(`${BACKEND_URL}/api/v1/store/${subdomain}${pathname}`, request.url)
+      );
+    }
     return NextResponse.next();
   }
 

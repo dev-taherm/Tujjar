@@ -6,6 +6,7 @@ from apps.storefront.views import (
     StorefrontPageView,
     StorefrontProductDetailView,
     StorefrontProductListView,
+    checkout_quote,
     robots_txt,
     sitemap_xml,
     storefront_blog_categories,
@@ -14,11 +15,13 @@ from apps.storefront.views import (
     storefront_blog_rss,
     storefront_blog_subscribe,
     storefront_home,
+    storefront_stores_list,
 )
 
 app_name = "storefront"
 
 urlpatterns = [
+    path("", storefront_stores_list, name="storefront-stores-list"),
     path("<str:subdomain>/robots.txt", robots_txt, name="storefront-robots"),
     path("<str:subdomain>/sitemap.xml", sitemap_xml, name="storefront-sitemap"),
     path("<str:subdomain>/", storefront_home, name="storefront-home"),
@@ -56,4 +59,5 @@ urlpatterns = [
     ),
     path("<str:subdomain>/blog/rss/", storefront_blog_rss, name="storefront-blog-rss"),
     path("<str:subdomain>/blog/<slug:slug>/", storefront_blog_post, name="storefront-blog-post"),
+    path("<str:subdomain>/checkout/quote/", checkout_quote, name="storefront-checkout-quote"),
 ]

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "apps.stores",
     "apps.products",
     "apps.orders",
+    "apps.commerce",
     "apps.customers",
     "apps.pages",
     "apps.themes",

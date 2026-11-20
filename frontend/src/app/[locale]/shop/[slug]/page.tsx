@@ -1,101 +1,52 @@
-"use client";
-
-import { use, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { StorefrontProductCard } from "@/features/storefront/product-card";
 import { StorefrontSectionRenderer } from "@/features/storefront/section-renderer";
 import { Button } from "@/shared/ui";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { getStoreHome, resolveSeoTitle, storefrontUrl } from "@/lib/server/storefront-api";
 import type { Product, Section } from "@/shared/types";
 
-interface StorefrontData {
-  store: {
-    name: string;
-    slug: string;
-    description: string;
-    logo_url: string | null;
-    favicon_url: string | null;
-    seo_title: string;
-    seo_description: string;
-    og_image: string | null;
-    twitter_card: string;
-    navigation: Record<string, unknown>;
-    footer_config: Record<string, unknown>;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const data = await getStoreHome(slug, locale);
+  if (!data) return {};
+
+  const { store, homepage } = data;
+  const title =
+    homepage?.seo_title || resolveSeoTitle(store.seo_title, "Home", store.name) || store.name;
+  const description = homepage?.seo_description || store.seo_description || store.description || "";
+
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: storefrontUrl(slug, "", locale) },
+    openGraph: {
+      title,
+      description,
+      url: storefrontUrl(slug, "", locale),
+      images: store.og_image ? [store.og_image] : [],
+    },
   };
-  featured_products: Product[];
-  homepage: {
-    content_schema: { sections: Section[] };
-    seo_title: string;
-    seo_description: string;
-  } | null;
 }
 
-export default function StorefrontHomePage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
-  const locale = useLocale();
-  const t = useTranslations("storefront.home");
-  const tNotFound = useTranslations("storefront.notFound");
+export default async function StorefrontHomePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "storefront.home" });
+  const tNotFound = await getTranslations({ locale, namespace: "storefront.notFound" });
 
-  const { data, isLoading } = useQuery<StorefrontData | null>({
-    queryKey: ["storefront", slug, locale],
-    queryFn: async () => {
-      const res = await fetch(`/api/v1/store/${slug}/?locale=${locale}`);
-      if (!res.ok) return null;
-      return res.json();
-    },
-  });
-
-  const store = data?.store;
-
-  useEffect(() => {
-    if (store) {
-      const resolveSeoTitle = (template: string | undefined, pageName: string, storeName: string): string => {
-        if (!template) return storeName;
-        return template.replace(/\{\{page_title\}\}/g, pageName).replace(/\{\{store_name\}\}/g, storeName);
-      };
-      const title = resolveSeoTitle(store.seo_title, "Home", store.name);
-      document.title = title;
-      const setMeta = (name: string, content: string) => {
-        let el = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`) as HTMLMetaElement;
-        if (!el) {
-          el = document.createElement("meta");
-          if (name.startsWith("og:")) {
-            el.setAttribute("property", name);
-          } else {
-            el.setAttribute("name", name);
-          }
-          document.head.appendChild(el);
-        }
-        el.setAttribute("content", content);
-      };
-      if (store.seo_description) {
-        setMeta("description", store.seo_description);
-      }
-      if (store.og_image) {
-        setMeta("og:image", store.og_image);
-      }
-      if (store.twitter_card) {
-        setMeta("twitter:card", store.twitter_card);
-      }
-    }
-  }, [store]);
-
-  if (isLoading) {
-    return (
-      <div className="space-y-16">
-        <section className="relative overflow-hidden" style={{ background: `linear-gradient(to bottom right, var(--color-surface), var(--color-bg), var(--color-surface))` }}>
-          <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-            <div className="max-w-2xl animate-pulse">
-              <div className="h-12 w-3/4 rounded" style={{ background: "var(--color-surface)" }} />
-              <div className="mt-6 h-6 w-1/2 rounded" style={{ background: "var(--color-surface)" }} />
-            </div>
-          </div>
-        </section>
-      </div>
-    );
-  }
+  const data = await getStoreHome(slug, locale);
 
   if (!data) {
     return (
@@ -109,8 +60,10 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
     );
   }
 
-  const sections = data.homepage?.content_schema?.sections;
-  const featuredProducts = data.featured_products || [];
+  const { store, homepage, featured_products } = data;
+  const sections = (homepage?.content_schema?.sections ?? []) as unknown as Section[];
+  const featuredProducts = featured_products || [];
+  const shopHref = `/${locale}/shop/${slug}/shop`;
 
   if (sections && sections.length > 0) {
     return (
@@ -120,17 +73,13 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
           <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("featuredProducts")}</h2>
-              <Link href={`/${locale}/shop/${slug}/shop`} className="text-sm font-medium transition-colors"
-                style={{ color: "var(--color-primary)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-primary-700)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-primary)")}
-              >
+              <Link href={shopHref} className="text-sm font-medium underline-offset-4 hover:underline" style={{ color: "var(--color-primary)" }}>
                 {t("viewAll")}
               </Link>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
-              {featuredProducts.map((product: Product) => (
-                <StorefrontProductCard key={product.id} product={product} slug={slug} />
+              {featuredProducts.map((product) => (
+                <StorefrontProductCard key={product.id} product={product as unknown as Product} slug={slug} />
               ))}
             </div>
           </section>
@@ -145,20 +94,20 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl" style={{ color: "var(--color-text)" }}>
-              {store!.name}
+              {store.name}
             </h1>
-            {store!.description && (
+            {store.description && (
               <p className="mt-6 text-lg" style={{ color: "var(--color-text-secondary)" }}>
-                {store!.description}
+                {store.description}
               </p>
             )}
-            {!store!.description && (
+            {!store.description && (
               <p className="mt-6 text-lg" style={{ color: "var(--color-text-secondary)" }}>
                 {t("discoverProducts")}
               </p>
             )}
             <div className="mt-8 flex gap-4">
-              <Link href={`/${locale}/shop/${slug}/shop`}>
+              <Link href={shopHref}>
                 <Button size="lg">
                   {t("shopNow")} <ArrowRight className="ms-2 h-4 w-4" />
                 </Button>
@@ -171,18 +120,14 @@ export default function StorefrontHomePage({ params }: { params: Promise<{ slug:
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("featuredProducts")}</h2>
-          <Link href={`/${locale}/shop/${slug}/shop`} className="text-sm font-medium transition-colors"
-            style={{ color: "var(--color-primary)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-primary-700)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-primary)")}
-          >
+          <Link href={shopHref} className="text-sm font-medium underline-offset-4 hover:underline" style={{ color: "var(--color-primary)" }}>
             {t("viewAll")}
           </Link>
         </div>
         {featuredProducts.length > 0 ? (
           <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
-            {featuredProducts.map((product: Product) => (
-              <StorefrontProductCard key={product.id} product={product} slug={slug} />
+            {featuredProducts.map((product) => (
+              <StorefrontProductCard key={product.id} product={product as unknown as Product} slug={slug} />
             ))}
           </div>
         ) : (

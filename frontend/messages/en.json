@@ -1277,7 +1277,9 @@
       "addToCart": "Add to Cart",
       "notFound": "Product not found",
       "addedToCart": "Added to cart",
-      "addToCartFailed": "Failed to add to cart"
+      "addToCartFailed": "Failed to add to cart",
+      "decreaseQuantity": "Decrease quantity",
+      "increaseQuantity": "Increase quantity"
     },
     "cart": {
       "title": "Shopping Cart",
@@ -1295,7 +1297,8 @@
     },
     "collections": {
       "title": "Collections",
-      "noCollections": "No collections available yet."
+      "noCollections": "No collections available yet.",
+      "productsCount": "{count, plural, =1 {1 product} other {# products}}"
     },
     "notFound": {
       "title": "Store not found",

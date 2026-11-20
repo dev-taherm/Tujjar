@@ -1,133 +1,137 @@
-"use client";
+import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
+import { ProductPurchasePanel } from "@/features/storefront/purchase-panel";
+import {
+  getStore,
+  getStoreProduct,
+  storefrontUrl,
+} from "@/lib/server/storefront-api";
 
-import { use, useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/shared/ui";
-import { ShoppingCart, Heart, Minus, Plus } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
-import { toast } from "sonner";
-import { useCustomerAuthStore } from "@/stores/customer-auth";
-import { useGuestCartStore } from "@/stores/guest-cart";
-import { customerClient } from "@/api/customer-client";
-
-interface StorefrontVariant {
-  id: string;
-  name: string;
-  price: number | null;
+function JsonLd({ data }: { data: Record<string, unknown> | Record<string, unknown>[] }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
 }
 
-export default function StorefrontProductDetailPage({
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; productSlug: string }>;
+}): Promise<Metadata> {
+  const { slug, productSlug } = await params;
+  const locale = await getLocale();
+  const product = await getStoreProduct(slug, productSlug, locale);
+  if (!product) return {};
+
+  const title = product.seo_title || product.title;
+  const description = product.seo_description || product.description || "";
+  const images = product.primary_image?.url ? [product.primary_image.url] : [];
+
+  return {
+    // When the product carries a complete seo_title it already includes the
+    // store suffix — mark it absolute so the layout template isn't applied twice.
+    title: product.seo_title ? { absolute: product.seo_title } : title,
+    description,
+    alternates: { canonical: storefrontUrl(slug, `shop/${productSlug}`, locale) },
+    openGraph: {
+      title,
+      description,
+      url: storefrontUrl(slug, `shop/${productSlug}`, locale),
+      images,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images,
+    },
+  };
+}
+
+export default async function StorefrontProductDetailPage({
   params,
 }: {
   params: Promise<{ slug: string; productSlug: string }>;
 }) {
-  const { slug, productSlug } = use(params);
-  const locale = useLocale();
-  const t = useTranslations("storefront.product");
-  const tCommon = useTranslations("common");
-  const [quantity, setQuantity] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
-  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated);
-  const addItem = useGuestCartStore((s) => s.addItem);
-  const queryClient = useQueryClient();
+  const { slug, productSlug } = await params;
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "storefront.product" });
+  const tCommon = await getTranslations({ locale, namespace: "common" });
+  const tProducts = await getTranslations({ locale, namespace: "storefront.products" });
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ["storefront", slug, "product", productSlug, locale],
-    queryFn: async () => {
-      const res = await fetch(`/api/v1/store/${slug}/products/${productSlug}/?locale=${locale}`);
-      if (!res.ok) return null;
-      return res.json();
-    },
-  });
-
-  useEffect(() => {
-    if (product) {
-      document.title = product.seo_title || product.title || "";
-      const setMeta = (name: string, content: string) => {
-        let el = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`) as HTMLMetaElement;
-        if (!el) {
-          el = document.createElement("meta");
-          if (name.startsWith("og:")) {
-            el.setAttribute("property", name);
-          } else {
-            el.setAttribute("name", name);
-          }
-          document.head.appendChild(el);
-        }
-        el.setAttribute("content", content);
-      };
-      if (product.seo_description || product.description) {
-        setMeta("description", product.seo_description || product.description);
-      }
-      if (product.primary_image?.url) {
-        setMeta("og:image", product.primary_image.url);
-      }
-      setMeta("og:title", product.seo_title || product.title || "");
-    }
-  }, [product]);
-
-  const handleAddToCart = async () => {
-    if (!product) return;
-    setAdding(true);
-    try {
-      if (isAuthenticated) {
-        await customerClient.post("/orders/carts/add/", {
-          store: slug,
-          product: product.id,
-          variant: selectedVariant || undefined,
-          quantity,
-        });
-        queryClient.invalidateQueries({ queryKey: ["cart", slug] });
-      } else {
-        const variant = selectedVariant
-          ? product.variants?.find((v: StorefrontVariant) => v.id === selectedVariant)
-          : undefined;
-        addItem({
-          productId: product.id,
-          productTitle: product.title,
-          variantId: selectedVariant || undefined,
-          variantName: variant?.name,
-          unitPrice: variant?.price ?? parseFloat(product.price),
-          imageUrl: product.primary_image?.url,
-          quantity,
-        });
-      }
-      toast.success(t("addedToCart"));
-    } catch {
-      toast.error(t("addToCartFailed"));
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-          <div className="aspect-square animate-pulse rounded-xl bg-gray-200" />
-          <div className="space-y-4">
-            <div className="h-8 w-1/2 animate-pulse rounded bg-gray-200" />
-            <div className="h-4 w-1/3 animate-pulse rounded bg-gray-200" />
-            <div className="h-20 animate-pulse rounded bg-gray-200" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const [product, store] = await Promise.all([
+    getStoreProduct(slug, productSlug, locale),
+    getStore(slug, locale),
+  ]);
 
   if (!product) {
     return <div className="py-16 text-center text-gray-500">{t("notFound")}</div>;
   }
 
+  const pageUrl = storefrontUrl(slug, `shop/${productSlug}`, locale);
+  const shopUrl = storefrontUrl(slug, "shop", locale);
+  const price = Number(product.price) || 0;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description || "",
+    image: product.primary_image?.url ? [product.primary_image.url] : undefined,
+    sku: product.id,
+    brand: store ? { "@type": "Brand", name: store.name } : undefined,
+    offers: {
+      "@type": "Offer",
+      url: pageUrl,
+      price: price.toFixed(2),
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: store?.name || "Home", item: storefrontUrl(slug, "", locale) },
+      { "@type": "ListItem", position: 2, name: tProducts("allProducts"), item: shopUrl },
+      { "@type": "ListItem", position: 3, name: product.title, item: pageUrl },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <JsonLd data={productJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
+
+      <nav aria-label="Breadcrumb" className="mb-6 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+        <ol className="flex flex-wrap items-center gap-2">
+          <li>
+            <Link href={`/${locale}/shop/${slug}`} className="hover:underline">{store?.name || "Home"}</Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <Link href={`/${locale}/shop/${slug}/shop`} className="hover:underline">{tProducts("allProducts")}</Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" style={{ color: "var(--color-text)" }}>{product.title}</li>
+        </ol>
+      </nav>
+
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="aspect-square overflow-hidden rounded-xl bg-gray-100">
           {product.primary_image ? (
             <img
               src={product.primary_image.url}
               alt={product.title}
+              width={800}
+              height={800}
+              fetchPriority="high"
               className="h-full w-full object-cover"
             />
           ) : (
@@ -138,63 +142,16 @@ export default function StorefrontProductDetailPage({
         </div>
         <div className="space-y-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{product.title}</h1>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{product.title}</h1>
             <div className="mt-2 flex items-center gap-3">
-              <span className="text-2xl font-bold text-gray-900">${product.price}</span>
-              {product.compare_at_price &&
-                product.compare_at_price > product.price && (
-                  <span className="text-lg text-gray-400 line-through">
-                    ${product.compare_at_price}
-                  </span>
-                )}
+              <span className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>${product.price}</span>
+              {product.compare_at_price && product.compare_at_price > product.price && (
+                <span className="text-lg text-gray-400 line-through">${product.compare_at_price}</span>
+              )}
             </div>
           </div>
           <p className="text-gray-600">{product.description}</p>
-          {product.variants?.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-700">{t("options")}</h3>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {product.variants.map((v: StorefrontVariant) => (
-                  <button
-                    key={v.id}
-                    onClick={() => setSelectedVariant(v.id)}
-                    className={`rounded-lg border px-3 py-1.5 text-sm ${
-                      selectedVariant === v.id
-                        ? "border-[var(--color-primary)]"
-                        : "border-gray-200"
-                    }`}
-                    style={selectedVariant === v.id ? { borderColor: "var(--color-primary)", background: "var(--color-surface)" } : {}}
-                  >
-                    {v.name}{" "}
-                    {v.price && <span className="text-gray-500">${v.price}</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center rounded-lg border border-gray-200">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-2"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <span className="px-4 text-sm font-medium">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="px-3 py-2"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-            <Button className="flex-1" size="lg" onClick={handleAddToCart} isLoading={adding}>
-              <ShoppingCart className="me-2 h-4 w-4" /> {t("addToCart")}
-            </Button>
-            <Button variant="outline" size="lg">
-              <Heart className="h-4 w-4" />
-            </Button>
-          </div>
+          <ProductPurchasePanel product={product} slug={slug} />
         </div>
       </div>
     </div>

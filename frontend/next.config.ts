@@ -60,6 +60,15 @@ const nextConfig: NextConfig = {
         source: "/media/:path*",
         destination: `${backendUrl}/media/:path*`,
       },
+      // Per-store SEO files, served by the backend storefront app
+      {
+        source: "/:slug/robots.txt",
+        destination: `${backendUrl}/api/v1/store/:slug/robots.txt`,
+      },
+      {
+        source: "/:slug/sitemap.xml",
+        destination: `${backendUrl}/api/v1/store/:slug/sitemap.xml`,
+      },
     ];
   },
 };

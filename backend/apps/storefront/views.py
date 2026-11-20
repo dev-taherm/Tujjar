@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import contextlib
 import logging
+from decimal import Decimal
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Q
 from django.http import HttpResponse
@@ -30,6 +32,42 @@ from apps.stores.models import Store
 logger = logging.getLogger(__name__)
 
 STORE_CACHE_TTL = 300  # 5 minutes
+
+
+def storefront_base_url(store: Store) -> str:
+    """Absolute base URL for a store's public storefront.
+
+    Uses the store's custom domain (or slug subdomain) with the correct
+    scheme/port for the current environment so sitemap and robots URLs are
+    valid in both development and production.
+    """
+    domain = store.domain
+    if settings.DEBUG:
+        frontend_port = getattr(settings, "STOREFRONT_PORT", "3000")
+        return f"http://{domain}:{frontend_port}"
+    return f"https://{domain}"
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def storefront_stores_list(request):
+    """List all active stores (public — used for sitemap generation)."""
+    stores = (
+        Store.objects.filter(is_active=True)
+        .select_related("organization")
+        .order_by("slug")
+    )
+    data = [
+        {
+            "slug": store.slug,
+            "name": store.name,
+            "domain": store.domain,
+            "base_url": storefront_base_url(store),
+            "updated_at": store.updated_at.isoformat() if store.updated_at else None,
+        }
+        for store in stores
+    ]
+    return Response(data)
 
 
 def get_store_by_slug(slug: str):
@@ -404,7 +442,7 @@ def robots_txt(request, subdomain=None):
         if slug != "home":
             lines.append(f"Allow: /{slug}/")
     lines.append("")
-    lines.append(f"Sitemap: https://{store.domain}/sitemap.xml")
+    lines.append(f"Sitemap: {storefront_base_url(store)}/sitemap.xml")
     content = "\n".join(lines)
     cache.set(cache_key, content, 300)
     return HttpResponse(content, content_type="text/plain")
@@ -428,7 +466,7 @@ def sitemap_xml(request, subdomain=None):
         )
 
     now = timezone.now().strftime("%Y-%m-%d")
-    base_url = f"https://{store.domain}"
+    base_url = storefront_base_url(store)
 
     urls = []
 
@@ -521,7 +559,7 @@ def storefront_blog_rss(request, subdomain=None):
         .order_by("-published_at")[:20]
     )
 
-    base_url = f"https://{store.domain}"
+    base_url = storefront_base_url(store)
     store_name = store.name
 
     items = []
@@ -835,3 +873,109 @@ def storefront_blog_subscribe(request, subdomain=None):
         subscriber.save(update_fields=["is_active", "unsubscribed_at", "updated_at"])
 
     return Response({"message": "Subscribed successfully!"})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def checkout_quote(request, subdomain=None):
+    """Public checkout quote: discount + tax + shipping breakdown.
+
+    Works for guest checkouts (explicit `items`) and customer checkouts
+    (`cart_id`). Prices are always resolved server-side from product data —
+    client prices are never trusted.
+
+    Body:
+        items: [{ product_id, variant_id?, quantity }] (guests)
+        cart_id: uuid (logged-in customers)
+        discount_code?: str
+        shipping_country?, shipping_state?, shipping_postal_code?
+        shipping_rate_id?: uuid
+    """
+    from apps.commerce.services import (
+        QuoteInput,
+        available_shipping_rates,
+        build_quote,
+    )
+    from apps.orders.models import Cart
+
+    store = get_store_by_slug(subdomain)
+    if not store:
+        return Response({"error": "Store not found"}, status=404)
+
+    body = request.data or {}
+    cart = None
+    if body.get("cart_id"):
+        cart = Cart.unscoped.filter(id=body["cart_id"], store=store, status="active").first()
+        if not cart:
+            return Response({"error": "Cart not found."}, status=404)
+
+    # Resolve line items and compute subtotal from server-side prices
+    quote_items = []
+    if cart:
+        for item in cart.items.select_related("product", "variant"):
+            quote_items.append((str(item.product_id), item.quantity, item.line_total))
+        subtotal = cart.subtotal
+        customer_id = str(cart.customer_id) if cart.customer_id else None
+    else:
+        raw_items = body.get("items") or []
+        if not raw_items:
+            return Response({"error": "items or cart_id is required."}, status=400)
+        subtotal = Decimal("0")
+        for raw in raw_items:
+            product = Product.unscoped.filter(id=raw.get("product_id")).first()
+            if not product or product.organization_id != store.organization_id:
+                return Response(
+                    {"error": f"Unknown product: {raw.get('product_id')}"}, status=400
+                )
+            quantity = max(1, int(raw.get("quantity", 1)))
+            unit_price = product.price
+            variant = None
+            if raw.get("variant_id"):
+                variant = product.variants.filter(id=raw["variant_id"]).first()
+                if not variant:
+                    return Response(
+                        {"error": f"Unknown variant: {raw.get('variant_id')}"}, status=400
+                    )
+                unit_price = variant.price
+            line_total = (Decimal(str(unit_price)) * quantity).quantize(Decimal("0.01"))
+            subtotal += line_total
+            quote_items.append((str(product.id), quantity, line_total))
+        customer_id = None
+
+    quote = build_quote(
+        store.organization_id,
+        QuoteInput(
+            subtotal=subtotal,
+            country=(body.get("shipping_country") or "").strip(),
+            state=(body.get("shipping_state") or "").strip(),
+            postal_code=(body.get("shipping_postal_code") or "").strip(),
+            discount_code=(body.get("discount_code") or "").strip(),
+            shipping_rate_id=body.get("shipping_rate_id"),
+            customer_id=customer_id,
+            items=quote_items,
+        ),
+    )
+
+    # Available shipping options for the chosen address, for the storefront UI
+    discounted_subtotal = max(subtotal - quote.discount, Decimal("0"))
+    rates = available_shipping_rates(
+        store.organization_id,
+        country=(body.get("shipping_country") or "").strip(),
+        subtotal=discounted_subtotal,
+    )
+
+    return Response(
+        {
+            **quote.as_dict(),
+            "shipping_rates": [
+                {
+                    "id": str(r.id),
+                    "name": r.name,
+                    "description": r.description,
+                    "price": str(r.compute_cost(discounted_subtotal)),
+                    "transit_time": r.transit_time,
+                }
+                for r in rates
+            ],
+        }
+    )
