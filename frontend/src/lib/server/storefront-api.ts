@@ -36,8 +36,7 @@ export interface StorefrontProduct {
   compare_at_price?: number | null;
   primary_image: StorefrontImage | null;
   images?: StorefrontImage[];
-  variants?: StorefrontVariant[];
-  seo_title?: string;
+  variants?: StorefrontVariant[];  seo_title?: string;
   seo_description?: string;
   tags?: string[];
 }
@@ -221,6 +220,38 @@ export function getStoreProducts(
   ).then((data) => data?.results ?? []);
 }
 
+export interface StorefrontProductsPageResult {
+  results: StorefrontProduct[];
+  count: number;
+  total_pages: number;
+  current_page: number;
+}
+
+export function getStoreProductsPage(
+  slug: string,
+  locale: string,
+  options: { search?: string; sort?: string; page?: number } = {}
+): Promise<StorefrontProductsPageResult | null> {
+  const sp = new URLSearchParams();
+  if (options.sort) sp.set("sort", options.sort);
+  if (options.search) sp.set("search", options.search);
+  if (options.page && options.page > 1) sp.set("page", String(options.page));
+  return storeApiFetch<{
+    results: StorefrontProduct[];
+    pagination?: { page: number; total: number; total_pages: number };
+  }>(`${slug}/products/?${sp.toString()}`, locale, [`store:${slug}:products`]).then(
+    (data) => {
+      if (!data) return null;
+      return {
+        results: data.results ?? [],
+        count: data.pagination?.total ?? data.results?.length ?? 0,
+        total_pages: data.pagination?.total_pages ?? 1,
+        current_page: data.pagination?.page ?? 1,
+      };
+    }
+  );
+}
+
 export function getStoreProduct(
   slug: string,
   productSlug: string,
@@ -231,6 +262,18 @@ export function getStoreProduct(
     locale,
     [`store:${slug}:product:${productSlug}`]
   );
+}
+
+export function getStoreProductRelated(
+  slug: string,
+  productSlug: string,
+  locale: string
+): Promise<StorefrontProduct[]> {
+  return storeApiFetch<{ related_products: StorefrontProduct[] }>(
+    `${slug}/products/${productSlug}/`,
+    locale,
+    [`store:${slug}:product:${productSlug}:related`]
+  ).then((data) => data?.related_products ?? []);
 }
 
 export function getStoreCollections(slug: string, locale: string): Promise<StorefrontCollection[]> {

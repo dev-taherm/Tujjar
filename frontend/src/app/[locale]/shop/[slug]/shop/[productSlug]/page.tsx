@@ -2,12 +2,16 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { ProductPurchasePanel } from "@/features/storefront/purchase-panel";
+import { ProductGallery } from "@/features/storefront/product-gallery";
 import { ProductReviews } from "@/features/storefront/product-reviews";
+import { StorefrontProductCard } from "@/features/storefront/product-card";
 import {
   getStore,
   getStoreProduct,
+  getStoreProductRelated,
   storefrontUrl,
 } from "@/lib/server/storefront-api";
+import type { Product } from "@/shared/types";
 
 function JsonLd({ data }: { data: Record<string, unknown> | Record<string, unknown>[] }) {
   return (
@@ -62,16 +66,23 @@ export default async function StorefrontProductDetailPage({
   const { slug, productSlug } = await params;
   const locale = await getLocale();
   const t = await getTranslations({ locale, namespace: "storefront.product" });
-  const tCommon = await getTranslations({ locale, namespace: "common" });
   const tProducts = await getTranslations({ locale, namespace: "storefront.products" });
 
-  const [product, store] = await Promise.all([
+  const [product, store, relatedProducts] = await Promise.all([
     getStoreProduct(slug, productSlug, locale),
     getStore(slug, locale),
+    getStoreProductRelated(slug, productSlug, locale),
   ]);
 
   if (!product) {
     return <div className="py-16 text-center text-gray-500">{t("notFound")}</div>;
+  }
+
+  const tRelated = await getTranslations({ locale, namespace: "storefront.related" });
+  const images = (product.images ?? []).filter((img) => img?.url);
+  const primary = product.primary_image;
+  if (primary?.url && !images.some((i) => i.url === primary.url)) {
+    images.unshift(primary);
   }
 
   const pageUrl = storefrontUrl(slug, `shop/${productSlug}`, locale);
@@ -91,8 +102,7 @@ export default async function StorefrontProductDetailPage({
       url: pageUrl,
       price: price.toFixed(2),
       priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-    },
+      availability: "https://schema.org/InStock",    },
   };
 
   const breadcrumbJsonLd = {
@@ -125,22 +135,7 @@ export default async function StorefrontProductDetailPage({
       </nav>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <div className="aspect-square overflow-hidden rounded-xl bg-gray-100">
-          {product.primary_image ? (
-            <img
-              src={product.primary_image.url}
-              alt={product.title}
-              width={800}
-              height={800}
-              fetchPriority="high"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-gray-400">
-              {tCommon("noImage")}
-            </div>
-          )}
-        </div>
+        <ProductGallery images={images} alt={product.title} />
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{product.title}</h1>
@@ -157,6 +152,23 @@ export default async function StorefrontProductDetailPage({
       </div>
 
       <ProductReviews productId={product.id} productSlug={productSlug} storeSlug={slug} />
+
+      {relatedProducts.length > 0 && (
+        <section className="mt-16">
+          <h2 className="text-xl font-bold" style={{ color: "var(--color-text)" }}>
+            {tRelated("title")}
+          </h2>
+          <div className="mt-4 grid grid-cols-2 gap-6 md:grid-cols-4">
+            {relatedProducts.map((related) => (
+              <StorefrontProductCard
+                key={related.id}
+                product={related as unknown as Product}
+                slug={slug}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

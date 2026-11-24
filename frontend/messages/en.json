@@ -385,7 +385,16 @@
         "payment": "Payment",
         "total": "Total",
         "date": "Date"
-      }
+      },
+      "selectAll": "Select all orders",
+      "select": "Select order",
+      "selected": "selected",
+      "bulk_confirm": "Confirm",
+      "bulk_ship": "Ship",
+      "bulk_deliver": "Deliver",
+      "bulk_cancel": "Cancel",
+      "bulkApplied": "{applied} updated, {skipped} skipped",
+      "exportCsv": "Export CSV"
     },
     "blog": {
       "title": "Blog",
@@ -1408,7 +1417,8 @@
       "addedToWishlist": "Added to wishlist",
       "removedFromWishlist": "Removed from wishlist",
       "signInToWishlist": "Sign in to save items to your wishlist.",
-      "addToWishlist": "Add to wishlist"
+      "addToWishlist": "Add to wishlist",
+      "viewImage": "View image"
     },
     "cart": {
       "title": "Shopping Cart",
@@ -1520,6 +1530,9 @@
       "removedFromWishlist": "Removed from wishlist",
       "signInToWishlist": "Sign in to save items to your wishlist.",
       "addToWishlist": "Add to wishlist"
+    },
+    "related": {
+      "title": "You may also like"
     }
   }
 }

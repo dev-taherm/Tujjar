@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { Button, Badge, Input, Select, SearchInput, EmptyState } from "@/shared/ui";
 import { useOrders } from "@/api/queries";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/api/client";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { useState } from "react";
 import { Eye, Package, Download } from "lucide-react";
@@ -40,6 +42,31 @@ export function OrderList() {
     status: statusFilter || undefined,
   });
   const [exporting, setExporting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkApplying, setBulkApplying] = useState(false);
+  const queryClient = useQueryClient();
+
+  const runBulkAction = async (action: string) => {
+    if (!selected.size) return;
+    setBulkApplying(true);
+    try {
+      const { data } = await apiClient.post("/orders/orders/bulk-action/", {
+        ids: Array.from(selected),
+        action,
+      });
+      toast.success(t("bulkApplied", { applied: data.applied, skipped: data.skipped }));
+      if (data.skipped > 0) {
+        const firstError = (data.results || []).find((r: { error?: string }) => r.error);
+        if (firstError?.error) toast.warning(firstError.error);
+      }
+      setSelected(new Set());
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    } catch {
+      toast.error(tc("error"));
+    } finally {
+      setBulkApplying(false);
+    }
+  };
 
   const handleExport = async () => {
     setExporting(true);
@@ -94,6 +121,34 @@ export function OrderList() {
         </Button>
       </div>
 
+      {selected.size > 0 && (
+        <div
+          className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border p-3"
+          style={{ borderColor: "var(--color-primary)", background: "var(--color-surface)" }}
+        >
+          <span className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+            {selected.size} {t("selected")}
+          </span>
+          {(["confirm", "ship", "deliver", "cancel"] as const).map((action) => (
+            <Button
+              key={action}
+              size="sm"
+              variant="outline"
+              onClick={() => runBulkAction(action)}
+              isLoading={bulkApplying}
+            >
+              {t(`bulk_${action}`)}
+            </Button>
+          ))}
+          <button
+            onClick={() => setSelected(new Set())}
+            className="ms-auto text-sm text-gray-400 hover:text-gray-600"
+          >
+            {tc("cancel")}
+          </button>
+        </div>
+      )}
+
       {!orders?.length ? (
         <EmptyState
           icon={Package}
@@ -105,6 +160,18 @@ export function OrderList() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={selected.size > 0 && selected.size === orders.length}
+                    onChange={(e) =>
+                      setSelected(
+                        e.target.checked ? new Set(orders.map((o) => o.id)) : new Set()
+                      )
+                    }
+                    aria-label={t("selectAll")}
+                  />
+                </th>
                 <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("order")}</th>
                 <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("customer")}</th>
                 <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("statusLabel")}</th>
@@ -116,7 +183,24 @@ export function OrderList() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}>
+                <tr
+                  key={order.id}
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}
+                >
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selected.has(order.id)}
+                      onChange={(e) => {
+                        const next = new Set(selected);
+                        if (e.target.checked) next.add(order.id);
+                        else next.delete(order.id);
+                        setSelected(next);
+                      }}
+                      aria-label={`${t("select")} ${order.order_number}`}
+                    />
+                  </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.order_number}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {order.customer_name || order.customer_email}

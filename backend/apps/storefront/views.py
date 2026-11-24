@@ -331,6 +331,23 @@ class StorefrontProductDetailView(generics.RetrieveAPIView):
                 data["seo_description"] = locale_data["seo_description"]
             if "tags" in locale_data:
                 data["tags"] = locale_data["tags"]
+
+        # Related products: same primary category, exclude self, max 4
+        category_ids = list(product.categories.values_list("id", flat=True))
+        related_qs = Product.objects.filter(
+            organization=product.organization,
+            status="active",
+        ).exclude(id=product.id)
+        if category_ids:
+            related_qs = related_qs.filter(categories__id__in=category_ids)
+        else:
+            related_qs = related_qs.filter(created_at__gte=product.created_at - timezone.timedelta(days=365))
+        related = (
+            related_qs.distinct()
+            .prefetch_related("images", "variants")
+            .order_by("-created_at")[:4]
+        )
+        data["related_products"] = ProductListSerializer(related, many=True).data
         return Response(data)
 
 

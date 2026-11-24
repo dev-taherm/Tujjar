@@ -385,7 +385,16 @@
         "payment": "الدفع",
         "total": "الإجمالي",
         "date": "التاريخ"
-      }
+      },
+      "selectAll": "تحديد كل الطلبات",
+      "select": "تحديد الطلب",
+      "selected": "محدد",
+      "bulk_confirm": "تأكيد",
+      "bulk_ship": "شحن",
+      "bulk_deliver": "تسليم",
+      "bulk_cancel": "إلغاء",
+      "bulkApplied": "{applied} حُدّث، {skipped} تُخطي",
+      "exportCsv": "تصدير CSV"
     },
     "blog": {
       "title": "المدونة",
@@ -1400,7 +1409,8 @@
       "addedToWishlist": "أُضيف إلى قائمة الرغبات",
       "removedFromWishlist": "أُزيل من قائمة الرغبات",
       "signInToWishlist": "سجّل الدخول لحفظ المنتجات في قائمة الرغبات.",
-      "addToWishlist": "أضف إلى قائمة الرغبات"
+      "addToWishlist": "أضف إلى قائمة الرغبات",
+      "viewImage": "عرض الصورة"
     },
     "cart": {
       "title": "سلة التسوق",
@@ -1512,6 +1522,9 @@
       "removedFromWishlist": "أُزيل من قائمة الرغبات",
       "signInToWishlist": "سجّل الدخول لحفظ المنتجات في قائمة الرغبات.",
       "addToWishlist": "أضف إلى قائمة الرغبات"
+    },
+    "related": {
+      "title": "قد يعجبك أيضًا"
     }
   }
 }

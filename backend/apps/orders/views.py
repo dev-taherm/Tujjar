@@ -249,6 +249,75 @@ class OrderViewSet(TenantViewSet):
 
     required_permission = "orders.manage"
 
+    @action(detail=False, methods=["post"], url_path="bulk-action")
+    def bulk_action(self, request):
+        """Apply a status action to many orders at once.
+
+        Body: { "ids": [...], "action": "confirm|ship|deliver|cancel" }
+        Skips orders whose transition is invalid; returns per-order results.
+        """
+        org_id = request.org_id
+        if not org_id:
+            return Response(
+                {"detail": "Organization context required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ids = request.data.get("ids") or []
+        action_name = request.data.get("action")
+        valid_actions = {
+            "confirm": "confirmed",
+            "ship": "shipped",
+            "deliver": "delivered",
+            "cancel": "cancelled",
+        }
+        if action_name not in valid_actions:
+            return Response(
+                {"detail": f"action must be one of: {list(valid_actions)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"detail": "ids must be a non-empty list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        target = valid_actions[action_name]
+        results = []
+        orders = Order.unscoped.filter(
+            organization_id=org_id, id__in=ids
+        ).select_related("store")
+
+        for order in orders:
+            try:
+                order.transition_status(target, changed_by=request.user)
+                results.append(
+                    {
+                        "id": str(order.id),
+                        "order_number": order.order_number,
+                        "status": order.status,
+                        "ok": True,
+                    }
+                )
+            except OrderTransitionError as exc:
+                results.append(
+                    {
+                        "id": str(order.id),
+                        "order_number": order.order_number,
+                        "ok": False,
+                        "error": str(exc),
+                    }
+                )
+
+        missing = len(ids) - len(orders)
+        return Response(
+            {
+                "applied": sum(1 for r in results if r["ok"]),
+                "skipped": sum(1 for r in results if not r["ok"]) + missing,
+                "results": results,
+            }
+        )
+
     @action(detail=False, methods=["get"], url_path="export")
     def export_csv(self, request):
         """Stream the organization's orders as a CSV attachment."""
