@@ -397,7 +397,9 @@
       "bulk_deliver": "Deliver",
       "bulk_cancel": "Cancel",
       "bulkApplied": "{applied} updated, {skipped} skipped",
-      "exportCsv": "Export CSV"
+      "exportCsv": "Export CSV",
+      "timeline": "Timeline",
+      "timelineEmpty": "No status changes recorded yet."
     },
     "blog": {
       "title": "Blog",
@@ -837,7 +839,9 @@
       "markAllRead": "Mark all read",
       "noNotifications": "No notifications yet",
       "title": "Notifications",
-      "description": "Stay updated with your store activity"
+      "description": "Stay updated with your store activity",
+      "empty": "You're all caught up!",
+      "viewAll": "View all notifications"
     },
     "pages": {
       "pages": "Pages",

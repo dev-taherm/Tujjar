@@ -6,6 +6,7 @@ import { apiClient } from "@/api/client";
 import { Button, Card, CardContent, CardHeader, CardTitle, Select } from "@/shared/ui";
 import { useUpdateOrderStatus, useShipOrder, useDeliverOrder, useCancelOrder } from "@/api/queries";
 import { useRefunds, useCreateRefund } from "@/api/commerce";
+import { OrderTimeline } from "@/features/orders/order-timeline";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ArrowLeft, Truck, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
@@ -77,7 +78,17 @@ export default function OrderDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {t("timeline", { defaultValue: "Timeline" })}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <OrderTimeline orderId={orderId} />
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader><CardTitle>{t("items")} ({order.items.length})</CardTitle></CardHeader>
             <CardContent>

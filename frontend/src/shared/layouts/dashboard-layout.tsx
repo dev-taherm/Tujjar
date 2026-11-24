@@ -2,6 +2,7 @@
 
 import { Sidebar } from "./sidebar";
 import { VerificationBanner } from "@/shared/components/verification-banner";
+import { NotificationsBell } from "@/features/notifications/notifications-bell";
 import { useUIStore } from "@/stores";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
@@ -19,6 +20,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Menu className="h-5 w-5" />
         </button>
         <span className="ms-3 text-lg font-bold text-primary-600">Tujjar</span>
+        <div className="ms-auto">
+          <NotificationsBell />
+        </div>
+      </div>
+      <div className="pointer-events-none fixed end-4 top-3 z-40 hidden md:block">
+        <div className="pointer-events-auto rounded-full border border-gray-200 bg-white shadow-sm">
+          <NotificationsBell />
+        </div>
       </div>
       <Sidebar />
       <main

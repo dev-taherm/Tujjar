@@ -397,7 +397,9 @@
       "bulk_deliver": "تسليم",
       "bulk_cancel": "إلغاء",
       "bulkApplied": "{applied} حُدّث، {skipped} تُخطي",
-      "exportCsv": "تصدير CSV"
+      "exportCsv": "تصدير CSV",
+      "timeline": "السجل الزمني",
+      "timelineEmpty": "لا توجد تغييرات حالة مسجلة بعد."
     },
     "blog": {
       "title": "المدونة",
@@ -831,7 +833,9 @@
       "markAllRead": "تحديد الكل كمقروء",
       "noNotifications": "لا توجد إشعارات بعد",
       "title": "الإشعارات",
-      "description": "ابقَ على اطلاع بنشاط متجرك"
+      "description": "ابقَ على اطلاع بنشاط متجرك",
+      "empty": "لا توجد إشعارات جديدة!",
+      "viewAll": "عرض كل الإشعارات"
     },
     "pages": {
       "pages": "الصفحات",
