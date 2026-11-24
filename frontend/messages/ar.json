@@ -290,7 +290,10 @@
       "newCategory": "تصنيف جديد",
       "exportCsv": "تصدير CSV",
       "importCsv": "استيراد CSV",
-      "importDone": "اكتمل الاستيراد — {created} أُنشئ، {updated} حُدّث، {failed} فشل"
+      "importDone": "اكتمل الاستيراد — {created} أُنشئ، {updated} حُدّث، {failed} فشل",
+      "deleteTitle": "حذف المنتج",
+      "deleteConfirm": "حذف \"{title}\"؟ سيتم إزالة المنتج من متجرك.",
+      "deleteIrreversible": "لا يمكن التراجع عن هذا الإجراء."
     },
     "category": {
       "edit": "تعديل الفئة",
@@ -1443,7 +1446,10 @@
     },
     "header": {
       "store": "المتجر",
-      "poweredBy": "مدعوم بواسطة تججر"
+      "poweredBy": "مدعوم بواسطة تججر",
+      "cart": "السلة",
+      "account": "حسابي",
+      "signIn": "تسجيل الدخول"
     },
     "checkout": {
       "title": "إتمام الشراء",
@@ -1525,6 +1531,10 @@
     },
     "related": {
       "title": "قد يعجبك أيضًا"
+    },
+    "search": {
+      "placeholder": "ابحث عن منتجات...",
+      "submit": "بحث"
     }
   }
 }

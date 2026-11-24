@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon, LogOut } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { ShoppingCart, User, Search, Menu, X, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon, LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
+import { Button } from "@/shared/ui";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
 import { AnnouncementBar } from "@/features/store/announcement-bar";
 import { useCustomerAuthStore } from "@/stores/customer-auth";
@@ -78,8 +80,10 @@ export function StorefrontChrome({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const locale = useLocale();
   const tNav = useTranslations("storefront.header");
+  const tSearch = useTranslations("storefront.search");
 
   // Customer session state (client-only concerns)
   const { customer: customerAuth, isAuthenticated: isCustomerAuth } = useCustomerAuthStore();
@@ -153,18 +157,64 @@ export function StorefrontChrome({
   const cartHref = isSubdomain ? `/${locale}/shop/cart` : `/${locale}/shop/${slug}/shop/cart`;
   const accountHref = isSubdomain ? `/${locale}/shop/account` : `/${locale}/shop/${slug}/account`;
   const loginHref = isSubdomain ? `/${locale}/shop/login` : `/${locale}/shop/${slug}/login`;
+  const shopHref = isSubdomain ? `/${locale}/shop` : `/${locale}/shop/${slug}/shop`;
+
+  // Header search: expands into an inline bar that submits to the listing
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchOpen) searchInputRef.current?.focus();
+  }, [searchOpen]);
+
+  // Close overlays on navigation — adjust during render (React-recommended
+  // pattern for state derived from prop/route changes; passes the lint rule)
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setMobileNavOpen(false);
+    setSearchOpen(false);
+  }
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    const sp = new URLSearchParams({ search: q });
+    router.push(`${shopHref}?${sp.toString()}`);
+    setSearchOpen(false);
+    setSearchQuery("");
+  };
 
   return (
     <div className="min-h-screen" style={{ background: "var(--color-bg)" }}>
       <AnnouncementBar config={announcementConfig} storeSlug={store?.slug || ""} />
-      <header className="border-b" style={{ borderColor: "var(--color-border)" }}>
+      <header
+        className="sticky top-0 z-40 border-b backdrop-blur"
+        style={{
+          borderColor: "var(--color-border)",
+          background: "color-mix(in srgb, var(--color-bg) 85%, transparent)",
+        }}
+      >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href={slug ? homeHref : "#"} className="flex items-center gap-2 text-xl font-bold" style={{ color: "var(--color-text)" }}>
-            {store?.logo_url ? (
-              <img src={store.logo_url} alt={store.name} className="h-8 w-auto object-contain" />
-            ) : null}
-            {logoText}
-          </Link>
+          <div className="flex min-w-0 items-center gap-2">
+            <button
+              className="rounded-lg p-2 md:hidden"
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+              style={{ color: "var(--color-text)" }}
+            >
+              {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+            <Link href={slug ? homeHref : "#"} className="flex min-w-0 items-center gap-2 text-xl font-bold" style={{ color: "var(--color-text)" }}>
+              {store?.logo_url ? (
+                <img src={store.logo_url} alt={store.name} className="h-8 w-auto object-contain" />
+              ) : null}
+              <span className="max-w-32 truncate sm:max-w-none sm:truncate-none">{logoText}</span>
+            </Link>
+          </div>
           <nav className="hidden gap-6 md:flex">
             {navLinks.map((link) => (
               <Link
@@ -205,12 +255,14 @@ export function StorefrontChrome({
               </Link>
             )}
             <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              aria-label={searchOpen ? "Close search" : "Search products"}
               className="rounded-lg p-2 transition-colors"
               style={{ color: "var(--color-text-secondary)" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
-              <Search className="h-5 w-5" />
+              {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
             </button>
             <Link
               href={slug ? cartHref : "#"}
@@ -263,6 +315,79 @@ export function StorefrontChrome({
             )}
           </div>
         </div>
+        {searchOpen && (
+          <form
+            onSubmit={submitSearch}
+            className="border-t px-4 py-3 sm:px-6 lg:px-8"
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            <div className="mx-auto flex max-w-7xl gap-2">
+              <input
+                ref={searchInputRef}
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={tSearch("placeholder")}
+                className="w-full rounded-lg border px-4 py-2 text-sm focus:outline-none"
+                style={{
+                  borderColor: "var(--color-primary)",
+                  color: "var(--color-text)",
+                  background: "var(--color-surface)",
+                }}
+              />
+              <Button type="submit" size="sm">
+                {tSearch("submit")}
+              </Button>
+            </div>
+          </form>
+        )}
+        {mobileNavOpen && (
+          <nav
+            className="border-t px-4 py-3 md:hidden"
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            <div className="space-y-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.url}
+                  href={prefixLink(link.url)}
+                  className="block rounded-lg px-3 py-2 text-sm font-medium"
+                  style={{ color: "var(--color-text)" }}
+                  onClick={() => setMobileNavOpen(false)}
+                >
+                  {resolveLabel(link.label)}
+                </Link>
+              ))}
+              <Link
+                href={cartHref}
+                className="block rounded-lg px-3 py-2 text-sm font-medium"
+                style={{ color: "var(--color-text)" }}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                {tNav("cart")}
+              </Link>
+              {isCustomerAuth ? (
+                <Link
+                  href={accountHref}
+                  className="block rounded-lg px-3 py-2 text-sm font-medium"
+                  style={{ color: "var(--color-text)" }}
+                  onClick={() => setMobileNavOpen(false)}
+                >
+                  {tNav("account")}
+                </Link>
+              ) : (
+                <Link
+                  href={loginHref}
+                  className="block rounded-lg px-3 py-2 text-sm font-medium"
+                  style={{ color: "var(--color-primary)" }}
+                  onClick={() => setMobileNavOpen(false)}
+                >
+                  {tNav("signIn")}
+                </Link>
+              )}
+            </div>
+          </nav>
+        )}
       </header>
       <main>{children}</main>
       <footer className="border-t" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>

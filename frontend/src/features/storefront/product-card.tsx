@@ -3,8 +3,19 @@ import type { Product } from "@/shared/types";
 
 export function StorefrontProductCard({ product, slug }: { product: Product; slug?: string }) {
   const href = slug ? `/shop/${slug}/shop/${product.slug}` : `/products/${product.slug}`;
+  const compare = Number(product.compare_at_price) || 0;
+  const price = Number(product.price) || 0;
+  const discountPct = compare > price ? Math.round(((compare - price) / compare) * 100) : 0;
   return (
-    <Link href={href} className="group block">
+    <Link href={href} className="group relative block">
+      {discountPct > 0 && (
+        <span
+          className="absolute end-2 top-2 z-10 rounded-full px-2 py-0.5 text-xs font-semibold text-white"
+          style={{ background: "var(--color-error, #ef4444)" }}
+        >
+          -{discountPct}%
+        </span>
+      )}
       <div className="aspect-square overflow-hidden rounded-xl" style={{ background: "var(--color-surface)" }}>
         {product.primary_image ? (
           <img src={product.primary_image.url} alt={product.title} width={400} height={400} loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-105 active:scale-105" />

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, SearchInput, EmptyState } from "@/shared/ui";
+import { Button, SearchInput, EmptyState, Dialog } from "@/shared/ui";
 import { ProductCard } from "./product-card";
 import { useProducts, useDeleteProduct, useDuplicateProduct } from "@/api/queries";
 import { Plus, Package, MoreHorizontal, Copy, Trash2, Eye, Download, Upload } from "lucide-react";
@@ -115,12 +115,14 @@ export function ProductList() {
     }
   };
 
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; title: string } | null>(null);
+
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
       await deleteProduct.mutateAsync(id);
       toast.success("Product deleted");
-      setOpenMenuId(null);
+      setConfirmDelete(null);
     } catch {
       toast.error("Failed to delete product");
     } finally {
@@ -231,10 +233,10 @@ export function ProductList() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDelete(product.id);
+                          setConfirmDelete({ id: product.id, title: product.title });
+                          setOpenMenuId(null);
                         }}
-                        disabled={deletingId === product.id}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" /> Delete
                       </button>
@@ -246,6 +248,26 @@ export function ProductList() {
           ))}
         </div>
       )}
+
+      <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)} title={t("deleteTitle")}>
+        <p className="text-sm text-gray-600">
+          {t("deleteConfirm", { title: confirmDelete?.title || "" })}
+        </p>
+        <p className="mt-2 text-xs text-red-500">{t("deleteIrreversible")}</p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setConfirmDelete(null)}>
+            {tc("cancel")}
+          </Button>
+          <Button
+            variant="outline"
+            className="border-red-300 text-red-600 hover:bg-red-50"
+            onClick={() => confirmDelete && handleDelete(confirmDelete.id)}
+            isLoading={!!deletingId}
+          >
+            {tc("delete")}
+          </Button>
+        </div>
+      </Dialog>
     </>
   );
 }

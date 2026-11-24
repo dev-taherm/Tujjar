@@ -290,7 +290,10 @@
       "newCategory": "New Category",
       "exportCsv": "Export CSV",
       "importCsv": "Import CSV",
-      "importDone": "Import finished — {created} created, {updated} updated, {failed} failed"
+      "importDone": "Import finished — {created} created, {updated} updated, {failed} failed",
+      "deleteTitle": "Delete product",
+      "deleteConfirm": "Delete \"{title}\"? The product and its listings will be removed from your store.",
+      "deleteIrreversible": "This action cannot be undone."
     },
     "category": {
       "edit": "Edit Category",
@@ -1451,7 +1454,10 @@
     },
     "header": {
       "store": "Store",
-      "poweredBy": "Powered by Tujjar"
+      "poweredBy": "Powered by Tujjar",
+      "cart": "Cart",
+      "account": "My Account",
+      "signIn": "Sign In"
     },
     "checkout": {
       "title": "Checkout",
@@ -1533,6 +1539,10 @@
     },
     "related": {
       "title": "You may also like"
+    },
+    "search": {
+      "placeholder": "Search products...",
+      "submit": "Search"
     }
   }
 }
