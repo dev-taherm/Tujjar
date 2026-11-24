@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import uuid
 from decimal import Decimal
 
 from django.conf import settings
@@ -877,6 +878,232 @@ def storefront_blog_subscribe(request, subdomain=None):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+def checkout_place_order(request, subdomain=None):
+    """Public checkout: create an order from guest items or a customer cart.
+
+    Body:
+        items: [{ product_id, variant_id?, quantity }] (guests) OR cart_id
+        customer_email (required), customer_first_name?, customer_last_name?,
+        customer_phone?
+        shipping_address: { line1, line2?, city, state?, postal_code?, country }
+        discount_code?, shipping_rate_id?, payment_method? ("cod" for now)
+    """
+    from apps.commerce.services import (
+        OrderLine,
+        QuoteInput,
+        build_quote,
+        create_order_from_quote,
+    )
+    from apps.orders.models import Cart
+
+    store = get_store_by_slug(subdomain)
+    if not store:
+        return Response({"error": "Store not found"}, status=404)
+
+    body = request.data or {}
+    customer_email = (body.get("customer_email") or "").strip()
+    if not customer_email:
+        return Response({"error": "customer_email is required."}, status=400)
+
+    shipping = body.get("shipping_address") or {}
+    shipping_country = (shipping.get("country") or "").strip()
+    if not shipping_country:
+        return Response({"error": "shipping_address.country is required."}, status=400)
+
+    # Resolve lines with server-side prices
+    lines: list = []
+    quote_items = []
+    subtotal = Decimal("0")
+    cart = None
+    customer = None
+
+    if body.get("cart_id"):
+        cart = Cart.unscoped.filter(id=body["cart_id"], store=store, status="active").first()
+        if not cart:
+            return Response({"error": "Cart not found."}, status=404)
+        customer = cart.customer
+        for item in cart.items.select_related("product", "variant"):
+            product = item.product
+            unit_price = item.variant.price if item.variant else product.price
+            line_total = (Decimal(str(unit_price)) * item.quantity).quantize(Decimal("0.01"))
+            lines.append(
+                OrderLine(
+                    product_id=str(product.id),
+                    variant_id=str(item.variant_id) if item.variant_id else None,
+                    title=product.title,
+                    sku=product.sku,
+                    quantity=item.quantity,
+                    unit_price=Decimal(str(unit_price)),
+                    line_total=line_total,
+                    image_url=product.primary_image.url if product.primary_image else "",
+                    track_inventory=product.track_inventory,
+                    allow_backorder=product.allow_backorder,
+                    inventory_quantity=product.inventory_quantity,
+                )
+            )
+            quote_items.append((str(product.id), item.quantity, line_total))
+            subtotal += line_total
+    else:
+        raw_items = body.get("items") or []
+        if not raw_items:
+            return Response({"error": "items or cart_id is required."}, status=400)
+        for raw in raw_items:
+            product_id = raw.get("product_id")
+            try:
+                uuid.UUID(str(product_id))
+            except (ValueError, TypeError, AttributeError):
+                return Response({"error": f"Invalid product id: {product_id}"}, status=400)
+            product = Product.unscoped.filter(id=product_id).first()
+            if not product or product.organization_id != store.organization_id:
+                return Response(
+                    {"error": f"Unknown product: {product_id}"}, status=400
+                )
+            quantity = max(1, int(raw.get("quantity", 1)))
+            unit_price = product.price
+            variant_id = None
+            if raw.get("variant_id"):
+                variant = product.variants.filter(id=raw["variant_id"]).first()
+                if not variant:
+                    return Response(
+                        {"error": f"Unknown variant: {raw.get('variant_id')}"}, status=400
+                    )
+                unit_price = variant.price
+                variant_id = str(variant.id)
+            line_total = (Decimal(str(unit_price)) * quantity).quantize(Decimal("0.01"))
+            lines.append(
+                OrderLine(
+                    product_id=str(product.id),
+                    variant_id=variant_id,
+                    title=product.title,
+                    sku=product.sku,
+                    quantity=quantity,
+                    unit_price=Decimal(str(unit_price)),
+                    line_total=line_total,
+                    image_url=product.primary_image.url if product.primary_image else "",
+                    track_inventory=product.track_inventory,
+                    allow_backorder=product.allow_backorder,
+                    inventory_quantity=product.inventory_quantity,
+                )
+            )
+            quote_items.append((str(product.id), quantity, line_total))
+            subtotal += line_total
+
+    quote = build_quote(
+        store.organization_id,
+        QuoteInput(
+            subtotal=subtotal,
+            country=shipping_country,
+            state=(shipping.get("state") or "").strip(),
+            postal_code=(shipping.get("postal_code") or "").strip(),
+            discount_code=(body.get("discount_code") or "").strip(),
+            shipping_rate_id=body.get("shipping_rate_id"),
+            customer_id=str(customer.id) if customer else None,
+            items=quote_items,
+        ),
+    )
+
+    payment_method = body.get("payment_method") or "cod"
+    if payment_method not in ("cod", "bank_transfer", "card"):
+        payment_method = "cod"
+
+    success_url = body.get("success_url") or ""
+    cancel_url = body.get("cancel_url") or ""
+
+    try:
+        order = create_order_from_quote(
+            store,
+            quote=quote,
+            lines=lines,
+            customer=customer,
+            customer_email=customer_email,
+            customer_first_name=(body.get("customer_first_name") or "").strip(),
+            customer_last_name=(body.get("customer_last_name") or "").strip(),
+            customer_phone=(body.get("customer_phone") or "").strip(),
+            shipping_address={
+                "line1": shipping.get("line1", ""),
+                "line2": shipping.get("line2", ""),
+                "city": shipping.get("city", ""),
+                "state": shipping.get("state", ""),
+                "postal_code": shipping.get("postal_code", ""),
+                "country": shipping_country,
+            },
+            payment_method=payment_method,
+        )
+    except ValueError as exc:
+        return Response({"error": str(exc)}, status=400)
+
+    # Card payments: create a Stripe Checkout Session for the fresh order
+    payment_url = None
+    if payment_method == "card":
+        from apps.payments.services import create_stripe_checkout, stripe_available
+
+        if not stripe_available():
+            return Response(
+                {"error": "Card payments are not configured for this store."}, status=400
+            )
+        if not success_url or not cancel_url:
+            return Response(
+                {"error": "success_url and cancel_url are required for card payments."},
+                status=400,
+            )
+        try:
+            payment_url, _payment = create_stripe_checkout(
+                order, success_url=success_url, cancel_url=cancel_url
+            )
+        except Exception:
+            logger.exception("Stripe checkout creation failed for order %s", order.id)
+            return Response(
+                {
+                    "error": "Payment provider error. You can retry payment for this order.",
+                    "order_id": str(order.id),
+                    "order_number": order.order_number,
+                },
+                status=502,
+            )
+
+    if cart:
+        cart.status = "converted"
+        cart.save(update_fields=["status"])
+
+    # Notify the store owner
+    try:
+        owner = store.organization.owner
+        if owner:
+            from apps.notifications.models import Notification
+
+            Notification.create_for_user(
+                user=owner,
+                notification_type="order",
+                title=f"New Order: {order.order_number}",
+                message=f"New order from {order.customer_email} — ${order.total}",
+                organization=store.organization,
+                entity_type="order",
+                entity_id=order.id,
+            )
+    except Exception:
+        logger.warning("Failed to notify owner for order %s", order.id, exc_info=True)
+
+    return Response(
+        {
+            "id": str(order.id),
+            "order_number": order.order_number,
+            "status": order.status,
+            "payment_status": order.payment_status,
+            "payment_method": order.payment_method,
+            "payment_url": payment_url,
+            "subtotal": str(order.subtotal),
+            "discount": str(order.discount_amount),
+            "tax": str(order.tax_amount),
+            "shipping": str(order.shipping_amount),
+            "total": str(order.total),
+            "currency": order.currency,
+        },
+        status=201,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
 def checkout_quote(request, subdomain=None):
     """Public checkout quote: discount + tax + shipping breakdown.
 
@@ -922,7 +1149,12 @@ def checkout_quote(request, subdomain=None):
             return Response({"error": "items or cart_id is required."}, status=400)
         subtotal = Decimal("0")
         for raw in raw_items:
-            product = Product.unscoped.filter(id=raw.get("product_id")).first()
+            product_id = raw.get("product_id")
+            try:
+                uuid.UUID(str(product_id))
+            except (ValueError, TypeError, AttributeError):
+                return Response({"error": f"Invalid product id: {product_id}"}, status=400)
+            product = Product.unscoped.filter(id=product_id).first()
             if not product or product.organization_id != store.organization_id:
                 return Response(
                     {"error": f"Unknown product: {raw.get('product_id')}"}, status=400

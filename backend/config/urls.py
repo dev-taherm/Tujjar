@@ -55,6 +55,8 @@ urlpatterns = [
     path("api/v1/products/", include("apps.products.urls")),
     path("api/v1/orders/", include("apps.orders.urls")),
     path("api/v1/commerce/", include("apps.commerce.urls")),
+    path("api/v1/payments/", include("apps.payments.urls")),
+    path("api/v1/webhooks/", include("apps.webhooks.urls")),
     path("api/v1/customers/", include("apps.customers.urls")),
     path("api/v1/pages/", include("apps.pages.urls")),
     path("api/v1/themes/", include("apps.themes.urls")),

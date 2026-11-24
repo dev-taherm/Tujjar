@@ -29,6 +29,7 @@ urlpatterns = [
     # JWT
     path("login/", views.ThrottledLoginView.as_view(), name="token-obtain"),
     path("refresh/", views.ThrottledTokenRefreshView.as_view(), name="token-refresh"),
+    path("switch-org/", views.SwitchOrganizationView.as_view(), name="switch-org"),
     path("logout/", views.logout_view, name="logout"),
     # 2FA
     path("2fa/login/", views.TwoFactorLoginView.as_view(), name="2fa-login"),

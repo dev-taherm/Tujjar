@@ -5,11 +5,14 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { Button, Card, CardContent, CardHeader, CardTitle, Select } from "@/shared/ui";
 import { useUpdateOrderStatus, useShipOrder, useDeliverOrder, useCancelOrder } from "@/api/queries";
+import { useRefunds, useCreateRefund } from "@/api/commerce";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ArrowLeft, Truck, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import type { Order } from "@/shared/types";
 import { useTranslations } from "next-intl";
+import { Badge, Input } from "@/shared/ui";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -33,7 +36,7 @@ export default function OrderDetailPage() {
   const { data: order, isLoading } = useQuery({
     queryKey: ["orders", orderId],
     queryFn: async (): Promise<Order> => {
-      const { data } = await apiClient.get(`/orders/${orderId}/`);
+      const { data } = await apiClient.get(`/orders/orders/${orderId}/`);
       return data;
     },
     enabled: !!orderId,
@@ -160,8 +163,128 @@ export default function OrderDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          <RefundsCard orderId={orderId} orderTotal={Number(order.total)} orderStatus={order.status} />
         </div>
       </div>
     </div>
+  );
+}
+
+function RefundsCard({
+  orderId,
+  orderTotal,
+  orderStatus,
+}: {
+  orderId: string;
+  orderTotal: number;
+  orderStatus: string;
+}) {
+  const t = useTranslations("dashboard.refunds");
+  const tc = useTranslations("common");
+  const { data: refunds, isLoading } = useRefunds({ order: orderId });
+  const createRefund = useCreateRefund();
+
+  const [show, setShow] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [reason, setReason] = useState("");
+  const [restock, setRestock] = useState(false);
+
+  const refunded = (refunds || [])
+    .filter((r) => r.status === "succeeded")
+    .reduce((sum, r) => sum + Number(r.amount), 0);
+  const refundable = Math.max(orderTotal - refunded, 0);
+  const canRefund = refundable > 0 && orderStatus !== "cancelled";
+
+  const submit = async () => {
+    const value = parseFloat(amount);
+    if (!value || value <= 0) {
+      toast.error(t("amountRequired"));
+      return;
+    }
+    try {
+      await createRefund.mutateAsync({
+        order: orderId,
+        amount: value.toFixed(2),
+        reason: reason,
+        restock,
+      });
+      toast.success(tc("saved"));
+      setShow(false);
+      setAmount("");
+      setReason("");
+      setRestock(false);
+    } catch (err: unknown) {
+      const detail =
+        (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
+          ?.message || tc("error");
+      toast.error(detail);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>{t("title")}</CardTitle></CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {isLoading ? (
+          <div className="h-10 animate-pulse rounded bg-gray-100" />
+        ) : !refunds?.length ? (
+          <p className="text-gray-500">{t("noRefunds")}</p>
+        ) : (
+          <div className="space-y-2">
+            {refunds.map((refund) => (
+              <div key={refund.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
+                <div>
+                  <span className="font-medium text-gray-900">{formatCurrency(Number(refund.amount))}</span>
+                  {refund.reason && <span className="ms-2 text-xs text-gray-500">{refund.reason}</span>}
+                </div>
+                <Badge variant={refund.status === "succeeded" ? "success" : refund.status === "failed" ? "danger" : "warning"}>
+                  {refund.status}
+                </Badge>
+              </div>
+            ))}
+            <div className="text-xs text-gray-500">
+              {t("refundedTotal")}: {formatCurrency(refunded)} · {t("refundable")}: {formatCurrency(refundable)}
+            </div>
+          </div>
+        )}
+
+        {canRefund &&
+          (show ? (
+            <div className="space-y-2 rounded-lg border border-gray-200 p-3">
+              <Input
+                type="number"
+                min="0.01"
+                step="0.01"
+                max={refundable}
+                placeholder={t("amount")}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+              <Input
+                placeholder={t("reason")}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+              <label className="flex items-center gap-2 text-xs text-gray-600">
+                <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} />
+                {t("restock")}
+              </label>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={submit} isLoading={createRefund.isPending}>
+                  {t("confirmRefund")}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setShow(false)}>
+                  {tc("cancel")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => setShow(true)}>
+              {t("createRefund")}
+            </Button>
+          ))}
+      </CardContent>
+    </Card>
   );
 }

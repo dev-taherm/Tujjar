@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from .import_export import export_csv, import_csv
 from .views import (
     CategoryViewSet,
     CollectionViewSet,
@@ -24,6 +25,16 @@ router.register("options", ProductOptionGlobalViewSet, basename="option-global")
 router.register("", ProductViewSet, basename="product")
 
 urlpatterns = [
+    path(
+        "import-export/export/",
+        export_csv,
+        name="product-export-csv",
+    ),
+    path(
+        "import-export/import/",
+        import_csv,
+        name="product-import-csv",
+    ),
     path("", include(router.urls)),
     path(
         "<uuid:product_pk>/images/",

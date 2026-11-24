@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/shared/ui";
 import { ShoppingCart, Heart, Minus, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -13,17 +13,31 @@ import type { StorefrontProduct, StorefrontVariant } from "@/lib/server/storefro
 
 /**
  * Interactive purchase panel for the storefront product page: variant
- * selection, quantity stepper, and add-to-cart (customer cart API when
- * logged in, guest cart store otherwise).
+ * selection, quantity stepper, wishlist toggle and add-to-cart (customer
+ * cart API when logged in, guest cart store otherwise).
  */
 export function ProductPurchasePanel({ product, slug }: { product: StorefrontProduct; slug: string }) {
   const t = useTranslations("storefront.product");
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated);
   const addItem = useGuestCartStore((s) => s.addItem);
   const queryClient = useQueryClient();
+
+  // Initial wishlist state (customer only)
+  useQuery({
+    queryKey: ["customer-wishlist", slug],
+    queryFn: async () => {
+      const { data } = await customerClient.get("/customers/storefront/wishlist/");
+      const entries = data as Array<{ product: string }>;
+      setWishlisted(entries.some((e) => e.product === product.id));
+      return entries;
+    },
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
 
   const variants: StorefrontVariant[] = product.variants ?? [];
   const activeVariant = selectedVariant ? variants.find((v) => v.id === selectedVariant) : undefined;
@@ -55,6 +69,29 @@ export function ProductPurchasePanel({ product, slug }: { product: StorefrontPro
       toast.error(t("addToCartFailed"));
     } finally {
       setAdding(false);
+    }
+  };
+
+  const toggleWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.error(t("signInToWishlist"));
+      return;
+    }
+    try {
+      if (wishlisted) {
+        await customerClient.delete(`/customers/storefront/wishlist/${product.id}/`);
+        setWishlisted(false);
+        toast.success(t("removedFromWishlist"));
+      } else {
+        await customerClient.post("/customers/storefront/wishlist/", {
+          product_id: product.id,
+        });
+        setWishlisted(true);
+        toast.success(t("addedToWishlist"));
+      }
+      queryClient.invalidateQueries({ queryKey: ["customer-wishlist", slug] });
+    } catch {
+      toast.error(t("addToCartFailed"));
     }
   };
 
@@ -92,8 +129,17 @@ export function ProductPurchasePanel({ product, slug }: { product: StorefrontPro
         <Button className="flex-1" size="lg" onClick={handleAddToCart} isLoading={adding}>
           <ShoppingCart className="me-2 h-4 w-4" /> {t("addToCart")}
         </Button>
-        <Button variant="outline" size="lg">
-          <Heart className="h-4 w-4" />
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={toggleWishlist}
+          aria-label={t("addToWishlist")}
+          style={wishlisted ? { borderColor: "var(--color-primary)" } : undefined}
+        >
+          <Heart
+            className="h-4 w-4"
+            style={wishlisted ? { color: "var(--color-primary)", fill: "var(--color-primary)" } : undefined}
+          />
         </Button>
       </div>
     </div>

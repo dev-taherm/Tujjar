@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ShoppingCart, User, Search, Facebook, Twitter, Instagram, Youtube, Linkedin, Sun, Moon, LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -105,23 +104,10 @@ export function StorefrontChrome({
   });
   const cartCount = isCustomerAuth ? (customerCart?.items_count ?? 0) : guestCartCount;
 
-  const isDark = useCallback(() => {
-    if (typeof document === "undefined") return false;
-    return document.documentElement.classList.contains("dark");
-  }, []);
-
-  // Initial dark state read after mount (class is set pre-hydration by the
-  // layout's inline script) to avoid hydration mismatches.
-  const [darkState, setDarkState] = useState(false);
-  useEffect(() => {
-    setDarkState(isDark());
-  }, [isDark]);
-
   const toggleDark = () => {
     const next = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("tujjar-dark-mode", String(next));
-    setDarkState(next);
   };
 
   const navigation = store?.navigation || {};
@@ -204,7 +190,8 @@ export function StorefrontChrome({
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 aria-label="Toggle dark mode"
               >
-                {darkState ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                <Sun className="hidden h-5 w-5 dark:block" />
+                <Moon className="h-5 w-5 dark:hidden" />
               </button>
             )}
             {navigation.cta_button?.enabled && (

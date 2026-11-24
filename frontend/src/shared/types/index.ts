@@ -795,6 +795,13 @@ export interface DailyStats {
   traffic_sources: Record<string, number>;
 }
 
+export interface TopProduct {
+  title: string;
+  revenue: number;
+  units_sold: number;
+  order_count: number;
+}
+
 export interface DashboardSummary {
   total_revenue: number;
   total_orders: number;
@@ -804,7 +811,7 @@ export interface DashboardSummary {
   orders_change_pct: number;
   customers_change_pct: number;
   recent_orders: AnalyticsEvent[];
-  top_products: { product_id: UUID; title: string; revenue: number }[];
+  top_products: TopProduct[];
   revenue_chart: { date: string; revenue: number; orders: number }[];
   traffic_sources: Record<string, number>;
 }

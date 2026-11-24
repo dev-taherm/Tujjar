@@ -186,8 +186,11 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
                   <span className="font-bold">${guestSubtotal.toFixed(2)}</span>
                 </div>
               </div>
-              <Link href={`/${locale}/shop/${slug}/login`} className="mt-4 block">
-                <Button className="w-full">
+              <Link href={`/${locale}/shop/${slug}/shop/checkout`} className="mt-4 block">
+                <Button className="w-full">{t("proceedToCheckout")}</Button>
+              </Link>
+              <Link href={`/${locale}/shop/${slug}/login`} className="mt-2 block">
+                <Button className="w-full" variant="outline">
                   <LogIn className="me-2 h-4 w-4" /> {t("signInToCheckout")}
                 </Button>
               </Link>
@@ -282,7 +285,10 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
                 <span className="font-bold">${parseFloat(cart.subtotal).toFixed(2)}</span>
               </div>
             </div>
-            <Link href={`/${locale}/shop/${slug}/shop`} className="mt-4 block">
+            <Link href={`/${locale}/shop/${slug}/shop/checkout`} className="mt-4 block">
+              <Button className="w-full">{t("proceedToCheckout")}</Button>
+            </Link>
+            <Link href={`/${locale}/shop/${slug}/shop`} className="mt-2 block">
               <Button className="w-full" variant="outline">
                 {t("continueShopping")}
               </Button>

@@ -3,16 +3,17 @@ from __future__ import annotations
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.viewsets import TenantViewSet
 from apps.products.models import Product, ProductVariant
 
-from .models import Cart, CartItem, Order, OrderItem, OrderTransitionError
+from .models import Cart, CartItem, Order, OrderTransitionError
 from .serializers import (
     CartSerializer,
     OrderDetailSerializer,
@@ -35,6 +36,17 @@ class CartViewSet(TenantViewSet):
         if store_id:
             qs = qs.filter(store_id=store_id)
         return qs
+
+    def perform_create(self, serializer):
+        org_id = self.request.org_id
+        if not org_id:
+            raise DRFValidationError({"detail": "You must belong to an organization."})
+        store = serializer.validated_data.get("store")
+        if store is None:
+            raise DRFValidationError({"store": "This field is required."})
+        if str(store.organization_id) != str(org_id):
+            raise DRFValidationError({"store": "Store does not belong to your organization."})
+        serializer.save(organization_id=org_id)
 
     @action(detail=True, methods=["post"], url_path="items/add")
     def add_item(self, request, pk=None):
@@ -118,7 +130,12 @@ class CartViewSet(TenantViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        from apps.commerce.services import QuoteInput, build_quote
+        from apps.commerce.services import (
+            OrderLine,
+            QuoteInput,
+            build_quote,
+            create_order_from_quote,
+        )
 
         shipping_country = (request.data.get("shipping_country") or "").strip()
         shipping_state = (request.data.get("shipping_state") or "").strip()
@@ -134,22 +151,6 @@ class CartViewSet(TenantViewSet):
         ]
 
         with transaction.atomic():
-            # Validate inventory before creating order
-            for cart_item in cart_items:
-                product = cart_item.product
-                if product.track_inventory:
-                    locked_product = Product.objects.select_for_update().get(id=product.id)
-                    if (
-                        locked_product.inventory_quantity < cart_item.quantity
-                        and not locked_product.allow_backorder
-                    ):
-                        return Response(
-                            {
-                                "detail": f"Insufficient stock for '{product.title}'. Available: {locked_product.inventory_quantity}"
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-
             quote = build_quote(
                 cart.organization_id,
                 QuoteInput(
@@ -164,74 +165,51 @@ class CartViewSet(TenantViewSet):
                 ),
             )
 
-            order = Order.objects.create(
-                organization=cart.organization,
-                store=cart.store,
-                customer=cart.customer,
-                customer_email=customer_email,
-                currency=cart.currency,
-                customer_first_name=request.data.get(
-                    "customer_first_name", cart.customer.first_name if cart.customer else ""
-                ),
-                customer_last_name=request.data.get(
-                    "customer_last_name", cart.customer.last_name if cart.customer else ""
-                ),
-                customer_phone=request.data.get(
-                    "customer_phone", cart.customer.phone if cart.customer else ""
-                ),
-                subtotal=cart.subtotal,
-                tax_amount=quote.tax,
-                shipping_amount=quote.shipping,
-                discount_amount=quote.discount,
-                discount_code=quote.discount_code,
-                discount_id=quote.discount_id,
-                shipping_method_name=quote.shipping_rate_name,
-                payment_method=payment_method,
-                total=Decimal("0"),
-                shipping_address_line1=request.data.get("shipping_address_line1", ""),
-                shipping_address_line2=request.data.get("shipping_address_line2", ""),
-                shipping_city=request.data.get("shipping_city", ""),
-                shipping_state=shipping_state,
-                shipping_postal_code=shipping_postal_code,
-                shipping_country=shipping_country,
-            )
-
-            # Total: inclusive tax already sits inside the subtotal
-            if quote.tax_inclusive:
-                order.total = order.subtotal - order.discount_amount + order.shipping_amount
-            else:
-                order.total = order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
-            order.total = order.total.quantize(Decimal("0.01"))
-            order.save(update_fields=["total"])
-
-            # Record discount usage
-            if quote.discount_id and quote.discount:
-                from apps.commerce.models import Discount
-
-                Discount.objects.filter(id=quote.discount_id).update(
-                    used_count=F("used_count") + 1
+            lines = [
+                OrderLine(
+                    product_id=str(item.product_id),
+                    variant_id=str(item.variant_id) if item.variant_id else None,
+                    title=item.product.title,
+                    sku=item.product.sku,
+                    quantity=item.quantity,
+                    unit_price=item.unit_price,
+                    line_total=Decimal(str(item.line_total)),
+                    image_url=item.product.primary_image.url if item.product.primary_image else "",
+                    track_inventory=item.product.track_inventory,
+                    allow_backorder=item.product.allow_backorder,
+                    inventory_quantity=item.product.inventory_quantity,
                 )
+                for item in cart_items
+            ]
 
-            for cart_item in cart_items:
-                product = cart_item.product
-                if product.track_inventory:
-                    Product.objects.filter(id=product.id).update(
-                        inventory_quantity=F("inventory_quantity") - cart_item.quantity,
-                        total_sold=F("total_sold") + cart_item.quantity,
-                        total_revenue=F("total_revenue") + cart_item.line_total,
-                    )
-
-                OrderItem.objects.create(
-                    order=order,
-                    product=product,
-                    variant=cart_item.variant,
-                    title=product.title,
-                    sku=product.sku,
-                    quantity=cart_item.quantity,
-                    unit_price=cart_item.unit_price,
-                    total_price=Decimal(str(cart_item.line_total)),
-                    image_url=product.primary_image.url if product.primary_image else "",
+            try:
+                order = create_order_from_quote(
+                    cart.store,
+                    quote=quote,
+                    lines=lines,
+                    customer=cart.customer,
+                    customer_email=customer_email,
+                    customer_first_name=request.data.get(
+                        "customer_first_name", cart.customer.first_name if cart.customer else ""
+                    ),
+                    customer_last_name=request.data.get(
+                        "customer_last_name", cart.customer.last_name if cart.customer else ""
+                    ),
+                    customer_phone=request.data.get(
+                        "customer_phone", cart.customer.phone if cart.customer else ""
+                    ),
+                    shipping_address={
+                        "line1": request.data.get("shipping_address_line1", ""),
+                        "line2": request.data.get("shipping_address_line2", ""),
+                        "city": request.data.get("shipping_city", ""),
+                        "state": shipping_state,
+                        "postal_code": shipping_postal_code,
+                        "country": shipping_country,
+                    },
+                    payment_method=payment_method,
                 )
+            except ValueError as exc:
+                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
             cart.status = "converted"
             cart.save(update_fields=["status"])

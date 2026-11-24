@@ -77,6 +77,15 @@ class Customer(UUIDModel, TimeStampedModel):
     def check_password(self, raw_password: str) -> bool:
         return check_password(raw_password, self.password)
 
+    # DRF permission classes expect these on request.user
+    @property
+    def is_authenticated(self) -> bool:
+        return True
+
+    @property
+    def is_anonymous(self) -> bool:
+        return False
+
 
 class Address(UUIDModel, TimeStampedModel):
     """Shipping/billing address belonging to a customer."""

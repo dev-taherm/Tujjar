@@ -69,7 +69,7 @@ class ShippingRateViewSet(viewsets.ModelViewSet):
         if not org_id:
             raise ValidationError({"detail": "You must belong to an organization."})
         zone = serializer.validated_data["zone"]
-        if zone.organization_id != org_id:
+        if str(zone.organization_id) != str(org_id):
             raise ValidationError({"detail": "Zone does not belong to your organization."})
         serializer.save()
 
@@ -95,7 +95,7 @@ class RefundViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         order = serializer.validated_data["order"]
-        if order.organization_id != self.request.org_id:
+        if str(order.organization_id) != str(self.request.org_id):
             raise ValidationError({"detail": "Order does not belong to your organization."})
         try:
             refund = create_refund(

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { ProductPurchasePanel } from "@/features/storefront/purchase-panel";
+import { ProductReviews } from "@/features/storefront/product-reviews";
 import {
   getStore,
   getStoreProduct,
@@ -154,6 +155,8 @@ export default async function StorefrontProductDetailPage({
           <ProductPurchasePanel product={product} slug={slug} />
         </div>
       </div>
+
+      <ProductReviews productId={product.id} productSlug={productSlug} storeSlug={slug} />
     </div>
   );
 }

@@ -127,10 +127,14 @@ class TestTemplateCRUD:
 
 class TestTemplateVersions:
     def test_list_versions(self, api_client):
+        import time
+
         user, org, token = create_org_with_owner("tpl-ver-list@example.com")
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         t = _create_custom_template(slug="ver-list-tpl")
         TemplateVersion.objects.create(template=t, version="1.0.0", note="First")
+        # Ensure distinct created_at timestamps so ordering is deterministic
+        time.sleep(0.01)
         TemplateVersion.objects.create(template=t, version="1.0.1", note="Second")
         response = api_client.get(f"/api/v1/templates/{t.id}/versions/")
         assert response.status_code == status.HTTP_200_OK

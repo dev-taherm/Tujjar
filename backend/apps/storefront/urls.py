@@ -1,11 +1,13 @@
 from django.urls import path
 
+from apps.customers.storefront_views import storefront_product_reviews
 from apps.storefront.views import (
     StorefrontCategoryListView,
     StorefrontCollectionListView,
     StorefrontPageView,
     StorefrontProductDetailView,
     StorefrontProductListView,
+    checkout_place_order,
     checkout_quote,
     robots_txt,
     sitemap_xml,
@@ -34,6 +36,11 @@ urlpatterns = [
         name="storefront-product-detail",
     ),
     path(
+        "<str:subdomain>/products/<slug:slug>/reviews/",
+        storefront_product_reviews,
+        name="storefront-product-reviews",
+    ),
+    path(
         "<str:subdomain>/categories/",
         StorefrontCategoryListView.as_view(),
         name="storefront-categories",
@@ -60,4 +67,5 @@ urlpatterns = [
     path("<str:subdomain>/blog/rss/", storefront_blog_rss, name="storefront-blog-rss"),
     path("<str:subdomain>/blog/<slug:slug>/", storefront_blog_post, name="storefront-blog-post"),
     path("<str:subdomain>/checkout/quote/", checkout_quote, name="storefront-checkout-quote"),
+    path("<str:subdomain>/checkout/", checkout_place_order, name="storefront-checkout"),
 ]

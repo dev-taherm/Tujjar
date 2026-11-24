@@ -45,7 +45,7 @@ export default async function StorefrontProductsPage({
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("allProducts")}</h1>
-        <ProductListControls sort={sort} />
+        <ProductListControls key={`${sort}-${search}`} sort={sort} currentSearch={search} />
       </div>
       {products.length === 0 ? (
         <div className="mt-6 rounded-xl border border-dashed p-12 text-center" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>

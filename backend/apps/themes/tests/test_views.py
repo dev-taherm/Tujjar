@@ -341,6 +341,10 @@ class TestThemeVersions:
         api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         theme = _create_org_theme(org, slug="versions-theme")
         ThemeVersion.objects.create(theme=theme, version="1.0.0", note="First")
+        # Ensure distinct created_at timestamps so ordering is deterministic
+        import time
+
+        time.sleep(0.01)
         ThemeVersion.objects.create(theme=theme, version="1.0.1", note="Second")
         response = api_client.get(f"/api/v1/themes/{theme.id}/versions/")
         assert response.status_code == status.HTTP_200_OK

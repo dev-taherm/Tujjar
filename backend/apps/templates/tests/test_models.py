@@ -55,8 +55,12 @@ class TestTemplateVersionModel:
         assert TemplateVersion.objects.filter(template_id=t_id).count() == 0
 
     def test_ordering(self):
+        import time
+
         t = Template.objects.create(name="Order Store", slug="order-store", config={"a": 1})
         TemplateVersion.objects.create(template=t, version="1.0.0")
+        # Ensure distinct created_at timestamps so ordering is deterministic
+        time.sleep(0.01)
         v2 = TemplateVersion.objects.create(template=t, version="1.0.1")
         versions = list(t.versions.all())
         assert versions[0].pk == v2.pk

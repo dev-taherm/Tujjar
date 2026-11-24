@@ -1,25 +1,29 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 /**
  * Sort/search controls for the storefront product listing. State lives in
  * the URL (searchParams) so listings remain server-rendered and crawlable.
+ *
+ * `currentSearch` seeds the input; the parent keys this component by the
+ * current URL search so back/forward navigation remounts it in sync
+ * (the React "key reset" pattern — no syncing effects).
  */
-export function ProductListControls({ sort }: { sort: string }) {
+export function ProductListControls({
+  sort,
+  currentSearch = "",
+}: {
+  sort: string;
+  currentSearch?: string;
+}) {
   const t = useTranslations("storefront.products");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentSearch = searchParams.get("search") || "";
   const [search, setSearch] = useState(currentSearch);
-
-  // Keep the input in sync when the URL changes (back/forward navigation)
-  useEffect(() => {
-    setSearch(currentSearch);
-  }, [currentSearch]);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

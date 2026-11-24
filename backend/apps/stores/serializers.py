@@ -131,7 +131,7 @@ class StoreSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
     favicon_url = serializers.SerializerMethodField()
     og_image_url = serializers.SerializerMethodField()
-    theme = ThemeAssignField()
+    theme = ThemeAssignField(required=False, allow_null=True)
 
     class Meta:
         model = Store

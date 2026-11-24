@@ -263,9 +263,10 @@ class TestQuote:
             ),
         )
         assert quote.discount == Decimal("10.00")
-        assert quote.tax == Decimal("9.00")  # 10% of 90 + shipping tax 1.00
+        # 10% of discounted items (90) + 10% of shipping (10) = 10.00
+        assert quote.tax == Decimal("10.00")
         assert quote.shipping == Decimal("10.00")
-        assert quote.total == Decimal("109.00")
+        assert quote.total == Decimal("110.00")
 
     def test_invalid_code_is_ignored(self, pricing_data):
         from apps.commerce.services import QuoteInput, build_quote
@@ -293,7 +294,9 @@ class TestQuote:
         )
         assert quote.shipping == Decimal("0")
         assert quote.discount == Decimal("10.00")
-        assert quote.total == Decimal("100.00")
+        # Tax still applies to the undiscounted items subtotal
+        assert quote.tax == Decimal("10.00")
+        assert quote.total == Decimal("110.00")
 
     def test_no_zone_means_no_shipping(self, pricing_data):
         from apps.commerce.services import QuoteInput, build_quote
@@ -406,7 +409,6 @@ class TestCommerceAPI:
             },
         )
         assert rate.status_code == status.HTTP_201_CREATED
-
     def test_refund_endpoint(self, pricing_data):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Bearer {pricing_data['token']}")
@@ -440,12 +442,14 @@ class TestStorefrontQuote:
                 ],
                 "shipping_country": "US",
             },
+            format="json",
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["subtotal"] == "200.00"
         assert response.data["shipping"] == "10.00"
-        assert response.data["tax"] == "20.00"
-        assert response.data["total"] == "230.00"
+        # 10% of items (200) + 10% of shipping (10) = 21.00
+        assert response.data["tax"] == "21.00"
+        assert response.data["total"] == "231.00"
         rate_ids = [r["id"] for r in response.data["shipping_rates"]]
         assert str(pricing_data["rate"].id) in rate_ids
 
@@ -461,6 +465,7 @@ class TestStorefrontQuote:
                 "discount_code": "SAVE25",
                 "shipping_country": "US",
             },
+            format="json",
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.data["discount"] == "25.00"
@@ -483,5 +488,76 @@ class TestStorefrontQuote:
         response = client.post(
             f"/api/v1/store/{pricing_data['store'].slug}/checkout/quote/",
             {"items": [{"product_id": str(foreign.id), "quantity": 1}]},
+            format="json",
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+class TestStorefrontCheckout:
+    def test_guest_order_created(self, pricing_data):
+        from apps.orders.models import Order
+
+        make_discount(pricing_data["org"], code="GUEST10", value=Decimal("10"))
+        client = APIClient()
+        response = client.post(
+            f"/api/v1/store/{pricing_data['store'].slug}/checkout/",
+            {
+                "items": [{"product_id": str(pricing_data["product"].id), "quantity": 1}],
+                "customer_email": "guest@example.com",
+                "customer_first_name": "Guest",
+                "discount_code": "GUEST10",
+                "shipping_address": {
+                    "line1": "123 Main St",
+                    "city": "Springfield",
+                    "country": "US",
+                },
+                "shipping_rate_id": str(pricing_data["rate"].id),
+                "payment_method": "cod",
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        assert response.data["order_number"]
+        assert response.data["subtotal"] == "100.00"
+        assert response.data["discount"] == "10.00"
+        # 10% of 90 items + 10% of 10 shipping
+        assert response.data["tax"] == "10.00"
+        assert response.data["shipping"] == "10.00"
+        assert response.data["total"] == "110.00"
+
+        order = Order.objects.get(order_number=response.data["order_number"])
+        assert order.customer_email == "guest@example.com"
+        assert order.discount_code == "GUEST10"
+        assert order.items.count() == 1
+        assert order.shipping_city == "Springfield"
+
+    def test_email_required(self, pricing_data):
+        client = APIClient()
+        response = client.post(
+            f"/api/v1/store/{pricing_data['store'].slug}/checkout/",
+            {
+                "items": [{"product_id": str(pricing_data["product"].id), "quantity": 1}],
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_insufficient_stock_rejected(self, pricing_data):
+        from apps.products.models import Product
+
+        product = pricing_data["product"]
+        Product.objects.filter(id=product.id).update(
+            track_inventory=True, inventory_quantity=1, allow_backorder=False
+        )
+        client = APIClient()
+        response = client.post(
+            f"/api/v1/store/{pricing_data['store'].slug}/checkout/",
+            {
+                "items": [{"product_id": str(product.id), "quantity": 5}],
+                "customer_email": "guest@example.com",
+                "shipping_address": {"country": "US"},
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Insufficient stock" in response.data["error"]

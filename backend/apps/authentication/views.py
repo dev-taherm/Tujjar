@@ -5,6 +5,7 @@ import logging
 from django.conf import settings
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
@@ -53,6 +54,75 @@ class AuthAnonThrottle(AnonRateThrottle):
 
 class AuthUserThrottle(UserRateThrottle):
     rate = "1000/hour"
+
+
+class SwitchOrganizationView(APIView):
+    """Explicit active-organization switching.
+
+    Returns a fresh token pair whose org_id claim points at the chosen
+    organization. Requires an accepted membership in the target org.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [AuthUserThrottle]
+
+    def get(self, request):
+        """List the user's accepted memberships (for the org switcher)."""
+        from apps.organizations.models import OrganizationMembership
+
+        memberships = OrganizationMembership._base_manager.filter(
+            user=request.user, is_accepted=True
+        ).select_related("organization", "role")
+        return Response(
+            [
+                {
+                    "id": str(m.organization.id),
+                    "name": m.organization.name,
+                    "slug": m.organization.slug,
+                    "role": m.role.slug if m.role else "",
+                    "is_current": str(m.organization.id) == str(request.org_id or ""),
+                }
+                for m in memberships
+            ]
+        )
+
+    def post(self, request):
+
+        from apps.organizations.models import Organization, OrganizationMembership
+
+        org_id = request.data.get("org_id")
+        try:
+            target = Organization._base_manager.get(id=org_id)
+        except (Organization.DoesNotExist, ValidationError, ValueError):
+            return Response(
+                {"detail": "Organization not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        membership = OrganizationMembership._base_manager.filter(
+            user=request.user, organization=target, is_accepted=True
+        ).first()
+        if not membership:
+            return Response(
+                {"detail": "You are not a member of this organization."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        tokens = RefreshToken.for_user(request.user)
+        tokens["org_id"] = str(target.id)
+        return Response(
+            {
+                "tokens": {
+                    "access": str(tokens.access_token),
+                    "refresh": str(tokens),
+                },
+                "organization": {
+                    "id": str(target.id),
+                    "name": target.name,
+                    "slug": target.slug,
+                    "role": membership.role.slug if membership.role else "",
+                },
+            }
+        )
 
 
 class RegisterView(APIView):

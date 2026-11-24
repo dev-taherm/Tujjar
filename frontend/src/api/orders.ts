@@ -10,42 +10,42 @@ export const ordersApi = {
     if (params?.status) searchParams.set("status", params.status);
     if (params?.search) searchParams.set("search", params.search);
     const qs = searchParams.toString();
-    const { data } = await apiClient.get(`/orders/${qs ? `?${qs}` : ""}`);
+    const { data } = await apiClient.get(`/orders/orders/${qs ? `?${qs}` : ""}`);
     return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Order> => {
-    const { data } = await apiClient.get(`/orders/${id}/`);
+    const { data } = await apiClient.get(`/orders/orders/${id}/`);
     return data;
   },
 
   updateStatus: async (id: string, status: string): Promise<Order> => {
-    const { data } = await apiClient.post(`/orders/${id}/update_status/`, { status });
+    const { data } = await apiClient.post(`/orders/orders/${id}/update_status/`, { status });
     return data;
   },
 
   updatePaymentStatus: async (id: string, payment_status: string): Promise<Order> => {
-    const { data } = await apiClient.post(`/orders/${id}/update_payment_status/`, { payment_status });
+    const { data } = await apiClient.post(`/orders/orders/${id}/update_payment_status/`, { payment_status });
     return data;
   },
 
   ship: async (id: string, tracking_number?: string, tracking_url?: string): Promise<Order> => {
-    const { data } = await apiClient.post(`/orders/${id}/ship/`, { tracking_number, tracking_url });
+    const { data } = await apiClient.post(`/orders/orders/${id}/ship/`, { tracking_number, tracking_url });
     return data;
   },
 
   deliver: async (id: string): Promise<Order> => {
-    const { data } = await apiClient.post(`/orders/${id}/deliver/`);
+    const { data } = await apiClient.post(`/orders/orders/${id}/deliver/`);
     return data;
   },
 
   cancel: async (id: string): Promise<Order> => {
-    const { data } = await apiClient.post(`/orders/${id}/cancel/`);
+    const { data } = await apiClient.post(`/orders/orders/${id}/cancel/`);
     return data;
   },
 
   addNote: async (id: string, note_type: string, note: string): Promise<Order> => {
-    const { data } = await apiClient.post(`/orders/${id}/add_note/`, { note_type, note });
+    const { data } = await apiClient.post(`/orders/orders/${id}/add_note/`, { note_type, note });
     return data;
   },
 };
@@ -56,34 +56,34 @@ export const cartsApi = {
     if (params?.store) searchParams.set("store", params.store);
     if (params?.status) searchParams.set("status", params.status);
     const qs = searchParams.toString();
-    const { data } = await apiClient.get(`/carts/${qs ? `?${qs}` : ""}`);
+    const { data } = await apiClient.get(`/orders/carts/${qs ? `?${qs}` : ""}`);
     return unwrapResults(data);
   },
 
   get: async (id: string): Promise<Cart> => {
-    const { data } = await apiClient.get(`/carts/${id}/`);
+    const { data } = await apiClient.get(`/orders/carts/${id}/`);
     return data;
   },
 
   addItem: async (id: string, product: string, quantity: number, variant?: string): Promise<Cart> => {
     const payload: Record<string, unknown> = { product, quantity };
     if (variant) payload.variant = variant;
-    const { data } = await apiClient.post(`/carts/${id}/items/add/`, payload);
+    const { data } = await apiClient.post(`/orders/carts/${id}/items/add/`, payload);
     return data;
   },
 
   updateItem: async (id: string, item_id: string, quantity: number): Promise<Cart> => {
-    const { data } = await apiClient.post(`/carts/${id}/items/update/`, { item_id, quantity });
+    const { data } = await apiClient.post(`/orders/carts/${id}/items/update/`, { item_id, quantity });
     return data;
   },
 
   removeItem: async (id: string, item_id: string): Promise<Cart> => {
-    const { data } = await apiClient.post(`/carts/${id}/items/remove/`, { item_id });
+    const { data } = await apiClient.post(`/orders/carts/${id}/items/remove/`, { item_id });
     return data;
   },
 
   checkout: async (id: string, payload: Record<string, unknown>): Promise<Order> => {
-    const { data } = await apiClient.post(`/carts/${id}/checkout/`, payload);
+    const { data } = await apiClient.post(`/orders/carts/${id}/checkout/`, payload);
     return data;
   },
 };

@@ -156,10 +156,13 @@ class TestThemeVersion:
 
     def test_ordering_by_created_at_desc(self):
         from apps.authentication.models import User
+        import time
 
         User.objects.create_user(email="v@test.com", password="pass123")
         theme = Theme.objects.create(name="T", slug="t")
         v1 = ThemeVersion.objects.create(theme=theme, version="1.0.0", note="first")
+        # Distinct created_at timestamps so ordering is deterministic
+        time.sleep(0.01)
         v2 = ThemeVersion.objects.create(theme=theme, version="1.0.1", note="second")
         versions = list(theme.versions.all())
         assert versions[0].pk == v2.pk

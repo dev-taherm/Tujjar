@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "apps.products",
     "apps.orders",
     "apps.commerce",
+    "apps.payments",
+    "apps.webhooks",
     "apps.customers",
     "apps.pages",
     "apps.themes",
@@ -211,6 +213,10 @@ STORE_DOMAIN = config("STORE_DOMAIN", default="tujjar.com")
 
 # Frontend URL for password reset links, etc.
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
+
+# Payments — Stripe (optional; card checkout enabled only when configured)
+STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
+STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")
 
 # DRF Spectacular (OpenAPI)
 SPECTACULAR_SETTINGS = {

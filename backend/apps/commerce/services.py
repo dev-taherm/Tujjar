@@ -8,8 +8,10 @@ the storefront always agree on pricing.
 from __future__ import annotations
 
 import decimal
+import logging
 from dataclasses import dataclass, field
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from apps.commerce.models import (
     ZERO,
@@ -20,13 +22,20 @@ from apps.commerce.models import (
     TaxRate,
 )
 
+logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from apps.orders.models import Order
+
 __all__ = [
     "QuoteInput",
     "QuoteResult",
+    "OrderLine",
     "resolve_discount",
     "calculate_tax",
     "calculate_shipping",
     "build_quote",
+    "create_order_from_quote",
     "create_refund",
 ]
 
@@ -326,6 +335,169 @@ def build_quote(
 
 
 # ---------------------------------------------------------------------------
+# Order creation (shared by cart checkout and public storefront checkout)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class OrderLine:
+    """A resolved, server-validated line for order creation."""
+
+    product_id: str
+    variant_id: str | None
+    title: str
+    sku: str
+    quantity: int
+    unit_price: Decimal
+    line_total: Decimal
+    image_url: str = ""
+    track_inventory: bool = False
+    allow_backorder: bool = False
+    inventory_quantity: int = 0
+
+
+def create_order_from_quote(
+    store,
+    *,
+    quote: QuoteResult,
+    lines: list[OrderLine],
+    customer=None,
+    customer_email: str,
+    customer_first_name: str = "",
+    customer_last_name: str = "",
+    customer_phone: str = "",
+    shipping_address: dict | None = None,
+    payment_method: str = "cod",
+) -> Order:
+    """Create an order from a computed quote, atomically.
+
+    Enforces inventory, applies quote financials, records discount usage,
+    decrements stock and creates denormalized order items.
+    """
+    from django.db import transaction
+    from django.db.models import F
+
+    from apps.orders.models import Order, OrderItem, OrderTransitionError  # noqa: F401
+
+    shipping_address = shipping_address or {}
+
+    with transaction.atomic():
+        # 1. Inventory validation with row locks
+        for line in lines:
+            if not line.track_inventory:
+                continue
+            locked = _lock_product(line.product_id)
+            if (
+                locked.inventory_quantity < line.quantity
+                and not locked.allow_backorder
+            ):
+                raise ValueError(
+                    f"Insufficient stock for '{line.title}'. "
+                    f"Available: {locked.inventory_quantity}"
+                )
+
+        # 2. Order row with quote financials
+        order = Order.objects.create(
+            organization_id=store.organization_id,
+            store=store,
+            customer=customer,
+            customer_email=customer_email,
+            currency=getattr(store, "currency", None) or "USD",
+            customer_first_name=customer_first_name,
+            customer_last_name=customer_last_name,
+            customer_phone=customer_phone,
+            subtotal=quote.subtotal,
+            tax_amount=quote.tax,
+            shipping_amount=quote.shipping,
+            discount_amount=quote.discount,
+            discount_code=quote.discount_code,
+            discount_id=quote.discount_id,
+            shipping_method_name=quote.shipping_rate_name,
+            payment_method=payment_method,
+            total=Decimal("0"),
+            shipping_address_line1=shipping_address.get("line1", ""),
+            shipping_address_line2=shipping_address.get("line2", ""),
+            shipping_city=shipping_address.get("city", ""),
+            shipping_state=shipping_address.get("state", ""),
+            shipping_postal_code=shipping_address.get("postal_code", ""),
+            shipping_country=shipping_address.get("country", ""),
+        )
+
+        # Total: inclusive tax already sits inside the subtotal
+        if quote.tax_inclusive:
+            order.total = order.subtotal - order.discount_amount + order.shipping_amount
+        else:
+            order.total = (
+                order.subtotal + order.tax_amount + order.shipping_amount - order.discount_amount
+            )
+        order.total = order.total.quantize(Decimal("0.01"))
+        order.save(update_fields=["total"])
+
+        # 3. Discount usage
+        if quote.discount_id:
+            from apps.commerce.models import Discount
+
+            Discount.objects.filter(id=quote.discount_id).update(used_count=F("used_count") + 1)
+
+        # 4. Inventory + denormalized items
+        for line in lines:
+            if line.track_inventory:
+                _adjust_product_inventory(line)
+            OrderItem.objects.create(
+                order=order,
+                product_id=line.product_id,
+                variant_id=line.variant_id,
+                title=line.title,
+                sku=line.sku,
+                quantity=line.quantity,
+                unit_price=line.unit_price,
+                total_price=line.line_total,
+                image_url=line.image_url,
+            )
+
+    _dispatch_order_event("order.created", order)
+    return order
+
+
+def _dispatch_order_event(event_type: str, order) -> None:
+    """Fan commerce events out to merchant webhooks (best-effort)."""
+    try:
+        from apps.webhooks.services import dispatch_event
+
+        payload = {
+            "order_id": str(order.id),
+            "order_number": order.order_number,
+            "status": order.status,
+            "payment_status": order.payment_status,
+            "total": str(order.total),
+            "currency": order.currency,
+            "customer_email": order.customer_email,
+            "store_id": str(order.store_id),
+        }
+        dispatch_event(order.organization_id, event_type, payload)
+    except Exception:  # pragma: no cover — never break commerce on webhooks
+        logger.warning("webhook dispatch failed for %s", order.id, exc_info=True)
+
+
+def _lock_product(product_id: str):
+    from apps.products.models import Product
+
+    return Product.objects.select_for_update().get(id=product_id)
+
+
+def _adjust_product_inventory(line: OrderLine) -> None:
+    from django.db.models import F
+
+    from apps.products.models import Product
+
+    Product.objects.filter(id=line.product_id).update(
+        inventory_quantity=F("inventory_quantity") - line.quantity,
+        total_sold=F("total_sold") + line.quantity,
+        total_revenue=F("total_revenue") + line.line_total,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Refunds
 # ---------------------------------------------------------------------------
 
@@ -379,6 +551,23 @@ def create_refund(
         else:
             order.payment_status = "partially_paid"
         order.save(update_fields=["payment_status", "updated_at"])
+
+        try:
+            from apps.webhooks.services import dispatch_event
+
+            dispatch_event(
+                order.organization_id,
+                "order.refunded",
+                {
+                    "order_id": str(order.id),
+                    "order_number": order.order_number,
+                    "refund_amount": str(amount),
+                    "refunded_total": str(total_refunded),
+                    "payment_status": order.payment_status,
+                },
+            )
+        except Exception:  # pragma: no cover — never break refunds
+            logger.warning("webhook dispatch failed for refund on %s", order.id, exc_info=True)
 
         return refund
 

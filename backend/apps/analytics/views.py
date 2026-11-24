@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -88,6 +88,57 @@ class EventViewSet(TenantViewSet):
             event_type="purchase",
         ).order_by("-created_at")[:5]
 
+        # Top products by revenue in the period (from order line items)
+        from apps.orders.models import OrderItem
+
+        top_products_qs = (
+            OrderItem.objects.filter(
+                order__organization_id=org_id,
+                order__created_at__gte=period_start,
+                order__status__in=["confirmed", "processing", "shipped", "delivered"],
+            )
+            .values("title")
+            .annotate(
+                revenue=Sum("total_price"),
+                units_sold=Sum("quantity"),
+                order_count=Count("order", distinct=True),
+            )
+            .order_by("-revenue")[:5]
+        )
+        top_products = [
+            {
+                "title": row["title"],
+                "revenue": float(row["revenue"] or 0),
+                "units_sold": row["units_sold"],
+                "order_count": row["order_count"],
+            }
+            for row in top_products_qs
+        ]
+
+        # Traffic sources by referrer host over the period
+        traffic_events = Event.objects.filter(
+            organization_id=org_id,
+            created_at__gte=period_start,
+            event_type="page_view",
+        ).exclude(referrer="")
+
+        def _referrer_host(url: str) -> str:
+            try:
+                from urllib.parse import urlparse
+
+                host = urlparse(url).netloc.lower()
+                return host.split(":")[0] or "direct"
+            except Exception:  # pragma: no cover — defensive
+                return "direct"
+
+        hosts = {}
+        for ref in traffic_events.values_list("referrer", flat=True)[:5000]:
+            host = _referrer_host(ref)
+            hosts[host] = hosts.get(host, 0) + 1
+        traffic_sources = dict(
+            sorted(hosts.items(), key=lambda kv: kv[1], reverse=True)[:6]
+        )
+
         # Last 30 days chart — single bulk query instead of N+1
         chart_start = (now - timedelta(days=29)).date()
         chart_stats = {
@@ -120,9 +171,9 @@ class EventViewSet(TenantViewSet):
                 "orders_change_pct": pct_change(total_orders, prev_orders),
                 "customers_change_pct": pct_change(total_customers, prev_customers),
                 "recent_orders": EventSerializer(recent_orders, many=True).data,
-                "top_products": [],
+                "top_products": top_products,
                 "revenue_chart": chart,
-                "traffic_sources": {},
+                "traffic_sources": traffic_sources,
             }
         )
 

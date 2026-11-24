@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardDescription } from "@/shared/ui";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui";
 import { useTranslations } from "next-intl";
 import { useAnalyticsSummary } from "@/api/analytics";
 
@@ -63,6 +63,43 @@ export default function DashboardPage() {
           </CardHeader>
         </Card>
       </div>
+
+      {(!!stats?.top_products?.length || !!Object.keys(stats?.traffic_sources ?? {}).length) && (
+        <div className="mt-6 grid gap-4 md:gap-6 md:grid-cols-2">
+          {!!stats?.top_products?.length && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("topProducts")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {stats.top_products.map((p) => (
+                  <div key={p.title} className="flex items-center justify-between text-sm">
+                    <span className="truncate" style={{ maxWidth: "60%" }}>{p.title}</span>
+                    <span className="text-gray-500">
+                      {p.units_sold} sold · ${p.revenue.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+          {!!Object.keys(stats?.traffic_sources ?? {}).length && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("trafficSources")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {Object.entries(stats!.traffic_sources).map(([host, count]) => (
+                  <div key={host} className="flex items-center justify-between text-sm">
+                    <span className="truncate" style={{ maxWidth: "60%" }}>{host}</span>
+                    <span className="text-gray-500">{count}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 }

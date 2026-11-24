@@ -26,10 +26,16 @@ import {
   ScrollText,
   PenTool,
   Settings2,
+  Tag,
+  Truck,
+  Receipt,
+  Star,
+  Webhook,
   X,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
+import { OrgSwitcher } from "@/features/auth/org-switcher";
 import { useState, useEffect, useCallback } from "react";
 
 interface NavItem {
@@ -65,7 +71,12 @@ const navigation: NavGroup[] = [
     groupKey: "sales",
     items: [
       { nameKey: "orders", href: "/dashboard/orders", icon: ShoppingCart },
+      { nameKey: "discounts", href: "/dashboard/discounts", icon: Tag },
+      { nameKey: "shipping", href: "/dashboard/shipping", icon: Truck },
+      { nameKey: "taxes", href: "/dashboard/taxes", icon: Receipt },
       { nameKey: "customers", href: "/dashboard/customers", icon: Users },
+      { nameKey: "reviews", href: "/dashboard/reviews", icon: Star },
+      { nameKey: "webhooks", href: "/dashboard/webhooks", icon: Webhook },
     ],
   },
   {
@@ -159,8 +170,7 @@ export function Sidebar() {
           <Link href={`/${locale}/dashboard`} className="text-xl font-bold text-primary-600">
             Tujjar
           </Link>
-        )}
-        <button
+        )}        <button
           onClick={toggleSidebar}
           className="hidden rounded-lg p-1.5 hover:bg-gray-100 active:scale-[0.98] active:bg-gray-100 md:block"
         >
@@ -175,6 +185,12 @@ export function Sidebar() {
           <X className="h-5 w-5" />
         </button>
       </div>
+
+      {sidebarExpanded && (
+        <div className="border-b border-gray-200 px-2 py-2">
+          <OrgSwitcher />
+        </div>
+      )}
 
       <nav className="flex-1 overflow-y-auto px-2 py-4">
         {navigation.map((group) => {

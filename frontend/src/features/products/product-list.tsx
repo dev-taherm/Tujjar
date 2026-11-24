@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, SearchInput, EmptyState } from "@/shared/ui";
 import { ProductCard } from "./product-card";
 import { useProducts, useDeleteProduct, useDuplicateProduct } from "@/api/queries";
-import { Plus, Package, MoreHorizontal, Copy, Trash2, Eye } from "lucide-react";
+import { Plus, Package, MoreHorizontal, Copy, Trash2, Eye, Download, Upload } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 
@@ -19,8 +20,66 @@ export function ProductList() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const deleteProduct = useDeleteProduct();
   const duplicateProduct = useDuplicateProduct();
+  const queryClient = useQueryClient();
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/v1/products/import-export/export/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
+        },
+      });
+      if (!res.ok) throw new Error("export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "products.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(tc("error"));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const token = localStorage.getItem("access_token") || "";
+      const res = await fetch("/api/v1/products/import-export/import/", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "import failed");
+      toast.success(
+        t("importDone", { created: data.created, updated: data.updated, failed: data.failed })
+      );
+      if (data.errors?.length) {
+        toast.error(data.errors[0].error);
+      }
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      router.refresh();
+    } catch {
+      toast.error(tc("error"));
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const { data: allProducts, isLoading } = useProducts({
     search: search || undefined,
@@ -102,9 +161,24 @@ export function ProductList() {
             ))}
           </div>
         </div>
-        <Button onClick={() => router.push(`/${locale}/dashboard/products/new`)}>
-          <Plus className="me-2 h-4 w-4" /> {t("addProduct")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleExport} isLoading={exporting}>
+            <Download className="me-2 h-4 w-4" /> {t("exportCsv")}
+          </Button>
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()} isLoading={importing}>
+            <Upload className="me-2 h-4 w-4" /> {t("importCsv")}
+          </Button>
+          <Button onClick={() => router.push(`/${locale}/dashboard/products/new`)}>
+            <Plus className="me-2 h-4 w-4" /> {t("addProduct")}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleImportFile}
+          />
+        </div>
       </div>
 
       {/* Products Grid */}

@@ -278,6 +278,26 @@ class Order(UUIDModel, TimeStampedModel):
             changed_by=changed_by,
             notes=notes,
         )
+        self._dispatch_webhook_event()
+
+    def _dispatch_webhook_event(self) -> None:
+        """Notify merchant webhooks about status changes (best-effort)."""
+        try:
+            from apps.webhooks.services import dispatch_event
+
+            dispatch_event(
+                self.organization_id,
+                "order.status_changed",
+                {
+                    "order_id": str(self.id),
+                    "order_number": self.order_number,
+                    "status": self.status,
+                    "payment_status": self.payment_status,
+                    "total": str(self.total),
+                },
+            )
+        except Exception:  # pragma: no cover — never break order flows
+            pass
 
     def recalculate(self) -> None:
         """Recalculate order totals from items."""
