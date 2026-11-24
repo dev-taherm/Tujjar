@@ -826,7 +826,9 @@
       "title": "التحليلات",
       "description": "تتبع أداء متجرك وسلوك العملاء",
       "revenueChart": "الإيرادات (آخر 30 يوم)",
-      "realtime": "مباشر (24 ساعة)"
+      "realtime": "مباشر (24 ساعة)",
+      "topProducts": "أفضل المنتجات (30 يومًا)",
+      "trafficSources": "مصادر الزيارات (30 يومًا)"
     },
     "notifications": {
       "notifications": "الإشعارات",

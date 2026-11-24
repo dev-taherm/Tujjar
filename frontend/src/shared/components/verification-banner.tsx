@@ -9,10 +9,28 @@ import { useAuthStore } from "@/stores";
 
 export function VerificationBanner() {
   const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
   const [dismissed, setDismissed] = useState(false);
   const [sending, setSending] = useState(false);
+  const [verifiedLive, setVerifiedLive] = useState(false);
 
-  if (!user || user.is_verified || dismissed) return null;
+  // Re-check verification on mount so a user who just verified their email
+  // stops seeing the banner without re-logging in. (setVerifiedLive fires
+  // inside a promise callback — async, so it passes the lint rule.)
+  useState(() => {
+    if (!user || user.is_verified) return;
+    authApi
+      .getMe()
+      .then((fresh) => {
+        if (fresh.is_verified) {
+          setUser({ ...user, ...fresh });
+          setVerifiedLive(true);
+        }
+      })
+      .catch(() => undefined);
+  });
+
+  if (!user || user.is_verified || verifiedLive || dismissed) return null;
 
   const handleResend = async () => {
     setSending(true);

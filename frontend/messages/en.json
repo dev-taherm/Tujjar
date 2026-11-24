@@ -832,7 +832,9 @@
       "title": "Analytics",
       "description": "Track your store performance and customer behavior",
       "revenueChart": "Revenue (Last 30 Days)",
-      "realtime": "Realtime (24h)"
+      "realtime": "Realtime (24h)",
+      "topProducts": "Top products (30 days)",
+      "trafficSources": "Traffic sources (30 days)"
     },
     "notifications": {
       "notifications": "Notifications",

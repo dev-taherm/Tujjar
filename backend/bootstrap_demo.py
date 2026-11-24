@@ -14,7 +14,10 @@ from apps.stores.models import Store  # noqa: E402
 
 user = User.objects.filter(email="admin@tujjar.com").first()
 if not user:
-    raise SystemExit("admin@tujjar.com not found — create superuser first")
+    raise SystemExit("admin@tujjar.com not found - create superuser first")
+if not user.is_verified:
+    user.is_verified = True
+    user.save(update_fields=["is_verified"])
 
 org, created = Organization.objects.get_or_create(
     slug="demo",
@@ -54,3 +57,4 @@ store, created = Store.objects.get_or_create(
 )
 print(f"Store: {store.slug} (created={created})")
 print("Bootstrap complete.")
+

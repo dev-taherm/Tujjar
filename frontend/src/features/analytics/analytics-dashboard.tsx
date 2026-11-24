@@ -1,6 +1,7 @@
 "use client";
 
 import { useAnalyticsSummary, useRealtimeStats } from "@/api/queries";
+import { Card } from "@/shared/ui";
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Eye, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -86,11 +87,35 @@ export function AnalyticsDashboard() {
         <StatCard label={t("totalCustomers")} value={summary?.total_customers || 0} change={summary?.customers_change_pct} changeLabel={t("vsLastPeriod")} icon={Users} color="bg-purple-50 text-purple-600" />
         <StatCard label={t("productsSold")} value={summary?.total_products_sold || 0} icon={Eye} color="bg-orange-50 text-orange-600" />
       </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RevenueChart data={summary?.revenue_chart || []} />
-        </div>
-        <RealtimeCard />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {!!summary?.top_products?.length && (
+          <Card className="p-5">
+            <h3 className="mb-3 text-sm font-semibold text-gray-900">{t("topProducts")}</h3>
+            <div className="space-y-2">
+              {summary.top_products.map((p, i) => (
+                <div key={`${p.title}-${i}`} className="flex items-center justify-between text-sm">
+                  <span className="truncate" style={{ maxWidth: "55%" }}>{p.title}</span>
+                  <span className="text-gray-500">
+                    {p.units_sold} sold · ${Number(p.revenue).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+        {!!Object.keys(summary?.traffic_sources ?? {}).length && (
+          <Card className="p-5">
+            <h3 className="mb-3 text-sm font-semibold text-gray-900">{t("trafficSources")}</h3>
+            <div className="space-y-2">
+              {Object.entries(summary!.traffic_sources).map(([host, count]) => (
+                <div key={host} className="flex items-center justify-between text-sm">
+                  <span className="truncate" style={{ maxWidth: "60%" }}>{host}</span>
+                  <span className="text-gray-500">{count}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );
