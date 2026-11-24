@@ -249,6 +249,71 @@ class OrderViewSet(TenantViewSet):
 
     required_permission = "orders.manage"
 
+    @action(detail=False, methods=["get"], url_path="export")
+    def export_csv(self, request):
+        """Stream the organization's orders as a CSV attachment."""
+        import csv
+        import io
+
+        from django.http import HttpResponse
+
+        org_id = request.org_id
+        orders = (
+            Order.objects.select_related("store", "customer")
+            .prefetch_related("items")
+            .filter(organization_id=org_id)
+            .order_by("-created_at")
+        )
+
+        columns = [
+            "order_number",
+            "created_at",
+            "status",
+            "payment_status",
+            "payment_method",
+            "customer_email",
+            "customer_name",
+            "items_count",
+            "subtotal",
+            "shipping_amount",
+            "tax_amount",
+            "discount_amount",
+            "discount_code",
+            "total",
+            "currency",
+        ]
+
+        buffer = io.StringIO()
+        writer = csv.DictWriter(buffer, fieldnames=columns)
+        writer.writeheader()
+        for order in orders:
+            writer.writerow(
+                {
+                    "order_number": order.order_number,
+                    "created_at": order.created_at.isoformat(),
+                    "status": order.status,
+                    "payment_status": order.payment_status,
+                    "payment_method": order.payment_method,
+                    "customer_email": order.customer_email,
+                    "customer_name": order.customer.full_name if order.customer else "",
+                    "items_count": order.item_count,
+                    "subtotal": order.subtotal,
+                    "shipping_amount": order.shipping_amount,
+                    "tax_amount": order.tax_amount,
+                    "discount_amount": order.discount_amount,
+                    "discount_code": order.discount_code,
+                    "total": order.total,
+                    "currency": order.currency,
+                }
+            )
+
+        response = HttpResponse(buffer.getvalue(), content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="orders.csv"'
+        return response
+
+
+    required_permission = "orders.manage"
+
     def get_serializer_class(self):
         if self.action in ("retrieve", "update", "partial_update"):
             return OrderDetailSerializer

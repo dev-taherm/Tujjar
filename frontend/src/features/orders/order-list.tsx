@@ -5,8 +5,9 @@ import { Button, Badge, Input, Select, SearchInput, EmptyState } from "@/shared/
 import { useOrders } from "@/api/queries";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { useState } from "react";
-import { Eye, Package } from "lucide-react";
+import { Eye, Package, Download } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -38,6 +39,30 @@ export function OrderList() {
     search: search || undefined,
     status: statusFilter || undefined,
   });
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/v1/orders/orders/export/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
+        },
+      });
+      if (!res.ok) throw new Error("export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "orders.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(tc("error"));
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const statusOptions = [
     { value: "", label: t("allStatuses") },
@@ -64,6 +89,9 @@ export function OrderList() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
         <SearchInput value={search} onChange={setSearch} placeholder={t("searchPlaceholder")} />
         <Select options={statusOptions} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} />
+        <Button variant="outline" onClick={handleExport} isLoading={exporting}>
+          <Download className="me-2 h-4 w-4" /> {t("exportCsv")}
+        </Button>
       </div>
 
       {!orders?.length ? (
