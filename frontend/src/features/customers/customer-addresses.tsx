@@ -51,7 +51,7 @@ export function CustomerAddresses({ customerId, storeId }: CustomerAddressesProp
     resetForm();
   };
 
-  if (isLoading) return <div className="h-[300px] animate-pulse rounded-xl bg-gray-200" />;
+  if (isLoading) return <div className="h-[300px] shimmer rounded-xl" />;
 
   return (
     <div className="space-y-4">
@@ -69,20 +69,20 @@ export function CustomerAddresses({ customerId, storeId }: CustomerAddressesProp
           {addresses.map((addr: Address) => (
             <Card key={addr.id} className="relative">
               {addr.is_default && (
-                <Badge variant="success" className="absolute right-3 top-3">
+                <Badge variant="success" className="absolute end-3 top-3">
                   {t("default")}
                 </Badge>
               )}
               <CardContent className="pt-6">
                 <p className="font-medium">{addr.label}</p>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-ink-soft">
                   {addr.address_line1}
                   {addr.address_line2 && `, ${addr.address_line2}`}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-ink-soft">
                   {addr.city}, {addr.state} {addr.postal_code}
                 </p>
-                <p className="text-sm text-gray-600">{addr.country}</p>
+                <p className="text-sm text-ink-soft">{addr.country}</p>
                 <div className="mt-3 flex gap-2">
                   {!addr.is_default && (
                     <Button size="sm" variant="secondary" onClick={() => setDefault.mutate(addr.id)}>
@@ -93,7 +93,7 @@ export function CustomerAddresses({ customerId, storeId }: CustomerAddressesProp
                     size="sm"
                     variant="secondary"
                     onClick={() => deleteAddress.mutate(addr.id)}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-error hover:text-error"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>

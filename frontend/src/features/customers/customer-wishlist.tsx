@@ -15,7 +15,7 @@ export function CustomerWishlist({ customerId }: CustomerWishlistProps) {
   const { data: items = [], isLoading } = useWishlist(customerId);
   const removeFromWishlist = useRemoveFromWishlist();
 
-  if (isLoading) return <div className="h-[300px] animate-pulse rounded-xl bg-gray-200" />;
+  if (isLoading) return <div className="h-[300px] shimmer rounded-xl" />;
 
   return (
     <div className="space-y-4">
@@ -30,17 +30,17 @@ export function CustomerWishlist({ customerId }: CustomerWishlistProps) {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-medium">{item.product_title}</p>
-                    <p className="text-sm text-gray-500">{formatCurrency(Number(item.product_price))}</p>
+                    <p className="text-sm text-ink-soft">{formatCurrency(Number(item.product_price))}</p>
                   </div>
                   <button
                     onClick={() => removeFromWishlist.mutate(item.id)}
-                    className="rounded-lg p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                    className="rounded-lg p-1 text-ink-soft hover:bg-error-soft hover:text-error"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                {item.note && <p className="mt-2 text-sm text-gray-500">{item.note}</p>}
-                <p className="mt-2 text-xs text-gray-400">{formatDateTime(item.created_at)}</p>
+                {item.note && <p className="mt-2 text-sm text-ink-soft">{item.note}</p>}
+                <p className="mt-2 text-xs text-ink-soft">{formatDateTime(item.created_at)}</p>
               </CardContent>
             </Card>
           ))}

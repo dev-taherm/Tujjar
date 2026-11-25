@@ -10,7 +10,7 @@ export default function StoreDomainsPage() {
 
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold text-gray-900">{t("title")}</h1>
+      <h1 className="mb-8 text-3xl font-bold text-ink">{t("title")}</h1>
       <StoreDomains storeId={params.id as string} />
     </div>
   );

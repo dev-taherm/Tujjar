@@ -35,8 +35,11 @@ export function StorefrontSectionRenderer({ sections }: { sections: Section[] })
         return (
           <section
             key={section.id}
-            className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8${section.className ? ` ${section.className}` : ""}`}
-            style={Object.keys(sectionStyle).length ? sectionStyle : undefined}
+            className={`mx-auto w-full px-4 sm:px-6 lg:px-8${section.className ? ` ${section.className}` : ""}`}
+            style={{
+              maxWidth: "var(--container-max-width, 80rem)",
+              ...(Object.keys(sectionStyle).length ? sectionStyle : {}),
+            }}
           >
             {section.customCSS && (
               <style dangerouslySetInnerHTML={{ __html: `#${section.id} { ${section.customCSS} }` }} />

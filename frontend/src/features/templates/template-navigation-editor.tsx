@@ -30,7 +30,6 @@ interface TemplateNavigationEditorProps {
 
 export function TemplateNavigationEditor({ data, onChange }: TemplateNavigationEditorProps) {
   const t = useTranslations("dashboard.templates");
-  const tc = useTranslations("common");
 
   const handleLogoTextChange = (value: string) => {
     onChange({ ...data, logo_text: value });
@@ -88,7 +87,7 @@ export function TemplateNavigationEditor({ data, onChange }: TemplateNavigationE
           <Label>{t("navigation")}</Label>
           <button
             onClick={addLink}
-            className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
           >
             <Plus className="h-3 w-3" />
             {t("addLink")}
@@ -96,8 +95,8 @@ export function TemplateNavigationEditor({ data, onChange }: TemplateNavigationE
         </div>
         <div className="space-y-2">
           {data.links.map((link, i) => (
-            <div key={i} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2">
-              <GripVertical className="h-4 w-4 flex-shrink-0 text-gray-300 cursor-grab" />
+            <div key={i} className="flex items-center gap-2 rounded-lg border border-line p-2">
+              <GripVertical className="h-4 w-4 flex-shrink-0 text-ink-soft cursor-grab" />
               <div className="flex-1 grid grid-cols-2 gap-2">
                 <Input
                   value={link.label}
@@ -114,20 +113,20 @@ export function TemplateNavigationEditor({ data, onChange }: TemplateNavigationE
                 <button
                   onClick={() => moveLink(i, -1)}
                   disabled={i === 0}
-                  className="rounded p-1 text-gray-400 hover:bg-gray-100 disabled:opacity-30"
+                  className="rounded p-1 text-ink-soft hover:bg-rail disabled:opacity-30"
                 >
                   ↑
                 </button>
                 <button
                   onClick={() => moveLink(i, 1)}
                   disabled={i === data.links.length - 1}
-                  className="rounded p-1 text-gray-400 hover:bg-gray-100 disabled:opacity-30"
+                  className="rounded p-1 text-ink-soft hover:bg-rail disabled:opacity-30"
                 >
                   ↓
                 </button>
                 <button
                   onClick={() => removeLink(i)}
-                  className="rounded p-1 text-red-400 hover:bg-red-50"
+                  className="rounded p-1 text-error hover:bg-error-soft"
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>
@@ -135,13 +134,13 @@ export function TemplateNavigationEditor({ data, onChange }: TemplateNavigationE
             </div>
           ))}
           {data.links.length === 0 && (
-            <p className="py-4 text-center text-sm text-gray-400">{t("noLinks") || "No links yet"}</p>
+            <p className="py-4 text-center text-sm text-ink-soft">{t("noLinks") || "No links yet"}</p>
           )}
         </div>
       </div>
 
       {/* CTA Button */}
-      <div className="rounded-lg border border-gray-200 p-4">
+      <div className="rounded-lg border border-line p-4">
         <div className="mb-3 flex items-center justify-between">
           <Label>{t("ctaButton")}</Label>
           <Toggle

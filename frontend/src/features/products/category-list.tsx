@@ -6,7 +6,7 @@ import { Button, Input, Card, CardContent, CardHeader, CardTitle } from "@/share
 import { slugify } from "@/lib/utils";
 import { useCategories, useCreateCategory, useDeleteCategory } from "@/api/queries";
 import type { Category } from "@/shared/types";
-import { Plus, GripVertical, Image, Trash2, Edit, FolderTree } from "lucide-react";
+import { Plus, GripVertical, Image as ImageIcon, Trash2, Edit, FolderTree } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 
 interface CategoryRowProps {
@@ -21,9 +21,9 @@ function CategoryRow({ category, depth = 0, onEdit, onDelete }: CategoryRowProps
 
   return (
     <>
-      <div className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 active:bg-gray-100" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
-        <GripVertical className="h-4 w-4 text-gray-300 shrink-0" />
-        <FolderTree className="h-4 w-4 text-amber-500 shrink-0" />
+      <div className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-rail active:bg-rail" style={{ paddingLeft: `${depth * 24 + 12}px` }}>
+        <GripVertical className="h-4 w-4 text-ink-soft shrink-0" />
+        <FolderTree className="h-4 w-4 text-warning shrink-0" />
         {category.image ? (
           <img
             src={category.image}
@@ -31,22 +31,22 @@ function CategoryRow({ category, depth = 0, onEdit, onDelete }: CategoryRowProps
             className="h-8 w-8 rounded object-cover shrink-0"
           />
         ) : (
-          <div className="h-8 w-8 rounded bg-gray-100 flex items-center justify-center shrink-0">
-            <Image className="h-4 w-4 text-gray-400" />
+          <div className="h-8 w-8 rounded bg-rail flex items-center justify-center shrink-0">
+            <ImageIcon className="h-4 w-4 text-ink-soft" />
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 truncate">{category.name}</span>
-            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+            <span className="text-sm font-medium text-ink truncate">{category.name}</span>
+            <span className="text-xs text-ink-soft bg-rail px-1.5 py-0.5 rounded shrink-0">
               #{category.sort_order}
             </span>
           </div>
         </div>
-        <span className="text-xs text-gray-400 shrink-0">{category.product_count} {t("totalProducts").toLowerCase()}</span>
+        <span className="text-xs text-ink-soft shrink-0">{category.product_count} {t("totalProducts").toLowerCase()}</span>
         <div className="flex items-center gap-1 shrink-0">
-          <button onClick={() => onEdit(category.id)} className="rounded p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
-          <button onClick={() => onDelete(category.id)} className="rounded p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
+          <button onClick={() => onEdit(category.id)} className="rounded p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-rail"><Edit className="h-3.5 w-3.5 text-ink-soft" /></button>
+          <button onClick={() => onDelete(category.id)} className="rounded p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-error-soft"><Trash2 className="h-3.5 w-3.5 text-error" /></button>
         </div>
       </div>
       {category.children?.map((child: Category) => (
@@ -83,7 +83,7 @@ export function CategoryList() {
   };
 
   if (isLoading) {
-    return <div className="h-64 animate-pulse rounded-xl bg-gray-200" />;
+    return <div className="h-64 shimmer rounded-xl" />;
   }
 
   return (
@@ -101,7 +101,7 @@ export function CategoryList() {
       </CardHeader>
       <CardContent>
         {!categories?.length ? (
-          <div className="py-8 text-center text-sm text-gray-500">{t("noCategories")}</div>
+          <div className="py-8 text-center text-sm text-ink-soft">{t("noCategories")}</div>
         ) : (
           <div className="space-y-0.5">
             {categories.map((cat) => (
@@ -116,7 +116,7 @@ export function CategoryList() {
         )}
 
         {showCreate && (
-          <div className="mt-4 space-y-3 rounded-lg border border-gray-200 p-4">
+          <div className="mt-4 space-y-3 rounded-lg border border-line p-4">
             <Input label={tc("add")} value={newName} onChange={(e) => { setNewName(e.target.value); setNewSlug(slugify(e.target.value)); }} />
             <Input label={t("slug")} value={newSlug} onChange={(e) => setNewSlug(e.target.value)} />
             <div className="flex justify-end gap-2">

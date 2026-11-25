@@ -1,34 +1,37 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button, Badge, Input, Select, SearchInput, EmptyState } from "@/shared/ui";
+import { Button, Select, SearchInput, EmptyState, Table, THead, THeadCell, TBody, TR, TD } from "@/shared/ui";
 import { useOrders } from "@/api/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Eye, Package, Download } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  confirmed: "bg-blue-100 text-blue-800",
-  processing: "bg-purple-100 text-purple-800",
-  shipped: "bg-indigo-100 text-indigo-800",
-  delivered: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800",
-  refunded: "bg-gray-100 text-gray-800",
+  pending: "bg-warning-soft text-warning",
+  confirmed: "bg-primary-100 text-primary-800",
+  processing: "bg-info-soft text-info",
+  shipped: "bg-info/20 text-info",
+  delivered: "bg-success-soft text-success",
+  cancelled: "bg-error-soft text-error",
+  refunded: "bg-rail text-ink",
 };
 
 const paymentColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  authorized: "bg-blue-100 text-blue-800",
-  paid: "bg-green-100 text-green-800",
-  partially_paid: "bg-orange-100 text-orange-800",
-  refunded: "bg-red-100 text-red-800",
-  voided: "bg-gray-100 text-gray-800",
+  pending: "bg-warning-soft text-warning",
+  authorized: "bg-primary-100 text-primary-800",
+  paid: "bg-success-soft text-success",
+  partially_paid: "bg-warning-soft text-warning",
+  refunded: "bg-error-soft text-error",
+  voided: "bg-rail text-ink",
 };
+
+const pill = "inline-flex rounded-full px-2 py-0.5 text-xs font-medium";
 
 export function OrderList() {
   const t = useTranslations("dashboard.orders");
@@ -105,7 +108,7 @@ export function OrderList() {
     return (
       <div className="space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-200" />
+          <div key={i} className="h-16 shimmer rounded-lg" />
         ))}
       </div>
     );
@@ -122,11 +125,8 @@ export function OrderList() {
       </div>
 
       {selected.size > 0 && (
-        <div
-          className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border p-3"
-          style={{ borderColor: "var(--color-primary)", background: "var(--color-surface)" }}
-        >
-          <span className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-primary-500/40 bg-primary-50 p-3 animate-pop">
+          <span className="text-sm font-medium text-primary-700">
             {selected.size} {t("selected")}
           </span>
           {(["confirm", "ship", "deliver", "cancel"] as const).map((action) => (
@@ -142,7 +142,7 @@ export function OrderList() {
           ))}
           <button
             onClick={() => setSelected(new Set())}
-            className="ms-auto text-sm text-gray-400 hover:text-gray-600"
+            className="ms-auto text-sm text-ink-soft transition-colors hover:text-ink"
           >
             {tc("cancel")}
           </button>
@@ -156,42 +156,48 @@ export function OrderList() {
           description={t("ordersWillAppear")}
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={selected.size > 0 && selected.size === orders.length}
-                    onChange={(e) =>
-                      setSelected(
-                        e.target.checked ? new Set(orders.map((o) => o.id)) : new Set()
-                      )
-                    }
-                    aria-label={t("selectAll")}
-                  />
-                </th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("order")}</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("customer")}</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("statusLabel")}</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("payment")}</th>
-                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">{t("total")}</th>
-                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase">{t("date")}</th>
-                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {orders.map((order) => (
-                <tr
+        <Table>
+          <THead>
+            <tr>
+              <THeadCell className="w-10">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary-600"
+                  checked={selected.size > 0 && selected.size === orders.length}
+                  onChange={(e) =>
+                    setSelected(
+                      e.target.checked ? new Set(orders.map((o) => o.id)) : new Set()
+                    )
+                  }
+                  aria-label={t("selectAll")}
+                />
+              </THeadCell>
+              <THeadCell>{t("order")}</THeadCell>
+              <THeadCell>{t("customer")}</THeadCell>
+              <THeadCell>{t("statusLabel")}</THeadCell>
+              <THeadCell>{t("payment")}</THeadCell>
+              <THeadCell className="text-end">{t("total")}</THeadCell>
+              <THeadCell className="text-end">{t("date")}</THeadCell>
+              <THeadCell className="w-12" />
+            </tr>
+          </THead>
+          <TBody>
+            {orders.map((order) => {
+              const isSelected = selected.has(order.id);
+              return (
+                <TR
                   key={order.id}
-                  className="cursor-pointer hover:bg-gray-50"
+                  className={cn(
+                    "cursor-pointer",
+                    isSelected && "bg-primary-50/70 hover:bg-primary-50/70"
+                  )}
                   onClick={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}
                 >
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                  <TD onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
-                      checked={selected.has(order.id)}
+                      className="h-4 w-4 accent-primary-600"
+                      checked={isSelected}
                       onChange={(e) => {
                         const next = new Set(selected);
                         if (e.target.checked) next.add(order.id);
@@ -200,31 +206,36 @@ export function OrderList() {
                       }}
                       aria-label={`${t("select")} ${order.order_number}`}
                     />
-                  </td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.order_number}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  </TD>
+                  <TD className="text-sm font-medium">{order.order_number}</TD>
+                  <TD className="text-sm text-ink-soft">
                     {order.customer_name || order.customer_email}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[order.status] || ""}`}>
+                  </TD>
+                  <TD>
+                    <span className={cn(pill, statusColors[order.status] || "")}>
                       {order.status}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${paymentColors[order.payment_status] || ""}`}>
+                  </TD>
+                  <TD>
+                    <span className={cn(pill, paymentColors[order.payment_status] || "")}>
                       {order.payment_status}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-end text-sm font-medium text-gray-900">{formatCurrency(Number(order.total))}</td>
-                  <td className="px-4 py-3 text-end text-sm text-gray-500">{formatDateTime(order.created_at)}</td>
-                  <td className="px-4 py-3 text-end">
-                    <button className="rounded p-1 text-gray-400 hover:bg-gray-100"><Eye className="h-4 w-4" /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </TD>
+                  <TD className="text-end text-sm font-medium">{formatCurrency(Number(order.total))}</TD>
+                  <TD className="text-end text-sm text-ink-soft">{formatDateTime(order.created_at)}</TD>
+                  <TD className="text-end">
+                    <button
+                      className="rounded p-1 text-ink-soft transition-colors hover:bg-rail hover:text-ink"
+                      aria-label={`${t("order")} ${order.order_number}`}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                  </TD>
+                </TR>
+              );
+            })}
+          </TBody>
+        </Table>
       )}
     </>
   );

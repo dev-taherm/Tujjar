@@ -18,7 +18,7 @@ interface AuthStore {
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       tokens: null,
       organization: null,
@@ -71,6 +71,10 @@ interface UIStore {
   toggleMobile: () => void;
   theme: "light" | "dark" | "system";
   setTheme: (theme: "light" | "dark" | "system") => void;
+  commandOpen: boolean;
+  setCommandOpen: (open: boolean) => void;
+  openCommand: () => void;
+  closeCommand: () => void;
 }
 
 export const useUIStore = create<UIStore>()((set) => ({
@@ -82,4 +86,8 @@ export const useUIStore = create<UIStore>()((set) => ({
   toggleMobile: () => set((state) => ({ mobileOpen: !state.mobileOpen })),
   theme: "system",
   setTheme: (theme) => set({ theme }),
+  commandOpen: false,
+  setCommandOpen: (open) => set({ commandOpen: open }),
+  openCommand: () => set({ commandOpen: true }),
+  closeCommand: () => set({ commandOpen: false }),
 }));

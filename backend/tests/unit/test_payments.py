@@ -12,7 +12,6 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def order_data(db):
-    from apps.commerce.models import TaxRate
     from apps.products.models import Product
 
     user, org, store, token = create_org_with_owner_and_store("pay@example.com")
@@ -63,9 +62,7 @@ class TestStripeCheckout:
         from apps.payments.services import create_stripe_checkout
 
         order = make_order(order_data["org"], order_data["store"])
-        monkeypatch.setattr(
-            "stripe.checkout.Session.create", lambda **kwargs: FakeSession()
-        )
+        monkeypatch.setattr("stripe.checkout.Session.create", lambda **kwargs: FakeSession())
         url, payment = create_stripe_checkout(
             order,
             success_url="https://store.test/thanks",
@@ -106,9 +103,7 @@ class TestStripeCheckout:
     @override_settings(STRIPE_SECRET_KEY="sk_test_x")
     def test_config_reports_card_available(self, order_data):
         client = APIClient()
-        response = client.get(
-            f"/api/v1/payments/config/{order_data['store'].slug}/"
-        )
+        response = client.get(f"/api/v1/payments/config/{order_data['store'].slug}/")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["card"] is True
         assert response.data["cod"] is True
@@ -128,7 +123,7 @@ class TestWebhook:
         }
 
     def test_completed_marks_order_paid(self, order_data, monkeypatch, settings):
-        settings.STRIPE_WEBHOOK_SECRET = 'whsec_test'
+        settings.STRIPE_WEBHOOK_SECRET = "whsec_test"
         import json
 
         from django.test import RequestFactory
@@ -158,7 +153,7 @@ class TestWebhook:
         assert order.status == "confirmed"
 
     def test_invalid_signature_rejected(self, order_data, monkeypatch, settings):
-        settings.STRIPE_WEBHOOK_SECRET = 'whsec_test'
+        settings.STRIPE_WEBHOOK_SECRET = "whsec_test"
         from django.test import RequestFactory
 
         from apps.payments.views import stripe_webhook
@@ -178,7 +173,7 @@ class TestWebhook:
         assert response.status_code == 400
 
     def test_idempotent(self, order_data, monkeypatch, settings):
-        settings.STRIPE_WEBHOOK_SECRET = 'whsec_test'
+        settings.STRIPE_WEBHOOK_SECRET = "whsec_test"
         import json
 
         from django.test import RequestFactory
@@ -207,7 +202,7 @@ class TestWebhook:
         assert order.payment_status == "paid"
 
     def test_expired_session_fails_payment(self, order_data, monkeypatch, settings):
-        settings.STRIPE_WEBHOOK_SECRET = 'whsec_test'
+        settings.STRIPE_WEBHOOK_SECRET = "whsec_test"
         import json
 
         from django.test import RequestFactory
@@ -217,9 +212,7 @@ class TestWebhook:
         from apps.payments.views import stripe_webhook
 
         order = make_order(order_data["org"], order_data["store"])
-        monkeypatch.setattr(
-            "stripe.checkout.Session.create", lambda **kwargs: FakeSession()
-        )
+        monkeypatch.setattr("stripe.checkout.Session.create", lambda **kwargs: FakeSession())
         _, payment = create_stripe_checkout(
             order, success_url="https://x/s", cancel_url="https://x/c"
         )

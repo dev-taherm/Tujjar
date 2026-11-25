@@ -32,9 +32,7 @@ class Payment(UUIDModel, TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="payments",
     )
-    order = models.ForeignKey(
-        "orders.Order", on_delete=models.CASCADE, related_name="payments"
-    )
+    order = models.ForeignKey("orders.Order", on_delete=models.CASCADE, related_name="payments")
     provider = models.CharField(max_length=20, choices=Provider.choices)
     provider_ref = models.CharField(max_length=255, blank=True, default="", db_index=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)

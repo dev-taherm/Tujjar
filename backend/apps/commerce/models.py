@@ -63,9 +63,7 @@ class Discount(UUIDModel, TimeStampedModel):
     valid_until = models.DateTimeField(null=True, blank=True)
 
     applies_to_all_products = models.BooleanField(default=True)
-    products = models.ManyToManyField(
-        "products.Product", blank=True, related_name="discounts"
-    )
+    products = models.ManyToManyField("products.Product", blank=True, related_name="discounts")
 
     is_active = models.BooleanField(default=True)
 
@@ -140,9 +138,7 @@ class TaxRate(UUIDModel, TimeStampedModel):
     state = models.CharField(max_length=100, blank=True, default="")
     postal_code = models.CharField(max_length=20, blank=True, default="")
     is_default = models.BooleanField(default=False)
-    inclusive = models.BooleanField(
-        default=False, help_text="Prices include tax (VAT-style)."
-    )
+    inclusive = models.BooleanField(default=False, help_text="Prices include tax (VAT-style).")
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -245,12 +241,8 @@ class ShippingRate(UUIDModel, TimeStampedModel):
         validators=[MinValueValidator(ZERO)],
         help_text="Only used when pricing_type=percentage.",
     )
-    min_order_subtotal = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
-    max_order_subtotal = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
+    min_order_subtotal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    max_order_subtotal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     free_over = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -301,17 +293,13 @@ class Refund(UUIDModel, TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="refunds",
     )
-    order = models.ForeignKey(
-        "orders.Order", on_delete=models.CASCADE, related_name="refunds"
-    )
+    order = models.ForeignKey("orders.Order", on_delete=models.CASCADE, related_name="refunds")
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, validators=[MinValueValidator(ZERO)]
     )
     reason = models.CharField(max_length=255, blank=True, default="")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    restock = models.BooleanField(
-        default=False, help_text="Return refunded items to inventory."
-    )
+    restock = models.BooleanField(default=False, help_text="Return refunded items to inventory.")
     processed_by = models.ForeignKey(
         "authentication.User", on_delete=models.SET_NULL, null=True, blank=True
     )

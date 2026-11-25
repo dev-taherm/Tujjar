@@ -116,7 +116,7 @@ export default async function StorefrontProductDetailPage({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[var(--container-max-width,80rem)] px-4 py-8 sm:px-6 lg:px-8">
       <JsonLd data={productJsonLd} />
       <JsonLd data={breadcrumbJsonLd} />
 

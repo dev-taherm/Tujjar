@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, Badge, Button, Dialog } from "@/shared/ui";
-import { Palette, Download, ExternalLink, Check, Trash2, Copy } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, Badge, Button, Dialog, Spinner } from "@/shared/ui";
+import { Palette, Download, Check, Trash2, Copy } from "lucide-react";
 import type { Theme, ThemeConfig } from "@/shared/types";
 import { useTranslations } from "next-intl";
 import { themesApi } from "@/api/themes";
@@ -27,7 +27,7 @@ function ColorSwatch({ colors }: { colors: ThemeConfig["colors"] }) {
         (color, i) => (
           <div
             key={i}
-            className="h-6 w-6 rounded-full border border-gray-200"
+            className="h-6 w-6 rounded-full border border-line"
             style={{ backgroundColor: color }}
           />
         )
@@ -116,7 +116,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
       </div>
       <div className="px-6 pb-4">
         <div className="flex items-center justify-between">
-          <div className="flex gap-2 text-xs text-gray-500">
+          <div className="flex gap-2 text-xs text-ink-soft">
             <span>{theme.config.typography.headingFont}</span>
             <span>•</span>
             <span>{theme.config.typography.bodyFont}</span>
@@ -154,7 +154,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
                     e.stopPropagation();
                     setShowDeleteDialog(true);
                   }}
-                  className="shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                  className="shrink-0 text-error hover:text-error hover:bg-error-soft"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
@@ -186,7 +186,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
               >
                 {isInstalling ? (
                     <span className="flex items-center gap-1.5">
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    <Spinner className="h-3.5 w-3.5" />
                     {t("installing")}
                   </span>
                 ) : isInstalled ? (
@@ -209,7 +209,7 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
 
     {/* Delete Confirmation Dialog */}
     <Dialog open={showDeleteDialog} onClose={() => setShowDeleteDialog(false)} title={t("deleteTheme") || "Delete Theme"}>
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-ink-soft mb-4">
         {t("deleteThemeConfirm") || `Are you sure you want to delete "${theme.name}"? This action cannot be undone.`}
       </p>
       <div className="flex justify-end gap-2">
@@ -223,14 +223,14 @@ export function ThemeCard({ theme, onSelect, onInstall, onApply, isSelected, isA
     {/* Duplicate Dialog */}
     <Dialog open={showDuplicateDialog} onClose={() => setShowDuplicateDialog(false)} title={t("duplicateTheme") || "Duplicate Theme"}>
       <div className="space-y-4">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-ink-soft">
           {t("duplicateThemeDescription") || "Enter a name for the duplicated theme."}
         </p>
         <input
           type="text"
           value={duplicateName}
           onChange={(e) => setDuplicateName(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
           autoFocus
           onKeyDown={(e) => { if (e.key === "Enter") handleDuplicate(); }}
         />

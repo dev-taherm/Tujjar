@@ -52,19 +52,19 @@ export function StoreSelectorDialog({
 
   return (
     <Dialog open={open} onClose={handleClose} title={title}>
-      {description && <p className="text-sm text-gray-500 -mt-2 mb-2">{description}</p>}
+      {description && <p className="text-sm text-ink-soft -mt-2 mb-2">{description}</p>}
 
       <div className="max-h-80 overflow-y-auto -mx-6 px-6">
         {loadingStores ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-16 animate-pulse rounded-xl bg-gray-100" />
+              <div key={i} className="h-16 shimmer rounded-xl" />
             ))}
           </div>
         ) : storeList.length === 0 ? (
           <div className="py-8 text-center">
-            <StoreIcon className="mx-auto h-10 w-10 text-gray-300" />
-            <p className="mt-3 text-sm text-gray-500">No stores found. {tc("create")} a store first.</p>
+            <StoreIcon className="mx-auto h-10 w-10 text-ink-soft" />
+            <p className="mt-3 text-sm text-ink-soft">No stores found. {tc("create")} a store first.</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -80,15 +80,15 @@ export function StoreSelectorDialog({
                   className={cn(
                     "flex w-full items-center gap-3 rounded-xl border-2 p-4 text-start transition-all",
                     isSelected
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-primary-500 bg-primary-50"
+                      : "border-line hover:border-line hover:bg-rail"
                   )}
                 >
                   {/* Radio */}
                   <div
                     className={cn(
                       "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2",
-                      isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+                      isSelected ? "border-primary-500 bg-primary-500" : "border-line"
                     )}
                   >
                     {isSelected && <Check className="h-3 w-3 text-white" />}
@@ -97,9 +97,9 @@ export function StoreSelectorDialog({
                   {/* Store info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{store.name}</span>
+                      <span className="font-medium text-ink">{store.name}</span>
                       {store.domain && (
-                        <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
+                        <span className="rounded bg-rail px-1.5 py-0.5 text-xs text-ink-soft">
                           {store.domain}
                         </span>
                       )}
@@ -107,13 +107,13 @@ export function StoreSelectorDialog({
 
                     {/* Replace warnings */}
                     {hasTheme && (
-                      <div className="mt-1 flex items-center gap-1 text-xs text-amber-600">
+                      <div className="mt-1 flex items-center gap-1 text-xs text-warning">
                         <AlertTriangle className="h-3 w-3" />
                         Currently using theme &ldquo;{currentThemeName}&rdquo; — will be replaced
                       </div>
                     )}
                     {hasTemplate && (
-                      <div className="mt-1 flex items-center gap-1 text-xs text-amber-600">
+                      <div className="mt-1 flex items-center gap-1 text-xs text-warning">
                         <AlertTriangle className="h-3 w-3" />
                         Currently using template &ldquo;{currentTemplateName}&rdquo; — will be replaced
                       </div>
@@ -126,17 +126,17 @@ export function StoreSelectorDialog({
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-3 -mx-6 px-6 -mb-6 pb-6 pt-4 border-t bg-gray-50">
+      <div className="flex items-center justify-end gap-3 -mx-6 px-6 -mb-6 pb-6 pt-4 border-t bg-rail">
         <button
           onClick={handleClose}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200"
+          className="rounded-lg px-4 py-2 text-sm font-medium text-ink-soft hover:bg-rail"
         >
           {tc("cancel")}
         </button>
         <button
           onClick={handleConfirm}
           disabled={!selectedStoreId || isLoading}
-          className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
         >
           {isLoading ? "Installing..." : selectedStore ? `Install to ${selectedStore.name}` : "Install"}
         </button>

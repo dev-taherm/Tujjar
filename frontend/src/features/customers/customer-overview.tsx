@@ -74,19 +74,19 @@ export function CustomerOverview({ customer, customerId }: CustomerOverviewProps
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">{t("orders")}</span>
+              <span className="text-ink-soft">{t("orders")}</span>
               <span className="font-medium">{customer.orders_count}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">{t("totalSpent")}</span>
+              <span className="text-ink-soft">{t("totalSpent")}</span>
               <span className="font-medium">{formatCurrency(Number(customer.total_spent))}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">{t("loyaltyPoints")}</span>
+              <span className="text-ink-soft">{t("loyaltyPoints")}</span>
               <span className="font-medium">{customer.loyalty_points}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">{t("joined")}</span>
+              <span className="text-ink-soft">{t("joined")}</span>
               <span className="font-medium">{formatDateTime(customer.created_at)}</span>
             </div>
           </CardContent>

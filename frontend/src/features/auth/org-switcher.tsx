@@ -24,7 +24,7 @@ interface Membership {
 export function OrgSwitcher() {
   const t = useTranslations("dashboard.orgSwitcher");
   const queryClient = useQueryClient();
-  const { tokens, setTokens, organization } = useAuthStore();
+  const { setTokens, organization } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -80,30 +80,30 @@ export function OrgSwitcher() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-gray-100"
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-panel"
         disabled={!!switching}
       >
-        <Building2 className="h-4 w-4 shrink-0 text-gray-400" />
-        <span className="truncate font-medium text-gray-800">
+        <Building2 className="h-4 w-4 shrink-0 text-ink-soft" />
+        <span className="truncate font-medium text-ink">
           {current?.name || organization?.name || t("selectOrg")}
         </span>
-        <ChevronsUpDown className="ms-auto h-3.5 w-3.5 shrink-0 text-gray-400" />
+        <ChevronsUpDown className="ms-auto h-3.5 w-3.5 shrink-0 text-ink-soft" />
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full min-w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+        <div className="absolute z-50 mt-1 w-full min-w-48 rounded-lg border border-line bg-panel py-1 shadow-lg">
           {(memberships || []).map((m) => (
             <button
               key={m.id}
               onClick={() => switchTo(m.id)}
-              className="flex w-full items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="flex w-full items-center justify-between px-3 py-2 text-sm text-ink hover:bg-rail"
             >
               <span className="truncate">{m.name}</span>
-              {m.is_current && <Check className="h-4 w-4 text-green-600" />}
+              {m.is_current && <Check className="h-4 w-4 text-success" />}
             </button>
           ))}
           {switching && (
-            <div className="px-3 py-2 text-xs text-gray-400">{t("switching")}</div>
+            <div className="px-3 py-2 text-xs text-ink-soft">{t("switching")}</div>
           )}
         </div>
       )}

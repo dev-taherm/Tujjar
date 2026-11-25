@@ -135,9 +135,7 @@ class EventViewSet(TenantViewSet):
         for ref in traffic_events.values_list("referrer", flat=True)[:5000]:
             host = _referrer_host(ref)
             hosts[host] = hosts.get(host, 0) + 1
-        traffic_sources = dict(
-            sorted(hosts.items(), key=lambda kv: kv[1], reverse=True)[:6]
-        )
+        traffic_sources = dict(sorted(hosts.items(), key=lambda kv: kv[1], reverse=True)[:6])
 
         # Last 30 days chart — single bulk query instead of N+1
         chart_start = (now - timedelta(days=29)).date()

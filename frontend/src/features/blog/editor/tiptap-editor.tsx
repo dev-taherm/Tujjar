@@ -13,7 +13,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { common, createLowlight } from "lowlight";
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { EditorToolbar } from "./editor-toolbar";
 
 const lowlight = createLowlight(common);
@@ -75,7 +75,7 @@ export function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[400px] px-4 py-4",
+          "prose-tujjar mx-auto focus:outline-none min-h-[400px] px-4 py-4",
       },
     },
   });
@@ -94,14 +94,14 @@ export function TiptapEditor({
 
   if (!editor) {
     return (
-      <div className="min-h-[400px] animate-pulse rounded-xl border border-gray-200 bg-white p-4">
-        <div className="h-10 w-full rounded bg-gray-100" />
+      <div className="min-h-[400px] animate-pulse rounded-xl border border-line bg-panel p-4">
+        <div className="h-10 w-full rounded bg-rail" />
       </div>
     );
   }
 
   return (
-    <div className={`overflow-hidden rounded-xl border border-gray-200 bg-white ${className || ""}`}>
+    <div className={`overflow-hidden rounded-xl border border-line bg-panel ${className || ""}`}>
       {editable && <EditorToolbar editor={editor} onImageInsert={onImageInsert} />}
       <EditorContent editor={editor} className="tiptap-editor" />
     </div>

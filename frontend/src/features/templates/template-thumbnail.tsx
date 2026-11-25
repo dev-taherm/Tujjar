@@ -10,7 +10,7 @@ interface TemplateThumbnailProps {
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   fashion: "from-pink-500 to-purple-600",
-  electronics: "from-blue-500 to-cyan-600",
+  electronics: "from-primary-500 to-cyan-600",
   restaurant: "from-orange-500 to-red-600",
   pharmacy: "from-green-500 to-teal-600",
   furniture: "from-amber-500 to-yellow-600",

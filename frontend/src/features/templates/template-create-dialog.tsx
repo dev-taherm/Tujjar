@@ -122,7 +122,7 @@ export function TemplateCreateDialog({ open, onClose }: TemplateCreateDialogProp
             onChange={(e) => handleSlugChange(e.target.value)}
             placeholder="my-custom-template"
           />
-          <p className="mt-1 text-xs text-gray-400">Auto-generated from name</p>
+          <p className="mt-1 text-xs text-ink-soft">Auto-generated from name</p>
         </div>
         <div>
           <Label>{t("templateEditor")}</Label>

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Textarea, Select, Label } from "@/shared/ui";
+import { Input, Textarea, Select, Label, Tabs } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import type { Section, SettingField } from "@/shared/types";
+
+/* The qamariya glass palette: mudbrick, amber, cobalt, glass green, ruby. */
+const BRAND_SWATCHES = ["#AE6239", "#D69229", "#2D5F8C", "#3E7050", "#B33840"];
 import { getRegistryEntry } from "@/builder/sections/registry";
 import { MediaPickerModal } from "@/features/media/media-picker-modal";
 import { useTranslations } from "next-intl";
@@ -58,30 +61,21 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex border-b border-gray-200">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
-              activeTab === tab.key
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={tabs.map((tab) => ({ id: tab.key, label: tab.label }))}
+        active={activeTab}
+        onChange={(id) => setActiveTab(id as typeof activeTab)}
+        className="[&>button]:flex-1"
+      />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {activeTab === "content" && (
           <>
             {definition ? (
               <>
-                <div className="border-b border-gray-200 pb-3">
-                  <h3 className="text-sm font-semibold text-gray-900">{definition.label}</h3>
-                  <p className="text-xs text-gray-500">{t("configureSection")}</p>
+                <div className="border-b border-line pb-3">
+                  <h3 className="text-sm font-semibold text-ink">{definition.label}</h3>
+                  <p className="text-xs text-ink-soft">{t("configureSection")}</p>
                 </div>
                 {definition.settingsSchema.map((field: SettingField) => (
                   <div key={field.key}>
@@ -116,19 +110,38 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
                       />
                     )}
                     {field.type === "color" && (
-                      <div className="flex items-center gap-3">
-                        <Label>{field.label}</Label>
-                        <input
-                          type="color"
-                          value={(section.settings[field.key] as string) || "#000000"}
-                          onChange={(e) => handleChange(field.key, e.target.value)}
-                          className="h-10 w-10 rounded-lg border border-gray-200"
-                        />
-                        <Input
-                          value={(section.settings[field.key] as string) || ""}
-                          onChange={(e) => handleChange(field.key, e.target.value)}
-                          className="h-8 flex-1"
-                        />
+                      <div>
+                        <div className="flex items-center gap-3">
+                          <Label>{field.label}</Label>
+                          <input
+                            type="color"
+                            value={(section.settings[field.key] as string) || "#000000"}
+                            onChange={(e) => handleChange(field.key, e.target.value)}
+                            className="h-10 w-10 rounded-lg border border-line"
+                          />
+                          <Input
+                            value={(section.settings[field.key] as string) || ""}
+                            onChange={(e) => handleChange(field.key, e.target.value)}
+                            className="h-8 flex-1"
+                          />
+                        </div>
+                        {/* Brand palette — the qamariya glass, one click away */}
+                        <div className="mt-2 flex items-center gap-1.5">
+                          <span className="me-1 text-[10px] font-semibold uppercase tracking-wider text-ink-soft">
+                            Brand
+                          </span>
+                          {BRAND_SWATCHES.map((hex) => (
+                            <button
+                              key={hex}
+                              type="button"
+                              title={hex}
+                              aria-label={`Use ${hex}`}
+                              onClick={() => handleChange(field.key, hex)}
+                              className="h-5 w-5 rounded-md border border-line shadow-sm transition-transform hover:scale-110 active:scale-95"
+                              style={{ background: hex }}
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
                     {field.type === "toggle" && (
@@ -139,7 +152,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
                         <Label>{field.label}</Label>
                         <div className="mt-1 flex items-center gap-2">
                           <div
-                            className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors overflow-hidden"
+                            className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-line bg-rail cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors overflow-hidden"
                             onClick={() => setMediaPickerField(field.key)}
                           >
                             {(section.settings[field.key] as string) ? (
@@ -149,7 +162,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              <ImageIcon className="h-6 w-6 text-gray-400" />
+                              <ImageIcon className="h-6 w-6 text-ink-soft" />
                             )}
                           </div>
                           <div className="flex-1">
@@ -160,7 +173,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
                             />
                             <button
                               onClick={() => setMediaPickerField(field.key)}
-                              className="mt-1 text-xs text-blue-600 hover:text-blue-700"
+                              className="mt-1 text-xs text-primary-600 hover:text-primary-700"
                             >
                               {t("browseMedia")}
                             </button>
@@ -172,7 +185,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
                 ))}
               </>
             ) : (
-              <p className="text-sm text-gray-500">{t("noSettingsForSection")}</p>
+              <p className="text-sm text-ink-soft">{t("noSettingsForSection")}</p>
             )}
           </>
         )}
@@ -191,7 +204,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
         {activeTab === "style" && (
           <>
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("height")}</h4>
+              <h4 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">{t("height")}</h4>
               <div className="space-y-2">
                 <Input
                   label={t("minHeight")}
@@ -209,7 +222,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("spacing")}</h4>
+              <h4 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">{t("spacing")}</h4>
               <div className="space-y-2">
                 <Input
                   label={t("padding")}
@@ -227,7 +240,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("background")}</h4>
+              <h4 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">{t("background")}</h4>
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   <Label>{t("bgColor")}</Label>
@@ -235,7 +248,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
                     type="color"
                     value={style.background?.color || "#ffffff"}
                     onChange={(e) => updateStyle({ background: { ...style.background, color: e.target.value } })}
-                    className="h-10 w-10 rounded-lg border border-gray-200"
+                    className="h-10 w-10 rounded-lg border border-line"
                   />
                 </div>
                 <Input
@@ -270,7 +283,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("typography")}</h4>
+              <h4 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">{t("typography")}</h4>
               <div className="space-y-2">
                 <Input
                   label={t("fontFamily")}
@@ -315,7 +328,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("animation")}</h4>
+              <h4 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">{t("animation")}</h4>
               <div className="space-y-2">
                 <Select
                   label={t("duration")}
@@ -348,7 +361,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
         {activeTab === "advanced" && (
           <>
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("cssClasses")}</h4>
+              <h4 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">{t("cssClasses")}</h4>
               <Input
                 value={advanced.cssClasses || ""}
                 onChange={(e) => updateAdvanced({ cssClasses: e.target.value })}
@@ -357,7 +370,7 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("customCSS")}</h4>
+              <h4 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">{t("customCSS")}</h4>
               <Textarea
                 value={advanced.customCSS || ""}
                 onChange={(e) => updateAdvanced({ customCSS: e.target.value })}
@@ -366,8 +379,8 @@ export function EnhancedInspector({ section, onUpdate }: EnhancedInspectorProps)
               />
             </div>
 
-            <div className="rounded-lg bg-gray-50 p-3">
-              <p className="text-xs text-gray-500">
+            <div className="rounded-lg bg-rail p-3">
+              <p className="text-xs text-ink-soft">
                 {t("advancedHint")}
               </p>
             </div>

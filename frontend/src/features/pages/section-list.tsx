@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, Button } from "@/shared/ui";
+import { Badge } from "@/shared/ui";
 import { getRegistryEntry } from "@/builder/sections/registry";
 import type { Section } from "@/shared/types";
 import { GripVertical, Eye, EyeOff, Copy, Trash2, ChevronUp, ChevronDown, Monitor, Tablet, Smartphone } from "lucide-react";
@@ -33,12 +33,12 @@ export function SectionList({
   return (
     <div className="space-y-1">
       <div className="mb-3 flex items-center justify-between px-1">
-        <h3 className="text-sm font-semibold text-gray-900">{t("sections")}</h3>
+        <h3 className="text-sm font-semibold text-ink">{t("sections")}</h3>
         <Badge variant="secondary">{sections.length}</Badge>
       </div>
       {sections.length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed border-gray-200 py-8 text-center">
-          <p className="text-sm text-gray-500">{t("noSectionsClick")}</p>
+        <div className="rounded-lg border-2 border-dashed border-line py-8 text-center">
+          <p className="text-sm text-ink-soft">{t("noSectionsClick")}</p>
         </div>
       ) : (
         sections.map((section, index) => {
@@ -52,67 +52,67 @@ export function SectionList({
               key={section.id}
               onClick={() => onSelect(section.id)}
               className={`group flex items-center gap-2 rounded-lg border p-2 cursor-pointer transition-colors ${
-                isSelected ? "border-blue-300 bg-blue-50" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                isSelected ? "border-primary-300 bg-primary-50" : "border-line hover:border-line hover:bg-rail"
               }`}
             >
-              <GripVertical className="h-4 w-4 text-gray-300 flex-shrink-0" />
-              <Icon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+              <GripVertical className="h-4 w-4 text-ink-soft flex-shrink-0" />
+              <Icon className="h-4 w-4 text-ink-soft flex-shrink-0" />
               <span className="flex-1 truncate text-sm font-medium">{def?.label || section.type}</span>
               <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={(e) => { e.stopPropagation(); onMoveUp(index); }} disabled={index === 0} className="rounded p-0.5 hover:bg-gray-200 disabled:opacity-30">
+                <button onClick={(e) => { e.stopPropagation(); onMoveUp(index); }} disabled={index === 0} className="rounded p-0.5 hover:bg-rail disabled:opacity-30">
                   <ChevronUp className="h-3 w-3" />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); onMoveDown(index); }} disabled={index === sections.length - 1} className="rounded p-0.5 hover:bg-gray-200 disabled:opacity-30">
+                <button onClick={(e) => { e.stopPropagation(); onMoveDown(index); }} disabled={index === sections.length - 1} className="rounded p-0.5 hover:bg-rail disabled:opacity-30">
                   <ChevronDown className="h-3 w-3" />
                 </button>
                 <div className="relative">
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowVisMenu(showVisMenu === section.id ? null : section.id); }}
-                    className="rounded p-0.5 hover:bg-gray-200"
+                    className="rounded p-0.5 hover:bg-rail"
                     title="Device visibility"
                   >
-                    {allVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3 text-amber-500" />}
+                    {allVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3 text-warning" />}
                   </button>
                   {showVisMenu === section.id && (
-                    <div className="absolute right-0 top-6 z-10 w-36 rounded-lg border border-gray-200 bg-white p-1 shadow-lg">
+                    <div className="absolute end-0 top-6 z-10 w-36 rounded-lg border border-line bg-panel p-1 shadow-lg">
                       <button
                         onClick={(e) => { e.stopPropagation(); onToggleVisibility(section.id, "desktop"); }}
-                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-gray-100"
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-rail"
                       >
                         <Monitor className="h-3 w-3" />
                         <span>Desktop</span>
-                        <span className={`ms-auto ${vis.desktop ? "text-green-600" : "text-gray-400"}`}>
+                        <span className={`ms-auto ${vis.desktop ? "text-success" : "text-ink-soft"}`}>
                           {vis.desktop ? "On" : "Off"}
                         </span>
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); onToggleVisibility(section.id, "tablet"); }}
-                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-gray-100"
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-rail"
                       >
                         <Tablet className="h-3 w-3" />
                         <span>Tablet</span>
-                        <span className={`ms-auto ${vis.tablet ? "text-green-600" : "text-gray-400"}`}>
+                        <span className={`ms-auto ${vis.tablet ? "text-success" : "text-ink-soft"}`}>
                           {vis.tablet ? "On" : "Off"}
                         </span>
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); onToggleVisibility(section.id, "mobile"); }}
-                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-gray-100"
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-rail"
                       >
                         <Smartphone className="h-3 w-3" />
                         <span>Mobile</span>
-                        <span className={`ms-auto ${vis.mobile ? "text-green-600" : "text-gray-400"}`}>
+                        <span className={`ms-auto ${vis.mobile ? "text-success" : "text-ink-soft"}`}>
                           {vis.mobile ? "On" : "Off"}
                         </span>
                       </button>
                     </div>
                   )}
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); onDuplicate(section.id); }} className="rounded p-0.5 hover:bg-gray-200">
+                <button onClick={(e) => { e.stopPropagation(); onDuplicate(section.id); }} className="rounded p-0.5 hover:bg-rail">
                   <Copy className="h-3 w-3" />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); onRemove(section.id); }} className="rounded p-0.5 hover:bg-red-100">
-                  <Trash2 className="h-3 w-3 text-red-500" />
+                <button onClick={(e) => { e.stopPropagation(); onRemove(section.id); }} className="rounded p-0.5 hover:bg-error-soft">
+                  <Trash2 className="h-3 w-3 text-error" />
                 </button>
               </div>
             </div>

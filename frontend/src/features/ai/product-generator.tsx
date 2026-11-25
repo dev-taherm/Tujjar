@@ -65,30 +65,30 @@ export function ProductGenerator() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>{t("productDescription")}</CardTitle>
-                  <button onClick={() => copyToClipboard(result.description, "desc")} className="rounded p-1 hover:bg-gray-100">
-                    {copied === "desc" ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-gray-400" />}
+                  <button onClick={() => copyToClipboard(result.description, "desc")} className="rounded p-1 hover:bg-rail">
+                    {copied === "desc" ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4 text-ink-soft" />}
                   </button>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{result.description}</p>
+                  <p className="text-sm text-ink whitespace-pre-wrap">{result.description}</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>{t("seoContent")}</CardTitle>
-                  <button onClick={() => copyToClipboard(`Title: ${result.seo_title}\nDescription: ${result.seo_description}`, "seo")} className="rounded p-1 hover:bg-gray-100">
-                    {copied === "seo" ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-gray-400" />}
+                  <button onClick={() => copyToClipboard(`Title: ${result.seo_title}\nDescription: ${result.seo_description}`, "seo")} className="rounded p-1 hover:bg-rail">
+                    {copied === "seo" ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4 text-ink-soft" />}
                   </button>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <p className="text-xs font-medium text-gray-500 mb-1">{t("seoTitle")} ({result.seo_title.length}/60)</p>
-                    <p className="text-sm font-medium text-gray-900">{result.seo_title}</p>
+                    <p className="text-xs font-medium text-ink-soft mb-1">{t("seoTitle")} ({result.seo_title.length}/60)</p>
+                    <p className="text-sm font-medium text-ink">{result.seo_title}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 mb-1">{t("metaDescription")} ({result.seo_description.length}/160)</p>
-                    <p className="text-sm text-gray-700">{result.seo_description}</p>
+                    <p className="text-xs font-medium text-ink-soft mb-1">{t("metaDescription")} ({result.seo_description.length}/160)</p>
+                    <p className="text-sm text-ink">{result.seo_description}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -97,15 +97,15 @@ export function ProductGenerator() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>{t("keyFeatures")}</CardTitle>
-                    <button onClick={() => copyToClipboard(result.bullet_points.join("\n"), "bullets")} className="rounded p-1 hover:bg-gray-100">
-                      {copied === "bullets" ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-gray-400" />}
+                    <button onClick={() => copyToClipboard(result.bullet_points.join("\n"), "bullets")} className="rounded p-1 hover:bg-rail">
+                      {copied === "bullets" ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4 text-ink-soft" />}
                     </button>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
                       {result.bullet_points.map((point, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
+                        <li key={i} className="flex items-start gap-2 text-sm text-ink">
+                          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary-500" />
                           {point}
                         </li>
                       ))}
@@ -119,8 +119,8 @@ export function ProductGenerator() {
           {!result && !generate.isPending && (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <Sparkles className="mb-3 h-12 w-12 text-gray-300" />
-                <p className="text-sm text-gray-500">{t("enterProductDetails")}</p>
+                <Sparkles className="mb-3 h-12 w-12 text-ink-soft" />
+                <p className="text-sm text-ink-soft">{t("enterProductDetails")}</p>
               </CardContent>
             </Card>
           )}

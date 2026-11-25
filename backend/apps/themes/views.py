@@ -44,6 +44,17 @@ def _save_version_snapshot(theme, note: str = "", user=None):
     )
 
 
+def _bust_storefront_cache(theme) -> None:
+    """Invalidate the storefront payloads of every store using this theme."""
+    from django.core.cache import cache
+
+    from apps.stores.models import Store
+
+    store_slugs = Store.objects.filter(theme_id=theme.id).values_list("slug", flat=True)
+    for slug in store_slugs:
+        cache.delete(f"storefront:store:{slug}")
+
+
 class ThemeViewSet(TenantViewSet):
     """Theme CRUD and management."""
 
@@ -71,6 +82,7 @@ class ThemeViewSet(TenantViewSet):
         _save_version_snapshot(theme, note="Auto-saved on update", user=self.request.user)
         theme.version = _bump_version(theme.version)
         theme.save(update_fields=["version", "updated_at"])
+        _bust_storefront_cache(theme)
         self._log_audit(
             action="theme.update",
             resource_type="theme",
@@ -209,6 +221,7 @@ class ThemeViewSet(TenantViewSet):
         theme.assets = copy.deepcopy(version.assets)
         theme.version = _bump_version(theme.version)
         theme.save(update_fields=["config", "sections_schema", "assets", "version", "updated_at"])
+        _bust_storefront_cache(theme)
 
         return Response(ThemeSerializer(theme).data)
 

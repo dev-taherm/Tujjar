@@ -4,107 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Store,
-  Package,
-  ShoppingCart,
-  Users,
-  FileText,
-  Palette,
-  Image,
-  BarChart3,
-  CreditCard,
-  Settings,
-  Bot,
-  Bell,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Shield,
-  LayoutTemplate,
-  ScrollText,
-  PenTool,
-  Settings2,
-  Tag,
-  Truck,
-  Receipt,
-  Star,
-  Webhook,
-  X,
-} from "lucide-react";
+import { LogOut, ChevronLeft, ChevronRight, Shield, X } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/stores";
 import { LocaleSwitcher } from "@/shared/ui/locale-switcher";
+import { ThemeToggle } from "@/shared/ui/theme-toggle";
+import { BrandLogo, LogoMark } from "@/shared/brand/logo";
 import { OrgSwitcher } from "@/features/auth/org-switcher";
+import { navigation } from "./dashboard-nav";
 import { useState, useEffect, useCallback } from "react";
-
-interface NavItem {
-  nameKey: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-interface NavGroup {
-  groupKey: string;
-  items: NavItem[];
-}
-
-const navigation: NavGroup[] = [
-  {
-    groupKey: "main",
-    items: [
-      { nameKey: "dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { nameKey: "stores", href: "/dashboard/stores", icon: Store },
-    ],
-  },
-  {
-    groupKey: "catalog",
-    items: [
-      { nameKey: "products", href: "/dashboard/products", icon: Package },
-      { nameKey: "attributes", href: "/dashboard/products/attributes", icon: Settings2 },
-      { nameKey: "pages", href: "/dashboard/pages", icon: FileText },
-      { nameKey: "blog", href: "/dashboard/blog", icon: PenTool },
-      { nameKey: "media", href: "/dashboard/media", icon: Image },
-    ],
-  },
-  {
-    groupKey: "sales",
-    items: [
-      { nameKey: "orders", href: "/dashboard/orders", icon: ShoppingCart },
-      { nameKey: "discounts", href: "/dashboard/discounts", icon: Tag },
-      { nameKey: "shipping", href: "/dashboard/shipping", icon: Truck },
-      { nameKey: "taxes", href: "/dashboard/taxes", icon: Receipt },
-      { nameKey: "customers", href: "/dashboard/customers", icon: Users },
-      { nameKey: "reviews", href: "/dashboard/reviews", icon: Star },
-      { nameKey: "webhooks", href: "/dashboard/webhooks", icon: Webhook },
-    ],
-  },
-  {
-    groupKey: "design",
-    items: [
-      { nameKey: "themes", href: "/dashboard/themes", icon: Palette },
-      { nameKey: "templates", href: "/dashboard/templates", icon: LayoutTemplate },
-      { nameKey: "marketplace", href: "/dashboard/marketplace", icon: Palette },
-    ],
-  },
-  {
-    groupKey: "engagement",
-    items: [
-      { nameKey: "analytics", href: "/dashboard/analytics", icon: BarChart3 },
-      { nameKey: "ai", href: "/dashboard/ai", icon: Bot },
-      { nameKey: "notifications", href: "/dashboard/notifications", icon: Bell },
-    ],
-  },
-  {
-    groupKey: "business",
-    items: [
-      { nameKey: "billing", href: "/dashboard/billing", icon: CreditCard },
-      { nameKey: "team", href: "/dashboard/team", icon: Users },
-      { nameKey: "auditLog", href: "/dashboard/audit", icon: ScrollText },
-      { nameKey: "settings", href: "/dashboard/settings", icon: Settings },
-    ],
-  },
-];
 
 const STORAGE_KEY = "sidebar-expanded";
 
@@ -165,29 +72,30 @@ export function Sidebar() {
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center justify-between border-b border-gray-200 px-3 md:px-4">
-        {sidebarExpanded && (
-          <Link href={`/${locale}/dashboard`} className="text-xl font-bold text-primary-600">
-            Tujjar
-          </Link>
-        )}        <button
-          onClick={toggleSidebar}
-          className="hidden rounded-lg p-1.5 hover:bg-gray-100 active:scale-[0.98] active:bg-gray-100 md:block"
-        >
-          <ChevronLeft
-            className={cn("h-5 w-5 transition-transform rtl:rotate-180", !sidebarExpanded && "rotate-180")}
-          />
-        </button>
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="rounded-lg p-1.5 hover:bg-gray-100 active:scale-[0.98] active:bg-gray-100 md:hidden"
-        >
-          <X className="h-5 w-5" />
-        </button>
+      <div className="flex h-16 items-center justify-between border-b border-line px-3 md:px-4">
+        <Link href={`/${locale}/dashboard`} className="flex items-center" title="Tujjar">
+          {sidebarExpanded ? <BrandLogo /> : <LogoMark className="h-7 w-7 text-primary-500" />}
+        </Link>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={toggleSidebar}
+            className="hidden rounded-lg p-1.5 text-ink-soft transition-colors hover:bg-panel active:scale-[0.98] md:block"
+          >
+            <ChevronLeft
+              className={cn("h-5 w-5 transition-transform rtl:rotate-180", !sidebarExpanded && "rotate-180")}
+            />
+          </button>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="rounded-lg p-1.5 text-ink-soft transition-colors hover:bg-panel active:scale-[0.98] md:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       {sidebarExpanded && (
-        <div className="border-b border-gray-200 px-2 py-2">
+        <div className="border-b border-line px-2 py-2">
           <OrgSwitcher />
         </div>
       )}
@@ -206,8 +114,8 @@ export function Sidebar() {
                 onClick={() => (sidebarExpanded ? toggleGroup(group.groupKey) : undefined)}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-3 py-3 text-xs font-semibold uppercase tracking-wider transition-colors",
-                  sidebarExpanded ? "cursor-pointer hover:bg-gray-50 active:scale-[0.98] active:bg-gray-100" : "cursor-default",
-                  hasActiveItem ? "text-primary-600" : "text-gray-400"
+                  sidebarExpanded ? "cursor-pointer hover:bg-panel active:scale-[0.98]" : "cursor-default",
+                  hasActiveItem ? "text-primary-600" : "text-ink-soft/80"
                 )}
                 title={t(group.groupKey)}
               >
@@ -236,11 +144,14 @@ export function Sidebar() {
                       href={href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        "flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors active:scale-[0.98] active:bg-gray-100",
+                        "relative flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors active:scale-[0.98] active:bg-panel",
                         sidebarExpanded ? "ms-2" : "justify-center",
                         isActive
-                          ? "bg-primary-50 text-primary-700"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          ? "bg-primary-50 font-semibold text-primary-600"
+                          : "text-ink-soft hover:bg-panel hover:text-ink",
+                        isActive &&
+                          sidebarExpanded &&
+                          "before:absolute before:-start-3 before:top-2.5 before:bottom-2.5 before:w-[3px] before:rounded-full before:bg-primary-600 before:content-['']"
                       )}
                       title={!sidebarExpanded ? t(item.nameKey) : undefined}
                     >
@@ -255,16 +166,16 @@ export function Sidebar() {
 
         {user?.is_staff && (
           <>
-            <div className="my-3 border-t border-gray-200" />
+            <div className="my-3 border-t border-line" />
             <Link
               href={`/${locale}/admin`}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors active:scale-[0.98] active:bg-gray-100",
-                sidebarExpanded ? "" : "justify-center",
+                "relative flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors active:scale-[0.98]",
+                sidebarExpanded ? "ms-2" : "justify-center",
                 pathname === `/${locale}/admin` || pathname.startsWith(`/${locale}/admin/`)
-                  ? "bg-red-50 text-red-700"
-                  : "text-red-600 hover:bg-red-50 hover:text-red-700"
+                  ? "bg-error-soft text-error"
+                  : "text-error hover:bg-error-soft hover:text-error"
               )}
               title={!sidebarExpanded ? t("adminPanel") : undefined}
             >
@@ -275,25 +186,26 @@ export function Sidebar() {
         )}
       </nav>
 
-      <div className="border-t border-gray-200 p-4">
+      <div className="border-t border-line p-4">
         {sidebarExpanded && user && (
           <div className="mb-3">
-            <p className="truncate text-sm font-medium text-gray-900">
+            <p className="truncate text-sm font-medium text-ink">
               {user.full_name || user.email}
             </p>
             {organization && (
-              <p className="truncate text-xs text-gray-500">{organization.name}</p>
+              <p className="truncate text-xs text-ink-soft">{organization.name}</p>
             )}
           </div>
         )}
         <LocaleSwitcher variant="sidebar" />
+        <ThemeToggle variant="sidebar" />
         <button
           onClick={() => {
             useAuthStore.getState().logout();
             window.location.href = `/${locale}/login`;
           }}
           className={cn(
-            "flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:scale-[0.98] active:bg-gray-100",
+            "flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-panel hover:text-ink active:scale-[0.98] active:bg-panel",
             sidebarExpanded ? "" : "justify-center"
           )}
           title={!sidebarExpanded ? t("signOut") : undefined}
@@ -309,7 +221,7 @@ export function Sidebar() {
     <>
       <aside
         className={cn(
-          "fixed start-0 top-0 z-40 hidden h-dvh border-e border-gray-200 bg-white transition-all md:block",
+          "fixed start-0 top-0 z-40 hidden h-dvh border-e border-line bg-rail transition-all md:block",
           sidebarExpanded ? "w-64" : "w-16"
         )}
       >
@@ -325,8 +237,8 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed start-0 top-0 z-50 h-dvh w-64 border-e border-gray-200 bg-white transition-transform duration-300 md:hidden",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed start-0 top-0 z-50 h-dvh w-64 border-e border-line bg-rail transition-transform duration-300 md:hidden",
+          mobileOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
         )}
       >
         {sidebarContent}

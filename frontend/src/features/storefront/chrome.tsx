@@ -188,39 +188,200 @@ export function StorefrontChrome({
     setSearchQuery("");
   };
 
-  return (
-    <div className="min-h-screen" style={{ background: "var(--color-bg)" }}>
-      <AnnouncementBar config={announcementConfig} storeSlug={store?.slug || ""} />
-      <header
-        className="sticky top-0 z-40 border-b backdrop-blur"
-        style={{
-          borderColor: "var(--color-border)",
-          background: "color-mix(in srgb, var(--color-bg) 85%, transparent)",
-        }}
-      >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-2">
-            <button
-              className="rounded-lg p-2 md:hidden"
-              onClick={() => setMobileNavOpen(!mobileNavOpen)}
-              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
-              style={{ color: "var(--color-text)" }}
-            >
-              {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-            <Link href={slug ? homeHref : "#"} className="flex min-w-0 items-center gap-2 text-xl font-bold" style={{ color: "var(--color-text)" }}>
-              {store?.logo_url ? (
-                <img src={store.logo_url} alt={store.name} className="h-8 w-auto object-contain" />
-              ) : null}
-              <span className="max-w-32 truncate sm:max-w-none sm:truncate-none">{logoText}</span>
-            </Link>
-          </div>
-          <nav className="hidden gap-6 md:flex">
-            {navLinks.map((link) => (
+  /* ── Header/footer layout options ───────────────────────────────────────
+   * All keys are optional on navigation/footer_config; defaults reproduce
+   * the original single layout so existing stores render unchanged. */
+  const isSticky = navigation.header_sticky !== false;
+  const isCenteredHeader = navigation.header_layout === "centered";
+  const showSearch = navigation.header_show_search !== false;
+  const showCart = navigation.header_show_cart !== false;
+  const headerHeight = Math.max(48, Math.min(Number(navigation.header_height) || 64, 120));
+  const logoHeight = Math.max(16, Math.min(Number(navigation.logo_height) || 32, 80));
+  const footerLayout = footerConfig.layout || "columns";
+  const showSocial = footerConfig.show_social !== false;
+  const showCopyright = footerConfig.show_copyright !== false;
+  const containerStyle: React.CSSProperties = { maxWidth: "var(--container-max-width, 80rem)" };
+
+  // Footer socials: fall back to the store-level social links (Branding tab)
+  // when the footer has none of its own.
+  const footerSocial =
+    footerConfig.social_links && Object.keys(footerConfig.social_links).some((k) => footerConfig.social_links?.[k])
+      ? footerConfig.social_links
+      : ((store?.settings?.social_links as Record<string, string> | undefined) || {});
+  const hasSocial = showSocial && Object.values(footerSocial).some(Boolean);
+
+  const gridClass =
+    footerColumns.length >= 4
+      ? "grid-cols-2 md:grid-cols-4"
+      : footerColumns.length === 3
+        ? "grid-cols-2 md:grid-cols-3"
+        : footerColumns.length === 2
+          ? "grid-cols-2"
+          : "grid-cols-1";
+
+  const navLinksJsx = (
+    <>
+      {navLinks.map((link) => (
+        <Link
+          key={link.url}
+          href={prefixLink(link.url)}
+          className="text-sm font-medium transition-colors"
+          style={{ color: "var(--color-text-secondary)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
+        >
+          {resolveLabel(link.label)}
+        </Link>
+      ))}
+    </>
+  );
+
+  const logoLink = (
+    <Link href={slug ? homeHref : "#"} className="flex min-w-0 items-center gap-2 text-xl font-bold" style={{ color: "var(--color-text)" }}>
+      {store?.logo_url ? (
+        <img src={store.logo_url} alt={store.name} className="w-auto object-contain" style={{ height: logoHeight }} />
+      ) : null}
+      <span className="max-w-32 truncate sm:max-w-none sm:truncate-none">{logoText}</span>
+    </Link>
+  );
+
+  const headerActions = (
+    <>
+      <LocaleSwitcher variant="header" />
+      {store?.theme_config?.darkMode?.enabled && store.theme_config.darkMode.toggle && (
+        <button
+          onClick={toggleDark}
+          className="rounded-lg p-2 transition-colors"
+          style={{ color: "var(--color-text-secondary)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          aria-label="Toggle dark mode"
+        >
+          <Sun className="hidden h-5 w-5 dark:block" />
+          <Moon className="h-5 w-5 dark:hidden" />
+        </button>
+      )}
+      {navigation.cta_button?.enabled && (
+        <Link
+          href={prefixLink(navigation.cta_button.url)}
+          className="rounded-lg px-4 py-2 text-sm font-medium text-white"
+          style={{ background: "var(--color-primary)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-primary-700)")}
+        >
+          {resolveLabel(navigation.cta_button?.label)}
+        </Link>
+      )}
+      {showSearch && (
+        <button
+          onClick={() => setSearchOpen(!searchOpen)}
+          aria-label={searchOpen ? "Close search" : "Search products"}
+          className="rounded-lg p-2 transition-colors"
+          style={{ color: "var(--color-text-secondary)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+        </button>
+      )}
+      {showCart && (
+        <Link
+          href={slug ? cartHref : "#"}
+          className="relative rounded-lg p-2 transition-colors"
+          style={{ color: "var(--color-text-secondary)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <ShoppingCart className="h-5 w-5" />
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white"
+            style={{ background: "var(--color-primary)" }}>
+            {cartCount}
+          </span>
+        </Link>
+      )}
+      {isCustomerAuth && customerAuth ? (
+        <div className="flex items-center gap-2">
+          <Link
+            href={slug ? accountHref : "#"}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
+            style={{ color: "var(--color-text-secondary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline">{customerAuth.first_name || customerAuth.email}</span>
+          </Link>
+          <button
+            onClick={() => {
+              useCustomerAuthStore.getState().logout();
+              window.location.reload();
+            }}
+            className="rounded-lg p-2 transition-colors"
+            style={{ color: "var(--color-text-secondary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      ) : (
+        <Link
+          href={slug ? loginHref : "#"}
+          className="rounded-lg p-2 transition-colors"
+          style={{ color: "var(--color-text-secondary)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <User className="h-5 w-5" />
+        </Link>
+      )}
+    </>
+  );
+
+  const mobileMenuButton = (
+    <button
+      className="rounded-lg p-2 md:hidden"
+      onClick={() => setMobileNavOpen(!mobileNavOpen)}
+      aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+      style={{ color: "var(--color-text)" }}
+    >
+      {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+    </button>
+  );
+
+  const socialIconsJsx = (className: string) => (
+    <div className={className}>
+      {Object.entries(footerSocial).map(([platform, url]) => {
+        if (!url) return null;
+        const Icon = SOCIAL_ICONS[platform];
+        return (
+          <a
+            key={platform}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors"
+            style={{ color: "var(--color-text-secondary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
+          >
+            {Icon ? <Icon className="h-5 w-5" /> : <span className="text-xs">{platform}</span>}
+          </a>
+        );
+      })}
+    </div>
+  );
+
+  const footerColumnsJsx = (
+    <div className={`${gridClass} grid gap-8 text-sm${footerLayout === "stacked" ? " text-center" : ""}`} style={{ color: "var(--color-text-secondary)" }}>
+      {footerColumns.map((column) => (
+        <div key={resolveLabel(column.title)}>
+          <h4 className="mb-3 font-semibold" style={{ color: "var(--color-text)" }}>{resolveLabel(column.title)}</h4>
+          <div className="space-y-2">
+             {column.links.map((link) => (
               <Link
-                key={link.url}
+                key={`${resolveLabel(column.title)}-${resolveLabel(link.label)}`}
                 href={prefixLink(link.url)}
-                className="text-sm font-medium transition-colors"
+                className="block transition-colors"
                 style={{ color: "var(--color-text-secondary)" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
@@ -228,100 +389,57 @@ export function StorefrontChrome({
                 {resolveLabel(link.label)}
               </Link>
             ))}
-          </nav>
-          <div className="flex items-center gap-4">
-            <LocaleSwitcher variant="header" />
-            {store?.theme_config?.darkMode?.enabled && store.theme_config.darkMode.toggle && (
-              <button
-                onClick={toggleDark}
-                className="rounded-lg p-2 transition-colors"
-                style={{ color: "var(--color-text-secondary)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                aria-label="Toggle dark mode"
-              >
-                <Sun className="hidden h-5 w-5 dark:block" />
-                <Moon className="h-5 w-5 dark:hidden" />
-              </button>
-            )}
-            {navigation.cta_button?.enabled && (
-              <Link
-                href={prefixLink(navigation.cta_button.url)}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-white"
-                style={{ background: "var(--color-primary)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-primary-700)")}
-              >
-                {resolveLabel(navigation.cta_button?.label)}
-              </Link>
-            )}
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              aria-label={searchOpen ? "Close search" : "Search products"}
-              className="rounded-lg p-2 transition-colors"
-              style={{ color: "var(--color-text-secondary)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
-            </button>
-            <Link
-              href={slug ? cartHref : "#"}
-              className="relative rounded-lg p-2 transition-colors"
-              style={{ color: "var(--color-text-secondary)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white"
-                style={{ background: "var(--color-primary)" }}>
-                {cartCount}
-              </span>
-            </Link>
-            {isCustomerAuth && customerAuth ? (
-              <div className="flex items-center gap-2">
-                <Link
-                  href={slug ? accountHref : "#"}
-                  className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
-                  style={{ color: "var(--color-text-secondary)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">{customerAuth.first_name || customerAuth.email}</span>
-                </Link>
-                <button
-                  onClick={() => {
-                    useCustomerAuthStore.getState().logout();
-                    window.location.reload();
-                  }}
-                  className="rounded-lg p-2 transition-colors"
-                  style={{ color: "var(--color-text-secondary)" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <Link
-                href={slug ? loginHref : "#"}
-                className="rounded-lg p-2 transition-colors"
-                style={{ color: "var(--color-text-secondary)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <User className="h-5 w-5" />
-              </Link>
-            )}
           </div>
         </div>
+      ))}
+    </div>
+  );
+
+  const copyrightJsx = showCopyright ? (
+    <div className="mt-8 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
+      {copyrightText}
+    </div>
+  ) : null;
+
+  return (
+    <div className="storefront min-h-screen" style={{ background: "var(--color-bg)" }}>
+      <AnnouncementBar config={announcementConfig} storeSlug={store?.slug || ""} />
+      <header
+        className={`${isSticky ? "sticky top-0" : "relative"} z-40 border-b backdrop-blur`}
+        style={{
+          borderColor: "var(--color-border)",
+          background: "color-mix(in srgb, var(--color-bg) 85%, transparent)",
+        }}
+      >
+        {isCenteredHeader ? (
+          <div className="mx-auto w-full px-4 sm:px-6 lg:px-8" style={containerStyle}>
+            <div className="flex items-center justify-between" style={{ height: headerHeight }}>
+              <div className="flex min-w-0 flex-1 items-center">{mobileMenuButton}</div>
+              <div className="shrink-0">{logoLink}</div>
+              <div className="flex flex-1 items-center justify-end">{headerActions}</div>
+            </div>
+            <nav className="hidden justify-center gap-6 pb-3 md:flex">{navLinksJsx}</nav>
+          </div>
+        ) : (
+          <div
+            className="mx-auto flex w-full items-center justify-between px-4 sm:px-6 lg:px-8"
+            style={{ ...containerStyle, height: headerHeight }}
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              {mobileMenuButton}
+              {logoLink}
+            </div>
+            <nav className="hidden gap-6 md:flex">{navLinksJsx}</nav>
+            <div className="flex items-center gap-4">{headerActions}</div>
+          </div>
+        )}
         {searchOpen && (
           <form
             onSubmit={submitSearch}
             className="border-t px-4 py-3 sm:px-6 lg:px-8"
             style={{ borderColor: "var(--color-border)" }}
           >
-            <div className="mx-auto flex max-w-7xl gap-2">
+            <div className="mx-auto flex gap-2" style={containerStyle}>
               <input
                 ref={searchInputRef}
                 type="search"
@@ -391,54 +509,25 @@ export function StorefrontChrome({
       </header>
       <main>{children}</main>
       <footer className="border-t" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-            {footerColumns.map((column) => (
-              <div key={resolveLabel(column.title)}>
-                <h4 className="mb-3 font-semibold" style={{ color: "var(--color-text)" }}>{resolveLabel(column.title)}</h4>
-                <div className="space-y-2">
-                   {column.links.map((link) => (
-                    <Link
-                      key={`${resolveLabel(column.title)}-${resolveLabel(link.label)}`}
-                      href={prefixLink(link.url)}
-                      className="block transition-colors"
-                      style={{ color: "var(--color-text-secondary)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
-                    >
-                      {resolveLabel(link.label)}
-                    </Link>
-                  ))}
-                </div>
+        {footerLayout === "minimal" ? (
+          <div className="mx-auto w-full px-4 py-8 text-center sm:px-6 lg:px-8" style={containerStyle}>
+            {hasSocial && socialIconsJsx("flex items-center justify-center gap-4")}
+            {copyrightJsx}
+          </div>
+        ) : (
+          <div className="mx-auto w-full px-4 py-8 sm:px-6 lg:px-8" style={containerStyle}>
+            {footerLayout === "stacked" && (
+              <div className="mb-6 text-center">
+                <Link href={slug ? homeHref : "#"} className="inline-block text-xl font-bold" style={{ color: "var(--color-text)" }}>
+                  {logoText}
+                </Link>
               </div>
-            ))}
+            )}
+            {footerColumnsJsx}
+            {hasSocial && socialIconsJsx(footerLayout === "stacked" ? "mt-6 flex items-center justify-center gap-4" : "mt-6 flex items-center gap-4")}
+            {copyrightJsx}
           </div>
-          {footerConfig.social_links && Object.keys(footerConfig.social_links).length > 0 && (
-            <div className="mt-6 flex items-center gap-4">
-              {Object.entries(footerConfig.social_links).map(([platform, url]) => {
-                if (!url) return null;
-                const Icon = SOCIAL_ICONS[platform];
-                return (
-                  <a
-                    key={platform}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="transition-colors"
-                    style={{ color: "var(--color-text-secondary)" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
-                  >
-                    {Icon ? <Icon className="h-5 w-5" /> : <span className="text-xs">{platform}</span>}
-                  </a>
-                );
-              })}
-            </div>
-          )}
-          <div className="mt-8 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
-            {copyrightText}
-          </div>
-        </div>
+        )}
       </footer>
     </div>
   );

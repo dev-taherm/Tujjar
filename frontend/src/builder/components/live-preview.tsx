@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
 import { StorefrontSectionRenderer } from "@/features/storefront/section-renderer";
 import { DeviceFrame } from "@/builder/components/device-frame";
+import { Spinner } from "@/shared/ui/spinner";
 import type { Section } from "@/shared/types";
 import { X, ExternalLink } from "lucide-react";
 
@@ -36,16 +37,6 @@ export function LivePreview({ sections, storeId, storeSlug, device, onClose }: L
     enabled: !!storeId,
   });
 
-  const { data: collections } = useQuery({
-    queryKey: ["store-collections-preview", storeId],
-    queryFn: async () => {
-      if (!storeId) return [];
-      const { data } = await apiClient.get(`/collections/?store=${storeId}&status=active`);
-      return data?.results || [];
-    },
-    enabled: !!storeId,
-  });
-
   const enrichedSections = sections.map((section) => {
     if (section.type === "product-grid" && products) {
       return {
@@ -69,23 +60,23 @@ export function LivePreview({ sections, storeId, storeSlug, device, onClose }: L
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-100">
-      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
+    <div className="fixed inset-0 z-50 flex flex-col bg-rail">
+      <div className="flex items-center justify-between border-b border-line bg-panel px-4 py-3">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold text-gray-900">Live Preview</h3>
-          <span className="text-xs text-gray-500">{sections.length} sections</span>
+          <h3 className="text-sm font-semibold text-ink">Live Preview</h3>
+          <span className="text-xs text-ink-soft">{sections.length} sections</span>
           {storeSlug && (
             <a
               href={`/shop/${storeSlug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+              className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700"
             >
               <ExternalLink className="h-3 w-3" /> Open storefront
             </a>
           )}
         </div>
-        <button onClick={onClose} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+        <button onClick={onClose} className="rounded-lg p-2 text-ink-soft hover:bg-rail hover:text-ink-soft">
           <X className="h-5 w-5" />
         </button>
       </div>
@@ -93,15 +84,15 @@ export function LivePreview({ sections, storeId, storeSlug, device, onClose }: L
       <div className="flex-1 overflow-y-auto p-6">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <Spinner className="h-8 w-8 text-primary-600" />
           </div>
         ) : (
           <DeviceFrame device={device}>
-            <div className="bg-white">
+            <div className="bg-panel">
               {storeData ? (
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-line">
                   {enrichedSections.map((section) => (
-                    <div key={section.id} className="bg-white">
+                    <div key={section.id} className="bg-panel">
                       <StorefrontSectionRenderer
                         sections={[section]}
                       />
@@ -109,7 +100,7 @@ export function LivePreview({ sections, storeId, storeSlug, device, onClose }: L
                   ))}
                 </div>
               ) : (
-                <div className="flex h-64 items-center justify-center text-gray-500">
+                <div className="flex h-64 items-center justify-center text-ink-soft">
                   <p>{storeSlug ? "Loading store data..." : "Select a store to preview with real data"}</p>
                 </div>
               )}

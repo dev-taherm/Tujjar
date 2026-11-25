@@ -284,9 +284,7 @@ class OrderViewSet(TenantViewSet):
 
         target = valid_actions[action_name]
         results = []
-        orders = Order.unscoped.filter(
-            organization_id=org_id, id__in=ids
-        ).select_related("store")
+        orders = Order.unscoped.filter(organization_id=org_id, id__in=ids).select_related("store")
 
         for order in orders:
             try:
@@ -379,7 +377,6 @@ class OrderViewSet(TenantViewSet):
         response = HttpResponse(buffer.getvalue(), content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="orders.csv"'
         return response
-
 
     required_permission = "orders.manage"
 

@@ -52,7 +52,7 @@ export function ThemeColorEditor({ colors, onChange, parentColors }: ThemeColorE
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-medium text-gray-900">{t("colors")}</h3>
+      <h3 className="text-sm font-medium text-ink">{t("colors")}</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         {COLOR_FIELDS.map(({ key, label }) => {
           const isOverridden = parentColors && colors[key] !== parentColors[key];
@@ -63,14 +63,14 @@ export function ThemeColorEditor({ colors, onChange, parentColors }: ThemeColorE
                   type="color"
                   value={colors[key]}
                   onChange={(e) => handleChange(key, e.target.value)}
-                  className="h-10 w-10 cursor-pointer rounded-lg border border-gray-200"
+                  className="h-10 w-10 cursor-pointer rounded-lg border border-line"
                 />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1.5">
                   <Label className="text-xs">{label}</Label>
                   {parentColors && (
-                    <span className={`text-[10px] ${isOverridden ? "text-amber-600" : "text-gray-400"}`}>
+                    <span className={`text-[10px] ${isOverridden ? "text-warning" : "text-ink-soft"}`}>
                       {isOverridden ? "Overridden" : "Inherited"}
                     </span>
                   )}
@@ -86,7 +86,7 @@ export function ThemeColorEditor({ colors, onChange, parentColors }: ThemeColorE
                       type="button"
                       onClick={() => handleReset(key)}
                       title="Reset to parent"
-                      className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      className="rounded p-1 text-ink-soft hover:bg-rail hover:text-ink-soft"
                     >
                       <RotateCcw className="h-3 w-3" />
                     </button>
@@ -102,14 +102,14 @@ export function ThemeColorEditor({ colors, onChange, parentColors }: ThemeColorE
       <button
         type="button"
         onClick={() => setShowDark(!showDark)}
-        className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900"
+        className="flex items-center gap-1.5 text-xs font-medium text-ink-soft hover:text-ink"
       >
         {showDark ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
         Dark Mode Colors
       </button>
       {showDark && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <p className="mb-3 text-xs text-gray-500">
+        <div className="rounded-lg border border-line bg-rail p-4">
+          <p className="mb-3 text-xs text-ink-soft">
             Optional overrides for dark mode. Leave empty to auto-generate from the light color.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -120,7 +120,7 @@ export function ThemeColorEditor({ colors, onChange, parentColors }: ThemeColorE
                     type="color"
                     value={colors[key] || colors[baseKey]}
                     onChange={(e) => handleChange(key, e.target.value)}
-                    className="h-8 w-8 cursor-pointer rounded-lg border border-gray-200"
+                    className="h-8 w-8 cursor-pointer rounded-lg border border-line"
                   />
                 </div>
                 <div className="flex-1">

@@ -14,7 +14,7 @@ import { sectionComponents } from "@/lib/section-registry";
 import type { Section, PageSchema, ThemeOverride } from "@/shared/types";
 import { useTranslations } from "next-intl";
 import { Button, Badge, Input } from "@/shared/ui";
-import { Plus, Save, Eye, EyeOff, History, ChevronUp, ChevronDown, Copy, Trash2, Palette } from "lucide-react";
+import { Plus, Save, History, ChevronUp, ChevronDown, Copy, Trash2, Palette } from "lucide-react";
 import { ThemePicker } from "./theme-picker";
 import { getRegistryEntry } from "@/builder/sections/registry";
 import type { SettingField } from "@/shared/types";
@@ -35,28 +35,28 @@ function SectionCard({ section, isSelected, onSelect, onRemove, onDuplicate, onM
     <div
       onClick={onSelect}
       className={`group relative cursor-pointer rounded-lg border-2 transition-all ${
-        isSelected ? "border-blue-400 shadow-md" : "border-gray-200 hover:border-gray-300"
+        isSelected ? "border-primary-400 shadow-md" : "border-line hover:border-line"
       }`}
     >
-      <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
-        <span className="text-xs font-medium text-gray-700 capitalize">{section.type.replace(/-/g, " ")}</span>
+      <div className="flex items-center justify-between border-b border-line px-3 py-2">
+        <span className="text-xs font-medium text-ink capitalize">{section.type.replace(/-/g, " ")}</span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={(e) => { e.stopPropagation(); onMoveUp(); }} disabled={isFirst} className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30">
+          <button onClick={(e) => { e.stopPropagation(); onMoveUp(); }} disabled={isFirst} className="rounded p-0.5 text-ink-soft hover:text-ink-soft disabled:opacity-30">
             <ChevronUp className="h-3.5 w-3.5" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onMoveDown(); }} disabled={isLast} className="rounded p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30">
+          <button onClick={(e) => { e.stopPropagation(); onMoveDown(); }} disabled={isLast} className="rounded p-0.5 text-ink-soft hover:text-ink-soft disabled:opacity-30">
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onDuplicate(); }} className="rounded p-0.5 text-gray-400 hover:text-blue-600">
+          <button onClick={(e) => { e.stopPropagation(); onDuplicate(); }} className="rounded p-0.5 text-ink-soft hover:text-primary-600">
             <Copy className="h-3.5 w-3.5" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="rounded p-0.5 text-gray-400 hover:text-red-600">
+          <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="rounded p-0.5 text-ink-soft hover:text-error">
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
       <div className="p-3 max-h-48 overflow-hidden">
-        {Component ? <Component section={section} /> : <p className="text-xs text-gray-400">Unknown type</p>}
+        {Component ? <Component section={section} /> : <p className="text-xs text-ink-soft">Unknown type</p>}
       </div>
     </div>
   );
@@ -65,25 +65,25 @@ function SectionCard({ section, isSelected, onSelect, onRemove, onDuplicate, onM
 function SimpleInspector({ section, onUpdate }: { section: Section; onUpdate: (settings: Record<string, unknown>) => void }) {
   const t = useTranslations("dashboard.pages");
   const definition = getRegistryEntry(section.type);
-  if (!definition) return <p className="text-sm text-gray-500">{t("noSettingsForSection")}</p>;
+  if (!definition) return <p className="text-sm text-ink-soft">{t("noSettingsForSection")}</p>;
 
   return (
     <div className="space-y-4">
-      <div className="border-b border-gray-200 pb-3">
-        <h3 className="text-sm font-semibold text-gray-900">{definition.label}</h3>
-        <p className="text-xs text-gray-500">{t("configureSection")}</p>
+      <div className="border-b border-line pb-3">
+        <h3 className="text-sm font-semibold text-ink">{definition.label}</h3>
+        <p className="text-xs text-ink-soft">{t("configureSection")}</p>
       </div>
       {definition.settingsSchema.map((field: SettingField) => {
         const value = section.settings[field.key];
         return (
           <div key={field.key}>
-            <label className="mb-1 block text-xs font-medium text-gray-700">{field.label}</label>
+            <label className="mb-1 block text-xs font-medium text-ink">{field.label}</label>
             {field.type === "text" && (
               <Input value={(value as string) || ""} onChange={(e) => onUpdate({ ...section.settings, [field.key]: e.target.value })} />
             )}
             {field.type === "textarea" && (
               <textarea
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
                 value={(value as string) || ""}
                 onChange={(e) => onUpdate({ ...section.settings, [field.key]: e.target.value })}
                 rows={3}
@@ -101,14 +101,14 @@ function SimpleInspector({ section, onUpdate }: { section: Section; onUpdate: (s
             {field.type === "toggle" && (
               <button
                 onClick={() => onUpdate({ ...section.settings, [field.key]: !value })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${value ? "bg-blue-600" : "bg-gray-200"}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${value ? "bg-primary-600" : "bg-rail"}`}
               >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value ? "translate-x-6" : "translate-x-1"}`} />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-panel transition-transform ${value ? "translate-x-6" : "translate-x-1"}`} />
               </button>
             )}
             {field.type === "select" && (
               <select
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
                 value={String(value || "")}
                 onChange={(e) => onUpdate({ ...section.settings, [field.key]: e.target.value })}
               >
@@ -131,7 +131,7 @@ interface LightEditorProps {
 export function LightEditor({ pageId }: LightEditorProps) {
   const t = useTranslations("dashboard.pages");
   const tc = useTranslations("common");
-  const { page, sections, selectedSectionId, selectSection, getSelectedSection, isDirty, isPreviewMode, togglePreviewMode, editLocale, setEditLocale, themeOverride, setThemeOverride, getSavePayload, devicePreview, setDevicePreview } = usePageBuilder();
+const { page, sections, selectedSectionId, selectSection, getSelectedSection, isDirty, isPreviewMode, editLocale, themeOverride, setThemeOverride, getSavePayload, devicePreview } = usePageBuilder();
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
@@ -144,8 +144,6 @@ export function LightEditor({ pageId }: LightEditorProps) {
   const removeSectionMut = useRemoveSection();
   const duplicateSectionMut = useDuplicateSection();
   const reorderSections = useReorderSections();
-  const toggleVisibility = useToggleSectionVisibility();
-  const { copySection, pasteSection } = useClipboard();
 
   const handleSave = useCallback(async () => {
     if (!page) return;
@@ -207,15 +205,15 @@ export function LightEditor({ pageId }: LightEditorProps) {
   const selectedSection = getSelectedSection();
 
   return (
-    <div className="flex h-[calc(100vh-120px)] flex-col rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="flex h-[calc(100vh-120px)] flex-col rounded-xl border border-line bg-panel overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-gray-900">{page?.title || ""}</h2>
+          <h2 className="text-lg font-semibold text-ink">{page?.title || ""}</h2>
           {page?.is_published ? <Badge variant="success">{tc("published")}</Badge> : <Badge variant="secondary">{tc("draft")}</Badge>}
           {isAutoSaving && <Badge variant="info">Saving...</Badge>}
           {!isAutoSaving && lastSavedAt && !isDirty && (
-            <span className="text-xs text-gray-400">Saved {lastSavedAt.toLocaleTimeString()}</span>
+            <span className="text-xs text-ink-soft">Saved {lastSavedAt.toLocaleTimeString()}</span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -241,15 +239,15 @@ export function LightEditor({ pageId }: LightEditorProps) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Section List */}
-        <div className="w-72 border-e border-gray-200 overflow-y-auto p-3">
+        <div className="w-72 border-e border-line overflow-y-auto p-3">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-700">{t("sections")} ({sections.length})</h3>
-            <button onClick={() => setShowTypePicker(true)} className="text-xs text-blue-600 hover:text-blue-700">+ Add</button>
+            <h3 className="text-sm font-semibold text-ink">{t("sections")} ({sections.length})</h3>
+            <button onClick={() => setShowTypePicker(true)} className="text-xs text-primary-600 hover:text-primary-700">+ Add</button>
           </div>
           {sections.length === 0 ? (
-            <div className="flex h-48 flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
-              <p className="mb-2 text-sm text-gray-500">{t("noSections")}</p>
-              <button onClick={() => setShowTypePicker(true)} className="text-sm font-medium text-blue-600 hover:text-blue-700">{t("addFirstSection")}</button>
+            <div className="flex h-48 flex-col items-center justify-center rounded-lg border-2 border-dashed border-line">
+              <p className="mb-2 text-sm text-ink-soft">{t("noSections")}</p>
+              <button onClick={() => setShowTypePicker(true)} className="text-sm font-medium text-primary-600 hover:text-primary-700">{t("addFirstSection")}</button>
             </div>
           ) : (
             <div className="space-y-2">
@@ -272,12 +270,12 @@ export function LightEditor({ pageId }: LightEditorProps) {
         </div>
 
         {/* Center: Preview */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+        <div className="flex-1 overflow-y-auto bg-rail p-6">
           <DeviceFrame device={devicePreview}>
             {sections.length === 0 ? (
-              <div className="flex h-96 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300">
-                <p className="mb-4 text-gray-500">{t("noSections")}</p>
-                <button onClick={() => setShowTypePicker(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+              <div className="flex h-96 flex-col items-center justify-center rounded-xl border-2 border-dashed border-line">
+                <p className="mb-4 text-ink-soft">{t("noSections")}</p>
+                <button onClick={() => setShowTypePicker(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
                   {t("addFirstSection")}
                 </button>
               </div>
@@ -288,7 +286,7 @@ export function LightEditor({ pageId }: LightEditorProps) {
                     key={section.id}
                     onClick={() => selectSection(section.id)}
                     className={`cursor-pointer rounded-lg border-2 transition-colors ${
-                      section.id === selectedSectionId ? "border-blue-400" : "border-transparent hover:border-gray-300"
+                      section.id === selectedSectionId ? "border-primary-400" : "border-transparent hover:border-line"
                     }`}
                   >
                     {(() => {
@@ -304,7 +302,7 @@ export function LightEditor({ pageId }: LightEditorProps) {
 
         {/* Right: Simple Inspector */}
         {selectedSection && !isPreviewMode && (
-          <div className="w-80 border-s border-gray-200 overflow-y-auto p-4">
+          <div className="w-80 border-s border-line overflow-y-auto p-4">
             <SimpleInspector
               section={selectedSection}
               onUpdate={(settings) => handleUpdateSection(selectedSection.id, settings)}

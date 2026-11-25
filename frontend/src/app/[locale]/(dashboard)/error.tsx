@@ -13,8 +13,8 @@ export default function DashboardError({
   return (
     <div className="flex items-center justify-center p-8">
       <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900">{t("title")}</h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <h2 className="text-lg font-semibold text-ink">{t("title")}</h2>
+        <p className="mt-2 text-sm text-ink-soft">
           {process.env.NODE_ENV === "production"
             ? t("defaultMessage")
             : error.message || t("defaultMessage")}

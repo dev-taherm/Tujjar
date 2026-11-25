@@ -61,9 +61,7 @@ class TestSignature:
         )
         body, headers = build_request(delivery)
 
-        expected = hmac.new(
-            endpoint.secret.encode(), body, hashlib.sha256
-        ).hexdigest()
+        expected = hmac.new(endpoint.secret.encode(), body, hashlib.sha256).hexdigest()
         assert headers["X-Tujjar-Signature"] == f"sha256={expected}"
         assert headers["X-Tujjar-Event"] == "order.paid"
         parsed = json.loads(body)
@@ -113,8 +111,13 @@ class TestDispatch:
 
         quote = QuoteResult(subtotal=Decimal("80"), total=Decimal("80"))
         line = OrderLine(
-            product_id=str(product.id), variant_id=None, title=product.title, sku=product.sku,
-            quantity=1, unit_price=Decimal("80"), line_total=Decimal("80"),
+            product_id=str(product.id),
+            variant_id=None,
+            title=product.title,
+            sku=product.sku,
+            quantity=1,
+            unit_price=Decimal("80"),
+            line_total=Decimal("80"),
         )
         create_order_from_quote(
             hook_data["store"], quote=quote, lines=[line], customer_email="x@y.z"
@@ -164,10 +167,9 @@ class TestDeliveryTask:
 
         monkeypatch.setattr(
             "requests.post",
-            lambda url, data=None, headers=None, timeout=None: captured.update(
-                {"url": url, "headers": headers, "body": data}
-            )
-            or FakeResponse(),
+            lambda url, data=None, headers=None, timeout=None: (
+                captured.update({"url": url, "headers": headers, "body": data}) or FakeResponse()
+            ),
         )
         deliver_webhook(delivery.id)
 

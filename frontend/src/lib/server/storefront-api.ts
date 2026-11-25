@@ -65,6 +65,12 @@ export interface StorefrontNavigation {
   logo_text?: string | Record<string, string>;
   links?: { label: string | Record<string, string>; url: string; order?: number }[];
   cta_button?: { label: string | Record<string, string>; url: string; enabled: boolean };
+  header_layout?: "classic" | "centered";
+  header_sticky?: boolean;
+  header_show_search?: boolean;
+  header_show_cart?: boolean;
+  header_height?: number;
+  logo_height?: number;
 }
 
 export interface StorefrontFooterConfig {
@@ -74,6 +80,9 @@ export interface StorefrontFooterConfig {
   }[];
   copyright?: string | Record<string, string>;
   social_links?: Record<string, string>;
+  layout?: "columns" | "stacked" | "minimal";
+  show_social?: boolean;
+  show_copyright?: boolean;
 }
 
 export interface StorefrontThemeConfig {
@@ -85,6 +94,9 @@ export interface StorefrontThemeConfig {
     baseFontSize?: number;
     scale?: number;
     lineHeight?: number;
+    headingWeight?: number;
+    headingLetterSpacing?: number;
+    letterSpacing?: number;
   };
   spacing?: {
     sectionPaddingY?: number;

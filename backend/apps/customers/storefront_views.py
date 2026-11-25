@@ -119,9 +119,7 @@ def storefront_orders(request):
     """The authenticated customer's orders (newest first)."""
     customer = _get_customer(request)
     orders = (
-        Order.unscoped.filter(customer=customer)
-        .prefetch_related("items")
-        .order_by("-created_at")
+        Order.unscoped.filter(customer=customer).prefetch_related("items").order_by("-created_at")
     )
     return Response([_serialize_order_summary(o) for o in orders])
 
@@ -132,11 +130,7 @@ def storefront_orders(request):
 def storefront_order_detail(request, order_id):
     """One of the customer's own orders."""
     customer = _get_customer(request)
-    order = (
-        Order.unscoped.filter(id=order_id, customer=customer)
-        .prefetch_related("items")
-        .first()
-    )
+    order = Order.unscoped.filter(id=order_id, customer=customer).prefetch_related("items").first()
     if not order:
         return Response({"error": "Order not found."}, status=404)
     return Response(_serialize_order_detail(order))
@@ -191,9 +185,7 @@ def storefront_wishlist(request):
 def storefront_wishlist_remove(request, product_id):
     """Remove a product from the customer's wishlist."""
     customer = _get_customer(request)
-    deleted, _ = WishlistItem.unscoped.filter(
-        customer=customer, product_id=product_id
-    ).delete()
+    deleted, _ = WishlistItem.unscoped.filter(customer=customer, product_id=product_id).delete()
     if not deleted:
         return Response({"error": "Not in wishlist."}, status=404)
     return Response({"removed": True})
@@ -310,9 +302,11 @@ def storefront_product_reviews(request, subdomain=None, slug=None):
     if not product:
         return Response({"error": "Product not found"}, status=404)
 
-    reviews = Review.unscoped.filter(
-        product=product, is_approved=True
-    ).select_related("customer").order_by("-created_at")
+    reviews = (
+        Review.unscoped.filter(product=product, is_approved=True)
+        .select_related("customer")
+        .order_by("-created_at")
+    )
 
     count = reviews.count()
     avg = 0
@@ -334,9 +328,8 @@ def storefront_product_reviews(request, subdomain=None, slug=None):
                     "rating": r.rating,
                     "title": r.title,
                     "body": r.body,
-                    "author": r.customer.full_name or (
-                        r.customer.email.split("@")[0] if r.customer else "Guest"
-                    ),
+                    "author": r.customer.full_name
+                    or (r.customer.email.split("@")[0] if r.customer else "Guest"),
                     "created_at": r.created_at.isoformat(),
                 }
                 for r in reviews

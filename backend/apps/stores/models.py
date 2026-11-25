@@ -20,6 +20,7 @@ class Store(UUIDModel, TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="stores",
     )
+
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
     custom_domain = models.CharField(max_length=255, blank=True, null=True, unique=True)
@@ -44,6 +45,12 @@ class Store(UUIDModel, TimeStampedModel):
         null=True,
         blank=True,
         related_name="stores",
+    )
+
+    theme_config_override = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Per-store theme overrides deep-merged over the base theme config.",
     )
     settings = models.JSONField(default=dict, blank=True)
     seo_title = models.CharField(max_length=255, blank=True, default="")
@@ -107,3 +114,4 @@ class StoreDomain(UUIDModel, TimeStampedModel):
 
     def __str__(self) -> str:
         return self.domain
+

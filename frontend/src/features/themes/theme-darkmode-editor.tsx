@@ -29,7 +29,7 @@ export function ThemeDarkModeEditor({ darkMode, onChange, parentDarkMode }: Them
     <div className="space-y-4">
       {parentDarkMode && (
         <div className="flex items-center gap-2">
-          <span className={`text-xs ${isOverridden ? "text-amber-600" : "text-gray-400"}`}>
+          <span className={`text-xs ${isOverridden ? "text-warning" : "text-ink-soft"}`}>
             {isOverridden ? "Overridden" : "Inherited"}
           </span>
           {isOverridden && (
@@ -37,7 +37,7 @@ export function ThemeDarkModeEditor({ darkMode, onChange, parentDarkMode }: Them
               type="button"
               onClick={handleReset}
               title="Reset to parent"
-              className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              className="rounded p-1 text-ink-soft hover:bg-rail hover:text-ink-soft"
             >
               <RotateCcw className="h-3 w-3" />
             </button>
@@ -67,16 +67,16 @@ export function ThemeDarkModeEditor({ darkMode, onChange, parentDarkMode }: Them
             onToggle={() => onChange({ ...darkMode, toggle: !darkMode.toggle })}
           />
 
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <p className="mb-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</p>
+          <div className="rounded-lg border border-line bg-rail p-4">
+            <p className="mb-3 text-xs font-medium text-ink-soft uppercase tracking-wide">Preview</p>
             <div className="flex gap-4">
-              <div className="flex-1 rounded-lg border border-gray-200 bg-white p-4">
-                <p className="text-sm font-medium text-gray-900">Light Mode</p>
-                <p className="text-xs text-gray-500">Default appearance</p>
+              <div className="flex-1 rounded-lg border border-line bg-panel p-4">
+                <p className="text-sm font-medium text-ink">Light Mode</p>
+                <p className="text-xs text-ink-soft">Default appearance</p>
               </div>
-              <div className="flex-1 rounded-lg border border-gray-700 bg-gray-900 p-4">
+              <div className="flex-1 rounded-lg border border-line bg-[#221B14] p-4">
                 <p className="text-sm font-medium text-white">Dark Mode</p>
-                <p className="text-xs text-gray-400">When toggled</p>
+                <p className="text-xs text-ink-soft">When toggled</p>
               </div>
             </div>
           </div>

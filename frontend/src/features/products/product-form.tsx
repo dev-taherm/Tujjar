@@ -269,11 +269,11 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
             type="checkbox"
             checked={selectedCategoryIds.includes(cat.id)}
             onChange={() => toggleCategory(cat.id)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-line text-primary-600 focus:ring-primary-500"
           />
-          <span className="text-sm text-gray-700">{cat.name}</span>
+          <span className="text-sm text-ink">{cat.name}</span>
           {cat.product_count > 0 && (
-            <span className="text-xs text-gray-400">({cat.product_count})</span>
+            <span className="text-xs text-ink-soft">({cat.product_count})</span>
           )}
         </label>
         {depth < 1 && renderCategoryTree(cat.id, depth + 1)}
@@ -285,13 +285,13 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
     <button
       type="button"
       onClick={() => toggleSection(section)}
-      className="flex w-full items-center justify-between px-6 py-4 text-left"
+      className="flex w-full items-center justify-between px-6 py-4 text-start"
     >
-      <span className="text-sm font-semibold text-gray-900">{title}</span>
+      <span className="text-sm font-semibold text-ink">{title}</span>
       {sectionsOpen[section] ? (
-        <ChevronDown className="h-4 w-4 text-gray-400" />
+        <ChevronDown className="h-4 w-4 text-ink-soft" />
       ) : (
-        <ChevronRight className="h-4 w-4 text-gray-400" />
+        <ChevronRight className="h-4 w-4 text-ink-soft" />
       )}
     </button>
   );
@@ -299,7 +299,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {formError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded-lg border border-error bg-error-soft p-3 text-sm text-error">
           {formError}
         </div>
       )}
@@ -309,12 +309,12 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
           <button
             type="button"
             onClick={() => window.history.back()}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"
+            className="rounded-lg p-2 text-ink-soft hover:bg-rail"
           >
             <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
           </button>
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            <h1 className="text-xl md:text-2xl font-bold text-ink">
               {isEditing ? `Edit ${initialData?.title}` : "Add product"}
             </h1>
           </div>
@@ -323,14 +323,14 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
           <button
             type="button"
             onClick={() => window.history.back()}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-rail"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {isSaving ? "Saving..." : isEditing ? "Save" : "Create"}
@@ -340,116 +340,116 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-lg border border-gray-200 bg-white">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900">Basic info</h2>
+          <div className="rounded-lg border border-line bg-panel">
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-sm font-semibold text-ink">Basic info</h2>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label className="block text-sm font-medium text-ink mb-1">Title</label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                <label className="block text-sm font-medium text-ink mb-1">Slug</label>
                 <input
                   type="text"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-ink mb-1">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Short description</label>
+                <label className="block text-sm font-medium text-ink mb-1">Short description</label>
                 <textarea
                   value={shortDescription}
                   onChange={(e) => setShortDescription(e.target.value)}
                   rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900">Pricing</h2>
+          <div className="rounded-lg border border-line bg-panel">
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-sm font-semibold text-ink">Pricing</h2>
             </div>
             <div className="p-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                <label className="block text-sm font-medium text-ink mb-1">Price</label>
                 <input
                   type="number"
                   step="0.01"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Compare at price</label>
+                <label className="block text-sm font-medium text-ink mb-1">Compare at price</label>
                 <input
                   type="number"
                   step="0.01"
                   value={compareAtPrice}
                   onChange={(e) => setCompareAtPrice(e.target.value)}
                   placeholder="Optional"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cost per item</label>
+                <label className="block text-sm font-medium text-ink mb-1">Cost per item</label>
                 <input
                   type="number"
                   step="0.01"
                   value={costPerItem}
                   onChange={(e) => setCostPerItem(e.target.value)}
                   placeholder="Optional"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900">Inventory</h2>
+          <div className="rounded-lg border border-line bg-panel">
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-sm font-semibold text-ink">Inventory</h2>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                  <label className="block text-sm font-medium text-ink mb-1">SKU</label>
                   <input
                     type="text"
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
                     placeholder="Stock keeping unit"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Barcode</label>
                   <input
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     placeholder="UPC, EAN, etc."
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -458,47 +458,47 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                   type="checkbox"
                   checked={trackInventory}
                   onChange={() => setTrackInventory(!trackInventory)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 rounded border-line text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm text-gray-700">Track inventory</span>
+                <span className="text-sm text-ink">Track inventory</span>
               </label>
               {trackInventory && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Quantity</label>
                   <input
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               )}
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900">Shipping</h2>
+          <div className="rounded-lg border border-line bg-panel">
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-sm font-semibold text-ink">Shipping</h2>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Weight</label>
                   <input
                     type="number"
                     step="0.01"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                     placeholder="Optional"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Weight unit</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Weight unit</label>
                   <select
                     value={weightUnit}
                     onChange={(e) => setWeightUnit(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="kg">kg</option>
                     <option value="lb">lb</option>
@@ -512,14 +512,14 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                   type="checkbox"
                   checked={requiresShipping}
                   onChange={() => setRequiresShipping(!requiresShipping)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 rounded border-line text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm text-gray-700">Requires shipping</span>
+                <span className="text-sm text-ink">Requires shipping</span>
               </label>
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-lg border border-line bg-panel">
             {renderSectionHeader("Media", "media")}
             {sectionsOpen.media && (
               <div className="px-6 pb-6 space-y-4">
@@ -536,10 +536,10 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                           setDraggedImageIndex(null);
                           setDragOverImageIndex(null);
                         }}
-                        className={`group relative rounded-lg border-2 bg-gray-50 aspect-square overflow-hidden cursor-grab ${
+                        className={`group relative rounded-lg border-2 bg-rail aspect-square overflow-hidden cursor-grab ${
                           dragOverImageIndex === index
-                            ? "border-blue-500"
-                            : "border-gray-200"
+                            ? "border-primary-500"
+                            : "border-line"
                         } ${draggedImageIndex === index ? "opacity-50" : ""}`}
                       >
                         <img
@@ -548,10 +548,10 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                           className="h-full w-full object-cover"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                          <div className="absolute top-1 left-1">
+                          <div className="absolute top-1 start-1">
                             <GripVertical className="h-4 w-4 text-white/70" />
                           </div>
-                          <div className="absolute top-1 right-1 flex gap-1">
+                          <div className="absolute top-1 end-1 flex gap-1">
                             <button
                               type="button"
                               onClick={(e) => {
@@ -560,8 +560,8 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                               }}
                               className={`rounded-full p-2 min-h-[44px] min-w-[44px] flex items-center justify-center ${
                                 image.is_primary
-                                  ? "bg-yellow-400 text-yellow-900"
-                                  : "bg-white/80 text-gray-600 hover:bg-white"
+                                  ? "bg-warning text-warning"
+                                  : "bg-panel/80 text-ink-soft hover:bg-panel"
                               }`}
                               title="Set as primary"
                             >
@@ -573,15 +573,15 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                                 e.stopPropagation();
                                 handleDeleteImage(image.id);
                               }}
-                              className="rounded-full bg-white/80 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-red-500 hover:text-white"
+                              className="rounded-full bg-panel/80 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-ink-soft hover:bg-error hover:text-white"
                               title="Delete image"
                             >
                               <X className="h-3 w-3" />
                             </button>
                           </div>
                           {image.is_primary && (
-                            <div className="absolute bottom-1 left-1">
-                              <span className="inline-flex items-center rounded-full bg-yellow-400 px-2 py-0.5 text-xs font-medium text-yellow-900">
+                            <div className="absolute bottom-1 start-1">
+                              <span className="inline-flex items-center rounded-full bg-warning px-2 py-0.5 text-xs font-medium text-warning">
                                 Primary
                               </span>
                             </div>
@@ -591,8 +591,8 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-                    <p className="text-sm text-gray-500">No images yet</p>
+                  <div className="rounded-lg border-2 border-dashed border-line p-8 text-center">
+                    <p className="text-sm text-ink-soft">No images yet</p>
                   </div>
                 )}
                 <input
@@ -606,7 +606,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="inline-flex items-center gap-2 rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-rail"
                 >
                   <Plus className="h-4 w-4" />
                   Add image
@@ -615,19 +615,19 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
             )}
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-lg border border-line bg-panel">
             {renderSectionHeader("Variants", "variants")}
             {sectionsOpen.variants && (
               <div className="px-6 pb-6 space-y-4">
                 {productOptions && productOptions.length > 0 ? (
                   productOptions.map((option: ProductOption) => (
-                    <div key={option.id} className="rounded-lg border border-gray-200 p-4 space-y-3">
+                    <div key={option.id} className="rounded-lg border border-line p-4 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-900">{option.name}</span>
+                        <span className="text-sm font-medium text-ink">{option.name}</span>
                         <button
                           type="button"
                           onClick={() => handleDeleteOption(option.id)}
-                          className="text-gray-400 hover:text-red-500"
+                          className="text-ink-soft hover:text-error"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -636,13 +636,13 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                         {option.values.map((val) => (
                           <span
                             key={val.id}
-                            className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm"
+                            className="inline-flex items-center gap-1 rounded-full bg-rail px-3 py-1 text-sm"
                           >
                             {val.value}
                             <button
                               type="button"
                               onClick={() => handleDeleteOptionValue(option.id, val.id)}
-                              className="text-gray-400 hover:text-red-500"
+                              className="text-ink-soft hover:text-error"
                             >
                               <X className="h-3 w-3" />
                             </button>
@@ -666,12 +666,12 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                             }
                           }}
                           placeholder="Add values (comma separated)"
-                          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="flex-1 rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                         />
                         <button
                           type="button"
                           onClick={() => handleAddOptionValue(option.id)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
                         >
                           <Plus className="h-3 w-3" />
                           Add
@@ -680,7 +680,7 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-500">No options yet. Add one below.</p>
+                  <p className="text-sm text-ink-soft">No options yet. Add one below.</p>
                 )}
                 <div className="flex gap-2">
                   <input
@@ -694,13 +694,13 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                       }
                     }}
                     placeholder="Option name (e.g. Color, Size)"
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="flex-1 rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                   <button
                     type="button"
                     onClick={handleAddOption}
                     disabled={!newOptionName.trim()}
-                    className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail disabled:opacity-50"
                   >
                     <Plus className="h-3 w-3" />
                     Add option
@@ -710,49 +710,49 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
             )}
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-lg border border-line bg-panel">
             {renderSectionHeader("SEO", "seo")}
             {sectionsOpen.seo && (
               <div className="px-6 pb-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SEO title</label>
+                  <label className="block text-sm font-medium text-ink mb-1">SEO title</label>
                   <input
                     type="text"
                     value={seoTitle}
                     onChange={(e) => setSeoTitle(e.target.value.slice(0, 60))}
                     maxLength={60}
                     placeholder="Override page title"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
-                  <p className="mt-1 text-xs text-gray-400">{seoTitle.length}/60</p>
+                  <p className="mt-1 text-xs text-ink-soft">{seoTitle.length}/60</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SEO description</label>
+                  <label className="block text-sm font-medium text-ink mb-1">SEO description</label>
                   <textarea
                     value={seoDescription}
                     onChange={(e) => setSeoDescription(e.target.value.slice(0, 160))}
                     maxLength={160}
                     rows={2}
                     placeholder="Meta description"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
-                  <p className="mt-1 text-xs text-gray-400">{seoDescription.length}/160</p>
+                  <p className="mt-1 text-xs text-ink-soft">{seoDescription.length}/160</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Handle (URL slug)</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Handle (URL slug)</label>
                   <input
                     type="text"
                     value={handle}
                     onChange={(e) => setHandle(e.target.value)}
                     placeholder="Custom URL handle"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </div>
             )}
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-lg border border-line bg-panel">
             {renderSectionHeader("Tax", "tax")}
             {sectionsOpen.tax && (
               <div className="px-6 pb-6 space-y-4">
@@ -761,18 +761,18 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                     type="checkbox"
                     checked={isTaxable}
                     onChange={() => setIsTaxable(!isTaxable)}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-line text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm text-gray-700">Taxable</span>
+                  <span className="text-sm text-ink">Taxable</span>
                 </label>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tax code</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Tax code</label>
                   <input
                     type="text"
                     value={taxCode}
                     onChange={(e) => setTaxCode(e.target.value)}
                     placeholder="Tax code"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -781,17 +781,17 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-lg border border-gray-200 bg-white">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900">Status</h2>
+          <div className="rounded-lg border border-line bg-panel">
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-sm font-semibold text-ink">Status</h2>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-ink mb-1">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as "draft" | "active" | "archived")}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
@@ -801,22 +801,22 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900">Categories</h2>
+          <div className="rounded-lg border border-line bg-panel">
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-sm font-semibold text-ink">Categories</h2>
             </div>
             <div className="p-6">
               {allCategories && allCategories.length > 0 ? (
                 <div className="space-y-1">{renderCategoryTree(null)}</div>
               ) : (
-                <p className="text-sm text-gray-500">No categories available</p>
+                <p className="text-sm text-ink-soft">No categories available</p>
               )}
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-white">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900">Tags</h2>
+          <div className="rounded-lg border border-line bg-panel">
+            <div className="px-6 py-4 border-b border-line">
+              <h2 className="text-sm font-semibold text-ink">Tags</h2>
             </div>
             <div className="p-6 space-y-3">
               <div className="flex gap-2">
@@ -831,12 +831,12 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                     }
                   }}
                   placeholder="Add tag"
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="flex-1 rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="inline-flex items-center rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
                 >
                   Add
                 </button>
@@ -845,13 +845,13 @@ export function ProductForm({ onSuccess, initialData }: ProductFormProps) {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm"
+                    className="inline-flex items-center gap-1 rounded-full bg-rail px-3 py-1 text-sm"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="text-gray-400 hover:text-red-500"
+                      className="text-ink-soft hover:text-error"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>

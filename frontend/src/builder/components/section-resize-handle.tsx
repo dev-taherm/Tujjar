@@ -8,7 +8,7 @@ interface SectionResizeHandleProps {
   onResize: (minHeight: string) => void;
 }
 
-export function SectionResizeHandle({ sectionId, currentMinHeight, onResize }: SectionResizeHandleProps) {
+export function SectionResizeHandle({ currentMinHeight, onResize }: SectionResizeHandleProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [startHeight, setStartHeight] = useState(0);
@@ -55,13 +55,13 @@ export function SectionResizeHandle({ sectionId, currentMinHeight, onResize }: S
     <div
       ref={handleRef}
       onMouseDown={handleMouseDown}
-      className={`absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize group/resize ${
-        isDragging ? "bg-blue-400" : "bg-transparent hover:bg-blue-200"
+      className={`absolute bottom-0 start-0 end-0 h-2 cursor-ns-resize group/resize ${
+        isDragging ? "bg-primary-400" : "bg-transparent hover:bg-primary-200"
       }`}
       style={{ transform: "translateY(50%)" }}
     >
       <div className={`mx-auto h-0.5 w-8 rounded-full transition-colors ${
-        isDragging ? "bg-blue-600" : "bg-gray-300 group-hover/resize:bg-blue-500"
+        isDragging ? "bg-primary-600" : "bg-rail group-hover/resize:bg-primary-500"
       }`} />
     </div>
   );

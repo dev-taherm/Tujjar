@@ -1,34 +1,63 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
-/* Class-based dark mode: the storefront toggles `.dark` on <html>. */
+/*
+  ============================================================================
+  TUJJAR — OLD SANA'A DESIGN TOKENS
+  See UI_UX_REDESIGN_PLAN.md §2. The identity comes from the old city of
+  Sana'a: mudbrick sienna tower houses, gypsum-white nurah trim, and qamariya
+  fanlight windows whose stained glass (cobalt, green, amber, ruby) carries
+  the whole accent system. Two token families live here:
+
+  1. STOREFRONT vars (--color-primary, --color-bg, --font-heading, …) keep
+     their exact names because src/lib/theme-css.ts + the shop layout inject
+     per-store values over them at runtime. Defaults below are the brand's.
+  2. APP semantic tokens (--color-canvas/panel/rail/ink/line + status pairs)
+     drive the dashboard/admin/auth UI. `.dark` swaps them for the warm
+     "Qamariya Night" palette — never gray-blue.
+  ============================================================================
+*/
+
+/* Class-based dark mode: pre-paint scripts and the theme toggle set `.dark`. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* ---- Brand ramp: mudbrick sienna (Old Sana'a tower houses) ----------- */
+  --color-primary-50: #f9efe6;
+  --color-primary-100: #f0dcc8;
+  --color-primary-200: #e1be9c;
+  --color-primary-300: #cd9a6b;
+  --color-primary-400: #bc7b4c;
+  --color-primary-500: #ae6239;
+  --color-primary-600: #96522e;
+  --color-primary-700: #7a3f22;
+  --color-primary-800: #572c19;
+  --color-primary-900: #412114;
 
-  /* Theme CSS variables — set dynamically by storefront layout */
-  --color-primary: #2563eb;
-  --color-secondary: #7c3aed;
-  --color-accent: #f59e0b;
-  --color-bg: #ffffff;
-  --color-surface: #f9fafb;
-  --color-text: #111827;
-  --color-text-secondary: #6b7280;
-  --color-border: #e5e7eb;
-  --color-error: #dc2626;
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --font-heading: system-ui, -apple-system, sans-serif;
-  --font-body: system-ui, -apple-system, sans-serif;
+  /* ---- Brand ramp: qamariya amber (fanlight glass) --------------------- */
+  --color-accent-50: #fcf3df;
+  --color-accent-100: #f8e7c4;
+  --color-accent-200: #f0d398;
+  --color-accent-300: #e7bb6a;
+  --color-accent-400: #dfa23e;
+  --color-accent-500: #d69229;
+  --color-accent-600: #b2761d;
+  --color-accent-700: #8e5c14;
+
+  /* ---- Storefront theme vars (injected per store; defaults = brand) ----- */
+  --color-primary: #ae6239;
+  --color-secondary: #8a6b4f;
+  --color-accent: #d69229;
+  --color-bg: #f9f5ec;
+  --color-surface: #ffffff;
+  --color-text: #26201a;
+  --color-text-secondary: #6f6154;
+  --color-border: #e3d9c6;
+  --color-error: #b33840;
+  --color-success: #3e7050;
+  --color-warning: #8a5a10;
+  --font-heading: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
   --font-size-base: 16px;
   --font-scale: 1.25;
   --line-height-base: 1.6;
@@ -36,59 +65,212 @@
   --section-padding-x: 24px;
   --container-max-width: 1200px;
   --grid-gap: 24px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-full: 9999px;
-  --transition-duration: 0.3s;
-  --transition-easing: ease;
+
+  /* ---- App semantic tokens: Gypsum Light -------------------------------
+     Canvas and trim take the gypsum-white nurah plaster of the old city;
+     fills carry the pale-straw wash of its mudbrick. */
+  --color-canvas: #f9f5ec;
+  --color-panel: #ffffff;
+  --color-rail: #f0e8d8;
+  --color-ink: #26201a;
+  --color-ink-soft: #6f6154;
+  --color-line: #e3d9c6;
+
+  /* Status pairs — the qamariya glass: cobalt, green, amber, ruby. */
+  --color-success-soft: #e5eee6;
+  --color-info: #2d5f8c;
+  --color-info-soft: #e2eaf1;
+  --color-warning-soft: #f7edd7;
+  --color-error-soft: #f8e4e5;
+  --color-accent-soft: #f8e9cc;
+  --color-accent-strong: #8e5c14;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Mudbrick lit from within: sienna warms and glows in the dark. */
+  --color-primary-50: #2e2016;
+  --color-primary-100: #3b291a;
+  --color-primary-200: #5a3a24;
+  --color-primary-300: #9a5a38;
+  --color-primary-400: #c16f45;
+  --color-primary-500: #d98a5b;
+  --color-primary-600: #d98a5b;
+  --color-primary-700: #e8a47b;
+  --color-primary-800: #f0b896;
+  --color-primary-900: #f7d4ba;
+
+  --color-accent-50: #362915;
+  --color-accent-100: #413020;
+  --color-accent-200: #57412a;
+  --color-accent-300: #c08f47;
+  --color-accent-400: #e9ac4c;
+  --color-accent-500: #e9ac4c;
+  --color-accent-600: #efbc6b;
+  --color-accent-700: #f4cf94;
+
+  /* Storefront dark defaults keep respecting per-store injection. */
+  --color-bg: #1a1410;
+  --color-surface: #221b14;
+  --color-text: #f5eddc;
+  --color-text-secondary: #ac9e8b;
+  --color-border: #3b3023;
+  --color-error: #e4606d;
+  --color-success: #82b894;
+  --color-warning: #e0a94e;
+
+  /* App semantic tokens: Qamariya Night — the old city after dark, warm
+     brown-blacks with the windows glowing glass. Never gray-blue. */
+  --color-canvas: #1a1410;
+  --color-panel: #221b14;
+  --color-rail: #2c2318;
+  --color-ink: #f5eddc;
+  --color-ink-soft: #ac9e8b;
+  --color-line: #3b3023;
+
+  --color-success-soft: #213221;
+  --color-info: #7faed4;
+  --color-info-soft: #1c2a33;
+  --color-warning-soft: #342817;
+  --color-error-soft: #332023;
+  --color-accent-soft: #362915;
+  --color-accent-strong: #e9ac4c;
+}
+
+/* `inline` makes every utility below reference the variable itself rather
+   than re-declaring it, so the unlayered `:root` / `.dark` values above are
+   the single source of truth and dark-mode remaps just work. */
+@theme inline {
+  /* ---- Ramps exposed as Tailwind utilities ------------------------------ */
+  --color-primary-50: var(--color-primary-50);
+  --color-primary-100: var(--color-primary-100);
+  --color-primary-200: var(--color-primary-200);
+  --color-primary-300: var(--color-primary-300);
+  --color-primary-400: var(--color-primary-400);
+  --color-primary-500: var(--color-primary-500);
+  --color-primary-600: var(--color-primary-600);
+  --color-primary-700: var(--color-primary-700);
+  --color-primary-800: var(--color-primary-800);
+  --color-primary-900: var(--color-primary-900);
+
+  --color-accent-50: var(--color-accent-50);
+  --color-accent-100: var(--color-accent-100);
+  --color-accent-200: var(--color-accent-200);
+  --color-accent-300: var(--color-accent-300);
+  --color-accent-400: var(--color-accent-400);
+  --color-accent-500: var(--color-accent-500);
+  --color-accent-600: var(--color-accent-600);
+  --color-accent-700: var(--color-accent-700);
+
+  --color-canvas: var(--color-canvas);
+  --color-panel: var(--color-panel);
+  --color-rail: var(--color-rail);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-line: var(--color-line);
+
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-text: var(--color-text);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-border: var(--color-border);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+
+  --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --color-info: var(--color-info);
+  --color-info-soft: var(--color-info-soft);
+  --color-warning: var(--color-warning);
+  --color-warning-soft: var(--color-warning-soft);
+  --color-error: var(--color-error);
+  --color-error-soft: var(--color-error-soft);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-accent-strong: var(--color-accent-strong);
 }
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* ---- Typography -------------------------------------------------------
+     Plex Sans Arabic covers both scripts; Fraunces (latin) and Reem Kufi
+     (arabic) are the display faces for landing, onboarding and stat moments.
+     All three are self-hosted from /public/fonts via src/app/fonts.css —
+     no external requests, reproducible offline builds. */
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-display-arabic: "Reem Kufi", "IBM Plex Sans Arabic", sans-serif;
 
-  --color-secondary-50: #f5f3ff;
-  --color-secondary-500: #7c3aed;
-  --color-secondary-600: #6d28d9;
-  --color-secondary-700: #5b21b6;
-
-  --color-accent-50: #fffbeb;
-  --color-accent-500: #f59e0b;
-  --color-accent-600: #d97706;
-  --color-accent-700: #b45309;
-
-  --color-bg: #ffffff;
-  --color-surface: #f9fafb;
-  --color-text: #111827;
-  --color-text-secondary: #6b7280;
-  --color-border: #e5e7eb;
-  --color-error: #dc2626;
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-
-  --font-heading: system-ui, -apple-system, sans-serif;
-  --font-body: system-ui, -apple-system, sans-serif;
-  --font-size-base: 16px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
   --radius-full: 9999px;
-  --transition-duration: 0.3s;
-  --transition-easing: ease;
-  --section-padding-y: 64px;
-  --section-padding-x: 24px;
-  --container-max-width: 1200px;
-  --grid-gap: 24px;
+
+  /* Warm shadows — never neutral gray. */
+  --shadow-sm: 0 1px 2px rgba(36, 30, 21, 0.05);
+  --shadow-panel: 0 8px 24px rgba(36, 30, 21, 0.08);
+  --shadow-overlay: 0 24px 60px rgba(36, 30, 21, 0.16);
+  --shadow-lg: 0 24px 60px rgba(36, 30, 21, 0.16);
+
+  /* ---- Motion language: enter-only, short, out-quint ------------------- */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-rise: rise 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-reveal: reveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade: fade 0.15s ease-out both;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-drift: drift 14s ease-in-out infinite alternate;
+  --animate-slide-start: slide-start 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slide-end: slide-end 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes reveal {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+  @keyframes drift {
+    from { background-position: 0% 50%; }
+    to { background-position: 100% 50%; }
+  }
+  /* Short directional offset for side sheets — symmetric, so it reads
+     correctly from either edge in LTR and RTL alike. */
+  @keyframes slide-start {
+    from { opacity: 0; transform: translateX(-1.5rem); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes slide-end {
+    from { opacity: 0; transform: translateX(1.5rem); }
+    to { opacity: 1; transform: none; }
+  }
 }
+
+.dark {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-overlay: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
 
 body {
   @apply antialiased;
@@ -99,14 +281,173 @@ body {
   line-height: var(--line-height-base);
 }
 
-.dark body {
-  background: var(--color-bg);
-  color: var(--color-text);
+/* ---------------------------------------------------------------------------
+   Arabic-script typography rules
+   Letter-spacing breaks the visual connection of Arabic letters, so
+   tracking utilities are neutralized in RTL. Arabic also reads better with
+   a touch more leading.
+   --------------------------------------------------------------------------- */
+
+[dir="rtl"] [class*="tracking-"] {
+  letter-spacing: normal;
 }
 
-.dark {
-  color-scheme: dark;
+html[lang="ar"] body {
+  line-height: calc(var(--line-height-base) + 0.08);
 }
+
+/* ---------------------------------------------------------------------------
+   Brand utilities
+   --------------------------------------------------------------------------- */
+
+/* The Islamic-arch silhouette for media frames and empty states. */
+.arch {
+  border-radius: 999px 999px var(--radius-lg, 16px) var(--radius-lg, 16px);
+}
+
+/* Skeleton shimmer: a warm highlight sweeping over the rail tint.
+   Reads as "loading" where `animate-pulse` reads as "broken". */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-rail);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--shimmer-highlight, rgba(36, 30, 21, 0.06)) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+.dark .shimmer {
+  --shimmer-highlight: rgba(244, 237, 223, 0.07);
+}
+
+/* Khatam (eight-point star) pattern texture, 3–8% ink by design.
+   Used sparingly: empty states, auth panels, brand moments. */
+.khatam-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cg fill='none' stroke='%23241E15' stroke-opacity='0.07'%3E%3Crect x='13' y='13' width='18' height='18'/%3E%3Crect x='13' y='13' width='18' height='18' transform='rotate(45 22 22)'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.dark .khatam-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cg fill='none' stroke='%23F4EDDF' stroke-opacity='0.05'%3E%3Crect x='13' y='13' width='18' height='18'/%3E%3Crect x='13' y='13' width='18' height='18' transform='rotate(45 22 22)'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* The one signature gradient: mudbrick sienna into qamariya amber —
+   the old city at golden hour. Budget: landing hero wall, onboarding
+   finale, AI-generated badges, premium chips. */
+.gradient-qamariya {
+  background-image: linear-gradient(120deg, #96522e 0%, #dfa23e 100%);
+}
+
+/* ---------------------------------------------------------------------------
+   Rich text (blog posts, storefront rich-text sections)
+   Hand-rolled so heading rhythm, links, RTL and code blocks honor the brand
+   without pulling in a typography plugin.
+   --------------------------------------------------------------------------- */
+
+.prose-tujjar {
+  color: var(--color-text);
+  line-height: 1.7;
+}
+.prose-tujjar h1,
+.prose-tujjar h2,
+.prose-tujjar h3,
+.prose-tujjar h4 {
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+}
+.prose-tujjar h1 { font-size: 1.875rem; }
+.prose-tujjar h2 { font-size: 1.5rem; }
+.prose-tujjar h3 { font-size: 1.25rem; }
+.prose-tujjar h4 { font-size: 1.125rem; }
+.prose-tujjar h2:first-child,
+.prose-tujjar h1:first-child { margin-top: 0; }
+.prose-tujjar p { margin-top: 0.9em; margin-bottom: 0.9em; }
+.prose-tujjar a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-tujjar a:hover { opacity: 0.8; }
+.prose-tujjar ul,
+.prose-tujjar ol {
+  padding-inline-start: 1.5rem;
+  margin-block: 0.9em;
+}
+.prose-tujjar ul { list-style: disc; }
+.prose-tujjar ol { list-style: decimal; }
+.prose-tujjar li { margin-block: 0.35em; }
+.prose-tujjar blockquote {
+  border-inline-start: 3px solid var(--color-primary-200);
+  padding-inline-start: 1rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin-block: 1.2em;
+}
+.prose-tujjar code {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.1em 0.4em;
+  font-size: 0.875em;
+}
+.prose-tujjar pre {
+  background: #241e15;
+  color: #f4eddf;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin-block: 1.2em;
+}
+.prose-tujjar pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+.prose-tujjar img {
+  border-radius: var(--radius-lg, 16px);
+  max-width: 100%;
+}
+.prose-tujjar hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin-block: 2em;
+}
+.prose-tujjar table { width: 100%; border-collapse: collapse; }
+.prose-tujjar th,
+.prose-tujjar td {
+  border: 1px solid var(--color-border);
+  padding: 0.5em 0.75em;
+  text-align: start;
+}
+[dir="rtl"] .prose-tujjar { text-align: start; }
+
+/* ---------------------------------------------------------------------------
+   Motion safety
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Storefront dark-mode chrome (theme vars are injected per store)
+   --------------------------------------------------------------------------- */
 
 .dark header {
   border-color: var(--color-border);

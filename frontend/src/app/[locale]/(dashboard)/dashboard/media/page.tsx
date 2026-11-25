@@ -12,7 +12,7 @@ export default function MediaPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <p className="text-gray-500">{t("description")}</p>
+        <p className="text-ink-soft">{t("description")}</p>
       </div>
       <MediaStatsCards storeId={selectedStoreId || undefined} />
       <MediaGallery selectedStoreId={selectedStoreId} onStoreChange={setSelectedStoreId} />

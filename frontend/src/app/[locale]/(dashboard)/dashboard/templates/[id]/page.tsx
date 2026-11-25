@@ -92,7 +92,7 @@ export default function TemplateEditorPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="mb-8 text-3xl font-bold text-gray-900">{t("templateEditor")}</h1>
+        <h1 className="mb-8 text-3xl font-bold text-ink">{t("templateEditor")}</h1>
         <Skeleton className="h-96 w-full" />
       </div>
     );
@@ -111,13 +111,13 @@ export default function TemplateEditorPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push(`/${locale}/dashboard/templates`)}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-ink-soft hover:bg-rail hover:text-ink-soft"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{generalData.name || template.name}</h1>
-            <p className="text-sm text-gray-500">v{template.version} &middot; {template.category}</p>
+            <h1 className="text-3xl font-bold text-ink">{generalData.name || template.name}</h1>
+            <p className="text-sm text-ink-soft">v{template.version} &middot; {template.category}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -136,7 +136,7 @@ export default function TemplateEditorPage() {
         {/* Editor (left) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Tabs */}
-          <div className="border-b border-gray-200">
+          <div className="border-b border-line">
             <nav className="-mb-px flex gap-4 overflow-x-auto">
               {EDITOR_TABS.map((tab) => (
                 <button
@@ -144,8 +144,8 @@ export default function TemplateEditorPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                     activeTab === tab.id
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      ? "border-primary-600 text-primary-600"
+                      : "border-transparent text-ink-soft hover:border-line hover:text-ink"
                   }`}
                 >
                   {t(tab.labelKey)}
@@ -155,7 +155,7 @@ export default function TemplateEditorPage() {
           </div>
 
           {/* Tab Content */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
+          <div className="rounded-xl border border-line bg-panel p-6">
             {activeTab === "general" && (
               <TemplateGeneralEditor data={generalData} onChange={setGeneralData} />
             )}
@@ -189,7 +189,7 @@ export default function TemplateEditorPage() {
                     onChange={(e) => setSeoDefaults({ ...seoDefaults, title_pattern: e.target.value })}
                     placeholder="{{page_title}} | {{store_name}}"
                   />
-                  <p className="mt-1 text-xs text-gray-400">Use {"{{page_title}}"} and {"{{store_name}}"} as placeholders</p>
+                  <p className="mt-1 text-xs text-ink-soft">Use {"{{page_title}}"} and {"{{store_name}}"} as placeholders</p>
                 </div>
                 <div>
                   <Label>{t("descriptionPattern")}</Label>
@@ -209,7 +209,7 @@ export default function TemplateEditorPage() {
                   <Label>Collections</Label>
                   <div className="mt-2 space-y-2">
                     {(demoContent?.collections || []).map((coll, i) => (
-                      <div key={i} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2">
+                      <div key={i} className="flex items-center gap-2 rounded-lg border border-line p-2">
                         <Input
                           value={coll.name}
                           onChange={(e) => {
@@ -235,7 +235,7 @@ export default function TemplateEditorPage() {
                             ...demoContent,
                             collections: demoContent.collections.filter((_, j) => j !== i),
                           })}
-                          className="rounded p-1 text-red-400 hover:bg-red-50"
+                          className="rounded p-1 text-error hover:bg-error-soft"
                         >
                           ×
                         </button>
@@ -246,7 +246,7 @@ export default function TemplateEditorPage() {
                         ...demoContent,
                         collections: [...(demoContent?.collections || []), { name: "", slug: "" }],
                       })}
-                      className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                      className="text-xs font-medium text-primary-600 hover:text-primary-700"
                     >
                       + Add Collection
                     </button>
@@ -258,7 +258,7 @@ export default function TemplateEditorPage() {
                   <Label>Categories</Label>
                   <div className="mt-2 space-y-2">
                     {(demoContent?.categories || []).map((cat, i) => (
-                      <div key={i} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2">
+                      <div key={i} className="flex items-center gap-2 rounded-lg border border-line p-2">
                         <Input
                           value={cat.name}
                           onChange={(e) => {
@@ -284,7 +284,7 @@ export default function TemplateEditorPage() {
                             ...demoContent,
                             categories: demoContent.categories.filter((_, j) => j !== i),
                           })}
-                          className="rounded p-1 text-red-400 hover:bg-red-50"
+                          className="rounded p-1 text-error hover:bg-error-soft"
                         >
                           ×
                         </button>
@@ -295,7 +295,7 @@ export default function TemplateEditorPage() {
                         ...demoContent,
                         categories: [...(demoContent?.categories || []), { name: "", slug: "" }],
                       })}
-                      className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                      className="text-xs font-medium text-primary-600 hover:text-primary-700"
                     >
                       + Add Category
                     </button>
@@ -309,8 +309,8 @@ export default function TemplateEditorPage() {
         {/* Preview panel (right) */}
         <div>
           <div className="sticky top-8 space-y-4">
-            <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <h3 className="mb-3 text-sm font-semibold text-gray-900">Preview</h3>
+            <div className="rounded-xl border border-line bg-panel p-4">
+              <h3 className="mb-3 text-sm font-semibold text-ink">Preview</h3>
               {themeConfig.colors && (
                 <div className="mb-3 flex gap-1.5">
                   {[themeConfig.colors.primary, themeConfig.colors.secondary, themeConfig.colors.accent, themeConfig.colors.background, themeConfig.colors.text]
@@ -318,16 +318,16 @@ export default function TemplateEditorPage() {
                     .map((color, i) => (
                       <div
                         key={i}
-                        className="h-8 w-8 rounded-full border border-gray-200"
+                        className="h-8 w-8 rounded-full border border-line"
                         style={{ backgroundColor: color }}
                       />
                     ))}
                 </div>
               )}
-              <div className="space-y-1.5 text-xs text-gray-500">
-                <p>Pages: <span className="font-medium text-gray-700">{pages.length}</span></p>
-                <p>Navigation: <span className="font-medium text-gray-700">{navigation?.links?.length ?? 0} links</span></p>
-                <p>Footer: <span className="font-medium text-gray-700">{footer?.columns?.length ?? 0} columns</span></p>
+              <div className="space-y-1.5 text-xs text-ink-soft">
+                <p>Pages: <span className="font-medium text-ink">{pages.length}</span></p>
+                <p>Navigation: <span className="font-medium text-ink">{navigation?.links?.length ?? 0} links</span></p>
+                <p>Footer: <span className="font-medium text-ink">{footer?.columns?.length ?? 0} columns</span></p>
               </div>
             </div>
             <Button

@@ -5,8 +5,13 @@ import type { Metadata } from "next";
 import { StorefrontProductCard } from "@/features/storefront/product-card";
 import { StorefrontSectionRenderer } from "@/features/storefront/section-renderer";
 import { Button } from "@/shared/ui";
-import { getStoreHome, resolveSeoTitle, storefrontUrl } from "@/lib/server/storefront-api";
-import type { Product, Section } from "@/shared/types";
+import {
+  getStoreHome,
+  resolveSeoTitle,
+  storefrontUrl,
+} from "@/lib/server/storefront-api";
+import { collectThemeVars } from "@/lib/theme-css";
+import type { Product, Section, ThemeOverride } from "@/shared/types";
 
 export async function generateMetadata({
   params,
@@ -64,13 +69,17 @@ export default async function StorefrontHomePage({
   const sections = (homepage?.content_schema?.sections ?? []) as unknown as Section[];
   const featuredProducts = featured_products || [];
   const shopHref = `/${locale}/shop/${slug}/shop`;
+  const themeOverride = (homepage?.theme_override || null) as ThemeOverride | null;
+  const containerStyle = { maxWidth: "var(--container-max-width, 80rem)" };
 
   if (sections && sections.length > 0) {
     return (
       <div className="space-y-16 py-8">
+        {/* Homepage-level theme override — same pattern as [pageSlug] pages. */}
+        {themeOverride ? <ThemeOverrideStyle override={themeOverride} /> : null}
         <StorefrontSectionRenderer sections={sections} />
         {featuredProducts.length > 0 && (
-          <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <section className="mx-auto w-full px-4 sm:px-6 lg:px-8" style={containerStyle}>
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("featuredProducts")}</h2>
               <Link href={shopHref} className="text-sm font-medium underline-offset-4 hover:underline" style={{ color: "var(--color-primary)" }}>
@@ -90,8 +99,9 @@ export default async function StorefrontHomePage({
 
   return (
     <div className="space-y-16">
+      {themeOverride ? <ThemeOverrideStyle override={themeOverride} /> : null}
       <section className="relative overflow-hidden" style={{ background: "linear-gradient(to bottom right, var(--color-surface), var(--color-bg), var(--color-surface))" }}>
-        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full px-4 py-24 sm:px-6 lg:px-8" style={containerStyle}>
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl" style={{ color: "var(--color-text)" }}>
               {store.name}
@@ -117,7 +127,7 @@ export default async function StorefrontHomePage({
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full px-4 sm:px-6 lg:px-8" style={containerStyle}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("featuredProducts")}</h2>
           <Link href={shopHref} className="text-sm font-medium underline-offset-4 hover:underline" style={{ color: "var(--color-primary)" }}>
@@ -138,4 +148,17 @@ export default async function StorefrontHomePage({
       </section>
     </div>
   );
+}
+
+/**
+ * Page-level theme override — renders the override's variables on :root after
+ * the layout's theme style tag, so its declarations take precedence.
+ */
+function ThemeOverrideStyle({ override }: { override: ThemeOverride }) {
+  const vars = collectThemeVars(override, false);
+  if (Object.keys(vars).length === 0) return null;
+  const css = Object.entries(vars)
+    .map(([name, value]) => `  ${name}: ${value};`)
+    .join("\n");
+  return <style dangerouslySetInnerHTML={{ __html: `:root {\n${css}\n}` }} />;
 }

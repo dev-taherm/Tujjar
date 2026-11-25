@@ -12,6 +12,10 @@ const heroSettings: SettingField[] = [
     { value: "center", label: "Center" },
     { value: "right", label: "Right" },
   ]},
+  { key: "imageStyle", label: "Frame Shape", type: "select", options: [
+    { value: "flat", label: "Flat" },
+    { value: "arch", label: "Arch (Sana'a window)" },
+  ]},
   { key: "textColor", label: "Text Color", type: "color" },
   { key: "minHeight", label: "Min Height (px)", type: "number" },
 ];
@@ -80,6 +84,22 @@ export const sectionRegistry: Record<string, SectionDefinition> = {
           alignment: "left",
           textColor: "#ffffff",
           minHeight: 500,
+        },
+      },
+      {
+        name: "arched",
+        label: "Arched",
+        settings: {
+          title: "Welcome to Our Store",
+          subtitle: "Discover amazing products",
+          buttonText: "Shop Now",
+          buttonLink: "/products",
+          backgroundImage: "",
+          overlayOpacity: 0.35,
+          alignment: "center",
+          imageStyle: "arch",
+          textColor: "#ffffff",
+          minHeight: 560,
         },
       },
     ],

@@ -7,6 +7,7 @@ import {
   storefrontUrl,
 } from "@/lib/server/storefront-api";
 import { buildThemeCss } from "@/lib/theme-css";
+import { resolveGoogleFontsHrefs } from "@/lib/fonts";
 import { StorefrontChrome } from "@/features/storefront/chrome";
 
 function getSubdomainFromHost(host: string): string | null {
@@ -17,22 +18,6 @@ function getSubdomainFromHost(host: string): string | null {
     return hostname.slice(0, hostname.length - baseDomain.length - 1);
   }
   return null;
-}
-
-function resolveGoogleFontsHref(theme: NonNullable<Awaited<ReturnType<typeof getStore>>>["theme_config"]): string | null {
-  if (!theme?.typography) return null;
-  const fonts = new Set<string>();
-  if (theme.typography.headingFont && !theme.typography.headingFont.startsWith("system")) {
-    fonts.add(theme.typography.headingFont);
-  }
-  if (theme.typography.bodyFont && !theme.typography.bodyFont.startsWith("system")) {
-    fonts.add(theme.typography.bodyFont);
-  }
-  if (fonts.size === 0) return null;
-  const families = [...fonts]
-    .map((font) => `family=${encodeURIComponent(font)}:wght@400;500;600;700`)
-    .join("&");
-  return `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }
 
 export async function generateMetadata({
@@ -116,7 +101,10 @@ export default async function StoreLayout({
 
   const themeCss = buildThemeCss(store.theme_config);
   const customCss = store.theme_assets?.custom_css || "";
-  const fontsHref = resolveGoogleFontsHref(store.theme_config);
+  const fontsHrefs = resolveGoogleFontsHrefs([
+    store.theme_config?.typography?.headingFont,
+    store.theme_config?.typography?.bodyFont,
+  ]);
   const darkMode = store.theme_config?.darkMode;
 
   // Apply the dark-mode class before first paint: localStorage wins, else the
@@ -129,7 +117,9 @@ export default async function StoreLayout({
     <>
       {themeCss ? <style id="storefront-theme" dangerouslySetInnerHTML={{ __html: themeCss }} /> : null}
       {customCss ? <style id="storefront-custom-css" dangerouslySetInnerHTML={{ __html: customCss }} /> : null}
-      {fontsHref ? <link rel="stylesheet" href={fontsHref} /> : null}
+      {fontsHrefs.map((href) => (
+        <link key={href} rel="stylesheet" href={href} />
+      ))}
       <script dangerouslySetInnerHTML={{ __html: darkInitScript }} />
       <StorefrontChrome store={store} slug={slug} isSubdomain={isSubdomain}>
         {children}

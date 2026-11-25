@@ -66,9 +66,7 @@ def export_csv(request):
                 "compare_at_price": product.compare_at_price or "",
                 "description": product.description,
                 "status": product.status,
-                "collection": ";".join(
-                    product.collection_set.values_list("name", flat=True)
-                ),
+                "collection": ";".join(product.collection_set.values_list("name", flat=True)),
                 "tags": ";".join(product.tags or []),
                 "inventory_quantity": product.inventory_quantity,
             }
@@ -164,9 +162,7 @@ def import_csv(request):
                 sku = (row.get("sku") or "").strip()
                 product = None
                 if sku:
-                    product = Product.unscoped.filter(
-                        organization_id=org_id, sku=sku
-                    ).first()
+                    product = Product.unscoped.filter(organization_id=org_id, sku=sku).first()
                 if product:
                     for field, value in defaults.items():
                         setattr(product, field, value)

@@ -3,7 +3,6 @@
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n";
 import { Globe } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface LocaleSwitcherProps {
   variant?: "sidebar" | "header" | "floating";
@@ -25,7 +24,7 @@ export function LocaleSwitcher({ variant = "sidebar" }: LocaleSwitcherProps) {
     return (
       <button
         onClick={switchLocale}
-        className="fixed end-4 top-4 z-50 flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 hover:text-gray-900"
+        className="fixed end-4 top-4 z-50 flex items-center gap-1.5 rounded-lg border border-line bg-panel px-3 py-2 text-sm font-medium text-ink-soft shadow-sm hover:bg-rail hover:text-ink"
         title={nextLocale === "en" ? "Switch to English" : "التبديل إلى العربية"}
       >
         <Globe className="h-4 w-4" />
@@ -38,7 +37,7 @@ export function LocaleSwitcher({ variant = "sidebar" }: LocaleSwitcherProps) {
     return (
       <button
         onClick={switchLocale}
-        className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium text-ink-soft hover:bg-rail hover:text-ink"
         title={nextLocale === "en" ? "Switch to English" : "التبديل إلى العربية"}
       >
         <Globe className="h-3.5 w-3.5" />
@@ -50,7 +49,7 @@ export function LocaleSwitcher({ variant = "sidebar" }: LocaleSwitcherProps) {
   return (
     <button
       onClick={switchLocale}
-      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-panel hover:text-ink"
       title={nextLocale === "en" ? "Switch to English" : "التبديل إلى العربية"}
     >
       <Globe className="h-5 w-5 flex-shrink-0" />

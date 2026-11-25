@@ -57,9 +57,7 @@ def invalidate_stores_for_theme(theme) -> None:
         )
         frontier = children
         theme_ids.extend(children)
-    invalidate_stores(
-        Store.objects.filter(theme_id__in=theme_ids).values_list("slug", flat=True)
-    )
+    invalidate_stores(Store.objects.filter(theme_id__in=theme_ids).values_list("slug", flat=True))
 
 
 def invalidate_org_stores(organization_id) -> None:

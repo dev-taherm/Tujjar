@@ -65,9 +65,7 @@ def create_card_payment(request, subdomain=None):
         return Response({"error": "Store not found"}, status=404)
 
     if not stripe_available():
-        return Response(
-            {"error": "Card payments are not configured for this store."}, status=400
-        )
+        return Response({"error": "Card payments are not configured for this store."}, status=400)
 
     body = request.data or {}
     order_id = body.get("order_id")

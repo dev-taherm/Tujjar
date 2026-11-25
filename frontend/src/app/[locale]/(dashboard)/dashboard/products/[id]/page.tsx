@@ -21,14 +21,14 @@ export default function ProductDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-10 w-48 animate-pulse rounded-lg bg-gray-200" />
-        <div className="h-[400px] animate-pulse rounded-xl bg-gray-200" />
+        <div className="h-10 w-48 shimmer rounded-lg" />
+        <div className="h-[400px] shimmer rounded-xl" />
       </div>
     );
   }
 
   if (!product) {
-    return <div className="flex h-96 items-center justify-center"><p className="text-gray-500">{t("productNotFound")}</p></div>;
+    return <div className="flex h-96 items-center justify-center"><p className="text-ink-soft">{t("productNotFound")}</p></div>;
   }
 
   return <ProductForm initialData={product} onSuccess={() => router.back()} />;

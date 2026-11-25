@@ -4,7 +4,6 @@ import { useState } from "react";
 import { MessageSquare, Check, Trash2, AlertTriangle, CheckCircle, User } from "lucide-react";
 import { useBlogComments, useApproveBlogComment, useRejectBlogComment, useTrashBlogComment, useApproveAllBlogComments } from "@/api/blog";
 import { useStores } from "@/api/queries";
-import type { BlogComment } from "@/shared/types/blog";
 
 type CommentStatus = "pending" | "approved" | "spam" | "trash";
 
@@ -25,10 +24,10 @@ export function BlogCommentManager() {
 
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      pending: "bg-yellow-100 text-yellow-700",
-      approved: "bg-green-100 text-green-700",
-      spam: "bg-red-100 text-red-700",
-      trash: "bg-gray-100 text-gray-500",
+      pending: "bg-warning-soft text-warning",
+      approved: "bg-success-soft text-success",
+      spam: "bg-error-soft text-error",
+      trash: "bg-rail text-ink-soft",
     };
     const icons: Record<string, typeof MessageSquare> = {
       pending: AlertTriangle,
@@ -55,8 +54,8 @@ export function BlogCommentManager() {
               onClick={() => setStatusFilter(s)}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 statusFilter === s
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-500 hover:bg-gray-100"
+                  ? "bg-primary-100 text-primary-700"
+                  : "text-ink-soft hover:bg-rail"
               }`}
             >
               {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -67,7 +66,7 @@ export function BlogCommentManager() {
           <button
             onClick={() => store?.id && approveAll.mutate(store.id)}
             disabled={approveAll.isPending}
-            className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-white hover:bg-success disabled:opacity-50"
           >
             <Check className="h-4 w-4" />
             Approve All
@@ -78,14 +77,14 @@ export function BlogCommentManager() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl bg-gray-100" />
+            <div key={i} className="h-24 shimmer rounded-xl" />
           ))}
         </div>
       ) : !comments || comments.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
-          <MessageSquare className="mx-auto h-12 w-12 text-gray-300" />
-          <h3 className="mt-4 text-lg font-semibold text-gray-900">No comments</h3>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="rounded-xl border border-line bg-panel p-12 text-center">
+          <MessageSquare className="mx-auto h-12 w-12 text-ink-soft" />
+          <h3 className="mt-4 text-lg font-semibold text-ink">No comments</h3>
+          <p className="mt-1 text-sm text-ink-soft">
             {statusFilter === "all"
               ? "No comments yet."
               : `No ${statusFilter} comments.`}
@@ -96,43 +95,43 @@ export function BlogCommentManager() {
           {comments.map((comment) => (
             <div
               key={comment.id}
-              className="rounded-xl border border-gray-200 bg-white p-4"
+              className="rounded-xl border border-line bg-panel p-4"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-                      <User className="h-4 w-4 text-gray-500" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rail">
+                      <User className="h-4 w-4 text-ink-soft" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-ink">
                         {comment.author_name || "Anonymous"}
                         {comment.is_guest && (
-                          <span className="ms-2 text-xs text-gray-400">(guest)</span>
+                          <span className="ms-2 text-xs text-ink-soft">(guest)</span>
                         )}
                       </p>
-                      <p className="text-xs text-gray-400">{comment.author_email}</p>
+                      <p className="text-xs text-ink-soft">{comment.author_email}</p>
                     </div>
                     {statusBadge(comment.status)}
                   </div>
-                  <p className="mt-2 text-sm text-gray-600">{comment.content}</p>
-                  <p className="mt-2 text-xs text-gray-400">
+                  <p className="mt-2 text-sm text-ink-soft">{comment.content}</p>
+                  <p className="mt-2 text-xs text-ink-soft">
                     {new Date(comment.created_at).toLocaleString()}
                   </p>
                 </div>
                 <div className="relative">
                   <button
                     onClick={() => setOpenMenuId(openMenuId === comment.id ? null : comment.id)}
-                    className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"
+                    className="rounded-lg p-2 text-ink-soft hover:bg-rail"
                   >
                     <MessageSquare className="h-4 w-4" />
                   </button>
                   {openMenuId === comment.id && (
-                    <div className="absolute right-0 top-full z-10 mt-1 w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                    <div className="absolute end-0 top-full z-10 mt-1 w-40 rounded-lg border border-line bg-panel py-1 shadow-lg">
                       {comment.status !== "approved" && (
                         <button
                           onClick={() => { approveComment.mutate(comment.id); setOpenMenuId(null); }}
-                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-success hover:bg-success-soft"
                         >
                           <Check className="h-4 w-4" /> Approve
                         </button>
@@ -140,7 +139,7 @@ export function BlogCommentManager() {
                       {comment.status !== "spam" && (
                         <button
                           onClick={() => { rejectComment.mutate(comment.id); setOpenMenuId(null); }}
-                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-yellow-700 hover:bg-yellow-50"
+                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-warning hover:bg-warning-soft"
                         >
                           <AlertTriangle className="h-4 w-4" /> Mark Spam
                         </button>
@@ -148,7 +147,7 @@ export function BlogCommentManager() {
                       {comment.status !== "trash" && (
                         <button
                           onClick={() => { trashComment.mutate(comment.id); setOpenMenuId(null); }}
-                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-error hover:bg-error-soft"
                         >
                           <Trash2 className="h-4 w-4" /> Trash
                         </button>

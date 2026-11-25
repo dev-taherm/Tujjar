@@ -10,8 +10,8 @@ export default function AdminError({
   return (
     <div className="flex items-center justify-center p-8">
       <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900">Admin Error</h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <h2 className="text-lg font-semibold text-ink">Admin Error</h2>
+        <p className="mt-2 text-sm text-ink-soft">
           {error.message || "Failed to load admin panel"}
         </p>
         <button

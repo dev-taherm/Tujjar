@@ -4,27 +4,26 @@ import { useState } from "react";
 import { useAuditLogs } from "@/api/audit";
 import { useTranslations } from "next-intl";
 import { Button, Card, CardContent, Input, Select, Badge } from "@/shared/ui";
-import { Search, ChevronDown, ChevronUp, ScrollText, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronUp, ScrollText, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 
 const actionColors: Record<string, string> = {
-  "create": "bg-green-100 text-green-700",
-  "update": "bg-blue-100 text-blue-700",
-  "delete": "bg-red-100 text-red-700",
+  "create": "bg-success-soft text-success",
+  "update": "bg-primary-100 text-primary-700",
+  "delete": "bg-error-soft text-error",
   "login": "bg-purple-100 text-purple-700",
-  "invite": "bg-yellow-100 text-yellow-700",
+  "invite": "bg-warning-soft text-warning",
 };
 
 function getActionColor(action: string): string {
   for (const [key, color] of Object.entries(actionColors)) {
     if (action.includes(key)) return color;
   }
-  return "bg-gray-100 text-gray-700";
+  return "bg-rail text-ink";
 }
 
 export default function AuditPage() {
   const t = useTranslations("dashboard.audit");
-  const tc = useTranslations("common");
   const [actionFilter, setActionFilter] = useState("");
   const [resourceFilter, setResourceFilter] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -64,8 +63,8 @@ export default function AuditPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <ScrollText className="h-6 w-6 text-gray-400" />
-        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <ScrollText className="h-6 w-6 text-ink-soft" />
+        <h1 className="text-2xl font-bold text-ink">{t("title")}</h1>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -100,11 +99,11 @@ export default function AuditPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div>
+            <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-ink-soft" /></div>
           ) : logs.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-500">{t("noLogs")}</div>
+            <div className="py-12 text-center text-sm text-ink-soft">{t("noLogs")}</div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-line">
               {logs.map((log) => (
                 <div key={log.id} className="px-6 py-3">
                   <div
@@ -113,30 +112,30 @@ export default function AuditPage() {
                   >
                     <div className="flex items-center gap-3">
                       <Badge className={getActionColor(log.action)}>{log.action}</Badge>
-                      <span className="text-sm text-gray-600">{log.resource_type}</span>
-                      <span className="text-xs text-gray-400 font-mono">{log.resource_id.slice(0, 8)}...</span>
+                      <span className="text-sm text-ink-soft">{log.resource_type}</span>
+                      <span className="text-xs text-ink-soft font-mono">{log.resource_id.slice(0, 8)}...</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-500">{log.user_email || "—"}</span>
-                      <span className="text-xs text-gray-400">{formatDateTime(log.created_at)}</span>
-                      {expanded === log.id ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+                      <span className="text-xs text-ink-soft">{log.user_email || "—"}</span>
+                      <span className="text-xs text-ink-soft">{formatDateTime(log.created_at)}</span>
+                      {expanded === log.id ? <ChevronUp className="h-4 w-4 text-ink-soft" /> : <ChevronDown className="h-4 w-4 text-ink-soft" />}
                     </div>
                   </div>
                   {expanded === log.id && (
-                    <div className="mt-3 rounded-lg bg-gray-50 p-4 text-xs space-y-2">
+                    <div className="mt-3 rounded-lg bg-rail p-4 text-xs space-y-2">
                       {log.old_value && (
                         <div>
-                          <span className="font-medium text-gray-700">{t("previous")}: </span>
-                          <pre className="mt-1 overflow-x-auto text-gray-600">{JSON.stringify(log.old_value, null, 2)}</pre>
+                          <span className="font-medium text-ink">{t("previous")}: </span>
+                          <pre className="mt-1 overflow-x-auto text-ink-soft">{JSON.stringify(log.old_value, null, 2)}</pre>
                         </div>
                       )}
                       {log.new_value && (
                         <div>
-                          <span className="font-medium text-gray-700">{t("new")}: </span>
-                          <pre className="mt-1 overflow-x-auto text-gray-600">{JSON.stringify(log.new_value, null, 2)}</pre>
+                          <span className="font-medium text-ink">{t("new")}: </span>
+                          <pre className="mt-1 overflow-x-auto text-ink-soft">{JSON.stringify(log.new_value, null, 2)}</pre>
                         </div>
                       )}
-                      {log.ip_address && <div><span className="font-medium text-gray-700">IP: </span>{log.ip_address}</div>}
+                      {log.ip_address && <div><span className="font-medium text-ink">IP: </span>{log.ip_address}</div>}
                     </div>
                   )}
                 </div>
@@ -148,7 +147,7 @@ export default function AuditPage() {
 
       {pagination && pagination.total_pages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-soft">
             {t("showing")} {((pagination.page - 1) * 20) + 1}–{Math.min(pagination.page * 20, pagination.total)} {t("of")} {pagination.total}
           </p>
           <div className="flex items-center gap-2">
@@ -160,7 +159,7 @@ export default function AuditPage() {
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-ink-soft">
               {t("page")} {pagination.page} {t("of")} {pagination.total_pages}
             </span>
             <Button

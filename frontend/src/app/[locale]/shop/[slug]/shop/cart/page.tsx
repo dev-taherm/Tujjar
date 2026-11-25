@@ -73,7 +73,7 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[var(--container-max-width,80rem)] px-4 py-8 sm:px-6 lg:px-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 bg-gray-200 rounded" />
           <div className="h-64 bg-gray-200 rounded-xl" />
@@ -86,7 +86,7 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
   if (!isAuthenticated) {
     if (guestItems.length === 0) {
       return (
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[var(--container-max-width,80rem)] px-4 py-8 sm:px-6 lg:px-8">
           <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
           <div className="mt-8 rounded-xl border border-gray-200 p-12 text-center">
             <ShoppingBag className="mx-auto h-12 w-12 text-gray-300" />
@@ -104,7 +104,7 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
     const guestCount = guestTotalItems();
 
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[var(--container-max-width,80rem)] px-4 py-8 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold text-gray-900">
           {t("title")} ({guestCount} items)
         </h1>
@@ -209,7 +209,7 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
   // Authenticated cart view
   if (!cart || cart.items.length === 0) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[var(--container-max-width,80rem)] px-4 py-8 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
         <div className="mt-8 rounded-xl border border-gray-200 p-12 text-center">
           <ShoppingBag className="mx-auto h-12 w-12 text-gray-300" />
@@ -224,7 +224,7 @@ export default function CartPage({ params }: { params: Promise<{ slug: string }>
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[var(--container-max-width,80rem)] px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold text-gray-900">
         {t("title")} ({cart.total_items} items)
       </h1>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Search, LayoutTemplate, Check, ExternalLink, Upload, History, Download } from "lucide-react";
+import { Spinner } from "@/shared/ui/spinner";
 import {
   useTemplateMarketplace,
   useInstalledTemplate,
@@ -30,7 +31,6 @@ interface TemplateBrowserProps {
 
 export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
   const t = useTranslations("dashboard.templates");
-  const tc = useTranslations("common");
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
@@ -135,28 +135,28 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
     <div className="space-y-8">
       {/* ── Installed Template ─────────────────────────────── */}
       <section>
-        <h2 className="mb-1 text-xl font-bold text-gray-900">{t("currentTemplate")}</h2>
-        <p className="mb-4 text-sm text-gray-500">
+        <h2 className="mb-1 text-xl font-bold text-ink">{t("currentTemplate")}</h2>
+        <p className="mb-4 text-sm text-ink-soft">
           {storeId
             ? t("templateAppliedToStore")
             : t("selectStoreToSeeTemplate")}
         </p>
 
         {!storeId ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center">
-            <LayoutTemplate className="mx-auto h-10 w-10 text-gray-300" />
-            <p className="mt-3 text-sm text-gray-500">{t("selectStoreFromSidebar")}</p>
+          <div className="rounded-2xl border border-dashed border-line py-12 text-center">
+            <LayoutTemplate className="mx-auto h-10 w-10 text-ink-soft" />
+            <p className="mt-3 text-sm text-ink-soft">{t("selectStoreFromSidebar")}</p>
           </div>
         ) : loadingInstalled ? (
-          <div className="h-32 animate-pulse rounded-2xl bg-gray-100" />
+          <div className="h-32 shimmer rounded-2xl" />
         ) : installedTemplate ? (
-          <div className="flex items-center gap-4 rounded-2xl border border-blue-200 bg-blue-50 p-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
-              <Check className="h-6 w-6 text-blue-600" />
+          <div className="flex items-center gap-4 rounded-2xl border border-primary-200 bg-primary-50 p-5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100">
+              <Check className="h-6 w-6 text-primary-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900">{installedTemplate.name}</h3>
-              <p className="text-sm text-gray-500">
+              <h3 className="font-semibold text-ink">{installedTemplate.name}</h3>
+              <p className="text-sm text-ink-soft">
                 v{installedTemplate.version} &middot; {installedTemplate.category} &middot;{" "}
                 {installedTemplate.page_count} pages
               </p>
@@ -164,21 +164,21 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
             <div className="flex gap-2">
               <button
                 onClick={() => setVersionHistoryTemplate(installedTemplate)}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
               >
                 <History className="h-4 w-4" />
                 {t("versionHistory")}
               </button>
               <button
                 onClick={() => setExportTemplate(installedTemplate)}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
               >
                 <Download className="h-4 w-4" />
                 {t("export")}
               </button>
               <button
                 onClick={() => setPreviewTemplateId(installedTemplate.id)}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
               >
                 <ExternalLink className="h-4 w-4" />
                 {t("viewDetails")}
@@ -186,9 +186,9 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center">
-            <LayoutTemplate className="mx-auto h-10 w-10 text-gray-300" />
-            <p className="mt-3 text-sm text-gray-500">{t("noTemplateInstalled")}</p>
+          <div className="rounded-2xl border border-dashed border-line py-12 text-center">
+            <LayoutTemplate className="mx-auto h-10 w-10 text-ink-soft" />
+            <p className="mt-3 text-sm text-ink-soft">{t("noTemplateInstalled")}</p>
           </div>
         )}
       </section>
@@ -197,14 +197,14 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
       <section>
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="mb-1 text-xl font-bold text-gray-900">{t("browseTemplates")}</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="mb-1 text-xl font-bold text-ink">{t("browseTemplates")}</h2>
+            <p className="text-sm text-ink-soft">
               {t("chooseReadyToUseTemplate")}
             </p>
           </div>
           <button
             onClick={() => setShowImportDialog(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
           >
             <Upload className="h-4 w-4" />
             {t("importTemplate")}
@@ -220,8 +220,8 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
                 onClick={() => setCategory(cat.value)}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   category === cat.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-primary-600 text-white"
+                    : "bg-rail text-ink-soft hover:bg-rail"
                 }`}
               >
                 {cat.label}
@@ -229,13 +229,13 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
             ))}
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
             <input
               type="text"
               placeholder={t("searchTemplates")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 py-2 ps-9 pe-4 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
+              className="w-full rounded-lg border border-line py-2 ps-9 pe-4 text-sm focus:border-primary-500 focus:outline-none sm:w-64"
             />
           </div>
         </div>
@@ -244,13 +244,13 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
         {loadingMarketplace ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-80 animate-pulse rounded-2xl bg-gray-100" />
+              <div key={i} className="h-80 shimmer rounded-2xl" />
             ))}
           </div>
         ) : marketplaceTemplates.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
-            <LayoutTemplate className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">{t("noTemplatesFound")}</p>
+          <div className="rounded-2xl border border-dashed border-line py-16 text-center">
+            <LayoutTemplate className="mx-auto h-12 w-12 text-ink-soft" />
+            <p className="mt-4 text-ink-soft">{t("noTemplatesFound")}</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -273,9 +273,9 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
       {previewTemplateId && (
         loadingFullPreview ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="flex flex-col items-center gap-3 rounded-2xl bg-white p-8 shadow-xl">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-              <p className="text-sm text-gray-500">Loading template details...</p>
+            <div className="flex flex-col items-center gap-3 rounded-2xl bg-panel p-8 shadow-xl">
+              <Spinner className="h-8 w-8 text-primary-600" />
+              <p className="text-sm text-ink-soft">Loading template details...</p>
             </div>
           </div>
         ) : fullPreviewTemplate ? (
@@ -304,8 +304,8 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
       {/* Overwrite Warning */}
       {overwriteTemplate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="mb-2 text-lg font-semibold text-gray-900">
+          <div className="w-full max-w-md rounded-2xl bg-panel p-6 shadow-xl">
+            <h3 className="mb-2 text-lg font-semibold text-ink">
               Install &ldquo;{overwriteTemplate.name}&rdquo;
             </h3>
             {overwriteReplaced ? (
@@ -317,7 +317,7 @@ export function TemplateBrowser({ storeId }: TemplateBrowserProps) {
               />
             ) : (
               <div className="flex items-center justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                <Spinner className="h-6 w-6 text-primary-600" />
               </div>
             )}
           </div>

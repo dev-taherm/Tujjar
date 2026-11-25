@@ -112,9 +112,7 @@ class TestDiscountModel:
         assert discount.compute_amount(Decimal("20.00")) == Decimal("20.00")
 
     def test_free_shipping_does_not_touch_subtotal(self, pricing_data):
-        discount = make_discount(
-            pricing_data["org"], code="SHIPFREE", type="free_shipping"
-        )
+        discount = make_discount(pricing_data["org"], code="SHIPFREE", type="free_shipping")
         assert discount.compute_amount(Decimal("100.00")) == Decimal("0")
 
     def test_validity_window(self, pricing_data):
@@ -133,9 +131,7 @@ class TestDiscountModel:
         assert discount.is_valid_now(subtotal=Decimal("600.00"))
 
     def test_usage_limit(self, pricing_data):
-        discount = make_discount(
-            pricing_data["org"], code="LIMITED", max_uses=1, used_count=1
-        )
+        discount = make_discount(pricing_data["org"], code="LIMITED", max_uses=1, used_count=1)
         assert not discount.is_valid_now(subtotal=Decimal("100.00"))
 
 
@@ -170,7 +166,6 @@ class TestTaxRate:
 
     def test_inclusive_extraction(self, pricing_data):
         from apps.commerce.models import TaxRate
-
         from apps.commerce.services import calculate_tax
 
         TaxRate.objects.create(
@@ -280,9 +275,7 @@ class TestQuote:
     def test_free_shipping_discount_waives_shipping(self, pricing_data):
         from apps.commerce.services import QuoteInput, build_quote
 
-        make_discount(
-            pricing_data["org"], code="SHIPFREE", type="free_shipping"
-        )
+        make_discount(pricing_data["org"], code="SHIPFREE", type="free_shipping")
         quote = build_quote(
             pricing_data["org"].id,
             QuoteInput(
@@ -409,6 +402,7 @@ class TestCommerceAPI:
             },
         )
         assert rate.status_code == status.HTTP_201_CREATED
+
     def test_refund_endpoint(self, pricing_data):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=f"Bearer {pricing_data['token']}")
@@ -437,9 +431,7 @@ class TestStorefrontQuote:
         response = client.post(
             f"/api/v1/store/{pricing_data['store'].slug}/checkout/quote/",
             {
-                "items": [
-                    {"product_id": str(pricing_data["product"].id), "quantity": 2}
-                ],
+                "items": [{"product_id": str(pricing_data["product"].id), "quantity": 2}],
                 "shipping_country": "US",
             },
             format="json",
@@ -459,9 +451,7 @@ class TestStorefrontQuote:
         response = client.post(
             f"/api/v1/store/{pricing_data['store'].slug}/checkout/quote/",
             {
-                "items": [
-                    {"product_id": str(pricing_data["product"].id), "quantity": 1}
-                ],
+                "items": [{"product_id": str(pricing_data["product"].id), "quantity": 1}],
                 "discount_code": "SAVE25",
                 "shipping_country": "US",
             },

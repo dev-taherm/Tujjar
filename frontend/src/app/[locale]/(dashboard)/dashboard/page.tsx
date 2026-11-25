@@ -1,6 +1,9 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui";
+import { DollarSign, Package, ShoppingCart, Users } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent, PageHeader, StatCard } from "@/shared/ui";
+import { AIBriefCard } from "@/features/dashboard/ai-brief-card";
+import { SetupChecklist } from "@/features/dashboard/setup-checklist";
 import { useTranslations } from "next-intl";
 import { useAnalyticsSummary } from "@/api/analytics";
 
@@ -11,14 +14,13 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="mb-8 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{t("title")}</h1>
-        <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <PageHeader title={t("title")} />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
-                <div className="h-8 w-32 animate-pulse rounded bg-gray-200 mt-2" />
-              </CardHeader>
+            <Card key={i} className="p-4">
+              <div className="shimmer h-4 w-24 rounded" />
+              <div className="shimmer mt-3 h-8 w-32 rounded" />
+              <div className="shimmer mt-3 h-5 w-16 rounded" />
             </Card>
           ))}
         </div>
@@ -27,45 +29,48 @@ export default function DashboardPage() {
   }
 
   return (
-    <div>
-      <h1 className="mb-8 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{t("title")}</h1>
-      <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardDescription>{t("totalRevenue")}</CardDescription>
-            <CardTitle className="text-lg sm:text-xl md:text-2xl">
-              ${(stats?.total_revenue ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{t("totalOrders")}</CardDescription>
-            <CardTitle className="text-lg sm:text-xl md:text-2xl">
-              {(stats?.total_orders ?? 0).toLocaleString()}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{t("customers")}</CardDescription>
-            <CardTitle className="text-lg sm:text-xl md:text-2xl">
-              {(stats?.total_customers ?? 0).toLocaleString()}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{t("products")}</CardDescription>
-            <CardTitle className="text-lg sm:text-xl md:text-2xl">
-              {(stats?.total_products_sold ?? 0).toLocaleString()}
-            </CardTitle>
-          </CardHeader>
-        </Card>
+    <div className="animate-rise">
+      <PageHeader title={t("title")} />
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label={t("totalRevenue")}
+          value={`$${(stats?.total_revenue ?? 0).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          delta={stats?.revenue_change_pct ?? null}
+          icon={DollarSign}
+          tone="success"
+        />
+        <StatCard
+          label={t("totalOrders")}
+          value={(stats?.total_orders ?? 0).toLocaleString()}
+          delta={stats?.orders_change_pct ?? null}
+          icon={ShoppingCart}
+          tone="primary"
+        />
+        <StatCard
+          label={t("customers")}
+          value={(stats?.total_customers ?? 0).toLocaleString()}
+          icon={Users}
+          tone="info"
+        />
+        <StatCard
+          label={t("products")}
+          value={(stats?.total_products_sold ?? 0).toLocaleString()}
+          icon={Package}
+          tone="warning"
+        />
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <AIBriefCard />
+        <SetupChecklist />
       </div>
 
       {(!!stats?.top_products?.length || !!Object.keys(stats?.traffic_sources ?? {}).length) && (
-        <div className="mt-6 grid gap-4 md:gap-6 md:grid-cols-2">
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
           {!!stats?.top_products?.length && (
             <Card>
               <CardHeader>
@@ -73,9 +78,9 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {stats.top_products.map((p) => (
-                  <div key={p.title} className="flex items-center justify-between text-sm">
-                    <span className="truncate" style={{ maxWidth: "60%" }}>{p.title}</span>
-                    <span className="text-gray-500">
+                  <div key={p.title} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate text-ink">{p.title}</span>
+                    <span className="shrink-0 text-ink-soft tabular-nums">
                       {p.units_sold} sold · ${p.revenue.toFixed(2)}
                     </span>
                   </div>
@@ -90,9 +95,9 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {Object.entries(stats!.traffic_sources).map(([host, count]) => (
-                  <div key={host} className="flex items-center justify-between text-sm">
-                    <span className="truncate" style={{ maxWidth: "60%" }}>{host}</span>
-                    <span className="text-gray-500">{count}</span>
+                  <div key={host} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate text-ink">{host}</span>
+                    <span className="shrink-0 text-ink-soft tabular-nums">{count}</span>
                   </div>
                 ))}
               </CardContent>

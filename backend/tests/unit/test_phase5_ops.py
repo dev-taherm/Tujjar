@@ -128,10 +128,7 @@ class TestProductCsv:
         assert Collection.unscoped.filter(name="Tools").exists()
 
         # Re-import with the same SKU updates the existing product
-        csv_update = (
-            "title,sku,price,status\n"
-            "Imported Gadget Updated,IMP-1,29.99,active\n"
-        )
+        csv_update = "title,sku,price,status\nImported Gadget Updated,IMP-1,29.99,active\n"
         upload2 = SimpleUploadedFile(
             "products.csv", csv_update.encode("utf-8"), content_type="text/csv"
         )

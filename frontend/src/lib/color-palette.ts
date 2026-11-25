@@ -85,3 +85,26 @@ export function generateColorShades(baseHex: string, prefix: string): Record<str
   }
   return result;
 }
+
+/**
+ * Return `hex` re-lightened to the given HSL lightness (0-100), keeping hue
+ * and saturation. Returns null when the input is not a 6-digit hex color,
+ * so callers can fall back to sensible defaults.
+ */
+export function withLightness(hex: string, targetL: number): string | null {
+  const match = /^#?([0-9a-fA-F]{6})$/.exec((hex || "").trim());
+  if (!match) return null;
+  const { h, s } = hexToHSL(match[1]);
+  return hslToHex(h, s, targetL);
+}
+
+/**
+ * Return `hex` with its HSL saturation set to the given value (0-100),
+ * keeping hue and lightness. Returns null for non-6-digit-hex inputs.
+ */
+export function withSaturation(hex: string, targetS: number): string | null {
+  const match = /^#?([0-9a-fA-F]{6})$/.exec((hex || "").trim());
+  if (!match) return null;
+  const { h, l } = hexToHSL(match[1]);
+  return hslToHex(h, targetS, l);
+}

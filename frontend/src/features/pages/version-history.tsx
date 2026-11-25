@@ -5,7 +5,7 @@ import { apiClient } from "@/api/client";
 import { Button, Badge, Dialog } from "@/shared/ui";
 import type { PageVersion } from "@/shared/types";
 import { formatDateTime } from "@/lib/utils";
-import { RotateCcw, X } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface VersionHistoryProps {
@@ -41,21 +41,21 @@ export function VersionHistory({ pageId, onClose }: VersionHistoryProps) {
       <div className="max-h-96 overflow-y-auto">
         {isLoading ? (
           <div className="space-y-2">
-            {[1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="h-16 shimmer rounded-lg" />)}
           </div>
         ) : !versions?.length ? (
-          <p className="text-center text-gray-500">{t("noVersions")}</p>
+          <p className="text-center text-ink-soft">{t("noVersions")}</p>
         ) : (
           <div className="space-y-2">
             {versions.map((v) => (
-              <div key={v.id} className="flex items-center justify-between rounded-lg border border-gray-200 p-3">
+              <div key={v.id} className="flex items-center justify-between rounded-lg border border-line p-3">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{t("version")} {v.version}</span>
                     {v.version === versions[0]?.version && <Badge variant="success">{t("current")}</Badge>}
                   </div>
-                  <p className="text-xs text-gray-500">{v.change_summary || t("noDescription")}</p>
-                  <p className="text-xs text-gray-400">{formatDateTime(v.created_at)}</p>
+                  <p className="text-xs text-ink-soft">{v.change_summary || t("noDescription")}</p>
+                  <p className="text-xs text-ink-soft">{formatDateTime(v.created_at)}</p>
                 </div>
                 {v.version !== versions[0]?.version && (
                   <Button variant="outline" size="sm" onClick={() => restoreMutation.mutate(v.version)} isLoading={restoreMutation.isPending}>

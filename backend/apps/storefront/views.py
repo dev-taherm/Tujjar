@@ -53,11 +53,7 @@ def storefront_base_url(store: Store) -> str:
 @permission_classes([AllowAny])
 def storefront_stores_list(request):
     """List all active stores (public — used for sitemap generation)."""
-    stores = (
-        Store.objects.filter(is_active=True)
-        .select_related("organization")
-        .order_by("slug")
-    )
+    stores = Store.objects.filter(is_active=True).select_related("organization").order_by("slug")
     data = [
         {
             "slug": store.slug,
@@ -170,11 +166,31 @@ def _resolve_store(store: Store, locale: str) -> dict:
             logger.warning("Failed to resolve favicon for store %s", store.slug, exc_info=True)
 
     theme_config = None
+    theme_assets = None
     if store.theme_id:
         try:
             theme_config = store.theme.get_effective_config()
+            # Deep-merge per-store overrides (store wins over theme)
+            override = store.theme_config_override or {}
+            if override:
+                from apps.themes.models import _deep_merge
+                theme_config = _deep_merge(theme_config or {}, override)
+            custom_css = (store.theme.assets or {}).get("custom_css")
+            if custom_css:
+                theme_assets = {"custom_css": custom_css}
         except Exception:
             logger.warning("Failed to resolve theme_config for store %s", store.slug, exc_info=True)
+
+    # Per-store custom CSS (settings.custom_css) is appended after the theme's
+    # own custom CSS so store-level overrides win.
+    store_custom_css = (
+        store.settings.get("custom_css") if isinstance(store.settings, dict) else None
+    )
+    if store_custom_css:
+        if theme_assets:
+            theme_assets["custom_css"] = f"{theme_assets.get('custom_css', '')}\n{store_custom_css}"
+        else:
+            theme_assets = {"custom_css": store_custom_css}
 
     og_image_url = None
     if store.og_image_id:
@@ -191,6 +207,7 @@ def _resolve_store(store: Store, locale: str) -> dict:
         "favicon_url": favicon_url,
         "settings": store.settings,
         "theme_config": theme_config,
+        "theme_assets": theme_assets,
         "navigation": resolve_navigation_locale(store.navigation, locale) or {},
         "footer_config": resolve_footer_locale(store.footer_config, locale) or {},
         "seo_title": seo_title,
@@ -341,11 +358,11 @@ class StorefrontProductDetailView(generics.RetrieveAPIView):
         if category_ids:
             related_qs = related_qs.filter(categories__id__in=category_ids)
         else:
-            related_qs = related_qs.filter(created_at__gte=product.created_at - timezone.timedelta(days=365))
+            related_qs = related_qs.filter(
+                created_at__gte=product.created_at - timezone.timedelta(days=365)
+            )
         related = (
-            related_qs.distinct()
-            .prefetch_related("images", "variants")
-            .order_by("-created_at")[:4]
+            related_qs.distinct().prefetch_related("images", "variants").order_by("-created_at")[:4]
         )
         data["related_products"] = ProductListSerializer(related, many=True).data
         return Response(data)
@@ -972,9 +989,7 @@ def checkout_place_order(request, subdomain=None):
                 return Response({"error": f"Invalid product id: {product_id}"}, status=400)
             product = Product.unscoped.filter(id=product_id).first()
             if not product or product.organization_id != store.organization_id:
-                return Response(
-                    {"error": f"Unknown product: {product_id}"}, status=400
-                )
+                return Response({"error": f"Unknown product: {product_id}"}, status=400)
             quantity = max(1, int(raw.get("quantity", 1)))
             unit_price = product.price
             variant_id = None
@@ -1173,9 +1188,7 @@ def checkout_quote(request, subdomain=None):
                 return Response({"error": f"Invalid product id: {product_id}"}, status=400)
             product = Product.unscoped.filter(id=product_id).first()
             if not product or product.organization_id != store.organization_id:
-                return Response(
-                    {"error": f"Unknown product: {raw.get('product_id')}"}, status=400
-                )
+                return Response({"error": f"Unknown product: {raw.get('product_id')}"}, status=400)
             quantity = max(1, int(raw.get("quantity", 1)))
             unit_price = product.price
             variant = None
@@ -1228,3 +1241,4 @@ def checkout_quote(request, subdomain=None):
             ],
         }
     )
+

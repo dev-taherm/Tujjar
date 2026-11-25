@@ -54,7 +54,7 @@ export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }
     <div className="space-y-4">
       {parentAnimations && (
         <div className="flex items-center gap-2">
-          <span className={`text-xs ${isOverridden ? "text-amber-600" : "text-gray-400"}`}>
+          <span className={`text-xs ${isOverridden ? "text-warning" : "text-ink-soft"}`}>
             {isOverridden ? "Overridden" : "Inherited"}
           </span>
           {isOverridden && (
@@ -62,7 +62,7 @@ export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }
               type="button"
               onClick={handleReset}
               title="Reset to parent"
-              className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              className="rounded p-1 text-ink-soft hover:bg-rail hover:text-ink-soft"
             >
               <RotateCcw className="h-3 w-3" />
             </button>
@@ -79,11 +79,11 @@ export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }
       {animations.enabled && (
         <>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Duration</label>
+            <label className="mb-1 block text-sm font-medium text-ink">Duration</label>
             <select
               value={animations.duration}
               onChange={(e) => onChange({ ...animations, duration: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-line px-3 py-2 text-sm"
             >
               {DURATION_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -94,11 +94,11 @@ export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Easing</label>
+            <label className="mb-1 block text-sm font-medium text-ink">Easing</label>
             <select
               value={animations.easing}
               onChange={(e) => onChange({ ...animations, easing: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-line px-3 py-2 text-sm"
             >
               {EASING_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -108,8 +108,8 @@ export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }
             </select>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <p className="mb-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</p>
+          <div className="rounded-lg border border-line bg-rail p-4">
+            <p className="mb-3 text-xs font-medium text-ink-soft uppercase tracking-wide">Preview</p>
             <div className="flex gap-4">
               <div
                 className="h-12 w-12 rounded-lg transition-all hover:scale-110"
@@ -119,7 +119,7 @@ export function ThemeAnimationsEditor({ animations, onChange, parentAnimations }
                   transitionTimingFunction: animations.easing,
                 }}
               />
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-ink-soft">
                 Hover over the square to see the animation
               </div>
             </div>

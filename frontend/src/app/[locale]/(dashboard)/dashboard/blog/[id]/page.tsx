@@ -14,8 +14,8 @@ export default function BlogPostDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
-        <div className="h-96 animate-pulse rounded-xl bg-gray-200" />
+        <div className="h-8 w-48 shimmer rounded" />
+        <div className="h-96 shimmer rounded-xl" />
       </div>
     );
   }
@@ -23,8 +23,8 @@ export default function BlogPostDetailPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{post?.title || t("editor.newPost")}</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-ink">{post?.title || t("editor.newPost")}</h1>
+        <p className="text-sm text-ink-soft">
           {post?.status === "published" ? t("editor.published") : t("editor.draft")}
           {post?.reading_time ? ` · ${post.reading_time} min read` : ""}
         </p>

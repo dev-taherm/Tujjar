@@ -78,7 +78,7 @@ export function ReviewsModeration() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-lg bg-gray-200" />
+            <div key={i} className="h-20 shimmer rounded-lg" />
           ))}
         </div>
       ) : !reviews?.length ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -15,11 +15,13 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
+  Spinner,
 } from "@/shared/ui";
+import { AuthShell } from "@/features/auth/auth-shell";
 import { authApi } from "@/api/queries";
 import { useTranslations, useLocale } from "next-intl";
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageContent() {
   const locale = useLocale();
   const t = useTranslations("auth.resetPassword");
   const searchParams = useSearchParams();
@@ -86,135 +88,144 @@ export default function ResetPasswordPage() {
   // --- Success state after requesting reset ---
   if (submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t("checkEmail")}</CardTitle>
-            <CardDescription>{t("checkEmailDescription")}</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Link
-              href={`/${locale}/login`}
-              className="text-sm text-primary-600 hover:underline"
-            >
-              {t("backToLogin") || "Back to Sign In"}
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="w-full animate-rise">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">{t("checkEmail")}</CardTitle>
+          <CardDescription>{t("checkEmailDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+          <Link
+            href={`/${locale}/login`}
+            className="text-sm text-primary-600 hover:underline"
+          >
+            {t("backToLogin") || "Back to Sign In"}
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 
   // --- Success state after password reset ---
   if (resetSuccess) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t("resetSuccess") || "Password Reset Successfully"}</CardTitle>
-            <CardDescription>
-              {t("resetSuccessDescription") || "Your password has been reset. You can now sign in with your new password."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Link
-              href={`/${locale}/login`}
-              className="text-sm text-primary-600 hover:underline"
-            >
-              {t("proceedToSignIn") || "Proceed to Sign In"}
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="w-full animate-rise">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">{t("resetSuccess") || "Password Reset Successfully"}</CardTitle>
+          <CardDescription>
+            {t("resetSuccessDescription") || "Your password has been reset. You can now sign in with your new password."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center">
+          <Link
+            href={`/${locale}/login`}
+            className="text-sm text-primary-600 hover:underline"
+          >
+            {t("proceedToSignIn") || "Proceed to Sign In"}
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 
   // --- Confirm Reset Form (token present) ---
   if (token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t("title")}</CardTitle>
-            <CardDescription>
-              {t("confirmSubtitle") || "Enter your new password below."}
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmitConfirm(onConfirmReset)}>
-            <CardContent className="space-y-4">
-              {error && (
-                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
-              )}
-              <Input
-                label={t("newPassword") || "New Password"}
-                type="password"
-                placeholder="••••••••"
-                error={confirmErrors.password?.message}
-                {...registerConfirm("password")}
-              />
-              <Input
-                label={t("confirmPassword") || "Confirm Password"}
-                type="password"
-                placeholder="••••••••"
-                error={confirmErrors.password_confirm?.message}
-                {...registerConfirm("password_confirm")}
-              />
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" isLoading={confirmSubmitting}>
-                {t("resetPassword") || "Reset Password"}
-              </Button>
-              <Link
-                href={`/${locale}/login`}
-                className="text-center text-sm text-gray-500 hover:underline"
-              >
-                {t("backToLogin") || "Back to Sign In"}
-              </Link>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
-    );
-  }
-
-  // --- Request Reset Form (no token) ---
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full animate-rise">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{t("title")}</CardTitle>
-          <CardDescription>{t("subtitle")}</CardDescription>
+          <CardDescription>
+            {t("confirmSubtitle") || "Enter your new password below."}
+          </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmitRequest(onRequestReset)}>
+        <form onSubmit={handleSubmitConfirm(onConfirmReset)}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              <div className="rounded-lg bg-error-soft p-3 text-sm text-error">
                 {error}
               </div>
             )}
             <Input
-              label={t("email")}
-              type="email"
-              placeholder={t("emailPlaceholder")}
-              error={requestErrors.email?.message}
-              {...registerRequest("email")}
+              label={t("newPassword") || "New Password"}
+              type="password"
+              placeholder="••••••••"
+              error={confirmErrors.password?.message}
+              {...registerConfirm("password")}
+            />
+            <Input
+              label={t("confirmPassword") || "Confirm Password"}
+              type="password"
+              placeholder="••••••••"
+              error={confirmErrors.password_confirm?.message}
+              {...registerConfirm("password_confirm")}
             />
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" isLoading={requestSubmitting}>
-              {t("sendResetLink")}
+            <Button type="submit" className="w-full" isLoading={confirmSubmitting}>
+              {t("resetPassword") || "Reset Password"}
             </Button>
             <Link
               href={`/${locale}/login`}
-              className="text-center text-sm text-gray-500 hover:underline"
+              className="text-center text-sm text-ink-soft hover:underline"
             >
               {t("backToLogin") || "Back to Sign In"}
             </Link>
           </CardFooter>
         </form>
       </Card>
-    </div>
+    );
+  }
+
+  // --- Request Reset Form (no token) ---
+  return (
+    <Card className="w-full animate-rise">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl">{t("title")}</CardTitle>
+        <CardDescription>{t("subtitle")}</CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmitRequest(onRequestReset)}>
+        <CardContent className="space-y-4">
+          {error && (
+            <div className="rounded-lg bg-error-soft p-3 text-sm text-error">
+              {error}
+            </div>
+          )}
+          <Input
+            label={t("email")}
+            type="email"
+            placeholder={t("emailPlaceholder")}
+            error={requestErrors.email?.message}
+            {...registerRequest("email")}
+          />
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <Button type="submit" className="w-full" isLoading={requestSubmitting}>
+            {t("sendResetLink")}
+          </Button>
+          <Link
+            href={`/${locale}/login`}
+            className="text-center text-sm text-ink-soft hover:underline"
+          >
+            {t("backToLogin") || "Back to Sign In"}
+          </Link>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
+
+/* useSearchParams() requires a Suspense boundary during static prerender. */
+export default function ResetPasswordPage() {
+  return (
+    <AuthShell>
+      <Suspense
+        fallback={
+          <div className="flex justify-center py-24">
+            <Spinner className="h-8 w-8 text-primary-600" />
+          </div>
+        }
+      >
+        <ResetPasswordPageContent />
+      </Suspense>
+    </AuthShell>
   );
 }

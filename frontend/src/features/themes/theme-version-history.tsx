@@ -27,27 +27,27 @@ interface ThemeVersionHistoryProps {
 function VersionPreview({ config }: { config: Record<string, unknown> }) {
   const c = config as unknown as ThemeConfig;
   return (
-    <div className="mt-2 rounded-lg border border-gray-100 bg-gray-50 p-3">
+    <div className="mt-2 rounded-lg border border-line bg-rail p-3">
       <div className="mb-2 flex gap-1.5">
         {[c.colors.primary, c.colors.secondary, c.colors.accent, c.colors.background, c.colors.text]
           .filter(Boolean)
           .map((color, i) => (
             <div
               key={i}
-              className="h-5 w-5 rounded-full border border-gray-200"
+              className="h-5 w-5 rounded-full border border-line"
               style={{ backgroundColor: color }}
             />
           ))}
       </div>
-      <div className="space-y-1 text-xs text-gray-500">
+      <div className="space-y-1 text-xs text-ink-soft">
         <p>
-          Heading: <span className="font-medium text-gray-700">{c.typography.headingFont}</span>
+          Heading: <span className="font-medium text-ink">{c.typography.headingFont}</span>
         </p>
         <p>
-          Body: <span className="font-medium text-gray-700">{c.typography.bodyFont}</span>
+          Body: <span className="font-medium text-ink">{c.typography.bodyFont}</span>
         </p>
         <p>
-          Radius: <span className="font-medium text-gray-700">{c.borderRadius.small}px / {c.borderRadius.medium}px</span>
+          Radius: <span className="font-medium text-ink">{c.borderRadius.small}px / {c.borderRadius.medium}px</span>
         </p>
       </div>
     </div>
@@ -102,11 +102,11 @@ export function ThemeVersionHistory({ themeId, onClose }: ThemeVersionHistoryPro
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100" />
+              <div key={i} className="h-16 shimmer rounded-lg" />
             ))}
           </div>
         ) : !versions?.length ? (
-          <p className="py-8 text-center text-sm text-gray-500">
+          <p className="py-8 text-center text-sm text-ink-soft">
             {t("noVersions") || "No version history yet"}
           </p>
         ) : (
@@ -114,13 +114,13 @@ export function ThemeVersionHistory({ themeId, onClose }: ThemeVersionHistoryPro
             const isCurrent = idx === 0;
             const isExpanded = expandedId === v.id;
             return (
-              <div key={v.id} className="rounded-lg border border-gray-200">
+              <div key={v.id} className="rounded-lg border border-line">
                 <div className="flex items-center justify-between p-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => toggleExpand(v.id)}
-                        className="flex items-center gap-1 text-sm font-medium text-gray-900 hover:text-blue-600"
+                        className="flex items-center gap-1 text-sm font-medium text-ink hover:text-primary-600"
                       >
                         {isExpanded ? (
                           <ChevronDown className="h-3.5 w-3.5" />
@@ -133,10 +133,10 @@ export function ThemeVersionHistory({ themeId, onClose }: ThemeVersionHistoryPro
                         <Badge variant="success">{t("currentVersion") || "Current"}</Badge>
                       )}
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-500">
+                    <p className="mt-0.5 text-xs text-ink-soft">
                       {v.note || t("noDescription") || "No description"}
                     </p>
-                    <p className="text-xs text-gray-400">{formatDateTime(v.created_at)}</p>
+                    <p className="text-xs text-ink-soft">{formatDateTime(v.created_at)}</p>
                   </div>
                   {!isCurrent && (
                     <Button
@@ -151,7 +151,7 @@ export function ThemeVersionHistory({ themeId, onClose }: ThemeVersionHistoryPro
                   )}
                 </div>
                 {isExpanded && expandedVersion && expandedVersion.id === v.id && (
-                  <div className="border-t border-gray-100 px-3 pb-3">
+                  <div className="border-t border-line px-3 pb-3">
                     <VersionPreview config={expandedVersion.config} />
                   </div>
                 )}
@@ -167,7 +167,7 @@ export function ThemeVersionHistory({ themeId, onClose }: ThemeVersionHistoryPro
           onClose={() => setConfirmRollback(null)}
           title={t("restoreVersion") || "Restore Version"}
         >
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-ink-soft">
             {t("restoreVersionConfirm", { version: confirmRollback.version }) ||
               `Are you sure you want to restore to version ${confirmRollback.version}? The current state will be saved as a checkpoint first.`}
           </p>
@@ -191,7 +191,7 @@ export function ThemeVersionHistory({ themeId, onClose }: ThemeVersionHistoryPro
         >
           <div className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-ink">
                 {t("checkpointNote") || "Checkpoint note (optional)"}
               </label>
               <input
@@ -199,7 +199,7 @@ export function ThemeVersionHistory({ themeId, onClose }: ThemeVersionHistoryPro
                 value={snapshotNote}
                 onChange={(e) => setSnapshotNote(e.target.value)}
                 placeholder="e.g., Before color redesign"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div className="flex justify-end gap-2">

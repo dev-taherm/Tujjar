@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Card, CardContent, Input, Textarea, Badge, Dialog } from "@/shared/ui";
+import { Button, Card, CardContent, Input, Textarea, Badge, Dialog, Table, THead, THeadCell, TBody, TR, TD } from "@/shared/ui";
 import { useLoyaltyTransactions, useAdjustLoyalty } from "@/api/queries";
 import { formatDateTime } from "@/lib/utils";
 import { Award, Plus } from "lucide-react";
@@ -40,7 +40,7 @@ export function CustomerLoyalty({ customer, customerId }: CustomerLoyaltyProps) 
     setAdjustDesc("");
   };
 
-  if (isLoading) return <div className="h-[300px] animate-pulse rounded-xl bg-gray-200" />;
+  if (isLoading) return <div className="h-[300px] shimmer rounded-xl" />;
 
   return (
     <div className="space-y-4">
@@ -54,46 +54,46 @@ export function CustomerLoyalty({ customer, customerId }: CustomerLoyaltyProps) 
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <Award className="h-10 w-10 text-yellow-500" />
+            <Award className="h-10 w-10 text-warning" />
             <div>
               <p className="text-3xl font-bold">{customer.loyalty_points}</p>
-              <p className="text-sm text-gray-500">{t("currentBalance")}</p>
+              <p className="text-sm text-ink-soft">{t("currentBalance")}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {transactions.length === 0 ? (
-        <p className="py-8 text-center text-gray-500">{t("noTransactions")}</p>
+        <p className="py-8 text-center text-ink-soft">{t("noTransactions")}</p>
       ) : (
         <Card>
-          <CardContent className="overflow-x-auto pt-6">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-500">
-                  <th className="pb-2 font-medium">{t("date")}</th>
-                  <th className="pb-2 font-medium">{t("type")}</th>
-                  <th className="pb-2 font-medium">{t("points")}</th>
-                  <th className="pb-2 font-medium">{t("balance")}</th>
-                  <th className="pb-2 font-medium">{t("description")}</th>
+          <CardContent className="pt-6">
+            <Table>
+              <THead>
+                <tr>
+                  <THeadCell>{t("date")}</THeadCell>
+                  <THeadCell>{t("type")}</THeadCell>
+                  <THeadCell className="text-end">{t("points")}</THeadCell>
+                  <THeadCell className="text-end">{t("balance")}</THeadCell>
+                  <THeadCell>{t("description")}</THeadCell>
                 </tr>
-              </thead>
-              <tbody>
+              </THead>
+              <TBody>
                 {transactions.map((tx: LoyaltyTransaction) => (
-                  <tr key={tx.id} className="border-b last:border-0">
-                    <td className="py-3">{formatDateTime(tx.created_at)}</td>
-                    <td className="py-3">
+                  <TR key={tx.id}>
+                    <TD className="text-sm">{formatDateTime(tx.created_at)}</TD>
+                    <TD>
                       <Badge variant={TYPE_BADGE_VARIANT[tx.type] || "default"}>{tx.type}</Badge>
-                    </td>
-                    <td className={`py-3 font-medium ${tx.points > 0 ? "text-green-600" : "text-red-600"}`}>
+                    </TD>
+                    <TD className={`text-end text-sm font-medium tabular-nums ${tx.points > 0 ? "text-success" : "text-error"}`}>
                       {tx.points > 0 ? "+" : ""}{tx.points}
-                    </td>
-                    <td className="py-3">{tx.balance}</td>
-                    <td className="py-3 text-gray-500">{tx.description}</td>
-                  </tr>
+                    </TD>
+                    <TD className="text-end text-sm tabular-nums">{tx.balance}</TD>
+                    <TD className="text-sm text-ink-soft">{tx.description}</TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
           </CardContent>
         </Card>
       )}

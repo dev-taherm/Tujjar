@@ -38,7 +38,7 @@ export function StoreCard({ store }: StoreCardProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm text-ink-soft">
             <span>{store.description || t("noDescription")}</span>
             <div className="flex items-center gap-2">
               <span
@@ -47,7 +47,7 @@ export function StoreCard({ store }: StoreCardProps) {
                   e.stopPropagation();
                   window.open(`https://${store.domain}/`, "_blank", "noopener,noreferrer");
                 }}
-                className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 opacity-0 transition-all hover:bg-gray-50 group-hover:opacity-100"
+                className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1 text-xs font-medium text-ink opacity-0 transition-all hover:bg-rail group-hover:opacity-100"
               >
                 {t("visitStore")}
                 <ArrowUpRight className="h-3 w-3" />

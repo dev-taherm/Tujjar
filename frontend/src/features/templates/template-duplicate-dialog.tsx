@@ -35,12 +35,12 @@ export function TemplateDuplicateDialog({ template, open, onClose }: TemplateDup
 
   return (
     <Dialog open={true} onClose={onClose} title={t("duplicateTemplate")}>
-      <p className="mb-4 text-sm text-gray-500">{t("duplicateTemplateDescription")}</p>
+      <p className="mb-4 text-sm text-ink-soft">{t("duplicateTemplateDescription")}</p>
       <input
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="mb-4 w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         autoFocus
       />
       <div className="flex justify-end gap-2">

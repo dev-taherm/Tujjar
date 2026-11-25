@@ -33,10 +33,10 @@ export function ThemeBorderRadiusEditor({ borderRadius, onChange, parentBorderRa
           const isOverridden = parentBorderRadius && borderRadius[key] !== parentBorderRadius[key];
           return (
             <div key={key}>
-              <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
-              <p className="mb-2 text-xs text-gray-400">{description}</p>
+              <label className="mb-1 block text-sm font-medium text-ink">{label}</label>
+              <p className="mb-2 text-xs text-ink-soft">{description}</p>
               {parentBorderRadius && (
-                <span className={`mb-1 block text-[10px] ${isOverridden ? "text-amber-600" : "text-gray-400"}`}>
+                <span className={`mb-1 block text-[10px] ${isOverridden ? "text-warning" : "text-ink-soft"}`}>
                   {isOverridden ? "Overridden" : "Inherited"}
                 </span>
               )}
@@ -49,13 +49,13 @@ export function ThemeBorderRadiusEditor({ borderRadius, onChange, parentBorderRa
                   onChange={(e) => onChange({ ...borderRadius, [key]: Number(e.target.value) })}
                   className="flex-1"
                 />
-                <span className="w-10 text-right text-xs text-gray-500">{borderRadius[key]}px</span>
+                <span className="w-10 text-end text-xs text-ink-soft">{borderRadius[key]}px</span>
                 {isOverridden && parentBorderRadius && (
                   <button
                     type="button"
                     onClick={() => handleReset(key)}
                     title="Reset to parent"
-                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded p-1 text-ink-soft hover:bg-rail hover:text-ink-soft"
                   >
                     <RotateCcw className="h-3 w-3" />
                   </button>
@@ -66,8 +66,8 @@ export function ThemeBorderRadiusEditor({ borderRadius, onChange, parentBorderRa
         })}
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <p className="mb-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</p>
+      <div className="rounded-lg border border-line bg-rail p-4">
+        <p className="mb-3 text-xs font-medium text-ink-soft uppercase tracking-wide">Preview</p>
         <div className="flex gap-4">
           {FIELDS.map(({ key, label }) => (
             <div key={key} className="text-center">
@@ -75,7 +75,7 @@ export function ThemeBorderRadiusEditor({ borderRadius, onChange, parentBorderRa
                 className="mx-auto mb-2 h-12 w-12"
                 style={{ borderRadius: `${borderRadius[key]}px`, background: "var(--color-primary)" }}
               />
-              <span className="text-xs text-gray-500">{label}</span>
+              <span className="text-xs text-ink-soft">{label}</span>
             </div>
           ))}
         </div>

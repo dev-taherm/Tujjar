@@ -169,13 +169,13 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-2">
                 <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
-                  i < stepIndex ? "bg-green-500 text-white" :
+                  i < stepIndex ? "bg-success text-white" :
                   i === stepIndex ? "bg-primary-600 text-white" :
-                  "bg-gray-200 text-gray-500"
+                  "bg-rail text-ink-soft"
                 }`}>
                   {i < stepIndex ? <Check className="h-3.5 w-3.5" /> : i + 1}
                 </div>
-                {i < STEPS.length - 1 && <div className={`h-px w-8 ${i < stepIndex ? "bg-green-500" : "bg-gray-200"}`} />}
+                {i < STEPS.length - 1 && <div className={`h-px w-8 ${i < stepIndex ? "bg-success" : "bg-rail"}`} />}
               </div>
             ))}
           </div>
@@ -205,10 +205,10 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
                   {...register("slug")}
                 />
                 {slugAvailable === true && (
-                  <p className="mt-1 text-xs text-green-600">Slug is available</p>
+                  <p className="mt-1 text-xs text-success">Slug is available</p>
                 )}
                 {slugAvailable === false && (
-                  <p className="mt-1 text-xs text-red-600">Slug is already taken</p>
+                  <p className="mt-1 text-xs text-error">Slug is already taken</p>
                 )}
               </div>
               <Input
@@ -221,7 +221,7 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
 
           {step === "template" && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">{t("wizardTemplateHint")}</p>
+              <p className="text-sm text-ink-soft">{t("wizardTemplateHint")}</p>
               <TemplateGrid
                 templates={templates || []}
                 selectedId={selectedTemplateId}
@@ -232,20 +232,20 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
 
           {step === "features" && (
             <div className="space-y-6">
-              <p className="text-sm text-gray-600">{t("wizardFeaturesHint")}</p>
+              <p className="text-sm text-ink-soft">{t("wizardFeaturesHint")}</p>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">{t("homePage")}</label>
+                <label className="mb-2 block text-sm font-medium text-ink">{t("homePage")}</label>
                 <select
                   value={homePage}
                   onChange={(e) => setHomePage(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-line px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
                 >
                   <option value="/">{t("homePageHomepage")}</option>
                   <option value="/shop">{t("homePageShop")}</option>
                   <option value="/shop/blog">{t("homePageBlog")}</option>
                 </select>
-                <p className="mt-1 text-xs text-gray-500">{t("homePageHint")}</p>
+                <p className="mt-1 text-xs text-ink-soft">{t("homePageHint")}</p>
               </div>
 
               <div className="space-y-3">
@@ -268,14 +268,14 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
               </div>
 
               {!enableShop && (
-                <p className="text-xs text-amber-600">{t("ctaDisabledHint")}</p>
+                <p className="text-xs text-warning">{t("ctaDisabledHint")}</p>
               )}
             </div>
           )}
 
           {step === "domain" && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">{t("wizardDomainHint")}</p>
+              <p className="text-sm text-ink-soft">{t("wizardDomainHint")}</p>
               <Input
                 label={t("customDomain")}
                 placeholder="www.mystore.com"
@@ -283,7 +283,7 @@ export function StoreCreateDialog({ open, onClose, onSuccess }: StoreCreateDialo
                 onChange={(e) => { setCustomDomain(e.target.value); setDomainError(null); }}
                 error={domainError || undefined}
               />
-              <p className="text-xs text-gray-500">{t("customDomainHelp")}</p>
+              <p className="text-xs text-ink-soft">{t("customDomainHelp")}</p>
             </div>
           )}
         </CardContent>
@@ -336,21 +336,21 @@ function FeatureToggle({
     <div
       className={`flex items-center justify-between rounded-xl border p-4 transition-colors ${
         disabled
-          ? "border-gray-100 bg-gray-50 opacity-60"
+          ? "border-line bg-rail opacity-60"
           : enabled
-          ? "border-blue-200 bg-blue-50"
-          : "border-gray-200 bg-white hover:border-gray-300"
+          ? "border-primary-200 bg-primary-50"
+          : "border-line bg-panel hover:border-line"
       }`}
     >
       <div className="flex items-center gap-3">
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-          enabled ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-500"
+          enabled ? "bg-primary-100 text-primary-600" : "bg-rail text-ink-soft"
         }`}>
           {icon}
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-900">{label}</p>
-          <p className="text-xs text-gray-500">{description}</p>
+          <p className="text-sm font-medium text-ink">{label}</p>
+          <p className="text-xs text-ink-soft">{description}</p>
         </div>
       </div>
       <button
@@ -358,11 +358,11 @@ function FeatureToggle({
         disabled={disabled}
         onClick={() => !disabled && onChange(!enabled)}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          enabled ? "bg-blue-600" : "bg-gray-300"
+          enabled ? "bg-primary-600" : "bg-rail"
         } ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+          className={`inline-block h-4 w-4 transform rounded-full bg-panel transition-transform ${
             enabled ? "translate-x-6" : "translate-x-1"
           }`}
         />
@@ -382,13 +382,13 @@ function TemplateGrid({ templates, selectedId, onSelect }: { templates: Array<{ 
           className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center transition-colors ${
             selectedId === tmpl.id
               ? "border-primary-500 bg-primary-50"
-              : "border-gray-200 hover:border-gray-300"
+              : "border-line hover:border-line"
           }`}
         >
           <span className="text-2xl">{CATEGORY_ICONS[tmpl.category] || "🏪"}</span>
           <span className="text-sm font-medium">{tmpl.name}</span>
           {tmpl.description && (
-            <span className="text-xs text-gray-500 line-clamp-2">{tmpl.description}</span>
+            <span className="text-xs text-ink-soft line-clamp-2">{tmpl.description}</span>
           )}
         </button>
       ))}

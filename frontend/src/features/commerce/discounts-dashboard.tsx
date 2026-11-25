@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Label, Select, Dialog, Badge, EmptyState } from "@/shared/ui";
+import { Button, Input, Label, Select, Dialog, Badge, EmptyState, Table, THead, THeadCell, TBody, TR, TD } from "@/shared/ui";
 import {
   useDiscounts,
   useCreateDiscount,
@@ -120,7 +120,7 @@ export function DiscountsDashboard() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">{t("description")}</p>
+        <p className="text-sm text-ink-soft">{t("description")}</p>
         <Button onClick={openCreate}>
           <Plus className="me-2 h-4 w-4" /> {t("create")}
         </Button>
@@ -129,75 +129,73 @@ export function DiscountsDashboard() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-200" />
+            <div key={i} className="h-16 shimmer rounded-lg" />
           ))}
         </div>
       ) : !discounts?.length ? (
         <EmptyState icon={Tag} title={t("noDiscounts")} description={t("noDiscountsHint")} />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("code")}</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("type")}</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("usage")}</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("expires")}</th>
-                <th className="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase">{t("statusLabel")}</th>
-                <th className="px-4 py-3 text-end text-xs font-medium text-gray-500 uppercase"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {discounts.map((discount) => (
-                <tr key={discount.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <span className="font-mono text-sm font-medium text-gray-900">{discount.code}</span>
-                    {discount.description && (
-                      <p className="text-xs text-gray-500">{discount.description}</p>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {discount.type === "percentage" && `${discount.value}%`}
-                    {discount.type === "fixed" && `$${discount.value}`}
-                    {discount.type === "free_shipping" && t("typeFreeShipping")}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {discount.used_count}
-                    {discount.max_uses != null ? ` / ${discount.max_uses}` : ""}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
-                    {discount.valid_until ? formatDateTime(discount.valid_until) : "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <button onClick={() => toggleActive(discount)} title={t("toggleStatus")}>
-                      <Badge variant={discount.is_active ? "success" : "default"}>
-                        {discount.is_active ? t("active") : t("inactive")}
-                      </Badge>
+        <Table>
+          <THead>
+            <tr>
+              <THeadCell>{t("code")}</THeadCell>
+              <THeadCell>{t("type")}</THeadCell>
+              <THeadCell>{t("usage")}</THeadCell>
+              <THeadCell>{t("expires")}</THeadCell>
+              <THeadCell>{t("statusLabel")}</THeadCell>
+              <THeadCell className="w-20" />
+            </tr>
+          </THead>
+          <TBody>
+            {discounts.map((discount) => (
+              <TR key={discount.id}>
+                <TD>
+                  <span className="font-mono text-sm font-medium">{discount.code}</span>
+                  {discount.description && (
+                    <p className="text-xs text-ink-soft">{discount.description}</p>
+                  )}
+                </TD>
+                <TD className="text-sm text-ink-soft">
+                  {discount.type === "percentage" && `${discount.value}%`}
+                  {discount.type === "fixed" && `$${discount.value}`}
+                  {discount.type === "free_shipping" && t("typeFreeShipping")}
+                </TD>
+                <TD className="text-sm text-ink-soft tabular-nums">
+                  {discount.used_count}
+                  {discount.max_uses != null ? ` / ${discount.max_uses}` : ""}
+                </TD>
+                <TD className="text-sm text-ink-soft">
+                  {discount.valid_until ? formatDateTime(discount.valid_until) : "—"}
+                </TD>
+                <TD>
+                  <button onClick={() => toggleActive(discount)} title={t("toggleStatus")}>
+                    <Badge variant={discount.is_active ? "success" : "default"}>
+                      {discount.is_active ? t("active") : t("inactive")}
+                    </Badge>
+                  </button>
+                </TD>
+                <TD className="text-end">
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={() => openEdit(discount)}
+                      className="rounded p-1 text-ink-soft transition-colors hover:bg-rail hover:text-ink"
+                      aria-label={tc("edit")}
+                    >
+                      <Pencil className="h-4 w-4" />
                     </button>
-                  </td>
-                  <td className="px-4 py-3 text-end">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => openEdit(discount)}
-                        className="rounded p-1 text-gray-400 hover:bg-gray-100"
-                        aria-label={tc("edit")}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => remove(discount)}
-                        className="rounded p-1 text-red-400 hover:bg-red-50"
-                        aria-label={tc("delete")}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <button
+                      onClick={() => remove(discount)}
+                      className="rounded p-1 text-error transition-colors hover:bg-error-soft"
+                      aria-label={tc("delete")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
       )}
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} title={editing ? t("edit") : t("create")}>

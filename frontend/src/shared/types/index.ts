@@ -96,16 +96,26 @@ export interface Store {
   logo_url: string | null;
   favicon_url: string | null;
   theme: UUID | null;
+  theme_config_override: Record<string, unknown> | null;
   template: UUID | null;
   navigation: {
     logo_text: string;
     links: Array<{ label: string; url: string; order?: number }>;
     cta_button?: { label: string; url: string; enabled: boolean };
+    header_layout?: "classic" | "centered";
+    header_sticky?: boolean;
+    header_show_search?: boolean;
+    header_show_cart?: boolean;
+    header_height?: number;
+    logo_height?: number;
   } | null;
   footer_config: {
     columns: Array<{ title: string; links: Array<{ label: string; url: string }> }>;
     copyright: string;
     social_links: Record<string, string>;
+    layout?: "columns" | "stacked" | "minimal";
+    show_social?: boolean;
+    show_copyright?: boolean;
   } | null;
   settings: Record<string, unknown>;
   seo_title: string;
@@ -157,6 +167,9 @@ export interface ThemeConfig {
     baseFontSize: number;
     scale: number;
     lineHeight: number;
+    headingWeight?: number;
+    headingLetterSpacing?: number;
+    letterSpacing?: number;
   };
   spacing: {
     sectionPaddingY: number;
@@ -1010,3 +1023,4 @@ export interface Template {
   created_at: string;
   updated_at: string;
 }
+

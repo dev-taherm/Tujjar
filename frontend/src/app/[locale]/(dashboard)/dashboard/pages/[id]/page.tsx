@@ -48,8 +48,8 @@ export default function PageDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-10 w-48 animate-pulse rounded-lg bg-gray-200" />
-        <div className="h-[600px] animate-pulse rounded-xl bg-gray-200" />
+        <div className="h-10 w-48 shimmer rounded-lg" />
+        <div className="h-[600px] shimmer rounded-xl" />
       </div>
     );
   }
@@ -57,7 +57,7 @@ export default function PageDetailPage() {
   if (error || !page) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <p className="text-gray-500">{t("notFound")}</p>
+        <p className="text-ink-soft">{t("notFound")}</p>
       </div>
     );
   }
@@ -71,14 +71,14 @@ export default function PageDetailPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">{t("builderMode")}:</span>
-        <div className="flex rounded-lg border border-gray-200 bg-white p-0.5">
+        <span className="text-sm text-ink-soft">{t("builderMode")}:</span>
+        <div className="flex rounded-lg border border-line bg-panel p-0.5">
           {modes.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => handleModeChange(key)}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                builderMode === key ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
+                builderMode === key ? "bg-primary-600 text-white" : "text-ink-soft hover:bg-rail"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />

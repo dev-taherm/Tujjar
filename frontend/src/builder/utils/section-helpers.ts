@@ -1,4 +1,4 @@
-import type { Section, SectionDefinition, PageSchema } from "@/shared/types";
+import type { Section, SectionDefinition } from "@/shared/types";
 
 export function generateSectionId(): string {
   return crypto.randomUUID?.() || Math.random().toString(36).substring(2, 15);

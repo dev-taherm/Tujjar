@@ -92,21 +92,21 @@ export function NotificationsBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100"
+        className="relative rounded-lg p-2 text-ink-soft transition-colors hover:bg-rail"
         aria-label={t("title")}
       >
         <Bell className="h-5 w-5" />
         {count > 0 && (
-          <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
             {count > 9 ? "9+" : count}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute end-0 z-50 mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-            <span className="text-sm font-semibold text-gray-900">{t("title")}</span>
+        <div className="absolute end-0 z-50 mt-2 w-80 rounded-xl border border-line bg-panel shadow-lg">
+          <div className="flex items-center justify-between border-b border-line px-4 py-3">
+            <span className="text-sm font-semibold text-ink">{t("title")}</span>
             {count > 0 && (
               <button
                 onClick={markAllRead}
@@ -116,16 +116,16 @@ export function NotificationsBell() {
               </button>
             )}
           </div>
-          <div className="max-h-96 divide-y divide-gray-100 overflow-y-auto">
+          <div className="max-h-96 divide-y divide-line overflow-y-auto">
             {!recent?.length ? (
-              <p className="px-4 py-8 text-center text-sm text-gray-400">{t("empty")}</p>
+              <p className="px-4 py-8 text-center text-sm text-ink-soft">{t("empty")}</p>
             ) : (
               recent.slice(0, 10).map((n: NotificationRow) => (
                 <button
                   key={n.id}
                   onClick={() => openNotification(n)}
                   className={cn(
-                    "flex w-full flex-col items-start gap-0.5 px-4 py-3 text-start transition-colors hover:bg-gray-50",
+                    "flex w-full flex-col items-start gap-0.5 px-4 py-3 text-start transition-colors hover:bg-rail",
                     !n.is_read && "bg-primary-50/50"
                   )}
                 >
@@ -133,15 +133,15 @@ export function NotificationsBell() {
                     <span
                       className={cn(
                         "truncate text-sm",
-                        n.is_read ? "font-normal text-gray-700" : "font-semibold text-gray-900"
+                        n.is_read ? "font-normal text-ink" : "font-semibold text-ink"
                       )}
                     >
                       {n.title}
                     </span>
                     {!n.is_read && <span className="h-2 w-2 flex-shrink-0 rounded-full bg-primary-500" />}
                   </span>
-                  <span className="line-clamp-1 text-xs text-gray-500">{n.message}</span>
-                  <span className="text-[10px] text-gray-400">{formatDateTime(n.created_at)}</span>
+                  <span className="line-clamp-1 text-xs text-ink-soft">{n.message}</span>
+                  <span className="text-[10px] text-ink-soft">{formatDateTime(n.created_at)}</span>
                 </button>
               ))
             )}
@@ -149,7 +149,7 @@ export function NotificationsBell() {
           <Link
             href="/dashboard/notifications"
             onClick={() => setOpen(false)}
-            className="block border-t border-gray-100 px-4 py-2 text-center text-xs text-primary-600 hover:bg-gray-50"
+            className="block border-t border-line px-4 py-2 text-center text-xs text-primary-600 hover:bg-rail"
           >
             {t("viewAll")}
           </Link>

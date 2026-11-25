@@ -16,7 +16,6 @@ interface ThemeListProps {
 
 export function ThemeList({ storeId, activeThemeId }: ThemeListProps) {
   const t = useTranslations("dashboard.themes");
-  const tc = useTranslations("common");
   const locale = useLocale();
   const { data: themes, isLoading } = useThemes();
   const setTheme = useSetTheme();
@@ -31,7 +30,7 @@ export function ThemeList({ storeId, activeThemeId }: ThemeListProps) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-64 animate-pulse rounded-xl bg-gray-200" />
+          <div key={i} className="h-64 shimmer rounded-xl" />
         ))}
       </div>
     );

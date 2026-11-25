@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tujjar · Desert Modern — Design Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Reem+Kufi:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ============ DESERT MODERN TOKENS (from UI_UX_REDESIGN_PLAN.md §2) ============ */
+  .s-light{
+    --bg:#FBF8F2; --surface:#FFFFFF; --surface2:#F5EFE4; --ink:#241E15; --ink2:#71675A; --line:#E9E1D2;
+    --p50:#FBF2EC; --p100:#F6E2D3; --p200:#EDC5A8; --p300:#E0A072; --p400:#D0804A; --p500:#BC6533; --p600:#A05226; --p700:#7F3E1E;
+    --accent:#E39A36; --accent-soft:rgba(227,154,54,.16); --success:#4E7A57; --info:#3F7C8C; --warn:#B96A15; --error:#BC3F49;
+    --sh-sm:0 1px 2px rgba(36,30,21,.05);
+    --sh-md:0 8px 24px rgba(36,30,21,.08);
+    --sh-lg:0 24px 60px rgba(36,30,21,.16);
+  }
+  .s-dark{
+    --bg:#16120D; --surface:#1E1913; --surface2:#292118; --ink:#F4EDDF; --ink2:#A79B87; --line:#3A3125;
+    --p50:#2A1F15; --p100:#3A2A1C; --p200:#5A3D25; --p300:#94573A; --p400:#C47048; --p500:#E68A5C; --p600:#F09E74; --p700:#F5B58F;
+    --accent:#F0B45A; --accent-soft:rgba(240,180,90,.14); --success:#7FB08A; --info:#6FB3C4; --warn:#E5A54E; --error:#E4606D;
+    --sh-sm:0 1px 2px rgba(0,0,0,.25);
+    --sh-md:0 8px 24px rgba(0,0,0,.35);
+    --sh-lg:0 24px 60px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased}
+  body{
+    background:#EFE8DA;
+    background-image:radial-gradient(rgba(36,30,21,.045) 1px, transparent 1px);
+    background-size:22px 22px;
+    font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
+    color:#241E15; padding:56px 28px 110px;
+  }
+  svg{display:block}
+
+  /* ============ page scaffolding ============ */
+  .wrap{max-width:1280px;margin:0 auto}
+  .page-head{margin-bottom:52px}
+  .page-kicker{display:inline-flex;align-items:center;gap:10px;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#A05226;background:#FBF2EC;border:1px solid #F6E2D3;padding:6px 14px;border-radius:999px}
+  .page-title{font-family:Fraunces,serif;font-weight:600;font-size:46px;letter-spacing:-.015em;margin:16px 0 8px}
+  .page-sub{color:#71675A;font-size:15px;line-height:1.6;max-width:68ch}
+  .swatch-row{display:flex;gap:8px;margin-top:22px}
+  .sw{width:30px;height:30px;border-radius:10px;border:1px solid rgba(36,30,21,.12)}
+
+  .panel{margin-bottom:64px}
+  .panel-label{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+  .pl-num{font-family:Fraunces,serif;font-weight:600;font-size:15px;color:#A05226}
+  .pl-name{font-size:16px;font-weight:700;letter-spacing:-.01em}
+  .pl-note{color:#71675A;font-size:12.5px}
+
+  .screen{
+    border-radius:22px;overflow:hidden;box-shadow:var(--sh-lg);
+    border:1px solid rgba(36,30,21,.1);position:relative;
+    font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
+  }
+  .s-light{background:var(--bg);color:var(--ink)}
+  .s-dark{background:var(--bg);color:var(--ink)}
+
+  /* ============ shared bits ============ */
+  .pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .s-light .pill.pending{background:rgba(185,106,21,.12);color:#8A5210}
+  .s-light .pill.processing{background:rgba(63,124,140,.13);color:#31616F}
+  .s-light .pill.shipped{background:rgba(63,124,140,.22);color:#29505B}
+  .s-light .pill.delivered{background:rgba(78,122,87,.14);color:#3E6448}
+  .s-light .pill.cancelled{background:rgba(188,63,73,.11);color:#BC3F49}
+  .s-dark .pill.pending{background:rgba(229,165,78,.15);color:#E5A54E}
+  .s-dark .pill.processing{background:rgba(111,179,196,.14);color:#6FB3C4}
+  .s-dark .pill.shipped{background:rgba(111,179,196,.24);color:#8FC3D1}
+  .s-dark .pill.delivered{background:rgba(127,176,138,.15);color:#7FB08A}
+  .s-dark .pill.cancelled{background:rgba(228,96,109,.15);color:#E4606D}
+
+  .delta{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;font-variant-numeric:tabular-nums}
+  .delta.up{color:var(--success)}
+  .s-light .delta.up{background:rgba(78,122,87,.1)}
+  .s-dark .delta.up{background:rgba(127,176,138,.13)}
+  .delta.down{color:var(--error)}
+  .s-light .delta.down{background:rgba(188,63,73,.08)}
+  .s-dark .delta.down{background:rgba(228,96,109,.12)}
+
+  kbd{font:600 11px "IBM Plex Sans Arabic",sans-serif;padding:2px 7px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--surface2);color:var(--ink2)}
+
+  /* ============ 01 · dashboard cockpit ============ */
+  .cockpit{display:grid;grid-template-columns:238px 1fr}
+  .side{background:var(--surface2);border-inline-end:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .brand-row{display:flex;align-items:center;gap:11px;padding:4px 8px 16px}
+  .mark{width:32px;height:32px;color:var(--p500)}
+  .brand-name{font-weight:700;font-size:17.5px;letter-spacing:-.01em}
+  .brand-ar{font-family:Reem Kufi,sans-serif;color:var(--ink2);font-size:13px}
+  .ng-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--ink2);padding:0 12px;margin:16px 2px 7px;opacity:.85}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--ink2);position:relative}
+  .nav-item svg{width:15px;height:15px;flex:none}
+  .nav-item.active{color:var(--p500);font-weight:600;background:rgba(188,101,51,.07)}
+  .s-dark .nav-item.active{color:var(--p600);background:rgba(230,138,92,.09)}
+  .nav-item.active::before{content:"";position:absolute;inset-inline-start:-14px;top:7px;bottom:7px;width:3px;border-radius:3px;background:var(--p500)}
+  .side-foot{margin-top:auto;position:relative;padding:16px 6px 2px}
+  .side-pattern{position:absolute;inset-inline-end:-30px;bottom:-26px;width:150px;height:150px;opacity:.5}
+  .user-chip{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:12px;background:var(--surface);border:1px solid var(--line);position:relative}
+  .avatar{width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,var(--p400),var(--accent));display:grid;place-items:center;color:#fff;font-size:11.5px;font-weight:700}
+  .uc-name{font-size:12.5px;font-weight:600}
+  .uc-sub{font-size:11px;color:var(--ink2)}
+
+  .main{display:flex;flex-direction:column;min-width:0}
+  .topbar{height:58px;display:flex;align-items:center;gap:10px;padding:0 20px;border-bottom:1px solid var(--line)}
+  .search{display:flex;align-items:center;gap:9px;height:36px;padding:0 8px 0 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink2);font-size:13px;width:340px}
+  .search svg{width:14px;height:14px}
+  .search .kbd-slot{margin-inline-start:auto}
+  .tb-right{margin-inline-start:auto;display:flex;align-items:center;gap:9px}
+  .icon-btn{width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink2);position:relative}
+  .icon-btn svg{width:16px;height:16px}
+  .icon-btn .dot{position:absolute;top:8px;inset-inline-end:9px;width:7px;height:7px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+  .store-chip{display:flex;align-items:center;gap:9px;height:36px;padding:0 13px;border-radius:11px;border:1px solid var(--line);background:var(--surface2);font-size:12.5px;font-weight:600}
+  .sw-store{width:19px;height:19px;border-radius:7px;background:linear-gradient(135deg,var(--p500),var(--accent))}
+  .seg{display:flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;font-size:12px;background:var(--surface)}
+  .seg span{padding:7px 11px;color:var(--ink2)}
+  .seg .on{background:var(--surface2);color:var(--ink);font-weight:700}
+
+  .content{padding:24px 24px 30px;display:flex;flex-direction:column;gap:20px}
+  .greet{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .greet h2{font-size:23px;font-weight:700;letter-spacing:-.02em}
+  .greet .sub{color:var(--ink2);font-size:13px;margin-top:5px}
+  .chip-btn{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:600;color:var(--ink)}
+  .chip-btn svg{width:13px;height:13px;color:var(--p500)}
+  .chips{display:flex;gap:8px}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px 16px;box-shadow:var(--sh-sm)}
+  .kpi .lbl{font-size:12px;color:var(--ink2);font-weight:500}
+  .kpi .val{font-size:23px;font-weight:700;letter-spacing:-.01em;margin-top:6px;font-variant-numeric:tabular-nums}
+  .kpi .foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+  .kpi svg{width:76px;height:26px}
+
+  .row2{display:grid;grid-template-columns:1.72fr 1fr;gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-sm)}
+  .card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 4px}
+  .card-title{font-size:14px;font-weight:700}
+  .range{display:flex;gap:5px;font-size:11.5px;font-weight:600}
+  .range span{padding:4px 10px;border-radius:8px;color:var(--ink2)}
+  .range .on{background:var(--p50);color:var(--p600)}
+  .s-dark .range .on{background:var(--p100);color:var(--p600)}
+  .chart{padding:10px 18px 18px}
+  .chart svg{width:100%;height:196px}
+
+  .stack{display:flex;flex-direction:column;gap:16px}
+  .orders{padding:8px 18px 14px}
+  .orders li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;list-style:none}
+  .orders li:last-child{border-bottom:0}
+  .oid{font-weight:600;font-variant-numeric:tabular-nums}
+  .cust{color:var(--ink2)}
+  .amt{margin-inline-start:auto;font-weight:600;font-variant-numeric:tabular-nums}
+
+  .ai-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;overflow:hidden;box-shadow:var(--sh-sm)}
+  .ai-card .pat{position:absolute;inset-inline-end:-24px;top:-24px;width:140px;height:140px;opacity:.55}
+  .ai-head{display:flex;align-items:center;gap:9px;position:relative}
+  .ai-tag{font-size:10px;font-weight:700;letter-spacing:.12em;color:#9A6210;background:var(--accent-soft);padding:4px 9px;border-radius:999px}
+  .s-dark .ai-tag{color:var(--accent)}
+  .ai-when{font-size:11px;color:var(--ink2)}
+  .ai-body{font-size:12.6px;line-height:1.62;color:var(--ink2);margin-top:11px;position:relative}
+  .ai-body strong{color:var(--ink);font-weight:600}
+  .ai-actions{display:flex;gap:16px;margin-top:12px;position:relative}
+  .ai-actions a{font-size:12.5px;font-weight:700;color:var(--p500);text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .ai-actions a svg{width:12px;height:12px}
+
+  .check-card{padding:15px 16px}
+  .ck-head{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700}
+  .ck-head span{font-size:11.5px;color:var(--ink2);font-weight:500}
+  .bar{height:6px;border-radius:999px;background:var(--surface2);margin:11px 0 12px;overflow:hidden;border:1px solid var(--line)}
+  .bar i{display:block;height:100%;width:60%;border-radius:999px;background:linear-gradient(90deg,var(--p500),var(--accent))}
+  .ck-items{display:flex;flex-direction:column;gap:6px;font-size:12.3px}
+  .ck-items div{display:flex;align-items:center;gap:8px;color:var(--ink2)}
+  .ck-items svg{width:13px;height:13px;flex:none}
+  .ck-items .done{color:var(--success)}
+  .ck-items .done + span{color:var(--ink)}
+  .ck-items .todo{color:var(--ink2);opacity:.55}
+
+  /* ============ 02 · landing ============ */
+  .landing{position:relative}
+  .l-nav{display:flex;align-items:center;gap:28px;padding:22px 44px}
+  .l-links{display:flex;gap:24px;font-size:13.5px;color:var(--ink2);font-weight:500}
+  .l-links b{color:var(--ink);font-weight:600}
+  .l-nav .grow{flex:1}
+  .l-cta{height:40px;padding:0 18px;display:inline-flex;align-items:center;border-radius:11px;background:var(--p500,#BC6533);color:#fff;font-size:13.5px;font-weight:700;box-shadow:0 8px 20px rgba(160,82,38,.25)}
+  .l-hero{position:relative;padding:34px 48px 0;display:grid;grid-template-columns:1.06fr .94fr;gap:36px;align-items:center}
+  .sunset{position:absolute;left:0;right:0;bottom:0;height:118px;background:linear-gradient(90deg,rgba(160,82,38,.9),rgba(227,154,54,.92));border-radius:100% 100% 0 0/88px 88px 0 0}
+  .eyebrow{display:inline-flex;gap:9px;align-items:center;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#A05226;background:#FBF2EC;border:1px solid #F6E2D3;padding:6px 13px;border-radius:999px}
+  .display{font-family:Fraunces,serif;font-weight:600;font-size:56px;line-height:1.05;letter-spacing:-.018em;margin-top:20px}
+  .display em{color:#A05226}
+  .hero-ar{font-family:Reem Kufi,sans-serif;font-size:22px;color:#BC6533;margin-top:12px}
+  .hero-ar small{color:#71675A;font-size:13px;font-family:"IBM Plex Sans Arabic"}
+  .l-sub{font-size:15.5px;color:#71675A;line-height:1.68;margin-top:15px;max-width:48ch}
+  .cta-row{display:flex;gap:12px;margin-top:28px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 22px;border-radius:13px;font-size:14px;font-weight:700;border:1px solid transparent}
+  .btn-primary{background:#A05226;color:#fff;box-shadow:0 10px 26px rgba(160,82,38,.3)}
+  .btn-outline{background:#fff;border-color:#E9E1D2;color:#241E15}
+  .l-meta{display:flex;gap:9px;align-items:center;margin-top:24px;font-size:12px;color:#71675A;flex-wrap:wrap}
+  .l-meta i{width:3px;height:3px;border-radius:50%;background:#C9BFA9;font-style:normal}
+
+  .arches{display:flex;gap:20px;align-items:flex-end;justify-content:flex-end;position:relative;padding-bottom:0}
+  .arch{border-radius:999px 999px 16px 16px;overflow:hidden;position:relative;border:1px solid rgba(36,30,21,.14);box-shadow:var(--sh-md)}
+  .arch.a1{width:216px;height:292px}
+  .arch.a2{width:148px;height:210px}
+  .arch.a3{width:148px;height:186px}
+  .scene-sand{background:linear-gradient(180deg,#F3E7CF 0%,#E3C79C 62%,#D3A878 100%)}
+  .scene-clay{background:linear-gradient(180deg,#F6E2D3 0%,#E0A072 58%,#BC6533 100%)}
+  .scene-gold{background:linear-gradient(180deg,#FBEED3 0%,#EFC46B 60%,#E39A36 100%)}
+  .sun{position:absolute;top:26%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%}
+  .a1 .sun{background:rgba(160,82,38,.85);width:40px;height:40px}
+  .a2 .sun{background:rgba(188,101,51,.5);width:28px;height:28px}
+  .a3 .sun{background:rgba(160,82,38,.45);width:24px;height:24px}
+  .arch .dunes{position:absolute;left:0;right:0;bottom:0;height:46%}
+  .arch .pat{position:absolute;inset:0;opacity:.35}
+
+  .dune-div{padding:0 48px}
+  .dune-div svg{width:100%;height:34px}
+  .features{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:6px 48px 8px}
+  .f-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .f-ic{width:40px;height:40px;border-radius:13px;background:#FBF2EC;color:#A05226;display:grid;place-items:center;margin-bottom:13px}
+  .f-ic svg{width:19px;height:19px}
+  .f-card h4{font-size:14.5px;font-weight:700}
+  .f-card p{font-size:12.6px;color:#71675A;line-height:1.6;margin-top:7px}
+  .themes-row{padding:26px 48px 42px}
+  .tr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .tr-head h3{font-family:Fraunces,serif;font-weight:600;font-size:22px}
+  .tr-more{font-size:12.5px;font-weight:700;color:#A05226}
+  .themes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .t-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .t-banner{height:88px;position:relative}
+  .t-dune .t-banner{background:linear-gradient(120deg,#F6E2D3,#E39A36 55%,#BC6533)}
+  .t-medina .t-banner{background:linear-gradient(120deg,#DDE8DA,#4E7A57 55%,#2C4A34)}
+  .t-modern .t-banner{background:linear-gradient(120deg,#D9E8ED,#3F7C8C 55%,#1F6E8C)}
+  .t-banner .pat{position:absolute;inset:0;opacity:.4}
+  .t-dots{position:absolute;left:14px;bottom:-9px;display:flex}
+  .t-dot{width:17px;height:17px;border-radius:50%;border:2.5px solid #fff;margin-right:-5px;box-shadow:0 2px 6px rgba(36,30,21,.18)}
+  .t-body{display:flex;align-items:center;justify-content:space-between;padding:15px 16px}
+  .t-name{font-size:13.5px;font-weight:700}
+  .t-sub{font-size:11.5px;color:#71675A;margin-top:2px}
+  .t-body svg{width:15px;height:15px;color:#A05226}
+
+  /* ============ 04 · tokens ============ */
+  .tk{padding:34px 38px 42px;display:grid;grid-template-columns:1fr 1fr;gap:38px}
+  .tk h5{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--ink2);margin-bottom:14px}
+  .spec{display:flex;flex-direction:column;gap:16px}
+  .spec .row{display:flex;flex-direction:column;gap:4px}
+  .spec .tag{font-size:10.5px;color:var(--ink2);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+  .spec .en-body{font-size:19px;font-weight:500}
+  .spec .ar-body{font-size:19px;font-weight:500}
+  .spec .serif{font-family:Fraunces,serif;font-weight:600;font-size:26px}
+  .spec .kufi{font-family:Reem Kufi,sans-serif;font-size:26px;color:var(--p500)}
+  .spec .mono-note{font-size:12px;color:var(--ink2)}
+  .ramp{display:flex;gap:6px;flex-wrap:wrap}
+  .ramp div{flex:1;min-width:58px;border-radius:10px;padding:22px 0 6px;text-align:center;font-size:9.5px;color:#fff;font-weight:600}
+  .ramp .lt{color:#5C2C15}
+  .sem-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .cmp-grid{display:flex;flex-direction:column;gap:18px}
+  .cmp-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .tk-btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:11px;font-size:13px;font-weight:700}
+  .tk-btn.pri{background:var(--p500);color:#fff;box-shadow:var(--sh-sm)}
+  .tk-btn.out{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+  .tk-btn.gho{color:var(--ink2)}
+  .tk-badge{display:inline-flex;align-items:center;height:24px;padding:0 11px;border-radius:999px;font-size:11.5px;font-weight:700}
+  .tk-badge.b1{background:rgba(78,122,87,.13);color:#3E6448}
+  .tk-badge.b2{background:rgba(63,124,140,.13);color:#31616F}
+  .tk-badge.b3{background:rgba(185,106,21,.13);color:#8A5210}
+  .tk-badge.b4{background:rgba(188,63,73,.11);color:#BC3F49}
+  .tk-badge.b5{background:var(--accent-soft);color:#9A6210}
+  .tk-input{display:flex;align-items:center;gap:10px;height:40px;padding:0 14px;border:1px solid var(--line);border-radius:11px;background:var(--surface);font-size:13px;color:var(--ink2);width:230px}
+  .tk-input svg{width:14px;height:14px}
+  .tk-tgl{width:44px;height:24px;border-radius:999px;background:var(--p500);position:relative}
+  .tk-tgl i{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+  .tk-tgl.off{background:var(--surface2);border:1px solid var(--line)}
+  .tk-tgl.off i{right:auto;left:3px;background:var(--ink2);opacity:.55}
+  .tk-bar{width:230px;height:7px;border-radius:999px;background:var(--surface2);border:1px solid var(--line)}
+  .tk-bar i{display:block;height:100%;width:62%;border-radius:999px;background:linear-gradient(90deg,var(--p500),var(--accent))}
+  .empty-demo{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:30px;text-align:center;position:relative;overflow:hidden}
+  .empty-demo .pat{position:absolute;inset:0;opacity:.5}
+  .ed-frame{width:92px;height:120px;margin:0 auto 16px;border-radius:999px 999px 12px 12px;background:linear-gradient(180deg,var(--p100),var(--p50));display:grid;place-items:center;position:relative}
+  .ed-frame svg{width:34px;height:34px;color:var(--p400)}
+  .ed-t{font-size:15px;font-weight:700;position:relative}
+  .ed-s{font-size:12.5px;color:var(--ink2);margin-top:5px;position:relative}
+  .ed-cta{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-radius:10px;background:var(--p500);color:#fff;font-size:12.5px;font-weight:700;margin-top:16px;position:relative}
+  .motif-row{display:flex;gap:14px;align-items:stretch}
+  .motif-box{flex:1;border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative;height:110px}
+  .motif-box .pat{position:absolute;inset:0;opacity:.8}
+  .motif-arch{background:linear-gradient(180deg,var(--p100),var(--surface))}
+  .motif-div{background:var(--surface2);display:grid;place-items:center}
+  .motif-div svg{width:88%;height:30px}
+  .motif-lab{position:absolute;left:10px;bottom:8px;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+
+  footer.cap{max-width:1280px;margin:24px auto 0;text-align:center;color:#9A8F7B;font-size:12px;line-height:1.7}
+  footer.cap b{color:#A05226}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ page header ============ -->
+  <header class="page-head">
+    <span class="page-kicker">Tujjar · Design Preview</span>
+    <h1 class="page-title">Desert Modern, rendered live</h1>
+    <p class="page-sub">The direction from <b>UI_UX_REDESIGN_PLAN.md</b>, built with the real tokens, fonts and motifs — not an AI approximation. Judge the <b>warmth of the palette</b>, the <b>typography rhythm</b>, and the <b>restraint of the motifs</b>; pixel-level detail comes with implementation.</p>
+    <div class="swatch-row">
+      <div class="sw" style="background:#FBF8F2" title="Sand canvas"></div>
+      <div class="sw" style="background:#FFFFFF" title="Surface"></div>
+      <div class="sw" style="background:#F5EFE4" title="Sand fill"></div>
+      <div class="sw" style="background:#BC6533" title="Kiln terracotta"></div>
+      <div class="sw" style="background:#E39A36" title="Saffron"></div>
+      <div class="sw" style="background:#4E7A57" title="Palm"></div>
+      <div class="sw" style="background:#3F7C8C" title="Oasis"></div>
+      <div class="sw" style="background:#16120D" title="Night market"></div>
+    </div>
+  </header>
+
+  <!-- ============ SVG defs: icons, mark, khatam patterns, gradients ============ -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <g id="mark" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 4.5a10 10 0 0 1 10 10V26H6V14.5a10 10 0 0 1 10-10z"/>
+        <rect x="13.6" y="13.6" width="4.8" height="4.8" stroke-width="1"/>
+        <rect x="13.6" y="13.6" width="4.8" height="4.8" stroke-width="1" transform="rotate(45 16 16)"/>
+      </g>
+      <!-- khatam (8-point star) tile — light -->
+      <pattern id="khatam-light" width="44" height="44" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#241E15" stroke-opacity=".1" stroke-width="1">
+          <rect x="13" y="13" width="18" height="18"/>
+          <rect x="13" y="13" width="18" height="18" transform="rotate(45 22 22)"/>
+        </g>
+        <circle cx="22" cy="22" r="1.3" fill="#241E15" fill-opacity=".1"/>
+      </pattern>
+      <!-- khatam tile — dark -->
+      <pattern id="khatam-dark" width="44" height="44" patternUnits="userSpaceOnUse">
+        <g fill="none" stroke="#F4EDDF" stroke-opacity=".07" stroke-width="1">
+          <rect x="13" y="13" width="18" height="18"/>
+          <rect x="13" y="13" width="18" height="18" transform="rotate(45 22 22)"/>
+        </g>
+        <circle cx="22" cy="22" r="1.3" fill="#F4EDDF" fill-opacity=".07"/>
+      </pattern>
+      <linearGradient id="area-light" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#BC6533" stop-opacity=".32"/>
+        <stop offset="1" stop-color="#BC6533" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="area-dark" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#E68A5C" stop-opacity=".38"/>
+        <stop offset="1" stop-color="#E68A5C" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="sun-band" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#A05226" stop-opacity=".92"/>
+        <stop offset="1" stop-color="#E39A36" stop-opacity=".94"/>
+      </linearGradient>
+
+      <!-- icon set (geometric line, 24 viewBox) -->
+      <g id="i-grid" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></g>
+      <g id="i-chart" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M7.5 15.5l3.5-4.5 3 3 4.5-6"/></g>
+      <g id="i-spark" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/></g>
+      <g id="i-box" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></g>
+      <g id="i-tag" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8.5" cy="8.5" r="1.4"/></g>
+      <g id="i-layers" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12.5l8 4 8-4M4 16.5l8 4 8-4"/></g>
+      <g id="i-users" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.2 14.6c2 .3 3.6 1.7 4.3 4.4"/></g>
+      <g id="i-pct" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/></g>
+      <g id="i-page" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></g>
+      <g id="i-pen" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3-11 11z"/><path d="M14 7l3 3"/></g>
+      <g id="i-img" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4-4 3 3 3-3 4 4"/></g>
+      <g id="i-pal" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.6"/><circle cx="8.7" cy="9.3" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="7.8" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.3" cy="9.3" r="1.1" fill="currentColor" stroke="none"/></g>
+      <g id="i-gear" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.6M12 17.9v2.6M3.5 12h2.6M17.9 12h2.6M6 6l1.9 1.9M16.1 16.1L18 18M18 6l-1.9 1.9M7.9 16.1L6 18"/></g>
+      <g id="i-shield" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3.5l7 2.8v4.9c0 4.4-3 7.6-7 9.3-4-1.7-7-4.9-7-9.3V6.3z"/></g>
+      <g id="i-card" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M3.5 10h17"/></g>
+      <g id="i-bell" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M6.2 16v-5a5.8 5.8 0 0 1 11.6 0v5l1.6 2.6H4.6z"/><path d="M10.4 20.8a1.8 1.8 0 0 0 3.2 0"/></g>
+      <g id="i-search" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.4"/><path d="M15.6 15.6l4.6 4.6"/></g>
+      <g id="i-globe" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2M12 3.4c2.7 2.3 4.2 5.3 4.2 8.6s-1.5 6.3-4.2 8.6c-2.7-2.3-4.2-5.3-4.2-8.6s1.5-6.3 4.2-8.6z"/></g>
+      <g id="i-server" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="5" width="16" height="6" rx="1.5"/><rect x="4" y="13" width="16" height="6" rx="1.5"/><path d="M7.4 8h.01M7.4 16h.01" stroke-linecap="round"/></g>
+      <g id="i-arch" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7.5 20v-8a4.5 4.5 0 0 1 9 0v8"/><path d="M4 20h16"/></g>
+      <g id="i-check" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></g>
+      <g id="i-arrow" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6.5l5.5 5.5-5.5 5.5"/></g>
+      <g id="i-plus" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></g>
+    </defs>
+  </svg>
+
+  <!-- ============ 01 · dashboard — Lumen Souk ============ -->
+  <section class="panel">
+    <div class="panel-label">
+      <span class="pl-num">01</span>
+      <span class="pl-name">Merchant dashboard · Lumen Souk</span>
+      <span class="pl-note">warm sand canvas · terracotta accents · khatam watermark in the sidebar footer</span>
+    </div>
+    <div class="screen s-light">
+      <div class="cockpit">
+        <aside class="side">
+          <div class="brand-row">
+            <svg class="mark" viewBox="0 0 32 32"><use href="#mark"/></svg>
+            <div>
+              <div class="brand-name">Tujjar</div>
+              <div class="brand-ar">تجّار</div>
+            </div>
+          </div>
+          <div class="ng-head">Overview</div>
+          <div class="nav-item active"><svg viewBox="0 0 24 24"><use href="#i-grid"/></svg>Dashboard</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-chart"/></svg>Analytics</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-spark"/></svg>AI Brief</div>
+          <div class="ng-head">Commerce</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-box"/></svg>Orders</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-tag"/></svg>Products</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-layers"/></svg>Inventory</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-users"/></svg>Customers</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-pct"/></svg>Discounts</div>
+          <div class="ng-head">Content</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-page"/></svg>Pages</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-pen"/></svg>Blog</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-img"/></svg>Media</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-pal"/></svg>Themes</div>
+          <div class="side-foot">
+            <svg class="side-pattern" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+            <div class="user-chip">
+              <div class="avatar">MH</div>
+              <div>
+                <div class="uc-name">Mira Haddad</div>
+                <div class="uc-sub">Meridian · Owner</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="main">
+          <div class="topbar">
+            <div class="search">
+              <svg viewBox="0 0 24 24"><use href="#i-search"/></svg>
+              Search orders, products, customers…
+              <span class="kbd-slot"><kbd>⌘K</kbd></span>
+            </div>
+            <div class="tb-right">
+              <div class="store-chip"><span class="sw-store"></span>Meridian Home Goods</div>
+              <div class="seg"><span class="on">EN</span><span>ع</span></div>
+              <div class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-bell"/></svg><span class="dot"></span></div>
+              <div class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-globe"/></svg></div>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="greet">
+              <div>
+                <h2>Good morning, Meridian</h2>
+                <div class="sub">Tuesday market brief · 4 stores · Dune theme live</div>
+              </div>
+              <div class="chips">
+                <span class="chip-btn"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg>New product</span>
+                <span class="chip-btn"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg>New discount</span>
+              </div>
+            </div>
+
+            <div class="kpis">
+              <div class="kpi">
+                <div class="lbl">Revenue · 30 days</div>
+                <div class="val">$48,290</div>
+                <div class="foot"><span class="delta up">+12.4%</span>
+                  <svg viewBox="0 0 76 26" fill="none"><polyline points="1,20 11,17 21,19 31,12 41,15 51,8 61,10 71,4" stroke="#BC6533" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="kpi">
+                <div class="lbl">Orders</div>
+                <div class="val">1,284</div>
+                <div class="foot"><span class="delta up">+8.2%</span>
+                  <svg viewBox="0 0 76 26" fill="none"><polyline points="1,18 11,19 21,15 31,16 41,11 51,13 61,7 71,5" stroke="#BC6533" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="kpi">
+                <div class="lbl">Conversion</div>
+                <div class="val">3.6%</div>
+                <div class="foot"><span class="delta down">−0.4%</span>
+                  <svg viewBox="0 0 76 26" fill="none"><polyline points="1,8 11,10 21,9 31,13 41,12 51,16 61,15 71,19" stroke="#BC6533" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/></svg>
+                </div>
+              </div>
+              <div class="kpi">
+                <div class="lbl">Avg. order</div>
+                <div class="val">$37.60</div>
+                <div class="foot"><span class="delta up">+5.1%</span>
+                  <svg viewBox="0 0 76 26" fill="none"><polyline points="1,21 11,18 21,20 31,16 41,17 51,12 61,13 71,6" stroke="#BC6533" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="card">
+                <div class="card-head">
+                  <div class="card-title">Revenue</div>
+                  <div class="range"><span class="on">30d</span><span>7d</span><span>90d</span></div>
+                </div>
+                <div class="chart">
+                  <svg viewBox="0 0 640 196" preserveAspectRatio="none" fill="none">
+                    <path d="M0 40h640M0 84h640M0 128h640M0 172h640" stroke="#E9E1D2" stroke-dasharray="2 5"/>
+                    <path d="M0 158 C70 150 110 118 190 126 S330 84 410 96 S560 34 640 46 L640 196 L0 196 Z" fill="url(#area-light)"/>
+                    <path d="M0 158 C70 150 110 118 190 126 S330 84 410 96 S560 34 640 46" stroke="#BC6533" stroke-width="2.6" stroke-linecap="round"/>
+                    <circle cx="640" cy="46" r="4.5" fill="#BC6533" stroke="#fff" stroke-width="2"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="stack">
+                <div class="card">
+                  <div class="card-head"><div class="card-title">Order queue</div></div>
+                  <ul class="orders">
+                    <li><span class="oid">#1042</span><span class="cust">Mira H.</span><span class="amt">$86.00</span><span class="pill pending">pending</span></li>
+                    <li><span class="oid">#1041</span><span class="cust">Omar N.</span><span class="amt">$129.50</span><span class="pill processing">processing</span></li>
+                    <li><span class="oid">#1040</span><span class="cust">Layla K.</span><span class="amt">$54.25</span><span class="pill shipped">shipped</span></li>
+                    <li><span class="oid">#1039</span><span class="cust">Karim E.</span><span class="amt">$210.00</span><span class="pill delivered">delivered</span></li>
+                    <li><span class="oid">#1038</span><span class="cust">Sara A.</span><span class="amt">$41.00</span><span class="pill cancelled">cancelled</span></li>
+                  </ul>
+                </div>
+
+                <div class="ai-card">
+                  <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+                  <div class="ai-head"><span class="ai-tag">AI BRIEF</span><span class="ai-when">today · 09:00</span></div>
+                  <p class="ai-body">Revenue rose 12% — driven by the <strong>Ceramic mug bundle</strong> featured in your hero. Consider restocking before the weekend and drafting a repeat-customer discount.</p>
+                  <div class="ai-actions">
+                    <a href="#">Draft discount <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg></a>
+                    <a href="#">Restock product <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg></a>
+                  </div>
+                </div>
+
+                <div class="card check-card">
+                  <div class="ck-head">Store setup<span>3 of 5</span></div>
+                  <div class="bar"><i></i></div>
+                  <div class="ck-items">
+                    <div><svg class="done" viewBox="0 0 24 24"><use href="#i-check"/></svg><span>Store created</span></div>
+                    <div><svg class="done" viewBox="0 0 24 24"><use href="#i-check"/></svg><span>Dune theme applied</span></div>
+                    <div><svg class="done" viewBox="0 0 24 24"><use href="#i-check"/></svg><span>First product added</span></div>
+                    <div><svg class="todo" viewBox="0 0 24 24"><use href="#i-card"/></svg><span>Payment connected</span></div>
+                    <div><svg class="todo" viewBox="0 0 24 24"><use href="#i-globe"/></svg><span>Domain verified</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 · landing hero ============ -->
+  <section class="panel">
+    <div class="panel-label">
+      <span class="pl-num">02</span>
+      <span class="pl-name">Landing hero</span>
+      <span class="pl-note">Fraunces + Reem Kufi · one sunset gradient · arch-masked scenes · bilingual toggle</span>
+    </div>
+    <div class="screen s-light landing">
+      <nav class="l-nav">
+        <div class="brand-row" style="padding:0">
+          <svg class="mark" viewBox="0 0 32 32"><use href="#mark"/></svg>
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <span class="brand-name">Tujjar</span><span class="brand-ar">تجّار</span>
+          </div>
+        </div>
+        <div class="l-links"><b>Features</b><span>Themes</span><span>Pricing</span><span>Docs</span></div>
+        <div class="grow"></div>
+        <div class="seg"><span class="on">EN</span><span>ع</span></div>
+        <span class="l-cta">Start free</span>
+      </nav>
+
+      <div class="l-hero">
+        <div style="position:relative;z-index:2">
+          <span class="eyebrow">Open-source · AI-powered · Bilingual</span>
+          <h1 class="display">The <em>souk</em> is yours<br>to run.</h1>
+          <div class="hero-ar" dir="rtl">تجّار — سوقك بين يديك</div>
+          <p class="l-sub">Self-hosted commerce where Arabic and English are first-class citizens, AI does the heavy lifting, and every pixel of your storefront is yours to shape.</p>
+          <div class="cta-row">
+            <span class="btn btn-primary">Start your souk — free</span>
+            <span class="btn btn-outline">See the themes</span>
+          </div>
+          <div class="l-meta">MIT licensed <i></i> Docker one-command <i></i> 6 AI providers <i></i> EN/ع native</div>
+        </div>
+
+        <div class="arches">
+          <div class="arch a2 scene-sand">
+            <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+            <div class="sun"></div>
+            <svg class="dunes" viewBox="0 0 148 96" preserveAspectRatio="none"><path d="M0 60 C30 34 62 30 90 46 S130 62 148 52 L148 96 L0 96 Z" fill="#C89A6B"/><path d="M0 74 C40 56 80 52 112 66 S144 80 148 74 L148 96 L0 96 Z" fill="#B07F52"/></svg>
+          </div>
+          <div class="arch a3 scene-gold">
+            <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+            <div class="sun"></div>
+            <svg class="dunes" viewBox="0 0 148 86" preserveAspectRatio="none"><path d="M0 54 C36 30 74 26 104 44 S138 58 148 48 L148 86 L0 86 Z" fill="#C98A2E"/><path d="M0 68 C34 52 78 48 110 60 S144 72 148 68 L148 86 L0 86 Z" fill="#A96F1E"/></svg>
+          </div>
+          <div class="arch a1 scene-clay">
+            <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+            <div class="sun"></div>
+            <svg class="dunes" viewBox="0 0 216 134" preserveAspectRatio="none"><path d="M0 84 C44 52 92 46 132 64 S192 88 216 74 L216 134 L0 134 Z" fill="#A05226"/><path d="M0 104 C50 82 100 78 140 90 S196 106 216 100 L216 134 L0 134 Z" fill="#7F3E1E"/></svg>
+          </div>
+        </div>
+        <div class="sunset"></div>
+      </div>
+
+      <div class="dune-div">
+        <svg viewBox="0 0 1184 34" preserveAspectRatio="none" fill="none"><path d="M0 22 C160 2 320 34 480 22 S800 4 960 18 S1120 30 1184 24" stroke="#EDC5A8" stroke-width="2"/></svg>
+      </div>
+
+      <div class="features">
+        <div class="f-card">
+          <div class="f-ic"><svg viewBox="0 0 24 24"><use href="#i-spark"/></svg></div>
+          <h4>AI-native tooling</h4>
+          <p>Descriptions, SEO copy and a daily brief written for your store — by your store.</p>
+        </div>
+        <div class="f-card">
+          <div class="f-ic"><svg viewBox="0 0 24 24"><use href="#i-arch"/></svg></div>
+          <h4>Visual page builder</h4>
+          <p>Drag-and-drop sections, undo/redo, version history — your storefront shaped live.</p>
+        </div>
+        <div class="f-card">
+          <div class="f-ic"><svg viewBox="0 0 24 24"><use href="#i-globe"/></svg></div>
+          <h4>Bilingual-native</h4>
+          <p>Arabic and English designed together — fonts, RTL and typography honoring both scripts.</p>
+        </div>
+        <div class="f-card">
+          <div class="f-ic"><svg viewBox="0 0 24 24"><use href="#i-server"/></svg></div>
+          <h4>Self-hosted &amp; open</h4>
+          <p>Your data, your servers. One Docker command and the souk is yours.</p>
+        </div>
+      </div>
+
+      <div class="themes-row">
+        <div class="tr-head">
+          <h3>Start from a look</h3>
+          <span class="tr-more">Browse all 10 themes →</span>
+        </div>
+        <div class="themes">
+          <div class="t-card t-dune">
+            <div class="t-banner">
+              <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+              <div class="t-dots"><span class="t-dot" style="background:#BC6533"></span><span class="t-dot" style="background:#E39A36"></span><span class="t-dot" style="background:#F3E7CF"></span></div>
+            </div>
+            <div class="t-body">
+              <div><div class="t-name">Dune</div><div class="t-sub">Signature · terracotta &amp; sand</div></div>
+              <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg>
+            </div>
+          </div>
+          <div class="t-card t-medina">
+            <div class="t-banner">
+              <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+              <div class="t-dots"><span class="t-dot" style="background:#4E7A57"></span><span class="t-dot" style="background:#C9A94E"></span><span class="t-dot" style="background:#DDE8DA"></span></div>
+            </div>
+            <div class="t-body">
+              <div><div class="t-name">Medina</div><div class="t-sub">Signature · palm &amp; brass</div></div>
+              <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg>
+            </div>
+          </div>
+          <div class="t-card t-modern">
+            <div class="t-banner">
+              <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+              <div class="t-dots"><span class="t-dot" style="background:#3F7C8C"></span><span class="t-dot" style="background:#1F6E8C"></span><span class="t-dot" style="background:#D9E8ED"></span></div>
+            </div>
+            <div class="t-body">
+              <div><div class="t-name">Modern</div><div class="t-sub">Retuned · deep oasis</div></div>
+              <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 · dashboard — Night Market ============ -->
+  <section class="panel">
+    <div class="panel-label">
+      <span class="pl-num">03</span>
+      <span class="pl-name">Merchant dashboard · Night Market (dark)</span>
+      <span class="pl-note">warm near-black — amber-lit, never gray-blue</span>
+    </div>
+    <div class="screen s-dark">
+      <div class="cockpit">
+        <aside class="side">
+          <div class="brand-row">
+            <svg class="mark" viewBox="0 0 32 32" style="color:var(--p500)"><use href="#mark"/></svg>
+            <div>
+              <div class="brand-name">Tujjar</div>
+              <div class="brand-ar">تجّار</div>
+            </div>
+          </div>
+          <div class="ng-head">Overview</div>
+          <div class="nav-item active"><svg viewBox="0 0 24 24"><use href="#i-grid"/></svg>Dashboard</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-chart"/></svg>Analytics</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-spark"/></svg>AI Brief</div>
+          <div class="ng-head">Commerce</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-box"/></svg>Orders</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-tag"/></svg>Products</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-layers"/></svg>Inventory</div>
+          <div class="ng-head">Content</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-page"/></svg>Pages</div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><use href="#i-pal"/></svg>Themes</div>
+          <div class="side-foot">
+            <svg class="side-pattern" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-dark)"/></svg>
+            <div class="user-chip">
+              <div class="avatar">MH</div>
+              <div>
+                <div class="uc-name">Mira Haddad</div>
+                <div class="uc-sub">Meridian · Owner</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div class="main">
+          <div class="topbar">
+            <div class="search">
+              <svg viewBox="0 0 24 24"><use href="#i-search"/></svg>
+              Search orders, products, customers…
+              <span class="kbd-slot"><kbd>⌘K</kbd></span>
+            </div>
+            <div class="tb-right">
+              <div class="store-chip"><span class="sw-store"></span>Meridian Home Goods</div>
+              <div class="seg"><span class="on">EN</span><span>ع</span></div>
+              <div class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-bell"/></svg><span class="dot"></span></div>
+              <div class="icon-btn"><svg viewBox="0 0 24 24"><use href="#i-globe"/></svg></div>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="greet">
+              <div>
+                <h2>Good evening, Meridian</h2>
+                <div class="sub">Night brief · 4 stores · Dune theme live</div>
+              </div>
+              <div class="chips">
+                <span class="chip-btn"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg>New product</span>
+                <span class="chip-btn"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg>New discount</span>
+              </div>
+            </div>
+
+            <div class="kpis">
+              <div class="kpi">
+                <div class="lbl">Revenue · 30 days</div>
+                <div class="val">$48,290</div>
+                <div class="foot"><span class="delta up">+12.4%</span>
+                  <svg viewBox="0 0 76 26" fill="none"><polyline points="1,20 11,17 21,19 31,12 41,15 51,8 61,10 71,4" stroke="#E68A5C" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="kpi">
+                <div class="lbl">Orders</div>
+                <div class="val">1,284</div>
+                <div class="foot"><span class="delta up">+8.2%</span>
+                  <svg viewBox="0 0 76 26" fill="none"><polyline points="1,18 11,19 21,15 31,16 41,11 51,13 61,7 71,5" stroke="#E68A5C" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="kpi">
+                <div class="lbl">Conversion</div>
+                <div class="val">3.6%</div>
+                <div class="foot"><span class="delta down">−0.4%</span>
+                  <svg viewBox="0 0 76 26" fill="none"><polyline points="1,8 11,10 21,9 31,13 41,12 51,16 61,15 71,19" stroke="#E68A5C" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/></svg>
+                </div>
+              </div>
+              <div class="kpi">
+                <div class="lbl">Avg. order</div>
+                <div class="val">$37.60</div>
+                <div class="foot"><span class="delta up">+5.1%</span>
+                  <svg viewBox="0 0 76 26" fill="none"><polyline points="1,21 11,18 21,20 31,16 41,17 51,12 61,13 71,6" stroke="#E68A5C" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="card">
+                <div class="card-head">
+                  <div class="card-title">Revenue</div>
+                  <div class="range"><span class="on">30d</span><span>7d</span><span>90d</span></div>
+                </div>
+                <div class="chart">
+                  <svg viewBox="0 0 640 196" preserveAspectRatio="none" fill="none">
+                    <path d="M0 40h640M0 84h640M0 128h640M0 172h640" stroke="#3A3125" stroke-dasharray="2 5"/>
+                    <path d="M0 158 C70 150 110 118 190 126 S330 84 410 96 S560 34 640 46 L640 196 L0 196 Z" fill="url(#area-dark)"/>
+                    <path d="M0 158 C70 150 110 118 190 126 S330 84 410 96 S560 34 640 46" stroke="#E68A5C" stroke-width="2.6" stroke-linecap="round"/>
+                    <circle cx="640" cy="46" r="4.5" fill="#E68A5C" stroke="#1E1913" stroke-width="2"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="stack">
+                <div class="card">
+                  <div class="card-head"><div class="card-title">Order queue</div></div>
+                  <ul class="orders">
+                    <li><span class="oid">#1042</span><span class="cust">Mira H.</span><span class="amt">$86.00</span><span class="pill pending">pending</span></li>
+                    <li><span class="oid">#1041</span><span class="cust">Omar N.</span><span class="amt">$129.50</span><span class="pill processing">processing</span></li>
+                    <li><span class="oid">#1040</span><span class="cust">Layla K.</span><span class="amt">$54.25</span><span class="pill shipped">shipped</span></li>
+                    <li><span class="oid">#1039</span><span class="cust">Karim E.</span><span class="amt">$210.00</span><span class="pill delivered">delivered</span></li>
+                    <li><span class="oid">#1038</span><span class="cust">Sara A.</span><span class="amt">$41.00</span><span class="pill cancelled">cancelled</span></li>
+                  </ul>
+                </div>
+
+                <div class="ai-card">
+                  <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-dark)"/></svg>
+                  <div class="ai-head"><span class="ai-tag">AI BRIEF</span><span class="ai-when">today · 21:00</span></div>
+                  <p class="ai-body">Revenue rose 12% — driven by the <strong>Ceramic mug bundle</strong> featured in your hero. Consider restocking before the weekend and drafting a repeat-customer discount.</p>
+                  <div class="ai-actions">
+                    <a href="#">Draft discount <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg></a>
+                    <a href="#">Restock product <svg viewBox="0 0 24 24"><use href="#i-arrow"/></svg></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 · tokens & kit ============ -->
+  <section class="panel">
+    <div class="panel-label">
+      <span class="pl-num">04</span>
+      <span class="pl-name">Tokens &amp; kit</span>
+      <span class="pl-note">the system behind the screens — type, ramps, components, motifs</span>
+    </div>
+    <div class="screen s-light">
+      <div class="tk">
+        <div class="spec">
+          <h5>Typography</h5>
+          <div class="row">
+            <span class="tag">UI / body — both scripts</span>
+            <span class="en-body">Merchants run their souk with confidence.</span>
+            <span class="ar-body" dir="rtl">التجّار يديرون أسواقهم بثقة.</span>
+            <span class="mono-note">IBM Plex Sans Arabic · 400/500/600/700 · tabular numerals</span>
+          </div>
+          <div class="row">
+            <span class="tag">Display — latin</span>
+            <span class="serif">Your souk, your rules.</span>
+            <span class="mono-note">Fraunces · 500/600 · landing, onboarding &amp; stat moments</span>
+          </div>
+          <div class="row">
+            <span class="tag">Display — arabic</span>
+            <span class="kufi" dir="rtl">تجّار — سوقك، قواعدك</span>
+            <span class="mono-note">Reem Kufi · geometric, pairs with Fraunces</span>
+          </div>
+          <h5 style="margin-top:10px">Motifs</h5>
+          <div class="motif-row">
+            <div class="motif-box motif-arch">
+              <svg class="pat" viewBox="0 0 44 44"><rect width="44" height="44" fill="url(#khatam-light)"/></svg>
+              <span class="motif-lab">Khatam pattern</span>
+            </div>
+            <div class="motif-box motif-div">
+              <svg viewBox="0 0 1184 34" preserveAspectRatio="none" fill="none"><path d="M0 22 C160 2 320 34 480 22 S800 4 960 18 S1120 30 1184 24" stroke="#D0804A" stroke-width="2"/></svg>
+              <span class="motif-lab">Dune divider</span>
+            </div>
+            <div class="motif-box" style="background:linear-gradient(180deg,#F6E2D3,#FBF2EC)">
+              <div style="position:absolute;left:50%;top:16px;transform:translateX(-50%);width:56px;height:74px;border-radius:999px 999px 10px 10px;background:linear-gradient(180deg,#E0A072,#BC6533);box-shadow:0 6px 16px rgba(160,82,38,.3)"></div>
+              <span class="motif-lab">Arch mask</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cmp-grid">
+          <div>
+            <h5>Kiln terracotta ramp</h5>
+            <div class="ramp">
+              <div class="lt" style="background:#FBF2EC">50</div>
+              <div class="lt" style="background:#F6E2D3">100</div>
+              <div class="lt" style="background:#EDC5A8">200</div>
+              <div class="lt" style="background:#E0A072">300</div>
+              <div style="background:#D0804A">400</div>
+              <div style="background:#BC6533">500</div>
+              <div style="background:#A05226">600</div>
+              <div style="background:#7F3E1E">700</div>
+              <div style="background:#5C2C15">800</div>
+            </div>
+            <div class="sem-row">
+              <span class="tk-badge b1">Palm · success</span>
+              <span class="tk-badge b2">Oasis · info</span>
+              <span class="tk-badge b3">Amber · warning</span>
+              <span class="tk-badge b4">Ember · error</span>
+              <span class="tk-badge b5">Saffron · AI</span>
+            </div>
+          </div>
+          <div>
+            <h5>Components</h5>
+            <div class="cmp-row">
+              <span class="tk-btn pri">Publish store</span>
+              <span class="tk-btn out">Save draft</span>
+              <span class="tk-btn gho">Cancel</span>
+            </div>
+            <div class="cmp-row">
+              <div class="tk-input"><svg viewBox="0 0 24 24"><use href="#i-search"/></svg>Filter orders<kbd style="margin-left:auto">⌘K</kbd></div>
+            </div>
+            <div class="cmp-row">
+              <span class="tk-tgl"><i></i></span>
+              <span class="tk-tgl off"><i></i></span>
+              <div class="tk-bar"><i></i></div>
+            </div>
+          </div>
+          <div>
+            <h5>Empty state — pattern + arch</h5>
+            <div class="empty-demo">
+              <svg class="pat" viewBox="0 0 44 44"><rect width="100%" height="100%" fill="url(#khatam-light)"/></svg>
+              <div class="ed-frame"><svg viewBox="0 0 24 24"><use href="#i-box"/></svg></div>
+              <div class="ed-t">No orders yet</div>
+              <div class="ed-s">Your first sale will land here — open the souk and say hello.</div>
+              <div class="ed-cta">Add your first product</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="cap">
+    Values map 1:1 to the token spec in <b>UI_UX_REDESIGN_PLAN.md §2</b> — these ship as CSS custom properties in <b>globals.css</b>.<br>
+    Fonts: IBM Plex Sans Arabic · Fraunces · Reem Kufi. Dark mode is "Night Market" — warm blacks, amber light.
+  </footer>
+</div>
+</body>
+</html>

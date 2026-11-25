@@ -45,9 +45,9 @@ export function VerificationBanner() {
   };
 
   return (
-    <div className="mx-4 mt-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 md:mx-8 md:mt-8">
-      <Mail className="h-5 w-5 shrink-0 text-amber-600" />
-      <p className="flex-1 text-sm text-amber-800">
+    <div className="mx-4 mt-4 flex items-center gap-3 rounded-lg border border-accent-200 bg-accent-soft px-4 py-3 md:mx-8 md:mt-8">
+      <Mail className="h-5 w-5 shrink-0 text-accent-strong" />
+      <p className="flex-1 text-sm text-warning">
         Your email is not verified. Please check your inbox or click below to resend.
       </p>
       <Button
@@ -55,13 +55,13 @@ export function VerificationBanner() {
         variant="outline"
         onClick={handleResend}
         disabled={sending}
-        className="shrink-0 border-amber-300 text-amber-700 hover:bg-amber-100"
+        className="shrink-0 border-warning/30 text-warning hover:bg-warning-soft"
       >
         {sending ? "Sending..." : "Resend Email"}
       </Button>
       <button
         onClick={() => setDismissed(true)}
-        className="shrink-0 rounded p-1 text-amber-600 hover:bg-amber-100"
+        className="shrink-0 rounded p-1 text-warning hover:bg-warning-soft"
       >
         <X className="h-4 w-4" />
       </button>

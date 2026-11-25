@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useDndMonitor } from "@dnd-kit/core";
 
 interface SnapLine {
@@ -23,7 +23,7 @@ const SNAP_THRESHOLD = 5;
 
 export function SnapGuides({ sectionRects }: { sectionRects: SectionRect[] }) {
   const [activeLines, setActiveLines] = useState<SnapLine[]>([]);
-  const [activeRect, setActiveRect] = useState<SectionRect | null>(null);
+const [, setActiveRect] = useState<SectionRect | null>(null);
 
   useDndMonitor({
     onDragMove(event) {
@@ -83,11 +83,11 @@ export function SnapGuides({ sectionRects }: { sectionRects: SectionRect[] }) {
         <div key={i}>
           {line.type === "horizontal" && (
             <div
-              className="absolute left-0 right-0 h-px bg-blue-500"
+              className="absolute start-0 end-0 h-px bg-primary-500"
               style={{ top: line.position }}
             >
               {line.label && (
-                <span className="absolute right-2 -top-5 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] text-white">
+                <span className="absolute end-2 -top-5 rounded bg-primary-500 px-1.5 py-0.5 text-[10px] text-white">
                   {line.label}
                 </span>
               )}
@@ -95,11 +95,11 @@ export function SnapGuides({ sectionRects }: { sectionRects: SectionRect[] }) {
           )}
           {line.type === "vertical" && (
             <div
-              className="absolute top-0 bottom-0 w-px bg-blue-500"
+              className="absolute top-0 bottom-0 w-px bg-primary-500"
               style={{ left: line.position }}
             >
               {line.label && (
-                <span className="absolute -left-8 top-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] text-white">
+                <span className="absolute -start-8 top-2 rounded bg-primary-500 px-1.5 py-0.5 text-[10px] text-white">
                   {line.label}
                 </span>
               )}

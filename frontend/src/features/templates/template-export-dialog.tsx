@@ -41,7 +41,7 @@ export function TemplateExportDialog({ template, open, onClose }: TemplateExport
 
   return (
     <Dialog open={true} onClose={onClose} title={t("export")}>
-      <p className="mb-4 text-sm text-gray-600">
+      <p className="mb-4 text-sm text-ink-soft">
         Export &ldquo;{template.name}&rdquo; as a JSON file. You can import it into other stores later.
       </p>
       <div className="flex justify-end gap-2">

@@ -27,7 +27,6 @@ interface DnsInstructions {
 
 export function StoreDomains({ storeId }: StoreDomainsProps) {
   const t = useTranslations("dashboard.domains");
-  const tc = useTranslations("common");
   const queryClient = useQueryClient();
   const [newDomain, setNewDomain] = useState("");
   const [domainError, setDomainError] = useState<string | null>(null);
@@ -162,7 +161,7 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2].map((i) => (
-              <div key={i} className="h-12 animate-pulse rounded-lg bg-gray-100" />
+              <div key={i} className="h-12 shimmer rounded-lg" />
             ))}
           </div>
         ) : domains?.length ? (
@@ -184,7 +183,7 @@ export function StoreDomains({ storeId }: StoreDomainsProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">{t("noCustomDomains")}</p>
+          <p className="text-sm text-ink-soft">{t("noCustomDomains")}</p>
         )}
       </CardContent>
     </Card>
@@ -219,10 +218,10 @@ function DomainItem({
   });
 
   return (
-    <div className="rounded-lg border border-gray-200">
+    <div className="rounded-lg border border-line">
       <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">
-          <Globe className="h-4 w-4 text-gray-400" />
+          <Globe className="h-4 w-4 text-ink-soft" />
           <span className="text-sm font-medium">{domain.domain}</span>
           {domain.verified ? (
             <Badge variant="success"><CheckCircle className="me-1 h-3 w-3" />{t("verified")}</Badge>
@@ -253,18 +252,18 @@ function DomainItem({
             </Button>
           )}
           <Button variant="ghost" size="icon" onClick={onRemove}>
-            <Trash2 className="h-4 w-4 text-red-500" />
+            <Trash2 className="h-4 w-4 text-error" />
           </Button>
         </div>
       </div>
 
       {showInstructions && (
-        <div className="border-t border-gray-100 bg-gray-50 p-3">
+        <div className="border-t border-line bg-rail p-3">
           {instructionsLoading ? (
-            <div className="h-16 animate-pulse rounded bg-gray-100" />
+            <div className="h-16 shimmer rounded" />
           ) : instructions ? (
             <>
-              <p className="mb-2 text-xs font-medium text-gray-600">{t("setupInstructions") || "DNS Setup Instructions"}</p>
+              <p className="mb-2 text-xs font-medium text-ink-soft">{t("setupInstructions") || "DNS Setup Instructions"}</p>
               <div className="space-y-2">
                 <DnsRecord
                   label="CNAME"
@@ -295,20 +294,20 @@ function DnsRecord({ label, host, value }: { label: string; host: string; value:
   };
 
   return (
-    <div className="rounded border border-gray-200 bg-white p-2">
-      <p className="mb-1 text-[10px] font-medium text-gray-400 uppercase">{label}</p>
+    <div className="rounded border border-line bg-panel p-2">
+      <p className="mb-1 text-[10px] font-medium text-ink-soft uppercase">{label}</p>
       <div className="flex items-center gap-2 text-xs">
-        <span className="text-gray-500">Host:</span>
-        <code className="flex-1 rounded bg-gray-100 px-1.5 py-0.5 font-mono text-gray-700">{host}</code>
-        <button onClick={() => copyToClipboard(host, "host")} className="text-gray-400 hover:text-gray-600">
-          {copied === "host" ? <CheckCircle className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        <span className="text-ink-soft">Host:</span>
+        <code className="flex-1 rounded bg-rail px-1.5 py-0.5 font-mono text-ink">{host}</code>
+        <button onClick={() => copyToClipboard(host, "host")} className="text-ink-soft hover:text-ink-soft">
+          {copied === "host" ? <CheckCircle className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
         </button>
       </div>
       <div className="flex items-center gap-2 text-xs">
-        <span className="text-gray-500">Value:</span>
-        <code className="flex-1 rounded bg-gray-100 px-1.5 py-0.5 font-mono text-gray-700 truncate">{value}</code>
-        <button onClick={() => copyToClipboard(value, "value")} className="text-gray-400 hover:text-gray-600">
-          {copied === "value" ? <CheckCircle className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        <span className="text-ink-soft">Value:</span>
+        <code className="flex-1 rounded bg-rail px-1.5 py-0.5 font-mono text-ink truncate">{value}</code>
+        <button onClick={() => copyToClipboard(value, "value")} className="text-ink-soft hover:text-ink-soft">
+          {copied === "value" ? <CheckCircle className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
         </button>
       </div>
     </div>

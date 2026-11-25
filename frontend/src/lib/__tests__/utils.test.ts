@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { cn, formatCurrency, formatDate, formatDateTime, slugify, truncate, getInitials } from "../utils";
 
 describe("cn", () => {

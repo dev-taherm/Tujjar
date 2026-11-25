@@ -172,30 +172,35 @@ class TestProductReviews:
             store_data["store"],
             store_data["product"],
         )
-        c1 = Customer.unscoped.create(
-            organization=org, store=store, email="r1@example.com"
-        )
-        c2 = Customer.unscoped.create(
-            organization=org, store=store, email="r2@example.com"
+        c1 = Customer.unscoped.create(organization=org, store=store, email="r1@example.com")
+        c2 = Customer.unscoped.create(organization=org, store=store, email="r2@example.com")
+        Review.unscoped.create(
+            organization=org,
+            store=store,
+            customer=c1,
+            product=product,
+            rating=5,
+            title="Great",
+            body="Loved it",
         )
         Review.unscoped.create(
-            organization=org, store=store, customer=c1, product=product,
-            rating=5, title="Great", body="Loved it",
-        )
-        Review.unscoped.create(
-            organization=org, store=store, customer=c2, product=product,
-            rating=3, title="OK", body="Fine", is_approved=False,
+            organization=org,
+            store=store,
+            customer=c2,
+            product=product,
+            rating=3,
+            title="OK",
+            body="Fine",
+            is_approved=False,
         )
 
         client = APIClient()
-        response = client.get(
-            f"/api/v1/store/{store.slug}/products/portal-widget/reviews/"
-        )
+        response = client.get(f"/api/v1/store/{store.slug}/products/portal-widget/reviews/")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1  # unapproved hidden
         assert response.data["average"] == 5.0
         assert response.data["distribution"]["5"] == 1
-        assert response.data["reviews"][0]["author"] == "r1@example.com".split("@")[0] or True
+        assert response.data["reviews"][0]["author"] == ["r1", "example.com"][0] or True
 
     def test_customer_creates_review(self, store_data):
         data = register_customer(store_data["store"].slug)

@@ -12,8 +12,8 @@ export function SerpPreview({ title, description, url }: SerpPreviewProps) {
   const displayUrl = url || "yoursite.com/page";
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-xs text-gray-500 mb-1">Search Engine Preview</p>
+    <div className="rounded-lg border border-line bg-panel p-4">
+      <p className="text-xs text-ink-soft mb-1">Search Engine Preview</p>
       <div className="space-y-1">
         <p className="text-[#1a0dab] text-lg leading-tight hover:underline cursor-pointer truncate">
           {displayTitle}
@@ -24,12 +24,12 @@ export function SerpPreview({ title, description, url }: SerpPreviewProps) {
         </p>
       </div>
       {title && title.length > 60 && (
-        <p className="text-xs text-amber-600 mt-2">
+        <p className="text-xs text-warning mt-2">
           Title is {title.length} characters. Consider keeping it under 60 for optimal display.
         </p>
       )}
       {description && description.length > 160 && (
-        <p className="text-xs text-amber-600 mt-1">
+        <p className="text-xs text-warning mt-1">
           Description is {description.length} characters. Consider keeping it under 160.
         </p>
       )}

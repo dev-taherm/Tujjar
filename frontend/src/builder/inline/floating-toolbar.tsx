@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, Link, Type } from "lucide-react";
+import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, Link } from "lucide-react";
 
 interface FloatingToolbarProps {
   visible: boolean;
@@ -26,12 +25,12 @@ export function FloatingToolbar({ visible, position, onFormat }: FloatingToolbar
 
   return (
     <div
-      className="fixed z-[60] flex items-center gap-0.5 rounded-lg border border-gray-200 bg-white px-1.5 py-1 shadow-xl"
+      className="fixed z-[60] flex items-center gap-0.5 rounded-lg border border-line bg-panel px-1.5 py-1 shadow-xl"
       style={{ top: position.y - 48, left: position.x }}
     >
       {buttons.map((btn, i) => {
         if (btn.type === "separator") {
-          return <div key={i} className="mx-0.5 h-5 w-px bg-gray-200" />;
+          return <div key={i} className="mx-0.5 h-5 w-px bg-rail" />;
         }
         const Icon = btn.icon;
         return (
@@ -46,7 +45,7 @@ export function FloatingToolbar({ visible, position, onFormat }: FloatingToolbar
                 onFormat(btn.command);
               }
             }}
-            className="rounded p-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            className="rounded p-1.5 text-ink-soft hover:bg-rail hover:text-ink"
             title={btn.title}
           >
             <Icon className="h-3.5 w-3.5" />

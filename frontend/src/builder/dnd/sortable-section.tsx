@@ -47,30 +47,34 @@ export function SortableSection({
       ref={setNodeRef}
       style={style}
       onClick={(e) => { e.stopPropagation(); onSelect(e); }}
-      className={`group relative rounded-lg border-2 transition-colors ${
-        isSelected ? "border-blue-400" : isDragging ? "border-blue-200 shadow-xl" : "border-transparent hover:border-gray-200"
+      className={`group relative rounded-lg border-2 transition-all ${
+        isSelected
+          ? "border-primary-500 shadow-panel"
+          : isDragging
+            ? "border-primary-300 opacity-75"
+            : "border-transparent hover:border-line"
       }`}
     >
       {/* Top bar */}
-      <div className={`absolute -top-10 left-0 right-0 flex items-center justify-between rounded-t-lg px-2 py-1 transition-opacity ${
+      <div className={`absolute -top-10 start-0 end-0 flex items-center justify-between rounded-t-lg px-2 py-1 transition-opacity ${
         isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
       }`}>
-        <div className="flex items-center gap-1.5 rounded-md bg-white px-2 py-1 shadow-sm">
-          <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
+        <div className="flex items-center gap-1.5 rounded-md bg-panel px-2 py-1 shadow-sm">
+          <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-ink-soft hover:text-ink-soft">
             <GripVertical className="h-4 w-4" />
           </button>
-          <SectionIcon className="h-3.5 w-3.5 text-gray-400" />
-          <span className="text-xs font-medium text-gray-600">{def?.label || section.type}</span>
+          <SectionIcon className="h-3.5 w-3.5 text-ink-soft" />
+          <span className="text-xs font-medium text-ink-soft">{def?.label || section.type}</span>
         </div>
-        <div className="flex items-center gap-0.5 rounded-md bg-white px-1 py-0.5 shadow-sm">
-          <button onClick={(e) => { e.stopPropagation(); onToggleVisibility("desktop"); }} className="rounded p-1 hover:bg-gray-100">
-            {section.visibility?.desktop ? <Eye className="h-3.5 w-3.5 text-gray-500" /> : <EyeOff className="h-3.5 w-3.5 text-gray-400" />}
+        <div className="flex items-center gap-0.5 rounded-md bg-panel px-1 py-0.5 shadow-sm">
+          <button onClick={(e) => { e.stopPropagation(); onToggleVisibility("desktop"); }} className="rounded p-1 hover:bg-rail">
+            {section.visibility?.desktop ? <Eye className="h-3.5 w-3.5 text-ink-soft" /> : <EyeOff className="h-3.5 w-3.5 text-ink-soft" />}
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onDuplicate(); }} className="rounded p-1 hover:bg-gray-100">
-            <Copy className="h-3.5 w-3.5 text-gray-500" />
+          <button onClick={(e) => { e.stopPropagation(); onDuplicate(); }} className="rounded p-1 hover:bg-rail">
+            <Copy className="h-3.5 w-3.5 text-ink-soft" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="rounded p-1 hover:bg-red-50">
-            <Trash2 className="h-3.5 w-3.5 text-red-500" />
+          <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="rounded p-1 hover:bg-error-soft">
+            <Trash2 className="h-3.5 w-3.5 text-error" />
           </button>
         </div>
       </div>

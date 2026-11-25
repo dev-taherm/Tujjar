@@ -108,8 +108,8 @@ export default function AdminPlansPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Subscription Plans</h1>
-          <p className="text-sm text-gray-500">Manage pricing plans for the platform</p>
+          <h1 className="text-2xl font-bold text-ink">Subscription Plans</h1>
+          <p className="text-sm text-ink-soft">Manage pricing plans for the platform</p>
         </div>
         <Button onClick={() => { setShowForm(true); setEditingPlan(null); }}>
           Create Plan
@@ -117,51 +117,51 @@ export default function AdminPlansPage() {
       </div>
 
       {showForm && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <div className="rounded-xl border border-line bg-panel p-6">
           <h2 className="mb-4 text-lg font-semibold">{editingPlan ? "Edit Plan" : "New Plan"}</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-sm font-medium text-ink">Name</label>
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Slug</label>
-              <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-sm font-medium text-ink">Slug</label>
+              <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
             </div>
             <div className="md:col-span-2 lg:col-span-3">
-              <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
-              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="Optional plan description..." />
+              <label className="mb-1 block text-sm font-medium text-ink">Description</label>
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full rounded-lg border border-line px-3 py-2 text-sm" placeholder="Optional plan description..." />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Price ($)</label>
-              <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-sm font-medium text-ink">Price ($)</label>
+              <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Interval</label>
-              <select value={form.interval} onChange={(e) => setForm({ ...form, interval: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+              <label className="mb-1 block text-sm font-medium text-ink">Interval</label>
+              <select value={form.interval} onChange={(e) => setForm({ ...form, interval: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm">
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Trial Days</label>
-              <input type="number" value={form.trial_days} onChange={(e) => setForm({ ...form, trial_days: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-sm font-medium text-ink">Trial Days</label>
+              <input type="number" value={form.trial_days} onChange={(e) => setForm({ ...form, trial_days: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Max Products</label>
-              <input type="number" value={form.max_products} onChange={(e) => setForm({ ...form, max_products: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-sm font-medium text-ink">Max Products</label>
+              <input type="number" value={form.max_products} onChange={(e) => setForm({ ...form, max_products: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Max Orders</label>
-              <input type="number" value={form.max_orders} onChange={(e) => setForm({ ...form, max_orders: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-sm font-medium text-ink">Max Orders</label>
+              <input type="number" value={form.max_orders} onChange={(e) => setForm({ ...form, max_orders: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Storage (GB)</label>
-              <input type="number" value={form.max_storage_gb} onChange={(e) => setForm({ ...form, max_storage_gb: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-sm font-medium text-ink">Storage (GB)</label>
+              <input type="number" value={form.max_storage_gb} onChange={(e) => setForm({ ...form, max_storage_gb: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">AI Generations</label>
-              <input type="number" value={form.max_ai_generations} onChange={(e) => setForm({ ...form, max_ai_generations: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-sm font-medium text-ink">AI Generations</label>
+              <input type="number" value={form.max_ai_generations} onChange={(e) => setForm({ ...form, max_ai_generations: e.target.value })} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
             </div>
           </div>
           <div className="mt-4 flex gap-2">
@@ -175,25 +175,25 @@ export default function AdminPlansPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {isLoading ? (
-          [1, 2, 3, 4].map((i) => <div key={i} className="h-48 animate-pulse rounded-xl bg-gray-200" />)
+          [1, 2, 3, 4].map((i) => <div key={i} className="h-48 shimmer rounded-xl" />)
         ) : (
           data?.results?.map((plan: AdminPlan) => (
-            <div key={plan.id} className="rounded-xl border border-gray-200 bg-white p-5">
+            <div key={plan.id} className="rounded-xl border border-line bg-panel p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
-                  <p className="text-2xl font-bold text-primary-600">${plan.price}<span className="text-sm font-normal text-gray-500">/{plan.interval}</span></p>
+                  <h3 className="text-lg font-bold text-ink">{plan.name}</h3>
+                  <p className="text-2xl font-bold text-primary-600">${plan.price}<span className="text-sm font-normal text-ink-soft">/{plan.interval}</span></p>
                 </div>
                 {plan.is_system && <Badge>System</Badge>}
               </div>
-              <div className="mt-4 space-y-1 text-sm text-gray-600">
+              <div className="mt-4 space-y-1 text-sm text-ink-soft">
                 <p>{plan.max_products} products</p>
                 <p>{plan.max_orders} orders</p>
                 <p>{plan.max_storage_gb} GB storage</p>
                 <p>{plan.max_ai_generations} AI generations</p>
                 <p>{plan.trial_days} day trial</p>
               </div>
-              <p className="mt-2 text-xs text-gray-400">{plan.subscription_count} subscriptions</p>
+              <p className="mt-2 text-xs text-ink-soft">{plan.subscription_count} subscriptions</p>
               <div className="mt-4 flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => startEdit(plan)}>Edit</Button>
                 {!plan.is_system && (

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, SearchInput, EmptyState, Dialog } from "@/shared/ui";
+import { Button, SearchInput, EmptyState, Dialog, Dropdown, DropdownItem } from "@/shared/ui";
 import { ProductCard } from "./product-card";
 import { useProducts, useDeleteProduct, useDuplicateProduct } from "@/api/queries";
 import { Plus, Package, MoreHorizontal, Copy, Trash2, Eye, Download, Upload } from "lucide-react";
@@ -18,8 +18,6 @@ export function ProductList() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const deleteProduct = useDeleteProduct();
   const duplicateProduct = useDuplicateProduct();
@@ -94,22 +92,10 @@ export function ProductList() {
     archived: allProducts?.filter((p) => p.status === "archived").length ?? 0,
   };
 
-  useEffect(() => {
-    if (!openMenuId) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [openMenuId]);
-
   const handleDuplicate = async (id: string) => {
     try {
       await duplicateProduct.mutateAsync(id);
       toast.success("Product duplicated");
-      setOpenMenuId(null);
     } catch {
       toast.error("Failed to duplicate product");
     }
@@ -134,7 +120,7 @@ export function ProductList() {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-80 animate-pulse rounded-xl bg-gray-200" />
+          <div key={i} className="h-80 shimmer rounded-xl" />
         ))}
       </div>
     );
@@ -146,19 +132,19 @@ export function ProductList() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-3">
           <SearchInput value={search} onChange={setSearch} placeholder={t("searchPlaceholder")} />
-          <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1">
+          <div className="flex items-center gap-1 rounded-lg bg-rail p-1">
             {(["all", "active", "draft", "archived"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setStatusFilter(tab === "all" ? "" : tab)}
                 className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                   (tab === "all" && statusFilter === "") || statusFilter === tab
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-panel text-ink shadow-sm"
+                    : "text-ink-soft hover:text-ink"
                 }`}
               >
                 {tab === "all" ? t("allStatuses") : tab === "archived" ? t("archived") : tc(tab)}
-                <span className="ml-1.5 text-xs text-gray-400">{counts[tab]}</span>
+                <span className="ms-1.5 text-xs text-ink-soft">{counts[tab]}</span>
               </button>
             ))}
           </div>
@@ -199,50 +185,33 @@ export function ProductList() {
                 product={product}
                 onClick={() => router.push(`/${locale}/dashboard/products/${product.id}`)}
               />
-              <div ref={openMenuId === product.id ? menuRef : undefined} className="absolute right-2 top-2 z-10">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenMenuId(openMenuId === product.id ? null : product.id);
-                  }}
-                  className="rounded-full bg-white/90 p-1.5 text-gray-600 shadow-sm backdrop-blur hover:bg-white hover:text-gray-900"
+              <div className="absolute end-2 top-2 z-10">
+                <Dropdown
+                  align="end"
+                  minWidth="min-w-40"
+                  trigger={
+                    <span className="flex cursor-pointer rounded-full bg-panel/90 p-1.5 text-ink-soft shadow-sm backdrop-blur transition-colors hover:bg-panel hover:text-ink">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </span>
+                  }
                 >
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-                {openMenuId === product.id && (
-                  <div className="absolute right-0 top-full mt-1 w-40 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/${locale}/dashboard/products/${product.id}`);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  <DropdownItem
+                    onClick={() => router.push(`/${locale}/dashboard/products/${product.id}`)}
+                  >
+                    <Eye className="h-4 w-4" /> View
+                  </DropdownItem>
+                  <DropdownItem onClick={() => handleDuplicate(product.id)}>
+                    <Copy className="h-4 w-4" /> Duplicate
+                  </DropdownItem>
+                  {product.status === "archived" && (
+                    <DropdownItem
+                      destructive
+                      onClick={() => setConfirmDelete({ id: product.id, title: product.title })}
                     >
-                      <Eye className="h-4 w-4" /> View
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDuplicate(product.id);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <Copy className="h-4 w-4" /> Duplicate
-                    </button>
-                    {product.status === "archived" && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmDelete({ id: product.id, title: product.title });
-                          setOpenMenuId(null);
-                        }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" /> Delete
-                      </button>
-                    )}
-                  </div>
-                )}
+                      <Trash2 className="h-4 w-4" /> Delete
+                    </DropdownItem>
+                  )}
+                </Dropdown>
               </div>
             </div>
           ))}
@@ -250,17 +219,17 @@ export function ProductList() {
       )}
 
       <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)} title={t("deleteTitle")}>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-ink-soft">
           {t("deleteConfirm", { title: confirmDelete?.title || "" })}
         </p>
-        <p className="mt-2 text-xs text-red-500">{t("deleteIrreversible")}</p>
+        <p className="mt-2 text-xs text-error">{t("deleteIrreversible")}</p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="outline" onClick={() => setConfirmDelete(null)}>
             {tc("cancel")}
           </Button>
           <Button
             variant="outline"
-            className="border-red-300 text-red-600 hover:bg-red-50"
+            className="border-error text-error hover:bg-error-soft"
             onClick={() => confirmDelete && handleDelete(confirmDelete.id)}
             isLoading={!!deletingId}
           >

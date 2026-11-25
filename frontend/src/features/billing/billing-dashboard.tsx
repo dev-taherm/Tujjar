@@ -13,25 +13,25 @@ function PlanCard({ plan, currentPlanSlug }: { plan: Plan; currentPlanSlug?: str
   const isCurrent = plan.slug === currentPlanSlug;
 
   return (
-    <div className={`rounded-xl border-2 p-6 transition-colors ${isCurrent ? "border-primary-500 bg-primary-50" : "border-gray-200 bg-white hover:border-gray-300"}`}>
+    <div className={`rounded-xl border-2 p-6 transition-colors ${isCurrent ? "border-primary-500 bg-primary-50" : "border-line bg-panel hover:border-line"}`}>
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-lg font-bold">{plan.name}</h3>
-          <p className="mt-1 text-sm text-gray-500">{plan.description}</p>
+          <p className="mt-1 text-sm text-ink-soft">{plan.description}</p>
         </div>
         {isCurrent && <Badge variant="success">{t("current")}</Badge>}
       </div>
       <div className="mt-4">
         <span className="text-3xl font-bold">${plan.price}</span>
-        <span className="text-gray-500">/{plan.interval}</span>
+        <span className="text-ink-soft">/{plan.interval}</span>
       </div>
       <div className="mt-4 space-y-2 text-sm">
-        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" />{plan.max_products} {t("products")}</div>
-        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" />{plan.max_orders} {t("ordersPerMonth")}</div>
-        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" />{plan.max_storage_gb}GB {t("storage")}</div>
-        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" />{plan.max_ai_generations} {t("aiGenerationsPerMonth")}</div>
+        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" />{plan.max_products} {t("products")}</div>
+        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" />{plan.max_orders} {t("ordersPerMonth")}</div>
+        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" />{plan.max_storage_gb}GB {t("storage")}</div>
+        <div className="flex items-center gap-2"><Check className="h-4 w-4 text-success" />{plan.max_ai_generations} {t("aiGenerationsPerMonth")}</div>
         {plan.features.map((f: string, i: number) => (
-          <div key={i} className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" />{f}</div>
+          <div key={i} className="flex items-center gap-2"><Check className="h-4 w-4 text-success" />{f}</div>
         ))}
       </div>
       {!isCurrent && (
@@ -53,16 +53,16 @@ function SubscriptionCard() {
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
+    <div className="rounded-xl border border-line bg-panel p-6">
       <div className="flex items-center gap-3 mb-4">
-        <Crown className="h-5 w-5 text-yellow-500" />
+        <Crown className="h-5 w-5 text-warning" />
         <h3 className="font-semibold">{t("currentSubscription")}</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-        <div><span className="text-gray-500">{t("plan")}</span><p className="font-medium">{sub.plan_name}</p></div>
-        <div><span className="text-gray-500">{t("status")}</span><div className="font-medium"><Badge variant={(statusColors[sub.status] || "default") as "success"}>{sub.status}</Badge></div></div>
-        <div><span className="text-gray-500">{t("price")}</span><p className="font-medium">${sub.plan_price}/mo</p></div>
-        <div><span className="text-gray-500">{t("currentPeriod")}</span><p>{formatDateTime(sub.current_period_start)} - {formatDateTime(sub.current_period_end)}</p></div>
+        <div><span className="text-ink-soft">{t("plan")}</span><p className="font-medium">{sub.plan_name}</p></div>
+        <div><span className="text-ink-soft">{t("status")}</span><div className="font-medium"><Badge variant={(statusColors[sub.status] || "default") as "success"}>{sub.status}</Badge></div></div>
+        <div><span className="text-ink-soft">{t("price")}</span><p className="font-medium">${sub.plan_price}/mo</p></div>
+        <div><span className="text-ink-soft">{t("currentPeriod")}</span><p>{formatDateTime(sub.current_period_start)} - {formatDateTime(sub.current_period_end)}</p></div>
       </div>
     </div>
   );
@@ -74,17 +74,17 @@ function InvoiceList() {
   if (!invoices?.length) return null;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white">
-      <div className="flex items-center gap-2 border-b border-gray-200 p-4">
-        <Receipt className="h-5 w-5 text-gray-600" />
+    <div className="rounded-xl border border-line bg-panel">
+      <div className="flex items-center gap-2 border-b border-line p-4">
+        <Receipt className="h-5 w-5 text-ink-soft" />
         <h3 className="font-semibold">{t("invoices")}</h3>
       </div>
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-line">
         {invoices.map((inv) => (
           <div key={inv.id} className="flex items-center justify-between p-4 text-sm">
             <div>
               <p className="font-medium">{inv.invoice_number}</p>
-              <p className="text-gray-500">{formatDateTime(inv.created_at)}</p>
+              <p className="text-ink-soft">{formatDateTime(inv.created_at)}</p>
             </div>
             <div className="text-end">
               <p className="font-medium">${inv.amount}</p>
@@ -101,22 +101,22 @@ function PaymentMethodsCard() {
   const t = useTranslations("dashboard.billing");
   const { data: methods } = usePaymentMethods();
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
+    <div className="rounded-xl border border-line bg-panel p-6">
       <div className="flex items-center gap-2 mb-4">
-        <CreditCard className="h-5 w-5 text-gray-600" />
+        <CreditCard className="h-5 w-5 text-ink-soft" />
         <h3 className="font-semibold">{t("paymentMethods")}</h3>
       </div>
       {!methods?.length ? (
-        <p className="text-sm text-gray-500">{t("noPaymentMethods")}</p>
+        <p className="text-sm text-ink-soft">{t("noPaymentMethods")}</p>
       ) : (
         <div className="space-y-2">
           {methods.map((m) => (
-            <div key={m.id} className="flex items-center justify-between rounded-lg border border-gray-200 p-3">
+            <div key={m.id} className="flex items-center justify-between rounded-lg border border-line p-3">
               <div className="flex items-center gap-3">
-                <CreditCard className="h-5 w-5 text-gray-400" />
+                <CreditCard className="h-5 w-5 text-ink-soft" />
                 <div>
                   <p className="text-sm font-medium">{m.brand} ****{m.last_four}</p>
-                  <p className="text-xs text-gray-500">{t("expires")} {m.exp_month}/{m.exp_year}</p>
+                  <p className="text-xs text-ink-soft">{t("expires")} {m.exp_month}/{m.exp_year}</p>
                 </div>
               </div>
               {m.is_default && <Badge variant="success">Default</Badge>}

@@ -17,20 +17,19 @@ export function TemplateOverwriteWarning({
   onCancel,
   isLoading,
 }: TemplateOverwriteWarningProps) {
-  const t = useTranslations("dashboard.templates");
   const tc = useTranslations("common");
   const hasReplaced = replaced.pages > 0 || replaced.collections > 0 || replaced.categories > 0;
 
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+    <div className="rounded-lg border border-warning bg-warning-soft p-4">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" />
+        <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-warning" />
         <div className="flex-1">
-          <h4 className="text-sm font-medium text-amber-800">
+          <h4 className="text-sm font-medium text-warning">
             {hasReplaced ? "This will replace existing content" : "Ready to install"}
           </h4>
           {hasReplaced ? (
-            <div className="mt-2 space-y-1 text-sm text-amber-700">
+            <div className="mt-2 space-y-1 text-sm text-warning">
               {replaced.pages > 0 && (
                 <p>{replaced.pages} existing page{replaced.pages !== 1 ? "s" : ""} will be replaced</p>
               )}
@@ -42,7 +41,7 @@ export function TemplateOverwriteWarning({
               )}
             </div>
           ) : (
-            <p className="mt-1 text-sm text-amber-700">
+            <p className="mt-1 text-sm text-warning">
               No existing content will be replaced.
             </p>
           )}

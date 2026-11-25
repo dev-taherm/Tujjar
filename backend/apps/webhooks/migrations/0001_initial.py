@@ -9,55 +9,113 @@ import apps.webhooks.models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('organizations', '0002_organizationmembership_organizatio_user_id_97f34b_idx'),
+        ("organizations", "0002_organizationmembership_organizatio_user_id_97f34b_idx"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='WebhookEndpoint',
+            name="WebhookEndpoint",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('url', models.URLField(max_length=500)),
-                ('secret', models.CharField(default=apps.webhooks.models.generate_webhook_secret, help_text='Used to compute the HMAC-SHA256 signature header.', max_length=100)),
-                ('events', models.JSONField(default=list, help_text='Event types to subscribe to. ["*"] subscribes to everything.')),
-                ('is_active', models.BooleanField(default=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='webhook_endpoints', to='organizations.organization')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("url", models.URLField(max_length=500)),
+                (
+                    "secret",
+                    models.CharField(
+                        default=apps.webhooks.models.generate_webhook_secret,
+                        help_text="Used to compute the HMAC-SHA256 signature header.",
+                        max_length=100,
+                    ),
+                ),
+                (
+                    "events",
+                    models.JSONField(
+                        default=list,
+                        help_text='Event types to subscribe to. ["*"] subscribes to everything.',
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "organization",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="webhook_endpoints",
+                        to="organizations.organization",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='WebhookDelivery',
+            name="WebhookDelivery",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('event_type', models.CharField(max_length=100)),
-                ('payload', models.JSONField(blank=True, default=dict)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('succeeded', 'Succeeded'), ('failed', 'Failed')], default='pending', max_length=20)),
-                ('response_status', models.PositiveIntegerField(blank=True, null=True)),
-                ('attempts', models.PositiveIntegerField(default=0)),
-                ('error', models.TextField(blank=True, default='')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='webhook_deliveries', to='organizations.organization')),
-                ('endpoint', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='deliveries', to='webhooks.webhookendpoint')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("event_type", models.CharField(max_length=100)),
+                ("payload", models.JSONField(blank=True, default=dict)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("succeeded", "Succeeded"),
+                            ("failed", "Failed"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("response_status", models.PositiveIntegerField(blank=True, null=True)),
+                ("attempts", models.PositiveIntegerField(default=0)),
+                ("error", models.TextField(blank=True, default="")),
+                (
+                    "organization",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="webhook_deliveries",
+                        to="organizations.organization",
+                    ),
+                ),
+                (
+                    "endpoint",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="deliveries",
+                        to="webhooks.webhookendpoint",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.AddIndex(
-            model_name='webhookendpoint',
-            index=models.Index(fields=['organization', 'is_active'], name='webhooks_we_organiz_27b04c_idx'),
+            model_name="webhookendpoint",
+            index=models.Index(
+                fields=["organization", "is_active"], name="webhooks_we_organiz_27b04c_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='webhookdelivery',
-            index=models.Index(fields=['endpoint', 'status'], name='webhooks_we_endpoin_740ee0_idx'),
+            model_name="webhookdelivery",
+            index=models.Index(
+                fields=["endpoint", "status"], name="webhooks_we_endpoin_740ee0_idx"
+            ),
         ),
     ]

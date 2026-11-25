@@ -78,7 +78,7 @@ export function TemplateGeneralEditor({ data, onChange }: TemplateGeneralEditorP
           onChange={(e) => handleTagsChange(e.target.value)}
           placeholder="fashion, modern, minimal"
         />
-        <p className="mt-1 text-xs text-gray-400">Comma-separated</p>
+        <p className="mt-1 text-xs text-ink-soft">Comma-separated</p>
       </div>
     </div>
   );

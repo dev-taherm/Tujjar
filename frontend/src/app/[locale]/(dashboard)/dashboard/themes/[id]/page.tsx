@@ -41,7 +41,7 @@ export default function ThemeDetailPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="mb-8 text-3xl font-bold text-gray-900">{t("themeEditor")}</h1>
+        <h1 className="mb-8 text-3xl font-bold text-ink">{t("themeEditor")}</h1>
         <Skeleton className="h-96 w-full" />
       </div>
     );
@@ -88,11 +88,11 @@ export default function ThemeDetailPage() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{theme.name}</h1>
-          <p className="text-sm text-gray-500">v{theme.version} {theme.is_system ? `• ${t("systemTheme")}` : ""}</p>
+          <h1 className="text-3xl font-bold text-ink">{theme.name}</h1>
+          <p className="text-sm text-ink-soft">v{theme.version} {theme.is_system ? `• ${t("systemTheme")}` : ""}</p>
           {parentTheme && (
-            <p className="mt-1 text-xs text-gray-400">
-              Inherits from <span className="font-medium text-gray-600">{parentTheme.name}</span>
+            <p className="mt-1 text-xs text-ink-soft">
+              Inherits from <span className="font-medium text-ink-soft">{parentTheme.name}</span>
             </p>
           )}
         </div>
@@ -114,7 +114,7 @@ export default function ThemeDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-line">
             <nav className="-mb-px flex gap-4 overflow-x-auto">
               {EDITOR_TABS.map((tab) => (
                 <button
@@ -122,8 +122,8 @@ export default function ThemeDetailPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                     activeTab === tab.id
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      ? "border-primary-600 text-primary-600"
+                      : "border-transparent text-ink-soft hover:border-line hover:text-ink"
                   }`}
                 >
                   {tab.label}
@@ -196,8 +196,8 @@ export default function ThemeDetailPage() {
                       onClick={() => setPreviewDevice(id)}
                       className={`rounded p-1.5 transition-colors ${
                         previewDevice === id
-                          ? "bg-blue-100 text-blue-600"
-                          : "text-gray-400 hover:bg-gray-100"
+                          ? "bg-primary-100 text-primary-600"
+                          : "text-ink-soft hover:bg-rail"
                       }`}
                       title={id}
                     >
@@ -243,7 +243,7 @@ export default function ThemeDetailPage() {
                   {Object.entries(activeConfig.colors).slice(0, 6).map(([key, color]) => (
                     <div
                       key={key}
-                      className="h-8 w-8 rounded-full border border-gray-200"
+                      className="h-8 w-8 rounded-full border border-line"
                       style={{ backgroundColor: color as string }}
                       title={key}
                     />
@@ -274,15 +274,15 @@ export default function ThemeDetailPage() {
           title={t("applyToStore") || "Apply to Store"}
         >
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">{t("selectStore") || "Select a store to apply this theme to:"}</p>
+            <p className="text-sm text-ink-soft">{t("selectStore") || "Select a store to apply this theme to:"}</p>
             <div className="space-y-2">
               {stores?.map((store) => (
                 <label
                   key={store.id}
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
                     selectedStoreId === store.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:bg-gray-50"
+                      ? "border-primary-500 bg-primary-50"
+                      : "border-line hover:bg-rail"
                   }`}
                 >
                   <input
@@ -291,14 +291,14 @@ export default function ThemeDetailPage() {
                     value={store.id}
                     checked={selectedStoreId === store.id}
                     onChange={() => setSelectedStoreId(store.id)}
-                    className="h-4 w-4 text-blue-600"
+                    className="h-4 w-4 text-primary-600"
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{store.name}</p>
-                    <p className="text-xs text-gray-500">{store.slug}</p>
+                    <p className="text-sm font-medium text-ink">{store.name}</p>
+                    <p className="text-xs text-ink-soft">{store.slug}</p>
                   </div>
                   {store.theme === theme.id && (
-                    <span className="ms-auto rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                    <span className="ms-auto rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">
                       {t("active") || "Active"}
                     </span>
                   )}

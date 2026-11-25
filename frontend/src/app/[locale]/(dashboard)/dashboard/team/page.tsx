@@ -7,8 +7,8 @@ import type { Membership, Role } from "@/shared/types";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Button, Card, CardHeader, CardTitle, CardContent, Input, Select, Badge } from "@/shared/ui";
-import { Users, UserPlus, Shield, Trash2, Mail, Check, X, Loader2 } from "lucide-react";
+import { Button, Card, CardHeader, CardTitle, CardContent, Input, Select, Badge, Tabs, Spinner, PageHeader } from "@/shared/ui";
+import { UserPlus, Shield, Trash2, Mail } from "lucide-react";
 
 type Tab = "members" | "invitations" | "roles";
 
@@ -65,50 +65,43 @@ export default function TeamPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-        <Button onClick={() => setShowInvite(true)}>
-          <UserPlus className="me-2 h-4 w-4" /> {t("inviteMember")}
-        </Button>
-      </div>
+      <PageHeader
+        title={t("title")}
+        actions={
+          <Button onClick={() => setShowInvite(true)}>
+            <UserPlus className="me-2 h-4 w-4" /> {t("inviteMember")}
+          </Button>
+        }
+      />
 
-      <div className="flex gap-2 border-b pb-2">
-        {(["members", "invitations", "roles"] as Tab[]).map((tabKey) => (
-          <button
-            key={tabKey}
-            onClick={() => setTab(tabKey)}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-              tab === tabKey
-                ? "bg-primary-50 text-primary-700 border-b-2 border-primary-600"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tabKey === "members" ? t("members") : tabKey === "invitations" ? t("invitations") : t("roles")}
-            {tabKey === "invitations" && pendingInvites.length > 0 && (
-              <span className="ms-2 rounded-full bg-yellow-100 px-2 py-0.5 text-xs text-yellow-700">{pendingInvites.length}</span>
-            )}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={[
+          { id: "members", label: t("members") },
+          { id: "invitations", label: t("invitations"), badge: pendingInvites.length },
+          { id: "roles", label: t("roles") },
+        ]}
+        active={tab}
+        onChange={(id) => setTab(id as Tab)}
+      />
 
       {tab === "members" && (
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div>
+              <div className="flex items-center justify-center py-12"><Spinner className="h-6 w-6 text-ink-soft" /></div>
             ) : acceptedMembers.length === 0 ? (
-              <div className="py-12 text-center text-sm text-gray-500">{t("noMembers")}</div>
+              <div className="py-12 text-center text-sm text-ink-soft">{t("noMembers")}</div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-line">
                 {acceptedMembers.map((member: Membership) => (
                   <div key={member.id} className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-600">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rail text-sm font-medium text-ink-soft">
                         {(member.user_name || member.user_email || "").charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{member.user_name || member.user_email}</p>
-                        <p className="text-xs text-gray-500">{member.user_email}</p>
+                        <p className="text-sm font-medium text-ink">{member.user_name || member.user_email}</p>
+                        <p className="text-xs text-ink-soft">{member.user_email}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -121,9 +114,9 @@ export default function TeamPage() {
                             }
                           }}
                           disabled={removing === member.user}
-                          className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                          className="rounded p-1 text-ink-soft hover:bg-error-soft hover:text-error"
                         >
-                          {removing === member.user ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          {removing === member.user ? <Spinner className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
                         </button>
                       )}
                     </div>
@@ -139,18 +132,18 @@ export default function TeamPage() {
         <Card>
           <CardContent className="p-0">
             {pendingInvites.length === 0 ? (
-              <div className="py-12 text-center text-sm text-gray-500">{t("noPendingInvites")}</div>
+              <div className="py-12 text-center text-sm text-ink-soft">{t("noPendingInvites")}</div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-line">
                 {pendingInvites.map((invite: Membership) => (
                   <div key={invite.id} className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 text-sm font-medium text-yellow-600">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning-soft text-sm font-medium text-warning">
                         <Mail className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{invite.user_email}</p>
-                        <p className="text-xs text-gray-500">{t("invitedOn")} {new Date(invite.invited_at).toLocaleDateString()}</p>
+                        <p className="text-sm font-medium text-ink">{invite.user_email}</p>
+                        <p className="text-xs text-ink-soft">{t("invitedOn")} {new Date(invite.invited_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <Badge variant="warning">{invite.role_name}</Badge>
@@ -166,9 +159,9 @@ export default function TeamPage() {
         <Card>
           <CardContent className="p-0">
             {roleList.length === 0 ? (
-              <div className="py-12 text-center text-sm text-gray-500">{t("noRoles")}</div>
+              <div className="py-12 text-center text-sm text-ink-soft">{t("noRoles")}</div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-line">
                 {roleList.map((role: Role) => (
                   <div key={role.id} className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -176,8 +169,8 @@ export default function TeamPage() {
                         <Shield className="h-5 w-5 text-primary-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{role.name}</p>
-                        <p className="text-xs text-gray-500">{role.permissions?.length || 0} {t("permissions").toLowerCase()}</p>
+                        <p className="text-sm font-medium text-ink">{role.name}</p>
+                        <p className="text-xs text-ink-soft">{role.permissions?.length || 0} {t("permissions").toLowerCase()}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

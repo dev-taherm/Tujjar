@@ -94,9 +94,7 @@ class SwitchOrganizationView(APIView):
         try:
             target = Organization._base_manager.get(id=org_id)
         except (Organization.DoesNotExist, ValidationError, ValueError):
-            return Response(
-                {"detail": "Organization not found."}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "Organization not found."}, status=status.HTTP_404_NOT_FOUND)
 
         membership = OrganizationMembership._base_manager.filter(
             user=request.user, organization=target, is_accepted=True

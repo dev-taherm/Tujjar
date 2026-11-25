@@ -15,7 +15,7 @@ export function RichTextPreview({ section }: { section: Section }) {
 
   return (
     <div className="py-8" style={{ maxWidth: `${maxWidth}px`, margin: alignment === "center" ? "0 auto" : undefined }}>
-      <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} className="prose prose-lg max-w-none" />
+      <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} className="prose-tujjar max-w-none" />
     </div>
   );
 }

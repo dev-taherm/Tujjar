@@ -17,7 +17,7 @@ export default function ThemesPage() {
   return (
     <div>
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">{t("title")}</h1>
+        <h1 className="text-3xl font-bold text-ink">{t("title")}</h1>
         <Button variant="outline" onClick={() => setShowImport(true)}>
           <Upload className="me-2 h-4 w-4" />
           {t("importTheme") || "Import Theme"}

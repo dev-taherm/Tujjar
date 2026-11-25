@@ -37,10 +37,9 @@ export default async function StorefrontBlogPage({
   const locale = await getLocale();
   const currentPage = Number(pageParam) || 1;
 
-  const [blogData, categories, store] = await Promise.all([
+  const [blogData, categories] = await Promise.all([
     getStoreBlogPosts(slug, locale, { page: currentPage, category }),
     getStoreBlogCategories(slug, locale),
-    getStore(slug, locale),
   ]);
 
   const posts = blogData?.posts || [];

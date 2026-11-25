@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button, Card, Badge, Dialog, Input, Select, EmptyState } from "@/shared/ui";
 import { slugify } from "@/lib/utils";
 import { usePages, useCreatePage, useDeletePage, useStores } from "@/api/queries";
-import { Plus, FileText, Trash2, Globe, Clock } from "lucide-react";
+import { Plus, FileText, Globe, Clock } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
 
@@ -16,7 +16,6 @@ export function PageList() {
   const { data: pages, isLoading } = usePages();
   const { data: stores } = useStores();
   const createPage = useCreatePage();
-  const deletePage = useDeletePage();
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
@@ -31,15 +30,15 @@ export function PageList() {
   };
 
   if (isLoading) {
-    return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{[1, 2, 3].map((i) => <div key={i} className="h-40 animate-pulse rounded-xl bg-gray-200" />)}</div>;
+    return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{[1, 2, 3].map((i) => <div key={i} className="h-40 shimmer rounded-xl" />)}</div>;
   }
 
   return (
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">{t("pages")}</h2>
-          <p className="text-sm text-gray-500">{pages?.length || 0} {t("pages").toLowerCase()}{(pages?.length || 0) !== 1 ? "s" : ""}</p>
+          <h2 className="text-lg font-semibold text-ink">{t("pages")}</h2>
+          <p className="text-sm text-ink-soft">{pages?.length || 0} {t("pages").toLowerCase()}{(pages?.length || 0) !== 1 ? "s" : ""}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}><Plus className="me-2 h-4 w-4" /> {t("createPage")}</Button>
       </div>
@@ -58,13 +57,13 @@ export function PageList() {
               <Card className="group cursor-pointer transition-all hover:shadow-md hover:border-primary-300">
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900">{page.title}</h3>
+                    <h3 className="font-semibold text-ink">{page.title}</h3>
                     <Badge variant={page.is_published ? "success" : "secondary"}>
                       {page.is_published ? tc("published") : tc("draft")}
                     </Badge>
                   </div>
-                  <p className="mb-3 text-sm text-gray-500">/{page.slug}</p>
-                  <div className="flex items-center justify-between text-xs text-gray-400">
+                  <p className="mb-3 text-sm text-ink-soft">/{page.slug}</p>
+                  <div className="flex items-center justify-between text-xs text-ink-soft">
                     <span className="flex items-center gap-1"><Globe className="h-3 w-3" /> {page.section_count} section{page.section_count !== 1 ? "s" : ""}</span>
                     <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {formatDateTime(page.updated_at)}</span>
                   </div>

@@ -23,9 +23,7 @@ class TestSwitchOrganization:
 
         client = api_client
         client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        response = client.post(
-            "/api/v1/auth/switch-org/", {"org_id": str(other.id)}, format="json"
-        )
+        response = client.post("/api/v1/auth/switch-org/", {"org_id": str(other.id)}, format="json")
         assert response.status_code == status.HTTP_200_OK
         assert response.data["organization"]["slug"] == "other-org"
         assert response.data["tokens"]["access"]
@@ -34,9 +32,7 @@ class TestSwitchOrganization:
         import jwt as pyjwt
 
         new_access = response.data["tokens"]["access"]
-        payload = pyjwt.decode(
-            new_access, options={"verify_signature": False}
-        )
+        payload = pyjwt.decode(new_access, options={"verify_signature": False})
         assert payload["org_id"] == str(other.id)
 
     def test_reject_non_member_org(self, api_client):
@@ -64,7 +60,5 @@ class TestSwitchOrganization:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_requires_authentication(self, api_client):
-        response = api_client.post(
-            "/api/v1/auth/switch-org/", {"org_id": "x"}, format="json"
-        )
+        response = api_client.post("/api/v1/auth/switch-org/", {"org_id": "x"}, format="json")
         assert response.status_code in (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN)

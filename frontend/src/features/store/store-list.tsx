@@ -10,7 +10,6 @@ import { useTranslations } from "next-intl";
 
 export function StoreList() {
   const t = useTranslations("storeSettings");
-  const tc = useTranslations("common");
   const { data: stores, isLoading } = useStores();
   const [showCreate, setShowCreate] = useState(false);
 
@@ -19,7 +18,7 @@ export function StoreList() {
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-48 animate-pulse rounded-xl bg-gray-200" />
+            <div key={i} className="h-48 shimmer rounded-xl" />
           ))}
         </div>
       ) : !stores?.length ? (
@@ -33,8 +32,8 @@ export function StoreList() {
         <>
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{t("yourStores")}</h2>
-              <p className="text-sm text-gray-500">{stores.length} {stores.length !== 1 ? t("storeCountPlural") : t("storeCount")}</p>
+              <h2 className="text-lg font-semibold text-ink">{t("yourStores")}</h2>
+              <p className="text-sm text-ink-soft">{stores.length} {stores.length !== 1 ? t("storeCountPlural") : t("storeCount")}</p>
             </div>
             <Button onClick={() => setShowCreate(true)}>
               <Plus className="me-2 h-4 w-4" />

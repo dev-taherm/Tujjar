@@ -72,7 +72,6 @@ export function WebhooksDashboard() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>(["order.created"]);
-  const [creating, setCreating] = useState(false);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["webhook-endpoints"] });
@@ -136,7 +135,7 @@ export function WebhooksDashboard() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">{t("description")}</p>
+        <p className="text-sm text-ink-soft">{t("description")}</p>
         <Button
           onClick={() => setDialogOpen(true)}
         >
@@ -147,7 +146,7 @@ export function WebhooksDashboard() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-lg bg-gray-200" />
+            <div key={i} className="h-20 shimmer rounded-lg" />
           ))}
         </div>
       ) : !endpoints?.length ? (
@@ -162,24 +161,24 @@ export function WebhooksDashboard() {
             <Card key={endpoint.id}>
               <div className="flex items-start justify-between p-4">
                 <div className="flex-1">
-                  <p className="break-all font-mono text-sm font-medium text-gray-900">
+                  <p className="break-all font-mono text-sm font-medium text-ink">
                     {endpoint.url}
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-1">
                     {endpoint.events.map((e) => (
                       <span
                         key={e}
-                        className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                        className="rounded-full bg-rail px-2 py-0.5 text-xs text-ink-soft"
                       >
                         {e}
                       </span>
                     ))}
                   </div>
-                  <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
+                  <div className="mt-2 flex items-center gap-2 text-xs text-ink-soft">
                     <code className="break-all">{endpoint.secret}</code>
                     <button
                       onClick={() => copySecret(endpoint.secret)}
-                      className="rounded p-0.5 hover:bg-gray-100"
+                      className="rounded p-0.5 hover:bg-rail"
                       aria-label={t("copySecret")}
                     >
                       <Copy className="h-3.5 w-3.5" />
@@ -194,21 +193,21 @@ export function WebhooksDashboard() {
                     <button
                       onClick={() => testFire(endpoint.id)}
                       title={t("testEvent")}
-                      className="rounded p-1 text-gray-400 hover:bg-gray-100"
+                      className="rounded p-1 text-ink-soft hover:bg-rail"
                     >
                       <Send className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => rotateSecret(endpoint.id)}
                       title={t("rotateSecret")}
-                      className="rounded p-1 text-gray-400 hover:bg-gray-100"
+                      className="rounded p-1 text-ink-soft hover:bg-rail"
                     >
                       <RefreshCw className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => removeEndpoint(endpoint.id)}
                       title={tc("delete")}
-                      className="rounded p-1 text-red-400 hover:bg-red-50"
+                      className="rounded p-1 text-error hover:bg-error-soft"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -223,15 +222,15 @@ export function WebhooksDashboard() {
       {!!deliveries?.length && (
         <Card>
           <div className="p-4">
-            <h3 className="mb-3 text-sm font-semibold text-gray-900">{t("recentDeliveries")}</h3>
+            <h3 className="mb-3 text-sm font-semibold text-ink">{t("recentDeliveries")}</h3>
             <div className="space-y-2">
               {deliveries.map((d) => (
                 <div
                   key={d.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-xs"
+                  className="flex items-center justify-between rounded-lg border border-line px-3 py-2 text-xs"
                 >
                   <span className="font-mono">{d.event_type}</span>
-                  <span className="max-w-40 truncate text-gray-500">{d.endpoint_url}</span>
+                  <span className="max-w-40 truncate text-ink-soft">{d.endpoint_url}</span>
                   <Badge
                     variant={
                       d.status === "succeeded" ? "success" : d.status === "failed" ? "danger" : "warning"
@@ -239,7 +238,7 @@ export function WebhooksDashboard() {
                   >
                     {d.status}
                   </Badge>
-                  <span className="text-gray-400">{formatDateTime(d.created_at)}</span>
+                  <span className="text-ink-soft">{formatDateTime(d.created_at)}</span>
                 </div>
               ))}
             </div>
@@ -262,7 +261,7 @@ export function WebhooksDashboard() {
             <Label>{t("events")}</Label>
             <div className="mt-1 space-y-1">
               {EVENT_TYPES.map((e) => (
-                <label key={e} className="flex items-center gap-2 text-sm text-gray-700">
+                <label key={e} className="flex items-center gap-2 text-sm text-ink">
                   <input
                     type="checkbox"
                     checked={selectedEvents.includes(e)}

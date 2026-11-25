@@ -6,6 +6,7 @@ import { CollectionList } from "@/features/products/collection-list";
 import { useState } from "react";
 import { Package, FolderTree, Layers } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { PageHeader, Tabs, type TabItem } from "@/shared/ui";
 
 type Tab = "products" | "categories" | "collections";
 
@@ -13,40 +14,24 @@ export default function ProductsPage() {
   const t = useTranslations("dashboard.products");
   const [tab, setTab] = useState<Tab>("products");
 
-  const tabs = [
-    { key: "products" as Tab, label: t("tabs.products"), icon: Package },
-    { key: "categories" as Tab, label: t("tabs.categories"), icon: FolderTree },
-    { key: "collections" as Tab, label: t("tabs.collections"), icon: Layers },
+  const tabs: TabItem[] = [
+    { id: "products", label: t("tabs.products"), icon: Package },
+    { id: "categories", label: t("tabs.categories"), icon: FolderTree },
+    { id: "collections", label: t("tabs.collections"), icon: Layers },
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-        <p className="text-sm text-gray-500">{t("description")}</p>
-      </div>
+    <div className="space-y-6 animate-rise">
+      <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1 overflow-x-auto">
-        {tabs.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`whitespace-nowrap flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              tab === key ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} active={tab} onChange={(id) => setTab(id as Tab)} variant="segmented" className="w-fit" />
 
       {tab === "products" && <ProductList />}
       {tab === "categories" && (
         <div className="grid gap-6 lg:grid-cols-2">
           <CategoryTree />
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <p className="text-sm text-gray-500">{t("categoryHelp")}</p>
+          <div className="rounded-xl border border-line bg-panel p-6">
+            <p className="text-sm text-ink-soft">{t("categoryHelp")}</p>
           </div>
         </div>
       )}

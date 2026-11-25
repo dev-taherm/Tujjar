@@ -1,32 +1,33 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
-import { Button, Card, CardContent, CardHeader, CardTitle, Select } from "@/shared/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Select, PageHeader, Breadcrumbs } from "@/shared/ui";
 import { useUpdateOrderStatus, useShipOrder, useDeliverOrder, useCancelOrder } from "@/api/queries";
 import { useRefunds, useCreateRefund } from "@/api/commerce";
 import { OrderTimeline } from "@/features/orders/order-timeline";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
-import { ArrowLeft, Truck, CheckCircle, XCircle } from "lucide-react";
+import { Truck, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { Order } from "@/shared/types";
-import { useTranslations } from "next-intl";
 import { Badge, Input } from "@/shared/ui";
 
 const statusColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  confirmed: "bg-blue-100 text-blue-800",
-  processing: "bg-purple-100 text-purple-800",
-  shipped: "bg-indigo-100 text-indigo-800",
-  delivered: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800",
-  refunded: "bg-gray-100 text-gray-800",
+  pending: "bg-warning-soft text-warning",
+  confirmed: "bg-primary-100 text-primary-800",
+  processing: "bg-info-soft text-info",
+  shipped: "bg-info/20 text-info",
+  delivered: "bg-success-soft text-success",
+  cancelled: "bg-error-soft text-error",
+  refunded: "bg-rail text-ink",
 };
 
 export default function OrderDetailPage() {
   const t = useTranslations("dashboard.orders");
+  const locale = useLocale();
   const tc = useTranslations("common");
   const params = useParams();
   const router = useRouter();
@@ -49,11 +50,11 @@ export default function OrderDetailPage() {
   const cancelOrder = useCancelOrder();
 
   if (isLoading) {
-    return <div className="h-[400px] animate-pulse rounded-xl bg-gray-200" />;
+    return <div className="h-[400px] shimmer rounded-xl" />;
   }
 
   if (!order) {
-    return <div className="flex h-96 items-center justify-center"><p className="text-gray-500">{t("notFound")}</p></div>;
+    return <div className="flex h-96 items-center justify-center"><p className="text-ink-soft">{t("notFound")}</p></div>;
   }
 
   const handleShip = async () => {
@@ -63,19 +64,23 @@ export default function OrderDetailPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"><ArrowLeft className="h-5 w-5 rtl:rotate-180" /></button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{order.order_number}</h1>
-            <p className="text-sm text-gray-500">{t("placedOn")} {formatDateTime(order.created_at)}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusColors[order.status] || ""}`}>{order.status}</span>
-        </div>
-      </div>
+    <div className="space-y-6 animate-rise">
+      <Breadcrumbs
+        items={[
+          { label: t("title"), href: `/${locale}/dashboard/orders` },
+          { label: order.order_number },
+        ]}
+      />
+      <PageHeader
+        title={order.order_number}
+        description={`${t("placedOn")} ${formatDateTime(order.created_at)}`}
+        className="mb-0"
+        actions={
+          <span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusColors[order.status] || ""}`}>
+            {order.status}
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -92,21 +97,21 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader><CardTitle>{t("items")} ({order.items.length})</CardTitle></CardHeader>
             <CardContent>
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-line">
                 {order.items.map((item) => (
                   <div key={item.id} className="flex items-center gap-4 py-3">
                     {item.image_url ? (
                       <img src={item.image_url} alt={item.title} className="h-16 w-16 rounded-lg object-cover" />
                     ) : (
-                      <div className="h-16 w-16 rounded-lg bg-gray-100" />
+                      <div className="h-16 w-16 rounded-lg bg-rail" />
                     )}
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">{item.title}</p>
-                      {item.sku && <p className="text-xs text-gray-500">{t("sku")}: {item.sku}</p>}
+                      <p className="font-medium text-ink">{item.title}</p>
+                      {item.sku && <p className="text-xs text-ink-soft">{t("sku")}: {item.sku}</p>}
                     </div>
                     <div className="text-end">
-                      <p className="font-medium text-gray-900">{formatCurrency(Number(item.total_price))}</p>
-                      <p className="text-sm text-gray-500">{item.quantity} x {formatCurrency(Number(item.unit_price))}</p>
+                      <p className="font-medium text-ink">{formatCurrency(Number(item.total_price))}</p>
+                      <p className="text-sm text-ink-soft">{item.quantity} x {formatCurrency(Number(item.unit_price))}</p>
                     </div>
                   </div>
                 ))}
@@ -119,11 +124,11 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader><CardTitle>{t("summary")}</CardTitle></CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">{t("subtotal")}</span><span>{formatCurrency(Number(order.subtotal))}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">{t("shipping")}</span><span>{formatCurrency(Number(order.shipping_amount))}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">{t("tax")}</span><span>{formatCurrency(Number(order.tax_amount))}</span></div>
-              {Number(order.discount_amount) > 0 && <div className="flex justify-between text-green-600"><span>{t("discount")}</span><span>-{formatCurrency(Number(order.discount_amount))}</span></div>}
-              <div className="flex justify-between border-t border-gray-200 pt-2 font-semibold text-gray-900"><span>{t("total")}</span><span>{formatCurrency(Number(order.total))}</span></div>
+              <div className="flex justify-between"><span className="text-ink-soft">{t("subtotal")}</span><span>{formatCurrency(Number(order.subtotal))}</span></div>
+              <div className="flex justify-between"><span className="text-ink-soft">{t("shipping")}</span><span>{formatCurrency(Number(order.shipping_amount))}</span></div>
+              <div className="flex justify-between"><span className="text-ink-soft">{t("tax")}</span><span>{formatCurrency(Number(order.tax_amount))}</span></div>
+              {Number(order.discount_amount) > 0 && <div className="flex justify-between text-success"><span>{t("discount")}</span><span>-{formatCurrency(Number(order.discount_amount))}</span></div>}
+              <div className="flex justify-between border-t border-line pt-2 font-semibold text-ink"><span>{t("total")}</span><span>{formatCurrency(Number(order.total))}</span></div>
             </CardContent>
           </Card>
 
@@ -149,8 +154,8 @@ export default function OrderDetailPage() {
                 <Button variant="outline" size="sm" onClick={() => cancelOrder.mutateAsync(orderId)}><XCircle className="me-1 h-4 w-4" /> {tc("cancel")}</Button>
               </div>
               {shipShow && (
-                <div className="space-y-2 rounded-lg border border-gray-200 p-3">
-                  <input type="text" placeholder={t("trackingNumber")} value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+                <div className="space-y-2 rounded-lg border border-line p-3">
+                  <input type="text" placeholder={t("trackingNumber")} value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
                   <Button size="sm" onClick={handleShip} isLoading={shipOrder.isPending}>{t("confirmShipment")}</Button>
                 </div>
               )}
@@ -160,16 +165,16 @@ export default function OrderDetailPage() {
           <Card>
             <CardHeader><CardTitle>{t("customer")}</CardTitle></CardHeader>
             <CardContent className="space-y-1 text-sm">
-              <p className="font-medium text-gray-900">{order.customer_first_name} {order.customer_last_name}</p>
-              <p className="text-gray-500">{order.customer_email}</p>
-              {order.customer_phone && <p className="text-gray-500">{order.customer_phone}</p>}
+              <p className="font-medium text-ink">{order.customer_first_name} {order.customer_last_name}</p>
+              <p className="text-ink-soft">{order.customer_email}</p>
+              {order.customer_phone && <p className="text-ink-soft">{order.customer_phone}</p>}
               {order.shipping_address_line1 && (
-                <div className="mt-3 border-t border-gray-200 pt-3">
-                  <p className="font-medium text-gray-700">{t("shippingAddress")}</p>
-                  <p className="text-gray-500">{order.shipping_address_line1}</p>
-                  {order.shipping_address_line2 && <p className="text-gray-500">{order.shipping_address_line2}</p>}
-                  <p className="text-gray-500">{order.shipping_city}, {order.shipping_state} {order.shipping_postal_code}</p>
-                  <p className="text-gray-500">{order.shipping_country}</p>
+                <div className="mt-3 border-t border-line pt-3">
+                  <p className="font-medium text-ink">{t("shippingAddress")}</p>
+                  <p className="text-ink-soft">{order.shipping_address_line1}</p>
+                  {order.shipping_address_line2 && <p className="text-ink-soft">{order.shipping_address_line2}</p>}
+                  <p className="text-ink-soft">{order.shipping_city}, {order.shipping_state} {order.shipping_postal_code}</p>
+                  <p className="text-ink-soft">{order.shipping_country}</p>
                 </div>
               )}
             </CardContent>
@@ -238,23 +243,23 @@ function RefundsCard({
       <CardHeader><CardTitle>{t("title")}</CardTitle></CardHeader>
       <CardContent className="space-y-3 text-sm">
         {isLoading ? (
-          <div className="h-10 animate-pulse rounded bg-gray-100" />
+          <div className="h-10 shimmer rounded" />
         ) : !refunds?.length ? (
-          <p className="text-gray-500">{t("noRefunds")}</p>
+          <p className="text-ink-soft">{t("noRefunds")}</p>
         ) : (
           <div className="space-y-2">
             {refunds.map((refund) => (
-              <div key={refund.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
+              <div key={refund.id} className="flex items-center justify-between rounded-lg border border-line px-3 py-2">
                 <div>
-                  <span className="font-medium text-gray-900">{formatCurrency(Number(refund.amount))}</span>
-                  {refund.reason && <span className="ms-2 text-xs text-gray-500">{refund.reason}</span>}
+                  <span className="font-medium text-ink">{formatCurrency(Number(refund.amount))}</span>
+                  {refund.reason && <span className="ms-2 text-xs text-ink-soft">{refund.reason}</span>}
                 </div>
                 <Badge variant={refund.status === "succeeded" ? "success" : refund.status === "failed" ? "danger" : "warning"}>
                   {refund.status}
                 </Badge>
               </div>
             ))}
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-ink-soft">
               {t("refundedTotal")}: {formatCurrency(refunded)} · {t("refundable")}: {formatCurrency(refundable)}
             </div>
           </div>
@@ -262,7 +267,7 @@ function RefundsCard({
 
         {canRefund &&
           (show ? (
-            <div className="space-y-2 rounded-lg border border-gray-200 p-3">
+            <div className="space-y-2 rounded-lg border border-line p-3">
               <Input
                 type="number"
                 min="0.01"
@@ -277,7 +282,7 @@ function RefundsCard({
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
-              <label className="flex items-center gap-2 text-xs text-gray-600">
+              <label className="flex items-center gap-2 text-xs text-ink-soft">
                 <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} />
                 {t("restock")}
               </label>

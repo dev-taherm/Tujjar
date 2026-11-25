@@ -7,7 +7,7 @@ export default function StoresPage() {
   const t = useTranslations("dashboard.page");
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold text-gray-900">{t("stores")}</h1>
+      <h1 className="mb-8 text-3xl font-bold text-ink">{t("stores")}</h1>
       <StoreList />
     </div>
   );

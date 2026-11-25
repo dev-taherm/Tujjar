@@ -77,13 +77,13 @@ export function ThemeImportDialog({ onClose }: ThemeImportDialogProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>{t("importTheme") || "Import Theme"}</CardTitle>
-            <button onClick={onClose} className="rounded p-1 hover:bg-gray-100">
+            <button onClick={onClose} className="rounded p-1 hover:bg-rail">
               <X className="h-4 w-4" />
             </button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-soft">
             {t("importDescription") || "Upload a theme .json or .zip file (same format as export)"}
           </p>
 
@@ -97,18 +97,18 @@ export function ThemeImportDialog({ onClose }: ThemeImportDialogProps) {
 
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-8 text-sm text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-8 text-sm text-ink-soft hover:border-primary-400 hover:bg-primary-50"
           >
             <Upload className="h-5 w-5" />
             {fileName || t("chooseFile") || "Choose a JSON or ZIP file"}
           </button>
 
           {parseError && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{parseError}</div>
+            <div className="rounded-lg bg-error-soft p-3 text-sm text-error">{parseError}</div>
           )}
 
           {parsedData && !parseError && (
-            <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+            <div className="rounded-lg bg-success-soft p-3 text-sm text-success">
               <div className="flex items-center gap-2">
                 <FileJson className="h-4 w-4" />
                 <span className="font-medium">
@@ -118,12 +118,12 @@ export function ThemeImportDialog({ onClose }: ThemeImportDialogProps) {
                 </span>
               </div>
               {!(parsedData._zipFile instanceof File) && Boolean(parsedData.config) && typeof parsedData.config === "object" && (
-                <p className="mt-1 text-xs text-green-600">
+                <p className="mt-1 text-xs text-success">
                   Config keys: {Object.keys(parsedData.config as Record<string, unknown>).join(", ")}
                 </p>
               )}
               {!(parsedData._zipFile instanceof File) && Array.isArray(parsedData.presets) && (
-                <p className="mt-1 text-xs text-green-600">
+                <p className="mt-1 text-xs text-success">
                   {parsedData.presets.length} preset(s)
                 </p>
               )}

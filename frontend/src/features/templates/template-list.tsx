@@ -24,7 +24,7 @@ export function TemplateList() {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-40 animate-pulse rounded-xl bg-gray-100" />
+          <div key={i} className="h-40 shimmer rounded-xl" />
         ))}
       </div>
     );
@@ -32,9 +32,9 @@ export function TemplateList() {
 
   if (!templates.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-300 py-12 text-center">
-        <LayoutTemplate className="mx-auto h-10 w-10 text-gray-300" />
-        <p className="mt-3 text-sm text-gray-500">{t("noTemplatesYet")}</p>
+      <div className="rounded-2xl border border-dashed border-line py-12 text-center">
+        <LayoutTemplate className="mx-auto h-10 w-10 text-ink-soft" />
+        <p className="mt-3 text-sm text-ink-soft">{t("noTemplatesYet")}</p>
       </div>
     );
   }
@@ -45,41 +45,41 @@ export function TemplateList() {
         {templates.map((template) => (
           <div
             key={template.id}
-            className="group rounded-xl border border-gray-200 bg-white p-4 transition-all hover:shadow-md"
+            className="group rounded-xl border border-line bg-panel p-4 transition-all hover:shadow-md"
           >
             <div className="mb-3 flex items-start justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900">{template.name}</h3>
-                <p className="text-xs text-gray-500">v{template.version} &middot; {template.page_count} pages</p>
+                <h3 className="font-semibold text-ink">{template.name}</h3>
+                <p className="text-xs text-ink-soft">v{template.version} &middot; {template.page_count} pages</p>
               </div>
               <Badge variant="secondary">{template.category}</Badge>
             </div>
             {template.description && (
-              <p className="mb-3 line-clamp-2 text-sm text-gray-500">{template.description}</p>
+              <p className="mb-3 line-clamp-2 text-sm text-ink-soft">{template.description}</p>
             )}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 text-xs text-gray-400">
+              <div className="flex items-center gap-1 text-xs text-ink-soft">
                 <Clock className="h-3 w-3" />
                 {formatDateTime(template.updated_at)}
               </div>
               <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-opacity">
                 <Link
                   href={`/${locale}/dashboard/templates/${template.id}`}
-                  className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="rounded p-1.5 text-ink-soft hover:bg-rail hover:text-ink-soft"
                   title="Edit"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
                 <button
                   onClick={() => setDuplicateTemplate(template)}
-                  className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="rounded p-1.5 text-ink-soft hover:bg-rail hover:text-ink-soft"
                   title="Duplicate"
                 >
                   <Copy className="h-3.5 w-3.5" />
                 </button>
                 <button
                   onClick={() => setDeleteTemplate(template)}
-                  className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  className="rounded p-1.5 text-ink-soft hover:bg-error-soft hover:text-error"
                   title="Delete"
                 >
                   <Trash2 className="h-3.5 w-3.5" />

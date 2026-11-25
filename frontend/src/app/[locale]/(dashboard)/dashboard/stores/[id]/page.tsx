@@ -14,7 +14,7 @@ export default function StoreDetailPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="mb-8 text-3xl font-bold text-gray-900">{t("storeSettings")}</h1>
+        <h1 className="mb-8 text-3xl font-bold text-ink">{t("storeSettings")}</h1>
         <div className="space-y-4">
           <Skeleton className="h-96 w-full" />
         </div>
@@ -28,7 +28,7 @@ export default function StoreDetailPage() {
 
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold text-gray-900">Store Settings</h1>
+      <h1 className="mb-8 text-3xl font-bold text-ink">Store Settings</h1>
       <StoreSettingsForm store={store} />
     </div>
   );

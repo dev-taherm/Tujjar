@@ -34,7 +34,7 @@ export function ThemeSpacingEditor({ spacing, onChange, parentSpacing }: ThemeSp
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-medium text-gray-900">{t("spacing")}</h3>
+      <h3 className="text-sm font-medium text-ink">{t("spacing")}</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         {fields.map(({ key, label }) => {
           const isOverridden = parentSpacing && spacing[key] !== parentSpacing[key];
@@ -43,7 +43,7 @@ export function ThemeSpacingEditor({ spacing, onChange, parentSpacing }: ThemeSp
               <div className="flex items-center gap-1.5">
                 <Label className="text-xs">{label}</Label>
                 {parentSpacing && (
-                  <span className={`text-[10px] ${isOverridden ? "text-amber-600" : "text-gray-400"}`}>
+                  <span className={`text-[10px] ${isOverridden ? "text-warning" : "text-ink-soft"}`}>
                     {isOverridden ? "Overridden" : "Inherited"}
                   </span>
                 )}
@@ -59,7 +59,7 @@ export function ThemeSpacingEditor({ spacing, onChange, parentSpacing }: ThemeSp
                     type="button"
                     onClick={() => handleReset(key)}
                     title="Reset to parent"
-                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded p-1 text-ink-soft hover:bg-rail hover:text-ink-soft"
                   >
                     <RotateCcw className="h-3 w-3" />
                   </button>

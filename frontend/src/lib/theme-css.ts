@@ -1,5 +1,5 @@
 import type { ThemeConfig, ThemeOverride } from "@/shared/types";
-import { generateColorShades } from "@/lib/color-palette";
+import { generateColorShades, withLightness, withSaturation } from "@/lib/color-palette";
 
 const COLOR_VAR_MAP: Record<string, string> = {
   primary: "--color-primary",
@@ -23,6 +23,39 @@ const DARK_DEFAULTS: Record<string, string> = {
   border: "#374151",
 };
 
+/**
+ * Fallback dark palette derived from the store's light colors when explicit
+ * `*Dark` variants are not configured. Keeps dark mode in the brand's hue
+ * (a darkened background/surface, a lightened text) instead of a fixed
+ * gray-blue. Explicit `backgroundDark`/`surfaceDark`/`textDark`/
+ * `textSecondaryDark`/`borderDark` keys win over the derivation; non-hex
+ * colors fall back to DARK_DEFAULTS.
+ */
+function deriveDarkDefaults(colors: Record<string, string>): Record<string, string> {
+  const background =
+    colors.backgroundDark || (colors.background ? withLightness(colors.background, 8) : null) || DARK_DEFAULTS.background;
+  const surface =
+    colors.surfaceDark || (colors.surface ? withLightness(colors.surface, 14) : null) || withLightness(background, 14) || DARK_DEFAULTS.surface;
+  const text = colors.textDark || (colors.text ? withLightness(colors.text, 93) : null) || DARK_DEFAULTS.text;
+  // Secondary text keeps the brand hue but is desaturated for readability.
+  let textSecondary: string = DARK_DEFAULTS.textSecondary;
+  const explicitTextSecondary = colors.textSecondaryDark;
+  if (explicitTextSecondary) {
+    textSecondary = explicitTextSecondary;
+  } else if (text) {
+    const lightText = withLightness(text, 65);
+    const muted = lightText ? withSaturation(lightText, 18) : null;
+    if (muted) textSecondary = muted;
+  }
+  return {
+    background,
+    surface,
+    text,
+    textSecondary,
+    border: colors.borderDark || withLightness(text, 22) || DARK_DEFAULTS.border,
+  };
+}
+
 type ThemeLike = ThemeConfig | ThemeOverride;
 
 /**
@@ -41,7 +74,7 @@ export function collectThemeVars(
     const colors = theme.colors as Record<string, string>;
     const darkOverrides: Record<string, string> = dark
       ? {
-          ...DARK_DEFAULTS,
+          ...deriveDarkDefaults(colors),
           primary: colors.primaryDark || colors.primary || "",
           secondary: colors.secondaryDark || colors.secondary || "",
           accent: colors.accentDark || colors.accent || "",
@@ -83,6 +116,9 @@ export function collectThemeVars(
     if (typo.baseFontSize) vars["--font-size-base"] = `${typo.baseFontSize}px`;
     if (typo.scale) vars["--font-scale"] = `${typo.scale}`;
     if (typo.lineHeight) vars["--line-height-base"] = `${typo.lineHeight}`;
+    if (typo.headingWeight) vars["--font-heading-weight"] = `${typo.headingWeight}`;
+    if (typo.headingLetterSpacing) vars["--font-heading-tracking"] = `${typo.headingLetterSpacing}px`;
+    if (typo.letterSpacing) vars["--font-body-tracking"] = `${typo.letterSpacing}px`;
   }
 
   if (theme.spacing) {
@@ -131,6 +167,22 @@ export function buildThemeCss(theme: ThemeLike | null | undefined): string {
   if (Object.keys(darkOnly).length > 0) {
     css.push(`.dark {\n${declarationsToCss(darkOnly)}\n}`);
   }
+
+  // Typography detail rules. Scoped to the `.storefront` root (set by the
+  // storefront chrome) so they win over Tailwind utility classes inside the
+  // storefront without leaking into the dashboard.
+  if (light["--font-body-tracking"]) {
+    css.push(`.storefront {\n  letter-spacing: var(--font-body-tracking);\n}`);
+  }
+  if (light["--font-heading-weight"] || light["--font-heading-tracking"]) {
+    const decls: string[] = [];
+    if (light["--font-heading-weight"]) decls.push("  font-weight: var(--font-heading-weight);");
+    if (light["--font-heading-tracking"]) decls.push("  letter-spacing: var(--font-heading-tracking);");
+    css.push(
+      `.storefront h1,\n.storefront h2,\n.storefront h3,\n.storefront h4,\n.storefront h5,\n.storefront h6 {\n${decls.join("\n")}\n}`
+    );
+  }
+
   return css.join("\n\n");
 }
 

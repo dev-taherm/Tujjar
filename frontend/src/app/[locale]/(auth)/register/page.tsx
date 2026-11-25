@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
+import { AuthShell } from "@/features/auth/auth-shell";
 import { authApi } from "@/api/queries";
 import { useAuthStore } from "@/stores";
 import { useTranslations, useLocale } from "next-intl";
@@ -46,7 +47,7 @@ export default function RegisterPage() {
       const result = await authApi.register(data);
       useAuthStore.getState().setUser(result.user);
       useAuthStore.getState().setTokens(result.tokens);
-      router.push(`/${locale}/dashboard`);
+      router.push(`/${locale}/dashboard/onboarding`);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
       setError(axiosErr.response?.data?.error?.message || t("registrationFailed"));
@@ -54,8 +55,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
+    <AuthShell>
+      <Card className="w-full animate-rise">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{t("title")}</CardTitle>
           <CardDescription>{t("subtitle")}</CardDescription>
@@ -63,7 +64,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+              <div className="rounded-lg bg-error-soft p-3 text-sm text-error">{error}</div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
@@ -105,7 +106,7 @@ export default function RegisterPage() {
             <Button type="submit" className="w-full" isLoading={isSubmitting}>
               {t("createAccount")}
             </Button>
-            <p className="text-center text-sm text-gray-500">
+            <p className="text-center text-sm text-ink-soft">
               {t("hasAccount")}{" "}
               <Link href={`/${locale}/login`} className="text-primary-600 hover:underline">
                 {t("signIn")}
@@ -114,6 +115,6 @@ export default function RegisterPage() {
           </CardFooter>
         </form>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

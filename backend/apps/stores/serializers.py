@@ -147,6 +147,7 @@ class StoreSerializer(serializers.ModelSerializer):
             "logo_url",
             "favicon_url",
             "theme",
+            "theme_config_override",
             "template",
             "settings",
             "seo_title",
@@ -475,3 +476,4 @@ class StoreWizardSerializer(serializers.Serializer):
                         "translations": cat_data.get("translations", {}),
                     },
                 )
+

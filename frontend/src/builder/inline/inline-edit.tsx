@@ -58,7 +58,7 @@ export function InlineEdit({ value, onChange, tag: Tag = "p", className = "", pl
       contentEditable
       suppressContentEditableWarning
       className={`${className} cursor-text outline-none rounded px-1 -mx-1 transition-colors ${
-        isFocused ? "bg-blue-50 ring-2 ring-blue-300" : "hover:bg-gray-50 hover:ring-1 hover:ring-gray-200"
+        isFocused ? "bg-primary-50 ring-2 ring-primary-300" : "hover:bg-rail hover:ring-1 hover:ring-line"
       }`}
       onFocus={() => setIsFocused(true)}
       onBlur={handleBlur}

@@ -15,9 +15,9 @@ export function DragOverlay({ type }: DragOverlayProps) {
   const IconComponent = (Icons as unknown as Record<string, ComponentType<{ className?: string }>>)[def.icon] || Icons.Box;
 
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-4 py-3 shadow-2xl ring-2 ring-blue-100">
-      <IconComponent className="h-5 w-5 text-blue-600" />
-      <span className="text-sm font-medium text-gray-900">{def.label}</span>
+    <div className="flex items-center gap-2 rounded-lg border border-primary-300 bg-panel px-4 py-3 shadow-overlay ring-2 ring-primary-200 animate-pop">
+      <IconComponent className="h-5 w-5 text-primary-600" />
+      <span className="text-sm font-medium text-ink">{def.label}</span>
     </div>
   );
 }

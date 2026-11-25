@@ -53,7 +53,7 @@ export default async function StorefrontProductsPage({
   const currentPage = result?.current_page ?? 1;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[var(--container-max-width,80rem)] px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold" style={{ color: "var(--color-text)" }}>{t("allProducts")}</h1>
         <ProductListControls key={`${sort}-${search}`} sort={sort} currentSearch={search} />

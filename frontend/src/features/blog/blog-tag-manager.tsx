@@ -66,7 +66,7 @@ export function BlogTagManager() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">Add tags to improve post discoverability.</p>
+        <p className="text-sm text-ink-soft">Add tags to improve post discoverability.</p>
         <Button
           onClick={() => { resetForm(); setShowForm(true); }}
           size="sm"
@@ -77,44 +77,44 @@ export function BlogTagManager() {
       </div>
 
       {showForm && (
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-line bg-panel p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-semibold text-ink">
               {editing ? "Edit Tag" : "New Tag"}
             </h3>
-            <button onClick={resetForm} className="rounded p-1 text-gray-400 hover:text-gray-600">
+            <button onClick={resetForm} className="rounded p-1 text-ink-soft hover:text-ink-soft">
               <X className="h-4 w-4" />
             </button>
           </div>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs text-gray-500">Name</label>
+              <label className="mb-1 block text-xs text-ink-soft">Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => { setName(e.target.value); if (!editing) setSlug(generateSlug(e.target.value)); }}
                 placeholder="Tag name"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-gray-500">Slug</label>
+              <label className="mb-1 block text-xs text-ink-soft">Slug</label>
               <input
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="tag-slug"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-gray-500">Description</label>
+              <label className="mb-1 block text-xs text-ink-soft">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description"
                 rows={2}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -133,14 +133,14 @@ export function BlogTagManager() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded-xl bg-gray-100" />
+            <div key={i} className="h-16 shimmer rounded-xl" />
           ))}
         </div>
       ) : !tags || tags.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
-          <Tags className="mx-auto h-12 w-12 text-gray-300" />
-          <h3 className="mt-4 text-lg font-semibold text-gray-900">No tags</h3>
-          <p className="mt-1 text-sm text-gray-500">Create your first tag to label posts.</p>
+        <div className="rounded-xl border border-line bg-panel p-12 text-center">
+          <Tags className="mx-auto h-12 w-12 text-ink-soft" />
+          <h3 className="mt-4 text-lg font-semibold text-ink">No tags</h3>
+          <p className="mt-1 text-sm text-ink-soft">Create your first tag to label posts.</p>
           <Button onClick={() => setShowForm(true)} className="mt-4" size="sm">
             <Plus className="me-1.5 h-4 w-4" />
             Create Tag
@@ -151,14 +151,14 @@ export function BlogTagManager() {
           {tags.map((tag) => (
             <div
               key={tag.id}
-              className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2"
+              className="group flex items-center gap-2 rounded-lg border border-line bg-panel px-3 py-2"
             >
-              <span className="text-sm text-gray-700">{tag.name}</span>
-              <span className="text-xs text-gray-400">({tag.post_count})</span>
+              <span className="text-sm text-ink">{tag.name}</span>
+              <span className="text-xs text-ink-soft">({tag.post_count})</span>
               <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
                 <button
                   onClick={() => handleEdit(tag)}
-                  className="rounded p-0.5 text-gray-400 hover:text-gray-600"
+                  className="rounded p-0.5 text-ink-soft hover:text-ink-soft"
                 >
                   <Pencil className="h-3 w-3" />
                 </button>
@@ -166,13 +166,13 @@ export function BlogTagManager() {
                   <>
                     <button
                       onClick={() => handleDelete(tag.id)}
-                      className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] text-white hover:bg-red-700"
+                      className="rounded bg-error px-1.5 py-0.5 text-[10px] text-white hover:bg-error"
                     >
                       Yes
                     </button>
                     <button
                       onClick={() => setConfirmDelete(null)}
-                      className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600 hover:bg-gray-200"
+                      className="rounded bg-rail px-1.5 py-0.5 text-[10px] text-ink-soft hover:bg-rail"
                     >
                       No
                     </button>
@@ -180,7 +180,7 @@ export function BlogTagManager() {
                 ) : (
                   <button
                     onClick={() => setConfirmDelete(tag.id)}
-                    className="rounded p-0.5 text-gray-400 hover:text-red-600"
+                    className="rounded p-0.5 text-ink-soft hover:text-error"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>

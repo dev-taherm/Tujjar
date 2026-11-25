@@ -57,4 +57,3 @@ store, created = Store.objects.get_or_create(
 )
 print(f"Store: {store.slug} (created={created})")
 print("Bootstrap complete.")
-

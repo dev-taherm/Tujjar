@@ -32,7 +32,7 @@ export function TemplateDeleteDialog({ template, open, onClose }: TemplateDelete
 
   return (
     <Dialog open={true} onClose={onClose} title={t("deleteTemplate")}>
-      <p className="mb-4 text-sm text-gray-600">
+      <p className="mb-4 text-sm text-ink-soft">
         {t("deleteTemplateConfirm", { name: template.name })}
       </p>
       <div className="flex justify-end gap-2">

@@ -112,12 +112,10 @@ def resolve_discount(
     if not code:
         return None
 
-    discount = (
-        Discount.unscoped.filter(
-            organization_id=organization_id,
-            code__iexact=code.strip(),
-        ).first()
-    )
+    discount = Discount.unscoped.filter(
+        organization_id=organization_id,
+        code__iexact=code.strip(),
+    ).first()
     if not discount or not discount.is_valid_now(subtotal=subtotal):
         return None
 
@@ -162,14 +160,16 @@ def _discountable_subtotal(discount: Discount, subtotal: Decimal, items) -> Deci
 # ---------------------------------------------------------------------------
 
 
-def _match_tax_rate(organization_id, *, country: str, state: str, postal_code: str) -> TaxRate | None:
-    rates = list(
-        TaxRate.unscoped.filter(organization_id=organization_id, is_active=True)
-    )
+def _match_tax_rate(
+    organization_id, *, country: str, state: str, postal_code: str
+) -> TaxRate | None:
+    rates = list(TaxRate.unscoped.filter(organization_id=organization_id, is_active=True))
     if not rates:
         return None
 
-    matching = [r for r in rates if r.matches(country=country, state=state, postal_code=postal_code)]
+    matching = [
+        r for r in rates if r.matches(country=country, state=state, postal_code=postal_code)
+    ]
     if matching:
         # Most specific match wins; ties broken by creation recency.
         return max(matching, key=lambda r: (r.specificity(), r.created_at))
@@ -192,9 +192,7 @@ def calculate_tax(
     Inclusive pricing (VAT-style): the tax is extracted from `taxable`
     (taxable already contains it), so it does not increase the total.
     """
-    rate = _match_tax_rate(
-        organization_id, country=country, state=state, postal_code=postal_code
-    )
+    rate = _match_tax_rate(organization_id, country=country, state=state, postal_code=postal_code)
     if not rate or taxable <= ZERO:
         return ZERO, rate
 
@@ -211,9 +209,7 @@ def calculate_tax(
 
 
 def _zone_for(organization_id, country: str) -> ShippingZone | None:
-    zones = list(
-        ShippingZone.unscoped.filter(organization_id=organization_id, is_active=True)
-    )
+    zones = list(ShippingZone.unscoped.filter(organization_id=organization_id, is_active=True))
     specific = [z for z in zones if z.country_list() and z.covers(country)]
     catch_all = [z for z in zones if not z.country_list()]
     if specific:
@@ -320,17 +316,20 @@ def build_quote(
         postal_code=q.postal_code,
     )
     if tax_rate and not tax_rate.inclusive:
-        tax = (tax + (quote.shipping * tax_rate.rate / Decimal("100")).quantize(Decimal("0.01"))).quantize(
-            Decimal("0.01")
-        )
+        tax = (
+            tax + (quote.shipping * tax_rate.rate / Decimal("100")).quantize(Decimal("0.01"))
+        ).quantize(Decimal("0.01"))
     if tax_rate:
         quote.tax = tax
         quote.tax_rate = tax_rate.rate
         quote.tax_inclusive = tax_rate.inclusive
 
     # 5. Total (inclusive tax already sits inside the subtotal)
-    quote.total = (discounted_subtotal + quote.shipping if quote.tax_inclusive
-                   else discounted_subtotal + quote.shipping + quote.tax)
+    quote.total = (
+        discounted_subtotal + quote.shipping
+        if quote.tax_inclusive
+        else discounted_subtotal + quote.shipping + quote.tax
+    )
     return quote
 
 
@@ -387,13 +386,9 @@ def create_order_from_quote(
             if not line.track_inventory:
                 continue
             locked = _lock_product(line.product_id)
-            if (
-                locked.inventory_quantity < line.quantity
-                and not locked.allow_backorder
-            ):
+            if locked.inventory_quantity < line.quantity and not locked.allow_backorder:
                 raise ValueError(
-                    f"Insufficient stock for '{line.title}'. "
-                    f"Available: {locked.inventory_quantity}"
+                    f"Insufficient stock for '{line.title}'. Available: {locked.inventory_quantity}"
                 )
 
         # 2. Order row with quote financials
@@ -517,18 +512,16 @@ def create_refund(
     from django.db import transaction
 
     with transaction.atomic():
-        already_refunded = order.refunds.filter(
-            status=Refund.Status.SUCCEEDED
-        ).aggregate(total=models_sum_amount())["total"] or Decimal("0")
+        already_refunded = order.refunds.filter(status=Refund.Status.SUCCEEDED).aggregate(
+            total=models_sum_amount()
+        )["total"] or Decimal("0")
 
         max_refundable = order.total - already_refunded
         amount = _d(amount)
         if amount <= ZERO:
             raise ValueError("Refund amount must be positive.")
         if amount > max_refundable:
-            raise ValueError(
-                f"Refund amount exceeds refundable balance ({max_refundable})."
-            )
+            raise ValueError(f"Refund amount exceeds refundable balance ({max_refundable}).")
 
         refund = Refund.objects.create(
             organization_id=order.organization_id,

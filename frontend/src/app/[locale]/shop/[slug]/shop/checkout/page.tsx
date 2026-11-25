@@ -272,7 +272,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
   // Empty cart
   if (!cartLoading && items.length === 0) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[var(--container-max-width,80rem)] px-4 py-16 text-center sm:px-6 lg:px-8">
         <ShoppingBag className="mx-auto h-12 w-12" style={{ color: "var(--color-text-secondary)" }} />
         <h1 className="mt-4 text-xl font-semibold" style={{ color: "var(--color-text)" }}>
           {t("emptyCart")}

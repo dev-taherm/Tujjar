@@ -23,7 +23,7 @@ function SectionRenderer({ section }: { section: Section }) {
   const t = useTranslations("dashboard.pages");
   const Component = sectionComponents[section.type];
   if (!Component) {
-    return <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-500">{t("unknownSectionType")} {section.type}</div>;
+    return <div className="rounded-lg border border-dashed border-line p-8 text-center text-ink-soft">{t("unknownSectionType")} {section.type}</div>;
   }
   return <Component section={section} />;
 }
@@ -34,7 +34,6 @@ interface SectionBuilderProps {
 
 export function SectionBuilder({ pageId }: SectionBuilderProps) {
   const t = useTranslations("dashboard.pages");
-  const tc = useTranslations("common");
   const { page, sections, selectedSectionId, selectSection, getSelectedSection, isDirty, isPreviewMode, togglePreviewMode, editLocale, setEditLocale, themeOverride, setThemeOverride, getSavePayload, devicePreview, setDevicePreview } = usePageBuilder();
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -151,7 +150,7 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
   const selectedSection = getSelectedSection();
 
   return (
-    <div className="flex h-[calc(100vh-120px)] flex-col rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="flex h-[calc(100vh-120px)] flex-col rounded-xl border border-line bg-panel overflow-hidden">
       <PageToolbar
         pageTitle={page?.title || ""}
         isPublished={page?.is_published || false}
@@ -178,7 +177,7 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
       />
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Section List OR Layer Tree */}
-        <div className="w-64 border-e border-gray-200 overflow-y-auto p-3">
+        <div className="w-64 border-e border-line overflow-y-auto p-3">
           {showLayers ? (
             <LayerTree
               sections={sections}
@@ -202,11 +201,11 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
         </div>
 
         {/* Center: Preview with Device Frame */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+        <div className="flex-1 overflow-y-auto bg-rail p-6">
           {sections.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center">
-              <p className="mb-4 text-gray-500">{t("noSections")}</p>
-              <button onClick={() => setShowTypePicker(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+              <p className="mb-4 text-ink-soft">{t("noSections")}</p>
+              <button onClick={() => setShowTypePicker(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
                 {t("addFirstSection")}
               </button>
             </div>
@@ -218,7 +217,7 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
                     key={section.id}
                     onClick={() => selectSection(section.id)}
                     className={`cursor-pointer rounded-lg border-2 transition-colors ${
-                      section.id === selectedSectionId ? "border-blue-400" : "border-transparent hover:border-gray-300"
+                      section.id === selectedSectionId ? "border-primary-400" : "border-transparent hover:border-line"
                     }`}
                   >
                     <SectionRenderer section={section} />
@@ -231,7 +230,7 @@ export function SectionBuilder({ pageId }: SectionBuilderProps) {
 
         {/* Right: Inspector */}
         {selectedSection && !isPreviewMode && (
-          <div className="w-80 border-s border-gray-200 overflow-y-auto p-4">
+          <div className="w-80 border-s border-line overflow-y-auto p-4">
             <EnhancedInspector
               section={selectedSection}
               onUpdate={(settings) => handleUpdateSection(selectedSection.id, settings)}

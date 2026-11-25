@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Label, Select, Button } from "@/shared/ui";
+import { Input, Label, Select } from "@/shared/ui";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Copy, Eye, EyeOff, Settings } from "lucide-react";
+import { Plus, Trash2, GripVertical, Copy, Settings } from "lucide-react";
 import { getAllSectionTypes, getRegistryEntry } from "@/builder/sections/registry";
 import { sectionComponents } from "@/lib/section-registry";
 import { SectionSettingsPanel } from "@/features/pages/section-settings-panel";
-import type { Section, SectionDefinition } from "@/shared/types";
+import type { Section } from "@/shared/types";
 import * as Icons from "lucide-react";
 import type { ComponentType } from "react";
 
@@ -56,7 +56,6 @@ function getIcon(iconName: string) {
 
 function SectionCard({
   section,
-  index,
   isSelected,
   onSelect,
   onRemove,
@@ -77,30 +76,30 @@ function SectionCard({
   const PreviewComponent = sectionComponents[section.type];
 
   return (
-    <div className={`rounded-lg border transition-colors ${isSelected ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+    <div className={`rounded-lg border transition-colors ${isSelected ? "border-primary-500 bg-primary-50" : "border-line hover:border-line"}`}>
       <div className="flex items-center gap-2 p-3">
-        <GripVertical className="h-4 w-4 flex-shrink-0 cursor-grab text-gray-300" />
-        <button onClick={onSelect} className="flex-1 text-left">
-          <span className="text-sm font-medium text-gray-900">{definition?.label || section.type}</span>
+        <GripVertical className="h-4 w-4 flex-shrink-0 cursor-grab text-ink-soft" />
+        <button onClick={onSelect} className="flex-1 text-start">
+          <span className="text-sm font-medium text-ink">{definition?.label || section.type}</span>
         </button>
         <div className="flex gap-1">
           <button
             onClick={onSettingsToggle}
-            className={`rounded p-1 transition-colors ${showSettings ? "bg-blue-100 text-blue-600" : "text-gray-400 hover:bg-gray-100"}`}
+            className={`rounded p-1 transition-colors ${showSettings ? "bg-primary-100 text-primary-600" : "text-ink-soft hover:bg-rail"}`}
             title="Settings"
           >
             <Settings className="h-3.5 w-3.5" />
           </button>
-          <button onClick={onDuplicate} className="rounded p-1 text-gray-400 hover:bg-gray-100" title="Duplicate">
+          <button onClick={onDuplicate} className="rounded p-1 text-ink-soft hover:bg-rail" title="Duplicate">
             <Copy className="h-3.5 w-3.5" />
           </button>
-          <button onClick={onRemove} className="rounded p-1 text-red-400 hover:bg-red-50" title="Remove">
+          <button onClick={onRemove} className="rounded p-1 text-error hover:bg-error-soft" title="Remove">
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
       {PreviewComponent && (
-        <div className="border-t border-gray-100 bg-gray-50 px-3 py-2">
+        <div className="border-t border-line bg-rail px-3 py-2">
           <div className="pointer-events-none scale-95 origin-top-left">
             <PreviewComponent section={section as Section} />
           </div>
@@ -131,7 +130,7 @@ function SectionTypePicker({
         if (!types.length) return null;
         return (
           <div key={cat.key}>
-            <p className="mb-1.5 text-xs font-medium text-gray-500">{cat.label}</p>
+            <p className="mb-1.5 text-xs font-medium text-ink-soft">{cat.label}</p>
             <div className="flex flex-wrap gap-1.5">
               {types.map((def) => {
                 const count = countsByType[def.type] || 0;
@@ -142,11 +141,11 @@ function SectionTypePicker({
                     key={def.type}
                     onClick={() => onSelect(def.type)}
                     disabled={!!isLimited}
-                    className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-rail disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <IconComp className="h-3.5 w-3.5" />
                     {def.label}
-                    {isLimited && <span className="text-gray-400">(max)</span>}
+                    {isLimited && <span className="text-ink-soft">(max)</span>}
                   </button>
                 );
               })}
@@ -166,9 +165,6 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
   const [showTypePicker, setShowTypePicker] = useState(false);
 
   const selectedPage = selectedPageIndex !== null ? pages[selectedPageIndex] : null;
-  const selectedSection = selectedPage && selectedSectionIndex !== null
-    ? selectedPage.sections[selectedSectionIndex]
-    : null;
 
   const handlePageChange = (index: number, field: keyof TemplatePage, value: unknown) => {
     const updated = pages.map((p, i) => (i === index ? { ...p, [field]: value } : p));
@@ -291,7 +287,7 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
           <Label>{t("pages")}</Label>
           <button
             onClick={addPage}
-            className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
           >
             <Plus className="h-3 w-3" />
             {t("addPage")}
@@ -303,38 +299,38 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
               key={i}
               className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm transition-colors cursor-pointer ${
                 selectedPageIndex === i
-                  ? "bg-blue-100 text-blue-700 font-medium"
-                  : "text-gray-600 hover:bg-gray-100"
+                  ? "bg-primary-100 text-primary-700 font-medium"
+                  : "text-ink-soft hover:bg-rail"
               }`}
               onClick={() => { setSelectedPageIndex(i); setSelectedSectionIndex(null); setShowSectionSettings(false); }}
             >
-              <GripVertical className="h-3 w-3 flex-shrink-0 text-gray-300 cursor-grab" />
+              <GripVertical className="h-3 w-3 flex-shrink-0 text-ink-soft cursor-grab" />
               <span className="flex-1 truncate">{page.title}</span>
-              <span className="text-[10px] text-gray-400">{page.sections.length}</span>
+              <span className="text-[10px] text-ink-soft">{page.sections.length}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); movePage(i, -1); }}
                 disabled={i === 0}
-                className="rounded p-0.5 text-gray-400 hover:bg-gray-200 disabled:opacity-30"
+                className="rounded p-0.5 text-ink-soft hover:bg-rail disabled:opacity-30"
               >
                 ↑
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); movePage(i, 1); }}
                 disabled={i === pages.length - 1}
-                className="rounded p-0.5 text-gray-400 hover:bg-gray-200 disabled:opacity-30"
+                className="rounded p-0.5 text-ink-soft hover:bg-rail disabled:opacity-30"
               >
                 ↓
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); removePage(i); }}
-                className="rounded p-0.5 text-red-400 hover:bg-red-50"
+                className="rounded p-0.5 text-error hover:bg-error-soft"
               >
                 <Trash2 className="h-3 w-3" />
               </button>
             </div>
           ))}
           {pages.length === 0 && (
-            <p className="py-4 text-center text-xs text-gray-400">{t("noPages")}</p>
+            <p className="py-4 text-center text-xs text-ink-soft">{t("noPages")}</p>
           )}
         </div>
       </div>
@@ -344,7 +340,7 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
         {selectedPage ? (
           <div className="space-y-3">
             {/* Page metadata */}
-            <div className="grid grid-cols-3 gap-2 rounded-lg border border-gray-200 p-3">
+            <div className="grid grid-cols-3 gap-2 rounded-lg border border-line p-3">
               <div>
                 <Label className="text-xs">{t("pageName")}</Label>
                 <Input
@@ -378,7 +374,7 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
                 <Label>Sections ({selectedPage.sections.length})</Label>
                 <button
                   onClick={() => setShowTypePicker(!showTypePicker)}
-                  className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                  className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
                 >
                   <Plus className="h-3 w-3" />
                   {t("addSection")}
@@ -386,7 +382,7 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
               </div>
 
               {showTypePicker && (
-                <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                <div className="rounded-lg border border-primary-200 bg-primary-50 p-3">
                   <SectionTypePicker
                     onSelect={addSection}
                     currentSections={selectedPage.sections}
@@ -400,14 +396,14 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
                     <button
                       onClick={() => moveSection(selectedPageIndex!, j, -1)}
                       disabled={j === 0}
-                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 disabled:opacity-30"
+                      className="rounded p-0.5 text-ink-soft hover:bg-rail disabled:opacity-30"
                     >
                       ↑
                     </button>
                     <button
                       onClick={() => moveSection(selectedPageIndex!, j, 1)}
                       disabled={j === selectedPage.sections.length - 1}
-                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 disabled:opacity-30"
+                      className="rounded p-0.5 text-ink-soft hover:bg-rail disabled:opacity-30"
                     >
                       ↓
                     </button>
@@ -431,7 +427,7 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
                       showSettings={selectedSectionIndex === j && showSectionSettings}
                     />
                     {selectedSectionIndex === j && showSectionSettings && (
-                      <div className="mt-2 rounded-lg border border-gray-200 p-3">
+                      <div className="mt-2 rounded-lg border border-line p-3">
                         <SectionSettingsPanel
                           section={section as Section}
                           onUpdate={handleSectionUpdate}
@@ -443,15 +439,15 @@ export function TemplatePagesEditor({ pages, onChange }: TemplatePagesEditorProp
               ))}
 
               {selectedPage.sections.length === 0 && !showTypePicker && (
-                <div className="rounded-lg border border-dashed border-gray-300 py-8 text-center">
-                  <p className="text-sm text-gray-500">{t("noSections")}</p>
+                <div className="rounded-lg border border-dashed border-line py-8 text-center">
+                  <p className="text-sm text-ink-soft">{t("noSections")}</p>
                 </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-gray-300">
-            <p className="text-sm text-gray-500">Select a page to edit its sections</p>
+          <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-line">
+            <p className="text-sm text-ink-soft">Select a page to edit its sections</p>
           </div>
         )}
       </div>

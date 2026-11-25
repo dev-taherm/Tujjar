@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
+import { AuthShell } from "@/features/auth/auth-shell";
 import { authApi } from "@/api/queries";
 import { useAuthStore } from "@/stores";
 import { useTranslations, useLocale } from "next-intl";
@@ -102,15 +103,15 @@ export default function LoginPage() {
 
   if (requires2FA) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md">
+      <AuthShell>
+        <Card className="w-full animate-rise">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">{useBackupCode ? t("backupCodeTitle") : t("twoFactorTitle")}</CardTitle>
             <CardDescription>{useBackupCode ? t("backupCodeDescription") : t("twoFactorDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+              <div className="rounded-lg bg-error-soft p-3 text-sm text-error">{error}</div>
             )}
             {useBackupCode ? (
               <Input
@@ -148,19 +149,19 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => { setRequires2FA(false); setTwoFactorCode(""); setBackupCode(""); setError(null); }}
-              className="px-3 py-2 text-sm text-gray-500 hover:underline"
+              className="px-3 py-2 text-sm text-ink-soft hover:underline"
             >
               {t("backToLogin")}
             </button>
           </CardFooter>
         </Card>
-      </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
+    <AuthShell>
+      <Card className="w-full animate-rise">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{t("title")}</CardTitle>
           <CardDescription>{t("subtitle")}</CardDescription>
@@ -168,7 +169,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+              <div className="rounded-lg bg-error-soft p-3 text-sm text-error">{error}</div>
             )}
             <Input
               label={t("email")}
@@ -194,7 +195,7 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" isLoading={isSubmitting}>
               {t("signIn")}
             </Button>
-            <p className="text-center text-sm text-gray-500">
+            <p className="text-center text-sm text-ink-soft">
               {t("noAccount")}{" "}
               <Link href={`/${locale}/register`} className="text-primary-600 hover:underline">
                 {t("signUp")}
@@ -203,6 +204,6 @@ export default function LoginPage() {
           </CardFooter>
         </form>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

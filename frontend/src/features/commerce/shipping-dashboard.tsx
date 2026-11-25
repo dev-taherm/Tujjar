@@ -100,7 +100,7 @@ export function ShippingDashboard() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">{t("description")}</p>
+        <p className="text-sm text-ink-soft">{t("description")}</p>
         <Button onClick={() => setZoneDialogOpen(true)}>
           <Plus className="me-2 h-4 w-4" /> {t("createZone")}
         </Button>
@@ -109,7 +109,7 @@ export function ShippingDashboard() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-xl bg-gray-200" />
+            <div key={i} className="h-28 shimmer rounded-xl" />
           ))}
         </div>
       ) : !zones?.length ? (
@@ -120,8 +120,8 @@ export function ShippingDashboard() {
             <Card key={zone.id} className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">{zone.name}</h3>
-                  <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-500">
+                  <h3 className="font-semibold text-ink">{zone.name}</h3>
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-soft">
                     <Globe className="h-3 w-3" />
                     {zone.countries || t("restOfWorld")}
                   </p>
@@ -132,7 +132,7 @@ export function ShippingDashboard() {
                   </Badge>
                   <button
                     onClick={() => removeZone(zone.id)}
-                    className="rounded p-1 text-red-400 hover:bg-red-50"
+                    className="rounded p-1 text-error hover:bg-error-soft"
                     aria-label={tc("delete")}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -144,11 +144,11 @@ export function ShippingDashboard() {
                 {zone.rates.map((rate) => (
                   <div
                     key={rate.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2"
+                    className="flex items-center justify-between rounded-lg border border-line px-3 py-2"
                   >
                     <div>
-                      <span className="text-sm font-medium text-gray-900">{rate.name}</span>
-                      <span className="ms-2 text-sm text-gray-500">
+                      <span className="text-sm font-medium text-ink">{rate.name}</span>
+                      <span className="ms-2 text-sm text-ink-soft">
                         {rate.pricing_type === "percentage"
                           ? `${rate.percentage}%`
                           : formatCurrency(Number(rate.price))}
@@ -157,7 +157,7 @@ export function ShippingDashboard() {
                     </div>
                     <button
                       onClick={() => removeRate(rate.id)}
-                      className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                      className="rounded p-1 text-ink-soft hover:bg-error-soft hover:text-error"
                       aria-label={tc("delete")}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -166,7 +166,7 @@ export function ShippingDashboard() {
                 ))}
 
                 {rateZoneId === zone.id ? (
-                  <div className="rounded-lg border border-dashed border-gray-300 p-3">
+                  <div className="rounded-lg border border-dashed border-line p-3">
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
                         <Label htmlFor={`rate-name-${zone.id}`}>{t("rateName")}</Label>
@@ -232,7 +232,7 @@ export function ShippingDashboard() {
                       setRatePrice("");
                       setRateFreeOver("");
                     }}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 py-2 text-sm text-gray-500 hover:bg-gray-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-line py-2 text-sm text-ink-soft hover:bg-rail"
                   >
                     <Plus className="h-4 w-4" /> {t("addRate")}
                   </button>
@@ -262,7 +262,7 @@ export function ShippingDashboard() {
               onChange={(e) => setZoneCountries(e.target.value)}
               placeholder="SA, AE, KW"
             />
-            <p className="mt-1 text-xs text-gray-500">{t("countriesHint")}</p>
+            <p className="mt-1 text-xs text-ink-soft">{t("countriesHint")}</p>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setZoneDialogOpen(false)}>

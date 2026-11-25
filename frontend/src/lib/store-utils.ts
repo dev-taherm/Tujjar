@@ -1,7 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-
 export function getSubdomain(host: string): string | null {
   const hostname = host.split(":")[0];
   const storeDomain = process.env.NEXT_PUBLIC_STORE_DOMAIN || "localhost";

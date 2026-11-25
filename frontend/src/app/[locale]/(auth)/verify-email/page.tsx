@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui";
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Spinner } from "@/shared/ui";
+import { AuthShell } from "@/features/auth/auth-shell";
 import { authApi } from "@/api/queries";
 import { useTranslations, useLocale } from "next-intl";
 
-export default function VerifyEmailPage() {
+function VerifyEmailPageContent() {
   const searchParams = useSearchParams();
   const locale = useLocale();
   const t = useTranslations("auth.verifyEmail");
@@ -55,8 +56,7 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
+    <Card className="w-full animate-rise">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{t("title")}</CardTitle>
           <CardDescription>{message}</CardDescription>
@@ -102,6 +102,22 @@ export default function VerifyEmailPage() {
           </form>
         )}
       </Card>
-    </div>
+  );
+}
+
+/* useSearchParams() requires a Suspense boundary during static prerender. */
+export default function VerifyEmailPage() {
+  return (
+    <AuthShell>
+      <Suspense
+        fallback={
+          <div className="flex justify-center py-24">
+            <Spinner className="h-8 w-8 text-primary-600" />
+          </div>
+        }
+      >
+        <VerifyEmailPageContent />
+      </Suspense>
+    </AuthShell>
   );
 }

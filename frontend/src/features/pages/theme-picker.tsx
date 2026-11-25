@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Palette, Check } from "lucide-react";
 import { Button } from "@/shared/ui";
-import type { ThemeOverride, ThemeConfig } from "@/shared/types";
+import type { ThemeOverride } from "@/shared/types";
 import { useTranslations } from "next-intl";
 
 interface ThemePickerProps {
@@ -72,28 +72,28 @@ export function ThemePicker({ currentOverride, onSelect, onClose }: ThemePickerP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-lg rounded-2xl bg-panel p-6 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Palette className="h-5 w-5 text-blue-600" />
+            <Palette className="h-5 w-5 text-primary-600" />
             <h2 className="text-lg font-semibold">{t("pageTheme")}</h2>
           </div>
-          <button onClick={onClose} className="rounded-lg p-1 hover:bg-gray-100">
+          <button onClick={onClose} className="rounded-lg p-1 hover:bg-rail">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <p className="mb-4 text-sm text-gray-500">{t("pageThemeDescription")}</p>
+        <p className="mb-4 text-sm text-ink-soft">{t("pageThemeDescription")}</p>
 
         <div className="space-y-2">
           {PRESET_OVERRIDES.map((preset) => (
             <button
               key={preset.name}
               onClick={() => setSelectedPreset(preset.name)}
-              className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+              className={`flex w-full items-center gap-3 rounded-lg border p-3 text-start transition-colors ${
                 selectedPreset === preset.name
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  ? "border-primary-500 bg-primary-50"
+                  : "border-line hover:border-line hover:bg-rail"
               }`}
             >
               <div className="flex gap-1">
@@ -114,21 +114,21 @@ export function ThemePicker({ currentOverride, onSelect, onClose }: ThemePickerP
                   </>
                 )}
                 {!preset.override.colors && (
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs text-gray-500">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-rail text-xs text-ink-soft">
                     ★
                   </div>
                 )}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{preset.label}</p>
+                <p className="text-sm font-medium text-ink">{preset.label}</p>
                 {preset.override.typography && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-ink-soft">
                     {preset.override.typography.headingFont} + {preset.override.typography.bodyFont}
                   </p>
                 )}
               </div>
               {selectedPreset === preset.name && (
-                <Check className="h-5 w-5 text-blue-600" />
+                <Check className="h-5 w-5 text-primary-600" />
               )}
             </button>
           ))}

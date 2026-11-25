@@ -1,18 +1,19 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { Spinner } from "./spinner";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-[var(--color-primary)]",
-        destructive: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
-        outline: "border border-gray-300 bg-white hover:bg-gray-50 focus-visible:ring-primary-500",
-        secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-500",
-        ghost: "hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-gray-500",
-        link: "underline-offset-4 hover:underline focus-visible:ring-primary-500",
+        default: "bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus-visible:ring-primary-500",
+        destructive: "bg-error text-white hover:opacity-90 focus-visible:ring-error",
+        outline: "border border-line bg-panel text-ink hover:bg-rail focus-visible:ring-primary-500",
+        secondary: "bg-rail text-ink hover:opacity-80 focus-visible:ring-primary-500",
+        ghost: "text-ink-soft hover:bg-rail hover:text-ink focus-visible:ring-primary-500",
+        link: "text-primary-600 underline-offset-4 hover:underline focus-visible:ring-primary-500",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -34,48 +35,22 @@ export interface ButtonProps
   isLoading?: boolean;
 }
 
-const variantStyles: Record<string, React.CSSProperties> = {
-  default: { background: "var(--color-primary)" },
-  link: { color: "var(--color-primary)" },
-};
-
+/*
+ * Colors go through the token utilities (bg-primary-600 etc.). On storefront
+ * pages the injected theme generates its own primary ramp, so buttons follow
+ * the store's theme without any inline-style overrides — the old
+ * `style={{ background: "var(--color-primary)" }}` hack is gone.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, isLoading, children, disabled, style, ...props }, ref) => {
-    const effectiveVariant = variant ?? "default";
-    const mergedStyle = variantStyles[effectiveVariant]
-      ? { ...variantStyles[effectiveVariant], ...style }
-      : style;
-
+  ({ className, variant, size, isLoading, children, disabled, ...props }, ref) => {
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || isLoading}
-        style={mergedStyle}
         {...props}
       >
-        {isLoading && (
-          <svg
-            className="me-2 h-4 w-4 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-        )}
+        {isLoading && <Spinner className="me-2 h-4 w-4" />}
         {children}
       </button>
     );

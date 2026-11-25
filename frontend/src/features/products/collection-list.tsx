@@ -37,13 +37,13 @@ export function CollectionList() {
   };
 
   if (isLoading) {
-    return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3].map((i) => <div key={i} className="h-40 animate-pulse rounded-xl bg-gray-200" />)}</div>;
+    return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3].map((i) => <div key={i} className="h-40 shimmer rounded-xl" />)}</div>;
   }
 
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">{t("collections")}</h2>
+        <h2 className="text-lg font-semibold text-ink">{t("collections")}</h2>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="me-2 h-4 w-4" /> {t("addCollection")}
         </Button>
@@ -64,15 +64,15 @@ export function CollectionList() {
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Layers className="h-5 w-5 text-purple-500" />
-                    <h3 className="font-semibold text-gray-900">{col.name}</h3>
+                    <h3 className="font-semibold text-ink">{col.name}</h3>
                   </div>
                   <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 opacity-100">
-                    <button onClick={(e) => { e.stopPropagation(); router.push(`/${locale}/dashboard/products/collections/${col.id}`); }} className="rounded p-1 hover:bg-gray-200"><Edit className="h-3.5 w-3.5 text-gray-500" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="rounded p-1 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); router.push(`/${locale}/dashboard/products/collections/${col.id}`); }} className="rounded p-1 hover:bg-rail"><Edit className="h-3.5 w-3.5 text-ink-soft" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="rounded p-1 hover:bg-error-soft"><Trash2 className="h-3.5 w-3.5 text-error" /></button>
                   </div>
                 </div>
-                {col.description && <p className="mb-2 text-sm text-gray-500 line-clamp-2">{col.description}</p>}
-                <div className="flex items-center justify-between text-xs text-gray-400">
+                {col.description && <p className="mb-2 text-sm text-ink-soft line-clamp-2">{col.description}</p>}
+                <div className="flex items-center justify-between text-xs text-ink-soft">
                   <span>{col.product_count} {t("totalProducts").toLowerCase()}</span>
                   <span>{formatDateTime(col.updated_at)}</span>
                 </div>

@@ -45,7 +45,107 @@
     "subtitle": "AI-Powered Marketplace Platform",
     "description": "Build, customize, and scale your online store with AI-powered tools and a visual page builder.",
     "signIn": "Sign In",
-    "getStarted": "Get Started"
+    "getStarted": "Get Started",
+    "nav": {
+      "features": "Features",
+      "themes": "Themes",
+      "pricing": "Pricing",
+      "github": "GitHub"
+    },
+    "hero": {
+      "eyebrow": "Open-source · AI-powered · Bilingual",
+      "headline": "Your souk,",
+      "headlineAccent": "yours to run.",
+      "sub": "The self-hosted commerce platform where Arabic and English are first-class citizens, AI does the heavy lifting, and every pixel of your storefront is yours to shape.",
+      "primaryCta": "Start your souk — free",
+      "secondaryCta": "See the themes",
+      "meta1": "MIT licensed",
+      "meta2": "Docker one-command",
+      "meta3": "6 AI providers",
+      "meta4": "EN/ع native"
+    },
+    "bilingualDemo": {
+      "title": "Bilingual-native, by design",
+      "description": "One platform, two scripts, zero compromises. Flip the switch — the product record below is the same row in the database.",
+      "labels": { "en": "English", "ar": "العربية" },
+      "productTitle": "Hand-thrown clay mug",
+      "productBody": "Fired in a family workshop, glazed in the deep amber of Old Sana'a's tower houses. It holds the heat of your morning long after the sun is up.",
+      "productTitleAr": "كوب فخاري مصنوع يدويًا",
+      "productBodyAr": "مصنوع في ورشة عائلية، بطلاءٍ كهرمانيّ بلون بيوت صنعاء القديمة. يحفظ حرارة صباحك طويلًا بعد شروق الشمس."
+    },
+    "features": {
+      "title": "Everything a merchant needs",
+      "ai": { "title": "AI-native tooling", "desc": "Descriptions, SEO copy and a daily brief written for your store — by your store." },
+      "builder": { "title": "Visual page builder", "desc": "Drag-and-drop sections, undo/redo, version history — your storefront shaped live." },
+      "bilingual": { "title": "Bilingual-native", "desc": "Arabic and English designed together — fonts, RTL and typography honoring both scripts." },
+      "selfHosted": { "title": "Self-hosted & open", "desc": "Your data, your servers. One Docker command and the souk is yours." }
+    },
+    "themes": {
+      "title": "Start from a look",
+      "browseAll": "Browse all themes in the dashboard →",
+      "sanaa": { "name": "Sana'a", "sub": "Signature · mudbrick & gypsum" },
+      "samsarah": { "name": "Samsarah", "sub": "Signature · cobalt & glass green" },
+      "qamariya": { "name": "Qamariya", "sub": "Signature · amber glass" }
+    },
+    "pricing": {
+      "title": "Simple plans",
+      "sub": "Start free. Grow when your souk grows.",
+      "monthly": "/mo",
+      "starter": { "name": "Starter", "price": "Free", "desc": "For your first store", "f1": "1 store", "f2": "50 products", "f3": "AI daily brief", "cta": "Start free" },
+      "growth": { "name": "Growth", "price": "$29", "desc": "For stores finding their stride", "f1": "3 stores", "f2": "Unlimited products", "f3": "All AI providers", "cta": "Start growing", "badge": "Popular" },
+      "scale": { "name": "Scale", "price": "$79", "desc": "For merchant fleets", "f1": "Unlimited stores", "f2": "Priority support", "f3": "White-glove onboarding", "cta": "Talk to us" }
+    },
+    "cta": {
+      "title": "Open your souk today.",
+      "sub": "Free to start. Self-hosted. Yours.",
+      "button": "Create your store"
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "license": "MIT License"
+    }
+  },
+  "onboarding": {
+    "title": "Open your souk",
+    "subtitle": "Four steps and your store is live.",
+    "steps": {
+      "basics": "Name your souk",
+      "look": "Pick a look",
+      "product": "First product",
+      "launch": "Launch"
+    },
+    "basics": {
+      "storeName": "Store name",
+      "storeNamePlaceholder": "Meridian Home Goods",
+      "slug": "Store address",
+      "slugTaken": "That address is taken — try another.",
+      "slugAvailable": "Available",
+      "checking": "Checking…",
+      "description": "Short description (optional)",
+      "next": "Continue"
+    },
+    "look": {
+      "title": "Choose a starting theme",
+      "desc": "You can restyle anything later — this just sets the palette.",
+      "next": "Continue"
+    },
+    "product": {
+      "title": "Add your first product",
+      "desc": "Optional — you can skip this and add products later.",
+      "productTitle": "Product name",
+      "productPrice": "Price",
+      "skip": "Skip for now",
+      "next": "Continue"
+    },
+    "launch": {
+      "title": "Ready to open",
+      "button": "Open my souk",
+      "creating": "Opening…",
+      "successTitle": "Your souk is open!",
+      "successDesc": "Welcome to Tujjar, merchant. Your store is live.",
+      "goDashboard": "Go to dashboard"
+    },
+    "preview": "Live preview"
   },
   "auth": {
     "login": {
@@ -178,7 +278,23 @@
       "storeSettings": "Store Settings",
       "storeNotFound": "Store not found",
       "topProducts": "Top products (30 days)",
-      "trafficSources": "Traffic sources (30 days)"
+      "trafficSources": "Traffic sources (30 days)",
+      "aiBrief": {
+        "tag": "AI BRIEF",
+        "title": "Today's brief",
+        "generate": "Generate brief",
+        "generating": "Writing your brief…",
+        "error": "Couldn't reach your AI provider.",
+        "configure": "Configure an AI provider to get daily briefs.",
+        "goToSettings": "Go to AI settings"
+      },
+      "setup": {
+        "title": "Store setup",
+        "storeCreated": "Create your first store",
+        "firstProduct": "Add your first product",
+        "connectBilling": "Choose a billing plan",
+        "cta": "Continue"
+      }
     },
     "products": {
       "searchPlaceholder": "Search products...",
@@ -607,6 +723,9 @@
       "baseFontSize": "Base Font Size (px)",
       "scaleRatio": "Scale Ratio",
       "lineHeight": "Line Height",
+      "headingWeight": "Heading Weight",
+      "headingLetterSpacing": "Heading Letter Spacing (px)",
+      "letterSpacing": "Body Letter Spacing (px)",
       "spacing": "Spacing",
       "sectionPaddingY": "Section Padding Y (px)",
       "sectionPaddingX": "Section Padding X (px)",
@@ -1371,6 +1490,14 @@
       "themeApplied": "Theme applied",
       "colors": "Colors",
       "colorsDescription": "Customize your store's color palette",
+      "stylePresets": "Style Presets",
+      "stylePresetsDescription": "One-click color variations of this theme. Applied values stay fully editable below.",
+      "typography": "Typography",
+      "typographyDescription": "Fonts, sizes, weights and letter spacing",
+      "spacing": "Spacing & Layout",
+      "spacingDescription": "Section padding, container width and grid gaps",
+      "customCss": "Custom CSS",
+      "customCssDescription": "Advanced styling applied to your entire storefront. Theme variables like --color-primary are available.",
       "borderRadius": "Border Radius",
       "behavior": "Behavior",
       "enableAnimations": "Enable Animations",

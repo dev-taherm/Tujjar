@@ -126,22 +126,22 @@ export function TemplateImportDialog({ open, onClose }: TemplateImportDialogProp
   return (
     <Dialog open={true} onClose={handleClose} title={t("importTemplate")} maxWidth="max-w-lg">
       <div className="space-y-4">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-ink-soft">
           Upload a template JSON file to add it to your template library.
         </p>
 
         {/* Expected format */}
-        <div className="rounded-lg border border-gray-200">
+        <div className="rounded-lg border border-line">
           <button
             onClick={() => setShowFormat(!showFormat)}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
           >
             {showFormat ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             Expected JSON format
           </button>
           {showFormat && (
-            <div className="border-t border-gray-200 p-3">
-              <pre className="max-h-60 overflow-auto rounded bg-gray-50 p-3 text-xs text-gray-600">
+            <div className="border-t border-line p-3">
+              <pre className="max-h-60 overflow-auto rounded bg-rail p-3 text-xs text-ink-soft">
                 {EXPECTED_FORMAT}
               </pre>
             </div>
@@ -158,23 +158,23 @@ export function TemplateImportDialog({ open, onClose }: TemplateImportDialogProp
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-6 text-sm text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-6 text-sm text-ink-soft hover:border-primary-400 hover:bg-primary-50"
         >
           <Upload className="h-5 w-5" />
           {fileName || "Choose a JSON file"}
         </button>
 
         {parseError && (
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{parseError}</div>
+          <div className="rounded-lg bg-error-soft p-3 text-sm text-error">{parseError}</div>
         )}
 
         {parsedData && !parseError && (
-          <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+          <div className="rounded-lg bg-success-soft p-3 text-sm text-success">
             <div className="flex items-center gap-2">
               <FileJson className="h-4 w-4" />
               <span className="font-medium">{(parsedData.name as string) || "Imported Template"}</span>
             </div>
-            <div className="mt-1 flex gap-3 text-xs text-green-600">
+            <div className="mt-1 flex gap-3 text-xs text-success">
               <span>{(parsedData.pages as unknown[])?.length || 0} pages</span>
               <span>{(parsedData.category as string) || "general"}</span>
               <span>v{String(parsedData.version || "1.0.0")}</span>

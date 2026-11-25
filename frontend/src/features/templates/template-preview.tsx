@@ -26,7 +26,7 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
 
   return (
     <Dialog open={true} onClose={onClose} title={template.name}>
-      <p className="text-sm text-gray-500 -mt-2 mb-4">v{template.version} by {template.author}</p>
+      <p className="text-sm text-ink-soft -mt-2 mb-4">v{template.version} by {template.author}</p>
 
       <div className="overflow-y-auto" style={{ maxHeight: "calc(90vh - 140px)" }}>
         {/* Thumbnail */}
@@ -35,15 +35,15 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
         {/* Color Palette */}
         {colors && (
           <div className="border-b -mx-6 px-6 py-4">
-            <h3 className="mb-2 text-sm font-medium text-gray-700">{t("colorPalette")}</h3>
+            <h3 className="mb-2 text-sm font-medium text-ink">{t("colorPalette")}</h3>
             <div className="flex gap-3">
               {["primary", "secondary", "accent", "background", "text"].map((key) => (
                 <div key={key} className="text-center">
                   <div
-                    className="mb-1 h-10 w-10 rounded-lg border border-gray-200 shadow-inner"
+                    className="mb-1 h-10 w-10 rounded-lg border border-line shadow-inner"
                     style={{ backgroundColor: colors[key] }}
                   />
-                  <span className="text-xs text-gray-500">{key}</span>
+                  <span className="text-xs text-ink-soft">{key}</span>
                 </div>
               ))}
             </div>
@@ -53,17 +53,17 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
         {/* Typography */}
         {typography && (
           <div className="border-b -mx-6 px-6 py-4">
-            <h3 className="mb-2 text-sm font-medium text-gray-700">{t("browseTemplates").split(" ")[0]}</h3>
+            <h3 className="mb-2 text-sm font-medium text-ink">{t("browseTemplates").split(" ")[0]}</h3>
             <div className="flex gap-8">
               <div>
-                <span className="text-xs text-gray-400">Heading</span>
-                <p style={{ fontFamily: typography.headingFont }} className="text-lg font-bold text-gray-900">
+                <span className="text-xs text-ink-soft">Heading</span>
+                <p style={{ fontFamily: typography.headingFont }} className="text-lg font-bold text-ink">
                   {typography.headingFont}
                 </p>
               </div>
               <div>
-                <span className="text-xs text-gray-400">Body</span>
-                <p style={{ fontFamily: typography.bodyFont }} className="text-lg text-gray-700">
+                <span className="text-xs text-ink-soft">Body</span>
+                <p style={{ fontFamily: typography.bodyFont }} className="text-lg text-ink">
                   {typography.bodyFont}
                 </p>
               </div>
@@ -73,7 +73,7 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
 
         {/* Pages */}
         <div className="border-b -mx-6 px-6 py-4">
-          <h3 className="mb-3 text-sm font-medium text-gray-700">{t("pagesCount")} ({pages.length})</h3>
+          <h3 className="mb-3 text-sm font-medium text-ink">{t("pagesCount")} ({pages.length})</h3>
           <div className="flex flex-wrap gap-2">
             {pages.map((page, i) => (
               <button
@@ -81,8 +81,8 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
                 onClick={() => setActivePageIndex(i)}
                 className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
                   i === activePageIndex
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-primary-600 text-white"
+                    : "bg-rail text-ink-soft hover:bg-rail"
                 }`}
               >
                 {page.title}
@@ -94,16 +94,16 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
         {/* Active Page Preview */}
         {pages[activePageIndex] && (
           <div className="-mx-6 px-6 py-4">
-            <h3 className="mb-2 text-sm font-medium text-gray-700">
+            <h3 className="mb-2 text-sm font-medium text-ink">
               {pages[activePageIndex].title} — Sections
             </h3>
             <div className="space-y-2">
               {pages[activePageIndex].sections.map((section, j) => (
-                <div key={j} className="flex items-center gap-3 rounded-lg bg-gray-50 px-4 py-2">
-                  <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                <div key={j} className="flex items-center gap-3 rounded-lg bg-rail px-4 py-2">
+                  <span className="rounded bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700">
                     {section.type}
                   </span>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-ink-soft">
                     {String(section.settings.title || (typeof section.settings.htmlContent === "string" ? section.settings.htmlContent.slice(0, 60) : "") || "Section")}
                   </span>
                 </div>
@@ -113,15 +113,15 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
         )}
       </div>
 
-      <div className="flex items-center justify-between -mx-6 px-6 -mb-6 pb-6 pt-4 border-t bg-gray-50">
+      <div className="flex items-center justify-between -mx-6 px-6 -mb-6 pb-6 pt-4 border-t bg-rail">
         <div className="flex gap-2">
-          <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200">
+          <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-ink-soft hover:bg-rail">
             {tc("close")}
           </button>
           {onExport && (
             <button
               onClick={() => onExport(template)}
-              className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
             >
               <Download className="h-4 w-4" />
               {t("export")}
@@ -130,7 +130,7 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
           {onVersionHistory && (
             <button
               onClick={() => onVersionHistory(template)}
-              className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-rail"
             >
               <History className="h-4 w-4" />
               {t("versionHistory")}
@@ -140,7 +140,7 @@ export function TemplatePreview({ template, onClose, onInstall, onExport, onVers
         <button
           onClick={() => onInstall(template)}
           disabled={isInstalling}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
         >
           {isInstalling ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {isInstalling ? t("installing") : t("installTemplate")}

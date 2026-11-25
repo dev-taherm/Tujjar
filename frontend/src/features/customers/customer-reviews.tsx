@@ -16,7 +16,7 @@ function StarRating({ rating }: { rating: number }) {
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
-          className={`h-4 w-4 ${i <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+          className={`h-4 w-4 ${i <= rating ? "fill-yellow-400 text-warning" : "text-ink-soft"}`}
         />
       ))}
     </div>
@@ -29,7 +29,7 @@ export function CustomerReviews({ customerId }: CustomerReviewsProps) {
   const approveReview = useApproveReview();
   const rejectReview = useRejectReview();
 
-  if (isLoading) return <div className="h-[300px] animate-pulse rounded-xl bg-gray-200" />;
+  if (isLoading) return <div className="h-[300px] shimmer rounded-xl" />;
 
   return (
     <div className="space-y-4">
@@ -50,14 +50,14 @@ export function CustomerReviews({ customerId }: CustomerReviewsProps) {
                       </Badge>
                     </div>
                     <h3 className="mt-2 font-medium">{review.title}</h3>
-                    <p className="mt-1 text-sm text-gray-600">{review.body}</p>
-                    <p className="mt-2 text-xs text-gray-400">{formatDateTime(review.created_at)}</p>
+                    <p className="mt-1 text-sm text-ink-soft">{review.body}</p>
+                    <p className="mt-2 text-xs text-ink-soft">{formatDateTime(review.created_at)}</p>
                   </div>
                   <div className="flex gap-1">
                     {!review.is_approved && (
                       <button
                         onClick={() => approveReview.mutate(review.id)}
-                        className="rounded-lg p-1 text-green-600 hover:bg-green-50"
+                        className="rounded-lg p-1 text-success hover:bg-success-soft"
                         title={t("approveReview")}
                       >
                         <Check className="h-4 w-4" />
@@ -66,7 +66,7 @@ export function CustomerReviews({ customerId }: CustomerReviewsProps) {
                     {review.is_approved && (
                       <button
                         onClick={() => rejectReview.mutate(review.id)}
-                        className="rounded-lg p-1 text-red-600 hover:bg-red-50"
+                        className="rounded-lg p-1 text-error hover:bg-error-soft"
                         title={t("rejectReview")}
                       >
                         <X className="h-4 w-4" />

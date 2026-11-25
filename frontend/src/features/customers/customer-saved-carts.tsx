@@ -16,7 +16,7 @@ export function CustomerSavedCarts({ customerId }: CustomerSavedCartsProps) {
   const { data: carts = [], isLoading } = useSavedCarts(customerId);
   const deleteSavedCart = useDeleteSavedCart();
 
-  if (isLoading) return <div className="h-[300px] animate-pulse rounded-xl bg-gray-200" />;
+  if (isLoading) return <div className="h-[300px] shimmer rounded-xl" />;
 
   return (
     <div className="space-y-4">
@@ -31,14 +31,14 @@ export function CustomerSavedCarts({ customerId }: CustomerSavedCartsProps) {
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium">{cart.name}</h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-ink-soft">
                       {cart.item_count} {cart.item_count === 1 ? "item" : "items"}
                     </p>
-                    <p className="text-xs text-gray-400">{formatDateTime(cart.created_at)}</p>
+                    <p className="text-xs text-ink-soft">{formatDateTime(cart.created_at)}</p>
                   </div>
                   <button
                     onClick={() => deleteSavedCart.mutate(cart.id)}
-                    className="rounded-lg p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                    className="rounded-lg p-1 text-ink-soft hover:bg-error-soft hover:text-error"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -47,7 +47,7 @@ export function CustomerSavedCarts({ customerId }: CustomerSavedCartsProps) {
                   <div className="mt-3 space-y-1 border-t pt-3">
                     {cart.items.map((item) => (
                       <div key={item.id} className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">
+                        <span className="text-ink-soft">
                           {item.product_title} × {item.quantity}
                         </span>
                         <span>{formatCurrency(Number(item.unit_price))}</span>

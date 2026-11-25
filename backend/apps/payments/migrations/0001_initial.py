@@ -7,33 +7,80 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('orders', '0004_order_discount_order_discount_code_and_more'),
-        ('organizations', '0002_organizationmembership_organizatio_user_id_97f34b_idx'),
+        ("orders", "0004_order_discount_order_discount_code_and_more"),
+        ("organizations", "0002_organizationmembership_organizatio_user_id_97f34b_idx"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Payment',
+            name="Payment",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('provider', models.CharField(choices=[('stripe', 'Stripe'), ('cod', 'Cash on delivery'), ('bank_transfer', 'Bank transfer')], max_length=20)),
-                ('provider_ref', models.CharField(blank=True, db_index=True, default='', max_length=255)),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('currency', models.CharField(default='USD', max_length=3)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('succeeded', 'Succeeded'), ('failed', 'Failed')], default='pending', max_length=20)),
-                ('event_payload', models.JSONField(blank=True, default=dict)),
-                ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payments', to='orders.order')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payments', to='organizations.organization')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "provider",
+                    models.CharField(
+                        choices=[
+                            ("stripe", "Stripe"),
+                            ("cod", "Cash on delivery"),
+                            ("bank_transfer", "Bank transfer"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "provider_ref",
+                    models.CharField(blank=True, db_index=True, default="", max_length=255),
+                ),
+                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("currency", models.CharField(default="USD", max_length=3)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("succeeded", "Succeeded"),
+                            ("failed", "Failed"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("event_payload", models.JSONField(blank=True, default=dict)),
+                (
+                    "order",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="payments",
+                        to="orders.order",
+                    ),
+                ),
+                (
+                    "organization",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="payments",
+                        to="organizations.organization",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['order', 'status'], name='payments_pa_order_i_a76289_idx'), models.Index(fields=['provider', 'provider_ref'], name='payments_pa_provide_6f4503_idx')],
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(fields=["order", "status"], name="payments_pa_order_i_a76289_idx"),
+                    models.Index(
+                        fields=["provider", "provider_ref"], name="payments_pa_provide_6f4503_idx"
+                    ),
+                ],
             },
         ),
     ]

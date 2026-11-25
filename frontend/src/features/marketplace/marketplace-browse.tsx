@@ -26,7 +26,7 @@ function ThemeMarketplaceCard({ theme, isInstalling, onInstall }: {
 }) {
   const colors = theme.config?.colors || {};
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-lg">
+    <div className="overflow-hidden rounded-2xl border border-line bg-panel shadow-sm transition-all hover:shadow-lg">
       <div className="flex h-36 items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-6">
         <div className="flex gap-2">
           {[colors.primary, colors.secondary, colors.accent].filter(Boolean).map((c, i) => (
@@ -37,12 +37,12 @@ function ThemeMarketplaceCard({ theme, isInstalling, onInstall }: {
       <div className="p-5">
         <div className="mb-2 flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{theme.name}</h3>
-            <p className="text-xs text-gray-400">v{theme.version}</p>
+            <h3 className="text-lg font-semibold text-ink">{theme.name}</h3>
+            <p className="text-xs text-ink-soft">v{theme.version}</p>
           </div>
           {theme.is_system && <Badge variant="secondary">System</Badge>}
         </div>
-        <p className="mb-3 text-sm text-gray-500">
+        <p className="mb-3 text-sm text-ink-soft">
           {theme.config?.typography?.headingFont || "Inter"} / {theme.config?.typography?.bodyFont || "Inter"}
         </p>
         <Button onClick={onInstall} disabled={isInstalling} className="w-full">
@@ -57,7 +57,6 @@ function ThemeMarketplaceCard({ theme, isInstalling, onInstall }: {
 
 export function MarketplaceBrowse() {
   const t = useTranslations("dashboard.marketplace");
-  const tc = useTranslations("common");
   const [activeTab, setActiveTab] = useState<Tab>("themes");
   const [templateCategory, setTemplateCategory] = useState("");
   const [templateSearch, setTemplateSearch] = useState("");
@@ -66,15 +65,15 @@ export function MarketplaceBrowse() {
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-line">
         <nav className="-mb-px flex gap-6">
           <button
             onClick={() => setActiveTab("themes")}
             className={cn(
               "flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors",
               activeTab === "themes"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                ? "border-primary-600 text-primary-600"
+                : "border-transparent text-ink-soft hover:border-line hover:text-ink"
             )}
           >
             <Palette className="h-4 w-4" />
@@ -85,8 +84,8 @@ export function MarketplaceBrowse() {
             className={cn(
               "flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors",
               activeTab === "templates"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                ? "border-primary-600 text-primary-600"
+                : "border-transparent text-ink-soft hover:border-line hover:text-ink"
             )}
           >
             <LayoutTemplate className="h-4 w-4" />
@@ -166,8 +165,8 @@ function ThemesTab() {
               className={cn(
                 "rounded-lg px-3 py-2 min-h-[44px] text-sm font-medium transition-colors",
                 themeCategory === cat.value
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-primary-600 text-white"
+                  : "bg-rail text-ink-soft hover:bg-rail"
               )}
             >
               {cat.label}
@@ -178,13 +177,13 @@ function ThemesTab() {
         {isLoading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-72 animate-pulse rounded-2xl bg-gray-100" />
+              <div key={i} className="h-72 shimmer rounded-2xl" />
             ))}
           </div>
         ) : !themeList.length ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
-            <Palette className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">{t("noThemesAvailable")}</p>
+          <div className="rounded-2xl border border-dashed border-line py-16 text-center">
+            <Palette className="mx-auto h-12 w-12 text-ink-soft" />
+            <p className="mt-4 text-ink-soft">{t("noThemesAvailable")}</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -282,8 +281,8 @@ function TemplatesTab({
                 className={cn(
                   "rounded-lg px-3 py-2 min-h-[44px] text-sm font-medium transition-colors",
                   category === cat.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-primary-600 text-white"
+                    : "bg-rail text-ink-soft hover:bg-rail"
                 )}
               >
                 {cat.label}
@@ -291,13 +290,13 @@ function TemplatesTab({
             ))}
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
             <input
               type="text"
               placeholder="Search templates..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 py-2 ps-9 pe-4 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
+              className="w-full rounded-lg border border-line py-2 ps-9 pe-4 text-sm focus:border-primary-500 focus:outline-none sm:w-64"
             />
           </div>
         </div>
@@ -306,13 +305,13 @@ function TemplatesTab({
         {isLoading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-80 animate-pulse rounded-2xl bg-gray-100" />
+              <div key={i} className="h-80 shimmer rounded-2xl" />
             ))}
           </div>
         ) : templates.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 py-16 text-center">
-            <LayoutTemplate className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">{tm("noTemplatesFound")}</p>
+          <div className="rounded-2xl border border-dashed border-line py-16 text-center">
+            <LayoutTemplate className="mx-auto h-12 w-12 text-ink-soft" />
+            <p className="mt-4 text-ink-soft">{tm("noTemplatesFound")}</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

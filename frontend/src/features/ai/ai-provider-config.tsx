@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Select, Card, CardContent, CardHeader, CardTitle, Badge } from "@/shared/ui";
+import { Button, Input, Select, Card, CardContent, Badge } from "@/shared/ui";
 import { useAIProviders, useCreateAIProvider, useDeleteAIProvider } from "@/api/queries";
 import type { AIProvider } from "@/shared/types";
-import { Plus, Trash2, Check, Settings } from "lucide-react";
+import { Plus, Trash2, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const providerOptions = [
@@ -54,12 +54,12 @@ export function AIProviderConfig() {
     setApiBase("");
   };
 
-  if (isLoading) return <div className="h-48 animate-pulse rounded-xl bg-gray-200" />;
+  if (isLoading) return <div className="h-48 shimmer rounded-xl" />;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">{t("aiProviders")}</h3>
+        <h3 className="text-lg font-semibold text-ink">{t("aiProviders")}</h3>
         <Button size="sm" onClick={() => setShowAdd(true)}>
           <Plus className="me-1 h-4 w-4" /> {t("addProvider")}
         </Button>
@@ -90,16 +90,16 @@ export function AIProviderConfig() {
       {providers?.map((p) => (
         <Card key={p.id}>
           <CardContent className="flex items-center gap-4 p-4">
-            <Settings className="h-8 w-8 text-gray-400" />
+            <Settings className="h-8 w-8 text-ink-soft" />
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-900">{p.name}</span>
+                <span className="font-medium text-ink">{p.name}</span>
                 {p.is_default && <Badge variant="success">{t("default")}</Badge>}
                 <Badge variant={p.is_active ? "success" : "secondary"}>{p.is_active ? tc("active") : tc("inactive")}</Badge>
               </div>
-              <p className="text-sm text-gray-500">{p.provider} / {p.model_name}</p>
+              <p className="text-sm text-ink-soft">{p.provider} / {p.model_name}</p>
             </div>
-            <button onClick={() => deleteProvider.mutateAsync(p.id)} className="rounded p-2 text-gray-400 hover:bg-red-50 hover:text-red-500">
+            <button onClick={() => deleteProvider.mutateAsync(p.id)} className="rounded p-2 text-ink-soft hover:bg-error-soft hover:text-error">
               <Trash2 className="h-4 w-4" />
             </button>
           </CardContent>
@@ -109,8 +109,8 @@ export function AIProviderConfig() {
       {!providers?.length && !showAdd && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
-            <Settings className="mb-3 h-10 w-10 text-gray-300" />
-            <p className="text-sm text-gray-500 mb-3">{t("noAiProviders")}</p>
+            <Settings className="mb-3 h-10 w-10 text-ink-soft" />
+            <p className="text-sm text-ink-soft mb-3">{t("noAiProviders")}</p>
             <Button size="sm" onClick={() => setShowAdd(true)}>
               <Plus className="me-1 h-4 w-4" /> {t("addFirstProvider")}
             </Button>

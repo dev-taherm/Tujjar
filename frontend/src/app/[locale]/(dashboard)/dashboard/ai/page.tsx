@@ -6,6 +6,7 @@ import { ProductGenerator } from "@/features/ai/product-generator";
 import { AIProviderConfig } from "@/features/ai/ai-provider-config";
 import { Bot, Sparkles, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { PageHeader } from "@/shared/ui";
 
 type Tab = "assistant" | "generator" | "providers";
 
@@ -21,18 +22,15 @@ export default function AIPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-        <p className="text-sm text-gray-500">{t("description")}</p>
-      </div>
+              <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1">
+      <div className="flex gap-1 rounded-lg border border-line bg-panel p-1">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              tab === key ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-50"
+              tab === key ? "bg-primary-600 text-white" : "text-ink-soft hover:bg-rail"
             }`}
           >
             <Icon className="h-4 w-4" />

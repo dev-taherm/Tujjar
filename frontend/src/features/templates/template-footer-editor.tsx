@@ -115,7 +115,7 @@ export function TemplateFooterEditor({ data, onChange }: TemplateFooterEditorPro
           <Label>{t("footer")}</Label>
           <button
             onClick={addColumn}
-            className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
           >
             <Plus className="h-3 w-3" />
             {t("addColumn")}
@@ -123,9 +123,9 @@ export function TemplateFooterEditor({ data, onChange }: TemplateFooterEditorPro
         </div>
         <div className="space-y-3">
           {data.columns.map((column, colIndex) => (
-            <div key={colIndex} className="rounded-lg border border-gray-200 p-3">
+            <div key={colIndex} className="rounded-lg border border-line p-3">
               <div className="mb-2 flex items-center gap-2">
-                <GripVertical className="h-4 w-4 flex-shrink-0 text-gray-300 cursor-grab" />
+                <GripVertical className="h-4 w-4 flex-shrink-0 text-ink-soft cursor-grab" />
                 <Input
                   value={column.title}
                   onChange={(e) => handleColumnChange(colIndex, "title", e.target.value)}
@@ -136,20 +136,20 @@ export function TemplateFooterEditor({ data, onChange }: TemplateFooterEditorPro
                   <button
                     onClick={() => moveColumn(colIndex, -1)}
                     disabled={colIndex === 0}
-                    className="rounded p-1 text-gray-400 hover:bg-gray-100 disabled:opacity-30"
+                    className="rounded p-1 text-ink-soft hover:bg-rail disabled:opacity-30"
                   >
                     ↑
                   </button>
                   <button
                     onClick={() => moveColumn(colIndex, 1)}
                     disabled={colIndex === data.columns.length - 1}
-                    className="rounded p-1 text-gray-400 hover:bg-gray-100 disabled:opacity-30"
+                    className="rounded p-1 text-ink-soft hover:bg-rail disabled:opacity-30"
                   >
                     ↓
                   </button>
                   <button
                     onClick={() => removeColumn(colIndex)}
-                    className="rounded p-1 text-red-400 hover:bg-red-50"
+                    className="rounded p-1 text-error hover:bg-error-soft"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
@@ -157,7 +157,7 @@ export function TemplateFooterEditor({ data, onChange }: TemplateFooterEditorPro
               </div>
 
               {/* Column Links */}
-              <div className="ml-6 space-y-1">
+              <div className="ms-6 space-y-1">
                 {column.links.map((link, linkIndex) => (
                   <div key={linkIndex} className="flex items-center gap-2">
                     <Input
@@ -174,7 +174,7 @@ export function TemplateFooterEditor({ data, onChange }: TemplateFooterEditorPro
                     />
                     <button
                       onClick={() => removeLink(colIndex, linkIndex)}
-                      className="rounded p-1 text-red-400 hover:bg-red-50"
+                      className="rounded p-1 text-error hover:bg-error-soft"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -182,7 +182,7 @@ export function TemplateFooterEditor({ data, onChange }: TemplateFooterEditorPro
                 ))}
                 <button
                   onClick={() => addLink(colIndex)}
-                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+                  className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700"
                 >
                   <Plus className="h-3 w-3" />
                   {t("addLink")}
@@ -191,7 +191,7 @@ export function TemplateFooterEditor({ data, onChange }: TemplateFooterEditorPro
             </div>
           ))}
           {data.columns.length === 0 && (
-            <p className="py-4 text-center text-sm text-gray-400">{t("noColumns") || "No columns yet"}</p>
+            <p className="py-4 text-center text-sm text-ink-soft">{t("noColumns") || "No columns yet"}</p>
           )}
         </div>
       </div>
@@ -202,7 +202,7 @@ export function TemplateFooterEditor({ data, onChange }: TemplateFooterEditorPro
         <div className="mt-2 space-y-2">
           {SOCIAL_PLATFORMS.map((platform) => (
             <div key={platform} className="flex items-center gap-2">
-              <span className="w-24 text-sm capitalize text-gray-600">{platform}</span>
+              <span className="w-24 text-sm capitalize text-ink-soft">{platform}</span>
               <Input
                 value={data.social_links?.[platform] || ""}
                 onChange={(e) => handleSocialChange(platform, e.target.value)}

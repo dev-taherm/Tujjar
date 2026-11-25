@@ -155,8 +155,9 @@ class TestThemeVersion:
         assert version.note == "Initial"
 
     def test_ordering_by_created_at_desc(self):
-        from apps.authentication.models import User
         import time
+
+        from apps.authentication.models import User
 
         User.objects.create_user(email="v@test.com", password="pass123")
         theme = Theme.objects.create(name="T", slug="t")

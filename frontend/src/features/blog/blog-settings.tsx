@@ -48,7 +48,7 @@ export function BlogSettings({ storeId }: BlogSettingsProps) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-gray-500">
+      <div className="rounded-xl border border-line bg-panel p-6 text-center text-ink-soft">
         Loading settings...
       </div>
     );
@@ -56,13 +56,13 @@ export function BlogSettings({ storeId }: BlogSettingsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h3 className="text-lg font-semibold text-gray-900">Blog Settings</h3>
+      <div className="rounded-xl border border-line bg-panel p-6">
+        <h3 className="text-lg font-semibold text-ink">Blog Settings</h3>
 
         <div className="mt-6 space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="posts_per_page" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="posts_per_page" className="mb-1 block text-sm font-medium text-ink">
                 Posts per page
               </label>
               <input
@@ -74,12 +74,12 @@ export function BlogSettings({ storeId }: BlogSettingsProps) {
                 onChange={(e) =>
                   updateForm("posts_per_page", Math.max(1, parseInt(e.target.value, 10) || 1))
                 }
-                className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="flex h-10 w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
 
             <div>
-              <label htmlFor="default_status" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="default_status" className="mb-1 block text-sm font-medium text-ink">
                 Default post status
               </label>
               <select
@@ -88,7 +88,7 @@ export function BlogSettings({ storeId }: BlogSettingsProps) {
                 onChange={(e) =>
                   updateForm("default_status", e.target.value as "draft" | "published")
                 }
-                className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="flex h-10 w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -127,7 +127,7 @@ export function BlogSettings({ storeId }: BlogSettingsProps) {
             <button
               onClick={handleSave}
               disabled={saveMutation.isPending}
-              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saveMutation.isPending ? "Saving..." : "Save settings"}
             </button>

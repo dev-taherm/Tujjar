@@ -12,11 +12,11 @@ interface LayerTreeProps {
 }
 
 const categoryColors: Record<string, string> = {
-  hero: "bg-blue-500",
+  hero: "bg-primary-500",
   products: "bg-purple-500",
-  content: "bg-green-500",
-  social: "bg-amber-500",
-  layout: "bg-gray-500",
+  content: "bg-success",
+  social: "bg-warning",
+  layout: "bg-ink-soft",
 };
 
 export function LayerTree({
@@ -42,19 +42,19 @@ export function LayerTree({
   };
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-line">
       {sections.map((section) => {
         const isVisible = section.visibility?.[device] ?? true;
         const isSelected = section.id === selectedSectionId;
         const cat = getCategory(section.type);
-        const dotColor = categoryColors[cat] ?? "bg-gray-400";
+        const dotColor = categoryColors[cat] ?? "bg-ink-soft";
 
         return (
           <div
             key={section.id}
             onClick={() => onSelect(section.id)}
-            className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 ${
-              isSelected ? "bg-blue-50" : ""
+            className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-rail ${
+              isSelected ? "bg-primary-50" : ""
             }`}
           >
             <button
@@ -62,18 +62,18 @@ export function LayerTree({
                 e.stopPropagation();
                 onToggleVisibility(section.id, device);
               }}
-              className="shrink-0 text-gray-400 hover:text-gray-600"
+              className="shrink-0 text-ink-soft hover:text-ink-soft"
             >
               {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
             </button>
 
             <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotColor}`} />
 
-            <span className="flex-1 truncate text-sm text-gray-700">
+            <span className="flex-1 truncate text-sm text-ink">
               {getLabel(section)}
             </span>
 
-            <span className="shrink-0 text-[10px] font-medium text-gray-400">
+            <span className="shrink-0 text-[10px] font-medium text-ink-soft">
               {section.type}
             </span>
           </div>

@@ -49,9 +49,7 @@ def dispatch_event(org_id, event_type: str, payload: dict[str, Any]) -> int:
     try:
         endpoints = [
             e
-            for e in WebhookEndpoint.unscoped.filter(
-                organization_id=org_id, is_active=True
-            )
+            for e in WebhookEndpoint.unscoped.filter(organization_id=org_id, is_active=True)
             if e.subscribes_to(event_type)
         ]
         if not endpoints:
@@ -71,9 +69,7 @@ def dispatch_event(org_id, event_type: str, payload: dict[str, Any]) -> int:
                 deliver_webhook.delay(str(delivery.id))
                 queued += 1
             except Exception:
-                logger.warning(
-                    "Could not queue webhook delivery %s", delivery.id, exc_info=True
-                )
+                logger.warning("Could not queue webhook delivery %s", delivery.id, exc_info=True)
         return queued
     except Exception:  # pragma: no cover — dispatch is best-effort
         logger.exception("dispatch_event(%s) failed", event_type)
@@ -101,7 +97,9 @@ def build_request(delivery: WebhookDelivery) -> tuple[bytes, dict[str, str]]:
     return body, headers
 
 
-def process_delivery_result(delivery: WebhookDelivery, response_status: int | None, error: str) -> str:
+def process_delivery_result(
+    delivery: WebhookDelivery, response_status: int | None, error: str
+) -> str:
     """Record one delivery attempt and decide the follow-up status."""
     delivery.attempts += 1
     delivery.response_status = response_status

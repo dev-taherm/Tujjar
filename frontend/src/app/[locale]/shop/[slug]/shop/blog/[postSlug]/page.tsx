@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
 import { getLocale } from "next-intl/server";
 import type { Metadata } from "next";
-import DOMPurify from "isomorphic-dompurify";
+import sanitize from "sanitize-html";
 import { BlogComments } from "@/features/storefront/blog-comments";
 import {
   getStore,
@@ -17,9 +17,26 @@ const ALLOWED_TAGS = [
 ];
 const ALLOWED_ATTR = ["href", "src", "alt", "title", "class", "target", "rel"];
 
+/**
+ * Server-side sanitization of stored merchant content. `sanitize-html` is
+ * pure JS (no DOM/jsdom), so the server bundle stays lean and the build
+ * works on every Node version. Links are forced to noopener/noreferrer.
+ */
 function sanitizeHtml(html: string): string {
   try {
-    return DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR });
+    return sanitize(html, {
+      allowedTags: ALLOWED_TAGS,
+      allowedAttributes: { "*": ALLOWED_ATTR },
+      allowedSchemes: ["http", "https", "mailto"],
+      allowedSchemesByTag: { img: ["http", "https", "data"] },
+      allowProtocolRelative: false,
+      transformTags: {
+        a: (tagName, attribs) => ({
+          tagName,
+          attribs: { ...attribs, rel: "noopener noreferrer" },
+        }),
+      },
+    });
   } catch {
     return html;
   }
@@ -180,7 +197,7 @@ export default async function StorefrontBlogPostPage({
       )}
 
       <div
-        className="prose prose-lg max-w-none"
+        className="prose-tujjar max-w-none"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content || "") }}
       />
 

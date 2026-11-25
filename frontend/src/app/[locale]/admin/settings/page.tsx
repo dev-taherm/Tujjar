@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
-import { Button } from "@/shared/ui";
 import { Toggle } from "@/shared/components/toggle";
 import { useMemo } from "react";
 
@@ -56,8 +55,8 @@ export default function AdminSettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Platform Settings</h1>
-        <div className="h-64 animate-pulse rounded-xl bg-gray-200" />
+        <h1 className="text-2xl font-bold text-ink">Platform Settings</h1>
+        <div className="h-64 shimmer rounded-xl" />
       </div>
     );
   }
@@ -65,28 +64,28 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Platform Settings</h1>
-        <p className="text-sm text-gray-500">Configure your Tujjar platform</p>
+        <h1 className="text-2xl font-bold text-ink">Platform Settings</h1>
+        <p className="text-sm text-ink-soft">Configure your Tujjar platform</p>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-6">
+      <div className="rounded-xl border border-line bg-panel p-6 space-y-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">General</h2>
+          <h2 className="text-lg font-semibold text-ink">General</h2>
           <div className="mt-4 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Site Name</label>
+              <label className="mb-1 block text-sm font-medium text-ink">Site Name</label>
               <input
                 type="text"
                 defaultValue={String(configs.site_name?.value || "Tujjar")}
                 onBlur={(e) => updateText("site_name", e.target.value)}
-                className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                className="w-full max-w-md rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />
             </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-200 pt-6">
-          <h2 className="text-lg font-semibold text-gray-900">Access Control</h2>
+        <div className="border-t border-line pt-6">
+          <h2 className="text-lg font-semibold text-ink">Access Control</h2>
           <div className="mt-4 space-y-4">
             <Toggle
                 label="Public Registration"
@@ -104,16 +103,16 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 pt-6">
-          <h2 className="text-lg font-semibold text-gray-900">Defaults</h2>
+        <div className="border-t border-line pt-6">
+          <h2 className="text-lg font-semibold text-ink">Defaults</h2>
           <div className="mt-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Default Trial Days</label>
+              <label className="mb-1 block text-sm font-medium text-ink">Default Trial Days</label>
               <input
                 type="number"
                 defaultValue={Number(configs.default_trial_days?.value || 14)}
                 onBlur={(e) => updateText("default_trial_days", e.target.value)}
-                className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                className="w-32 rounded-lg border border-line px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />
             </div>
           </div>

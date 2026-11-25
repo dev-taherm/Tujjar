@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/client";
-import { Button, Badge } from "@/shared/ui";
+import { Button, Badge, PageHeader, Table, THead, THeadCell, TBody, TR, TD } from "@/shared/ui";
 import type { User } from "@/shared/types";
 
 interface AdminUser extends User {
@@ -43,80 +43,84 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-          <p className="text-sm text-gray-500">Manage all platform users</p>
-        </div>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search users..."
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
-        />
-      </div>
+      <PageHeader
+        title="Users"
+        description="Manage all platform users"
+        actions={
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search users..."
+            className="h-10 w-64 rounded-lg border border-line bg-panel px-3 text-sm text-ink transition-colors placeholder:text-ink-soft/70 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          />
+        }
+      />
 
-      <div className="rounded-xl border border-gray-200 bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full text-start text-sm">
-            <thead className="border-b border-gray-200 bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 font-medium text-gray-500">User</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Status</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Orgs</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Joined</th>
-                <th className="px-4 py-3 font-medium text-gray-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {isLoading ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
-              ) : data?.results?.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No users found.</td></tr>
-              ) : (
-                data?.results?.map((user: AdminUser) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium text-gray-900">{user.full_name || user.email}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        {user.is_staff && <Badge variant="danger">Staff</Badge>}
-                        {user.is_superuser && <Badge variant="warning">Super</Badge>}
-                        {!user.is_active && <Badge variant="secondary">Inactive</Badge>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{user.organization_count}</td>
-                    <td className="px-4 py-3 text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant={user.is_active ? "outline" : "default"}
-                          onClick={() => toggleActive.mutate({ id: user.id, is_active: !user.is_active })}
-                        >
-                          {user.is_active ? "Deactivate" : "Activate"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={user.is_staff ? "outline" : "secondary"}
-                          onClick={() => toggleStaff.mutate({ id: user.id, is_staff: !user.is_staff })}
-                        >
-                          {user.is_staff ? "Revoke Staff" : "Make Staff"}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-14 shimmer rounded-lg" />
+          ))}
         </div>
-      </div>
+      ) : (
+        <Table>
+          <THead>
+            <tr>
+              <THeadCell>User</THeadCell>
+              <THeadCell>Status</THeadCell>
+              <THeadCell>Orgs</THeadCell>
+              <THeadCell>Joined</THeadCell>
+              <THeadCell className="text-end">Actions</THeadCell>
+            </tr>
+          </THead>
+          <TBody>
+            {data?.results?.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-12 text-center text-sm text-ink-soft">
+                  No users found.
+                </td>
+              </tr>
+            ) : (
+              data?.results?.map((user: AdminUser) => (
+                <TR key={user.id}>
+                  <TD>
+                    <p className="text-sm font-medium">{user.full_name || user.email}</p>
+                    <p className="text-xs text-ink-soft">{user.email}</p>
+                  </TD>
+                  <TD>
+                    <div className="flex gap-1">
+                      {user.is_staff && <Badge variant="danger">Staff</Badge>}
+                      {user.is_superuser && <Badge variant="warning">Super</Badge>}
+                      {!user.is_active && <Badge variant="secondary">Inactive</Badge>}
+                    </div>
+                  </TD>
+                  <TD className="text-ink-soft tabular-nums">{user.organization_count}</TD>
+                  <TD className="text-ink-soft">{new Date(user.created_at).toLocaleDateString()}</TD>
+                  <TD className="text-end">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant={user.is_active ? "outline" : "default"}
+                        onClick={() => toggleActive.mutate({ id: user.id, is_active: !user.is_active })}
+                      >
+                        {user.is_active ? "Deactivate" : "Activate"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={user.is_staff ? "outline" : "secondary"}
+                        onClick={() => toggleStaff.mutate({ id: user.id, is_staff: !user.is_staff })}
+                      >
+                        {user.is_staff ? "Revoke Staff" : "Make Staff"}
+                      </Button>
+                    </div>
+                  </TD>
+                </TR>
+              ))
+            )}
+          </TBody>
+        </Table>
+      )}
     </div>
   );
 }

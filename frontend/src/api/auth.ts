@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient, setTokens, clearTokens } from "./client";
 import type { AuthTokens, User } from "@/shared/types";
 

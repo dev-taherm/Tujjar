@@ -46,15 +46,15 @@ export function SectionPalette({ onAddSection, sections }: SectionPaletteProps) 
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-900">Sections</h3>
+      <h3 className="text-sm font-semibold text-ink">Sections</h3>
       <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+        <Search className="absolute start-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-soft" />
         <input
           type="text"
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border border-gray-200 py-1.5 ps-8 pe-3 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20"
+          className="w-full rounded-md border border-line py-1.5 ps-8 pe-3 text-xs focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500/20"
         />
       </div>
 
@@ -66,11 +66,11 @@ export function SectionPalette({ onAddSection, sections }: SectionPaletteProps) 
           <div key={cat}>
             <button
               onClick={() => toggleCat(cat)}
-              className="flex w-full items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700"
+              className="flex w-full items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
             >
               {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               {label}
-              <span className="ms-auto text-gray-400">{catSections.length}</span>
+              <span className="ms-auto text-ink-soft">{catSections.length}</span>
             </button>
             {expanded && (
               <div className="mt-1 space-y-1">
@@ -86,13 +86,13 @@ export function SectionPalette({ onAddSection, sections }: SectionPaletteProps) 
                       className={`flex w-full items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-start text-xs transition-colors ${
                         atLimit
                           ? "cursor-not-allowed opacity-40"
-                          : "hover:border-blue-200 hover:bg-blue-50"
+                          : "hover:border-primary-200 hover:bg-primary-50"
                       }`}
                     >
-                      <Icon className={`h-4 w-4 ${atLimit ? "text-gray-300" : "text-gray-400"}`} />
-                      <span className={`font-medium ${atLimit ? "text-gray-400" : "text-gray-700"}`}>{def.label}</span>
+                      <Icon className={`h-4 w-4 ${atLimit ? "text-ink-soft" : "text-ink-soft"}`} />
+                      <span className={`font-medium ${atLimit ? "text-ink-soft" : "text-ink"}`}>{def.label}</span>
                       {atLimit && (
-                        <span className="ms-auto text-[10px] font-medium text-amber-600">Max</span>
+                        <span className="ms-auto text-[10px] font-medium text-warning">Max</span>
                       )}
                     </button>
                   );

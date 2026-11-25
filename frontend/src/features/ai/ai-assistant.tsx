@@ -4,12 +4,10 @@ import { useState, useRef, useEffect } from "react";
 import { useAIConversations, useCreateAIConversation, useSendAIMessage } from "@/api/queries";
 import { Button } from "@/shared/ui";
 import { Send, Plus, MessageSquare, Bot, User, Loader2 } from "lucide-react";
-import { formatDateTime } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 export function AIAssistant() {
   const t = useTranslations("dashboard.ai");
-  const tc = useTranslations("common");
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -48,10 +46,10 @@ export function AIAssistant() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-160px)] overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-160px)] overflow-hidden rounded-xl border border-line bg-panel">
       {/* Sidebar */}
-      <div className="w-full md:w-64 border-e border-gray-200 flex flex-col">
-        <div className="p-3 border-b border-gray-200">
+      <div className="w-full md:w-64 border-e border-line flex flex-col">
+        <div className="p-3 border-b border-line">
           <Button onClick={handleNewConversation} className="w-full" size="sm">
             <Plus className="me-1 h-4 w-4" /> {t("newChat")}
           </Button>
@@ -62,7 +60,7 @@ export function AIAssistant() {
               key={conv.id}
               onClick={() => { setSelectedConversation(conv.id); setLocalMessages([]); }}
               className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-start text-sm transition-colors ${
-                selectedConversation === conv.id ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"
+                selectedConversation === conv.id ? "bg-primary-50 text-primary-700" : "text-ink-soft hover:bg-rail"
               }`}
             >
               <MessageSquare className="h-4 w-4 flex-shrink-0" />
@@ -76,9 +74,9 @@ export function AIAssistant() {
       <div className="flex-1 flex flex-col">
         {!selectedConversation ? (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <Bot className="mb-4 h-16 w-16 text-gray-300" />
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">{t("aiAssistant")}</h2>
-            <p className="mb-6 text-sm text-gray-500">{t("askAnything")}</p>
+            <Bot className="mb-4 h-16 w-16 text-ink-soft" />
+            <h2 className="mb-2 text-xl font-semibold text-ink">{t("aiAssistant")}</h2>
+            <p className="mb-6 text-sm text-ink-soft">{t("askAnything")}</p>
             <Button onClick={handleNewConversation}>
               <Plus className="me-2 h-4 w-4" /> {t("startConversation")}
             </Button>
@@ -89,36 +87,36 @@ export function AIAssistant() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {localMessages.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Bot className="mb-3 h-12 w-12 text-gray-300" />
-                  <p className="text-sm text-gray-500">{t("sendMessageToStart")}</p>
+                  <Bot className="mb-3 h-12 w-12 text-ink-soft" />
+                  <p className="text-sm text-ink-soft">{t("sendMessageToStart")}</p>
                 </div>
               )}
               {localMessages.map((msg, i) => (
                 <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   {msg.role === "assistant" && (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                      <Bot className="h-4 w-4 text-blue-600" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100">
+                      <Bot className="h-4 w-4 text-primary-600" />
                     </div>
                   )}
                   <div className={`max-w-[70%] rounded-xl px-4 py-3 text-sm ${
-                    msg.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
+                    msg.role === "user" ? "bg-primary-600 text-white" : "bg-rail text-ink"
                   }`}>
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
                   {msg.role === "user" && (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
-                      <User className="h-4 w-4 text-gray-600" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rail">
+                      <User className="h-4 w-4 text-ink-soft" />
                     </div>
                   )}
                 </div>
               ))}
               {sendMessage.isPending && (
                 <div className="flex gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                    <Bot className="h-4 w-4 text-blue-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100">
+                    <Bot className="h-4 w-4 text-primary-600" />
                   </div>
-                  <div className="rounded-xl bg-gray-100 px-4 py-3">
-                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  <div className="rounded-xl bg-rail px-4 py-3">
+                    <Loader2 className="h-4 w-4 animate-spin text-ink-soft" />
                   </div>
                 </div>
               )}
@@ -126,7 +124,7 @@ export function AIAssistant() {
             </div>
 
             {/* Input */}
-            <div className="border-t border-gray-200 p-4">
+            <div className="border-t border-line p-4">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -134,7 +132,7 @@ export function AIAssistant() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                   placeholder={t("askMeAnything")}
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="flex-1 rounded-lg border border-line px-4 py-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
                 <Button onClick={handleSend} disabled={!input.trim() || sendMessage.isPending}>
                   <Send className="h-4 w-4" />

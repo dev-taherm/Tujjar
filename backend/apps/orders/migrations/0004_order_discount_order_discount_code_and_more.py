@@ -5,31 +5,45 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('commerce', '0001_initial'),
-        ('orders', '0003_add_order_status_history'),
+        ("commerce", "0001_initial"),
+        ("orders", "0003_add_order_status_history"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='discount',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='orders', to='commerce.discount'),
+            model_name="order",
+            name="discount",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="orders",
+                to="commerce.discount",
+            ),
         ),
         migrations.AddField(
-            model_name='order',
-            name='discount_code',
-            field=models.CharField(blank=True, default='', max_length=50),
+            model_name="order",
+            name="discount_code",
+            field=models.CharField(blank=True, default="", max_length=50),
         ),
         migrations.AddField(
-            model_name='order',
-            name='payment_method',
-            field=models.CharField(blank=True, choices=[('cod', 'Cash on delivery'), ('card', 'Card'), ('bank_transfer', 'Bank transfer')], default='cod', max_length=20),
+            model_name="order",
+            name="payment_method",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("cod", "Cash on delivery"),
+                    ("card", "Card"),
+                    ("bank_transfer", "Bank transfer"),
+                ],
+                default="cod",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='order',
-            name='shipping_method_name',
-            field=models.CharField(blank=True, default='', max_length=100),
+            model_name="order",
+            name="shipping_method_name",
+            field=models.CharField(blank=True, default="", max_length=100),
         ),
     ]

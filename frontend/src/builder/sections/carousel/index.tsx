@@ -15,7 +15,6 @@ export function CarouselPreview({ section }: { section: Section }) {
   const images = (s.images as CarouselImage[]) || [];
   const showDots = s.showDots !== false;
   const showArrows = s.showArrows !== false;
-  const autoplay = Boolean(s.autoplay);
   const [current, setCurrent] = useState(0);
 
   const items = images.length > 0 ? images : [];

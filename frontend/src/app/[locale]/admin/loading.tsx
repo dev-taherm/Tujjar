@@ -1,7 +1,9 @@
+import { Spinner } from "@/shared/ui/spinner";
+
 export default function AdminLoading() {
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <Spinner className="h-8 w-8 text-primary-600" />
     </div>
-  )
+  );
 }

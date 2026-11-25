@@ -44,12 +44,14 @@ import { applyThemeVariables } from "@/lib/theme-css";
 import { pagesApi } from "@/api/pages";
 import { sectionComponents } from "@/lib/section-registry";
 import type { Section, PageSchema, ThemeOverride, Page } from "@/shared/types";
-import { Undo2, Redo2 } from "lucide-react";
+import { Undo2, Redo2, LayoutTemplate, Plus } from "lucide-react";
+import { EmptyState, Button } from "@/shared/ui";
+import { useLocale } from "next-intl";
 
 function SectionRenderer({ section }: { section: Section }) {
   const Component = sectionComponents[section.type];
   if (!Component) {
-    return <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-500">Unknown section type: {section.type}</div>;
+    return <div className="rounded-lg border border-dashed border-line p-8 text-center text-ink-soft">Unknown section type: {section.type}</div>;
   }
   return <Component section={section} />;
 }
@@ -59,7 +61,8 @@ interface DndPageBuilderProps {
 }
 
 export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
-  const { page, sections, selectedSectionId, selectedSectionIds, selectSection, toggleSelectSection, clearSelection, getSelectedSection, getSelectedSections, isPreviewMode, togglePreviewMode, isDirty, editLocale, setEditLocale, themeOverride, setThemeOverride, getSavePayload, devicePreview, setDevicePreview } = usePageBuilder();
+const locale = useLocale();
+const { page, selectedSectionId, selectedSectionIds, selectSection, toggleSelectSection, clearSelection, getSelectedSection, isPreviewMode, togglePreviewMode, isDirty, editLocale, setEditLocale, themeOverride, setThemeOverride, devicePreview, setDevicePreview } = usePageBuilder();
   const [activeDragType, setActiveDragType] = useState<string | null>(null);
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -67,7 +70,6 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
   const [showLayers, setShowLayers] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(false);
-  const [insertPosition, setInsertPosition] = useState<number | null>(null);
   const [sectionRects, setSectionRects] = useState<Array<{ id: string; top: number; bottom: number; centerY: number; left: number; right: number; centerX: number }>>([]);
   const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -83,7 +85,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
   }, [page?.content_schema]);
 
   const { schema, set: setSchema, undo, redo, canUndo, canRedo } = useHistory(initialSchema);
-  const { copySection, pasteSection, hasClipboard, clipboardSectionType } = useClipboard();
+const { copySection, pasteSection } = useClipboard();
   const { isInlineEditing, toggleInlineEditing, toolbarVisible, toolbarPosition, handleFormat } = useInlineEditing();
 
   const updatePage = useUpdatePage();
@@ -186,7 +188,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
     await addSection.mutateAsync({ pageId, sectionType: type });
   }, [pageId, addSection]);
 
-  const handlePresetSelect = useCallback(async (type: string, settings: Record<string, unknown>) => {
+  const handlePresetSelect = useCallback(async (type: string) => {
     await addSection.mutateAsync({ pageId, sectionType: type });
   }, [pageId, addSection]);
 
@@ -348,7 +350,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
   }, [sortedSections]);
 
   return (
-    <div className="flex h-[calc(100vh-120px)] flex-col rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="flex h-[calc(100vh-120px)] flex-col rounded-xl border border-line bg-panel overflow-hidden">
       <PageToolbar
         pageTitle={page?.title || ""}
         isPublished={page?.is_published || false}
@@ -381,7 +383,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Section Palette OR Layer Tree */}
-        <div className="w-56 border-e border-gray-200 overflow-y-auto p-3">
+        <div className="w-56 border-e border-line overflow-y-auto p-3">
           {showLayers ? (
             <LayerTree
               sections={sortedSectionsForLayers}
@@ -396,24 +398,33 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
         </div>
 
         {/* Center: DnD Canvas with Device Frame */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+        <div className="flex-1 overflow-y-auto bg-rail p-6">
           <div className="mx-auto max-w-3xl">
             <div className="mb-4 flex items-center justify-end gap-2">
-              <button onClick={undo} disabled={!canUndo} className="rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-50 disabled:opacity-30">
+              <button onClick={undo} disabled={!canUndo} className="rounded-md border border-line bg-panel p-1.5 text-ink-soft hover:bg-rail disabled:opacity-30">
                 <Undo2 className="h-4 w-4" />
               </button>
-              <button onClick={redo} disabled={!canRedo} className="rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-50 disabled:opacity-30">
+              <button onClick={redo} disabled={!canRedo} className="rounded-md border border-line bg-panel p-1.5 text-ink-soft hover:bg-rail disabled:opacity-30">
                 <Redo2 className="h-4 w-4" />
               </button>
             </div>
 
             {sortedSections.length === 0 ? (
-              <div className="flex h-96 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300">
-                <p className="mb-4 text-gray-500">Drag sections here or click &quot;Add Section&quot;</p>
-                <button onClick={() => setShowTypePicker(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                  Add Your First Section
-                </button>
-              </div>
+              <EmptyState
+                icon={LayoutTemplate}
+                title={locale === "ar" ? "ابدأ ببناء صفحتك" : "Start building your page"}
+                description={
+                  locale === "ar"
+                    ? "اسحب قسمًا من اللوحة الجانبية، أو أضف قسمك الأول."
+                    : "Drag a section from the palette, or add your first one."
+                }
+                action={
+                  <Button onClick={() => setShowTypePicker(true)}>
+                    <Plus className="me-2 h-4 w-4" />
+                    {locale === "ar" ? "أضف قسمك الأول" : "Add your first section"}
+                  </Button>
+                }
+              />
             ) : (
               <DeviceFrame device={devicePreview}>
                 <DndContext
@@ -460,7 +471,7 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
         {/* Right: Inspector */}
         {selectedSection && !isPreviewMode && (
-          <div className="w-80 border-s border-gray-200 overflow-y-auto p-4">
+          <div className="w-80 border-s border-line overflow-y-auto p-4">
             <EnhancedInspector
               section={selectedSection}
               onUpdate={(settings) => handleUpdateSection(selectedSection.id, settings)}
@@ -471,10 +482,10 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
       {showTypePicker && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl bg-panel p-6 shadow-2xl">
             <h2 className="mb-4 text-lg font-semibold">Add Section</h2>
             <SectionPalette onAddSection={(type) => { handleAddSection(type); setShowTypePicker(false); }} sections={sortedSections} />
-            <button onClick={() => setShowTypePicker(false)} className="mt-4 w-full rounded-lg border border-gray-200 py-2 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button onClick={() => setShowTypePicker(false)} className="mt-4 w-full rounded-lg border border-line py-2 text-sm text-ink-soft hover:bg-rail">Cancel</button>
           </div>
         </div>
       )}
@@ -493,7 +504,6 @@ export function DndPageBuilder({ pageId }: DndPageBuilderProps) {
 
       {showPresets && (
         <PresetBrowser
-          sections={sortedSections}
           onSelect={handlePresetSelect}
           onClose={() => setShowPresets(false)}
         />

@@ -184,7 +184,7 @@ export function EditorToolbar({ editor, onImageInsert }: EditorToolbarProps) {
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 p-2">
+    <div className="flex flex-wrap items-center gap-1 border-b border-line p-2">
       {groups.map((group, i) => (
         <div key={i} className="flex items-center gap-0.5">
           {group.items.map((item) => (
@@ -194,14 +194,14 @@ export function EditorToolbar({ editor, onImageInsert }: EditorToolbarProps) {
               title={item.title}
               className={`rounded p-1.5 transition-colors ${
                 item.active
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  ? "bg-primary-100 text-primary-700"
+                  : "text-ink-soft hover:bg-rail hover:text-ink"
               }`}
             >
               <item.icon className="h-4 w-4" />
             </button>
           ))}
-          {i < groups.length - 1 && <div className="mx-1 h-5 w-px bg-gray-200" />}
+          {i < groups.length - 1 && <div className="mx-1 h-5 w-px bg-rail" />}
         </div>
       ))}
       <div className="ms-auto flex items-center gap-0.5">
@@ -209,7 +209,7 @@ export function EditorToolbar({ editor, onImageInsert }: EditorToolbarProps) {
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
           title="Undo"
-          className="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30"
+          className="rounded p-1.5 text-ink-soft hover:bg-rail hover:text-ink disabled:opacity-30"
         >
           <Undo className="h-4 w-4" />
         </button>
@@ -217,7 +217,7 @@ export function EditorToolbar({ editor, onImageInsert }: EditorToolbarProps) {
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
           title="Redo"
-          className="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30"
+          className="rounded p-1.5 text-ink-soft hover:bg-rail hover:text-ink disabled:opacity-30"
         >
           <Redo className="h-4 w-4" />
         </button>

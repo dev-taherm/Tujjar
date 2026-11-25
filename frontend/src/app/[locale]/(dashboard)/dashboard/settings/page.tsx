@@ -5,11 +5,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui";
+import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, Tabs, PageHeader } from "@/shared/ui";
 import { authApi } from "@/api/queries";
 import { useAuthStore } from "@/stores";
 import { useTranslations } from "next-intl";
-import { Shield, ShieldCheck, Key, AlertTriangle } from "lucide-react";
+import { Shield, ShieldCheck, Key } from "lucide-react";
 
 type Tab = "profile" | "security" | "2fa";
 
@@ -128,36 +128,26 @@ export default function SettingsPage() {
     onError: () => setMessage({ type: "error", text: "Incorrect password" }),
   });
 
-  const generateBackupCodes = useMutation({
-    mutationFn: authApi.generateBackupCodes,
-    onSuccess: (data) => {
-      setBackupCodes(data.backup_codes);
-    },
-  });
-
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <PageHeader title={t("title")} />
 
-      <div className="flex gap-2 border-b pb-2 overflow-x-auto">
-        {(["profile", "security", "2fa"] as Tab[]).map((tabKey) => (
-          <button
-            key={tabKey}
-            onClick={() => { setTab(tabKey); setMessage(null); }}
-            className={`whitespace-nowrap px-4 py-2 text-sm font-medium rounded-t-lg ${
-              tab === tabKey
-                ? "bg-primary-50 text-primary-700 border-b-2 border-primary-600"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tabKey === "profile" ? t("tabProfile") : tabKey === "security" ? t("tabSecurity") : t("tabTwoFactor")}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={[
+          { id: "profile", label: t("tabProfile") },
+          { id: "security", label: t("tabSecurity") },
+          { id: "2fa", label: t("tabTwoFactor") },
+        ]}
+        active={tab}
+        onChange={(id) => {
+          setTab(id as Tab);
+          setMessage(null);
+        }}
+      />
 
       {message && (
         <div className={`rounded-lg p-3 text-sm ${
-          message.type === "success" ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+          message.type === "success" ? "bg-success-soft text-success" : "bg-error-soft text-error"
         }`}>
           {message.text}
         </div>
@@ -231,23 +221,23 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             {user?.two_factor_enabled ? (
               <>
-                <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+                <div className="flex items-center gap-2 rounded-lg bg-success-soft p-3 text-sm text-success">
                   <ShieldCheck className="h-4 w-4" />
                   {t("twoFactorEnabled")}
                 </div>
                 {backupCodes.length > 0 && (
                   <div className="rounded-lg border p-4 space-y-2">
                     <p className="text-sm font-medium">{t("backupCodes")}</p>
-                    <p className="text-xs text-gray-500">{t("backupCodesWarning")}</p>
+                    <p className="text-xs text-ink-soft">{t("backupCodesWarning")}</p>
                     <div className="grid grid-cols-2 gap-1 font-mono text-sm">
                       {backupCodes.map((code, i) => (
-                        <code key={i} className="rounded bg-gray-100 px-2 py-1">{code}</code>
+                        <code key={i} className="rounded bg-rail px-2 py-1">{code}</code>
                       ))}
                     </div>
                   </div>
                 )}
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-red-600">{t("disable2FA")}</p>
+                  <p className="text-sm font-medium text-error">{t("disable2FA")}</p>
                   <Input
                     label={t("confirmPassword")}
                     type="password"
@@ -266,7 +256,7 @@ export default function SettingsPage() {
               </>
             ) : twoFASetupMode ? (
               <div className="space-y-4">
-                <p className="text-sm text-gray-600">{t("scanQRCode")}</p>
+                <p className="text-sm text-ink-soft">{t("scanQRCode")}</p>
                 {twoFAUri && (
                   <div className="flex justify-center">
                     <img
@@ -277,8 +267,8 @@ export default function SettingsPage() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-500">{t("manualEntry")}:</p>
-                  <code className="block rounded-lg bg-gray-100 p-2 text-sm font-mono break-all">{twoFASecret}</code>
+                  <p className="text-xs text-ink-soft">{t("manualEntry")}:</p>
+                  <code className="block rounded-lg bg-rail p-2 text-sm font-mono break-all">{twoFASecret}</code>
                 </div>
                 <Input
                   label={t("enterVerificationCode")}
@@ -298,7 +288,7 @@ export default function SettingsPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+                <div className="flex items-center gap-2 rounded-lg bg-rail p-3 text-sm text-ink-soft">
                   <Key className="h-4 w-4" />
                   {t("twoFactorNotEnabled")}
                 </div>
