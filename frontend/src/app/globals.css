@@ -446,6 +446,54 @@ html[lang="ar"] body {
 }
 
 /* ---------------------------------------------------------------------------
+   Storefront chrome classes
+   The chrome (header/footer) consumes the injected per-store theme vars via
+   these classes instead of inline styles + JS hover handlers, so styling
+   lives in one cacheable stylesheet and dark mode just works.
+   --------------------------------------------------------------------------- */
+
+.sf-bg { background: var(--color-bg); }
+.sf-text { color: var(--color-text); }
+.sf-header {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+}
+.sf-border-t { border-color: var(--color-border); }
+.sf-footer { border-color: var(--color-border); background: var(--color-surface); }
+
+.sf-nav-link { color: var(--color-text-secondary); }
+.sf-nav-link:hover { color: var(--color-text); }
+
+.sf-logo { color: var(--color-text); }
+
+.sf-icon-btn { color: var(--color-text-secondary); }
+.sf-icon-btn:hover { color: var(--color-text); background: var(--color-surface); }
+
+.sf-cta { background: var(--color-primary); }
+.sf-cta:hover { background: var(--color-primary-700); }
+
+.sf-badge { background: var(--color-primary); }
+
+.sf-icon { color: var(--color-text-secondary); }
+.sf-icon:hover { color: var(--color-text); }
+
+.sf-footer-col { color: var(--color-text-secondary); }
+.sf-footer-h4 { color: var(--color-text); }
+.sf-footer-link { color: var(--color-text-secondary); }
+.sf-footer-link:hover { color: var(--color-text); }
+
+.sf-copyright { border-color: var(--color-border); color: var(--color-text-secondary); }
+
+.sf-search-input {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.sf-mobile-link { color: var(--color-text); }
+.sf-mobile-link-primary { color: var(--color-primary); }
+
+/* ---------------------------------------------------------------------------
    Storefront dark-mode chrome (theme vars are injected per store)
    --------------------------------------------------------------------------- */
 

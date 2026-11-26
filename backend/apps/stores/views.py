@@ -185,7 +185,10 @@ class StoreViewSet(TenantViewSet):
 
         from apps.themes.models import Theme
 
-        theme = Theme.objects.filter(id=theme_id).first()
+        # `.unscoped` — system themes (organization=None) must be assignable,
+        # not just the requesting org's own themes. The org check below still
+        # guards against cross-org assignment.
+        theme = Theme.unscoped.filter(id=theme_id).first()
         if not theme:
             return Response(
                 {"error": "Theme not found"},

@@ -1185,6 +1185,192 @@ THEMES_DATA = [
             },
         ],
     },
+    # =======================================================================
+    # 9. SANA'A — Signature · mudbrick sienna & gypsum (Old Sana'a)
+    # =======================================================================
+    {
+        "name": "Sana'a",
+        "slug": "sanaa",
+        "config": {
+            "colors": {
+                "primary": "#96522e",
+                "secondary": "#8a6b4f",
+                "accent": "#d69229",
+                "background": "#f9f5ec",
+                "surface": "#ffffff",
+                "text": "#26201a",
+                "textSecondary": "#6f6154",
+                "border": "#e3d9c6",
+                "error": "#b33840",
+                "success": "#3e7050",
+                "warning": "#8a5a10",
+            },
+            "typography": {
+                "headingFont": "Fraunces",
+                "bodyFont": "IBM Plex Sans Arabic",
+                "baseFontSize": 16,
+                "scale": 1.25,
+                "lineHeight": 1.6,
+            },
+            "spacing": {
+                "sectionPaddingY": 88,
+                "sectionPaddingX": 32,
+                "containerMaxWidth": 1200,
+                "gridGap": 24,
+            },
+            "borderRadius": {"small": 6, "medium": 10, "large": 16, "full": 9999},
+            "animations": {"enabled": True, "duration": "normal", "easing": "ease-in-out"},
+            "darkMode": {"enabled": True, "default": False, "toggle": True},
+        },
+        "presets": [
+            {"name": "Default", "config": {}},
+            {
+                "name": "Qamariya Night",
+                "config": {
+                    "colors": {
+                        "background": "#1a1410",
+                        "surface": "#221b14",
+                        "text": "#f5eddc",
+                        "textSecondary": "#ac9e8b",
+                        "border": "#3b3023",
+                    }
+                },
+            },
+            {
+                "name": "Saffron",
+                "config": {
+                    "colors": {
+                        "primary": "#d69229",
+                        "accent": "#96522e",
+                    }
+                },
+            },
+        ],
+    },
+    # =======================================================================
+    # 10. SAMSARAH — Signature · cobalt & glass green (the merchant inn)
+    # =======================================================================
+    {
+        "name": "Samsarah",
+        "slug": "samsarah",
+        "config": {
+            "colors": {
+                "primary": "#2d5f8c",
+                "secondary": "#173f5e",
+                "accent": "#3e7050",
+                "background": "#f4f7f6",
+                "surface": "#ffffff",
+                "text": "#16202b",
+                "textSecondary": "#55657a",
+                "border": "#d8e1e6",
+                "error": "#b33840",
+                "success": "#3e7050",
+                "warning": "#c97f1d",
+            },
+            "typography": {
+                "headingFont": "Fraunces",
+                "bodyFont": "IBM Plex Sans Arabic",
+                "baseFontSize": 16,
+                "scale": 1.25,
+                "lineHeight": 1.6,
+            },
+            "spacing": {
+                "sectionPaddingY": 80,
+                "sectionPaddingX": 32,
+                "containerMaxWidth": 1200,
+                "gridGap": 24,
+            },
+            "borderRadius": {"small": 6, "medium": 10, "large": 16, "full": 9999},
+            "animations": {"enabled": True, "duration": "normal", "easing": "ease-in-out"},
+            "darkMode": {"enabled": True, "default": False, "toggle": True},
+        },
+        "presets": [
+            {"name": "Default", "config": {}},
+            {
+                "name": "Night Harbor",
+                "config": {
+                    "colors": {
+                        "background": "#0e1a24",
+                        "surface": "#162838",
+                        "text": "#eaf1f6",
+                        "textSecondary": "#9db2c2",
+                        "border": "#24384a",
+                    }
+                },
+            },
+            {
+                "name": "Brass",
+                "config": {
+                    "colors": {
+                        "primary": "#c9a94e",
+                        "accent": "#2d5f8c",
+                    }
+                },
+            },
+        ],
+    },
+    # =======================================================================
+    # 11. QAMARIYA — Signature · amber glass (Reem Kufi + Plex)
+    # =======================================================================
+    {
+        "name": "Qamariya",
+        "slug": "qamariya",
+        "config": {
+            "colors": {
+                "primary": "#d69229",
+                "secondary": "#b2761d",
+                "accent": "#96522e",
+                "background": "#fbf4e6",
+                "surface": "#fffdf8",
+                "text": "#2a1e0c",
+                "textSecondary": "#7a6644",
+                "border": "#ede0c6",
+                "error": "#b33840",
+                "success": "#3e7050",
+                "warning": "#b2761d",
+            },
+            "typography": {
+                "headingFont": "Reem Kufi",
+                "bodyFont": "IBM Plex Sans Arabic",
+                "baseFontSize": 16,
+                "scale": 1.25,
+                "lineHeight": 1.6,
+            },
+            "spacing": {
+                "sectionPaddingY": 88,
+                "sectionPaddingX": 32,
+                "containerMaxWidth": 1200,
+                "gridGap": 24,
+            },
+            "borderRadius": {"small": 6, "medium": 10, "large": 16, "full": 9999},
+            "animations": {"enabled": True, "duration": "normal", "easing": "ease-in-out"},
+            "darkMode": {"enabled": True, "default": False, "toggle": True},
+        },
+        "presets": [
+            {"name": "Default", "config": {}},
+            {
+                "name": "Lantern Light",
+                "config": {
+                    "colors": {
+                        "background": "#1c1508",
+                        "surface": "#261d0e",
+                        "text": "#fbf0d9",
+                        "textSecondary": "#b7a37a",
+                        "border": "#3a2e18",
+                    }
+                },
+            },
+            {
+                "name": "Sienna",
+                "config": {
+                    "colors": {
+                        "primary": "#96522e",
+                        "accent": "#d69229",
+                    }
+                },
+            },
+        ],
+    },
 ]
 
 

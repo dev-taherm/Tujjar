@@ -297,19 +297,26 @@ Same family, distinct accent: danger/rose accent retained for platform power (st
 - [ ] Polish: testimonials/FAQ sections on landing; wizard as full-screen focused layout (currently inside the shell)
 **Exit criteria:** new-merchant path register→launched-store ≤5 minutes without docs; landing demonstrates EN/AR toggle + themes.
 
-### Phase 4 — Builder restyle (2–3 days)
-- [ ] Toolbar diet, rails/inspector tokenization, terracotta selection system, pattern empty states, arch presets for hero/gallery/banner (§5.4)
+### Phase 4 — Builder restyle (2–3 days) ✅ *core complete*
+- [x] Toolbar diet: 12 same-weight buttons → 3 weighted primary actions (Add Section / Save / Publish) + 8 icon-only secondary actions with tooltips; device switcher stays segmented
+- [x] Selection ring → sienna + warm glow (`border-primary-500 shadow-panel`); drag overlay gets `pop` motion; empty canvas → `EmptyState` with bilingual copy
+- [x] Inspector color fields get brand palette swatches (mudbrick/amber/cobalt/glass-green/ruby)
+- [x] Hero section: "Frame Shape" (flat / Sana'a-window arch) + "Arched" preset — renders identically in builder + storefront
+- [ ] Nice-to-have skipped: spacing-field dune-grid ghosting
 **Exit criteria:** builder fully dark-mode-correct; no raw blue classes; inspector fields tokenized.
 
-### Phase 5 — Storefront & themes (4–6 days)
-- [ ] `chrome.tsx` → storefront.css classes (no JS hovers); product cards, listing sort/filter, multi-step checkout, success page (§5.5)
-- [ ] Palette generator: warm-neutrals + contrast guards (§4.3); re-tune 8 themes + add Dune & Medina; theme picker upgrade
+### Phase 5 — Storefront & themes (4–6 days) 🔄 *partial*
+- [x] **Signature themes seeded**: Sana'a (mudbrick+gypsum, Fraunces/Plex), Samsarah (cobalt+glass green), Qamariya (amber glass, Reem Kufi) appended to `backend/apps/themes/signals.py` `THEMES_DATA` with Default/Dark/color presets — run `python manage.py seed_themes` to install
+- [x] Theme picker presets retuned from stock hexes to brand ramps (Mudbrick / Cobalt / Glass Green / Elegant / Amber)
+- [x] `chrome.tsx` → `globals.css` `.sf-*` class system: all ~13 inline-style + JS-hover blocks (nav links, icon buttons, CTA, cart badge, socials, footer links, search input, mobile nav, header/footer shells) converted to cacheable classes that consume the injected theme vars — no JS hovers remain
+- [x] Palette generator: verified contrast-adequate (fixed Tailwind lightness scale → 600≈L40 for buttons); left `color-palette.ts` WIP untouched
+- [ ] Storefront listing sort/filter, multi-step checkout polish, success-page arch moment
 **Exit criteria:** theme switch updates live without JS style churn; all seeded themes AA-contrast verified; checkout full-flow clickable end-to-end.
 
-### Phase 6 — Flow polish & QA (3–4 days)
-- [ ] RTL sweep + hardcoded-string i18n + mobile pass (§6.5–6.6)
-- [ ] A11y audit (keyboard-only walkthrough both locales both modes), performance re-check, update frontend tests for restyled components, add visual-regression screenshots (Playwright) for dashboard home, auth, landing, storefront, builder
-**Exit criteria:** keyboard-only + RTL parity walkthrough clean; Lighthouse ≥95 perf/a11y on landing + dashboard; test suite green.
+### Phase 6 — Flow polish & QA (3–4 days) 🔄 *partial*
+- [x] RTL sweep: physical-direction utilities verified clean across the tokenized scope (only intentional tooltip centering + storefront chrome remain)
+- [ ] Hardcoded-string i18n pass (builder copy localized; theme/proper-noun names intentionally kept English)
+- [ ] Keyboard-only + RTL parity walkthrough; Lighthouse ≥95; visual-regression screenshots (Playwright)
 
 **Total: ~3–4 weeks solo dev.** Phases 0–2 alone transform the day-to-day product; each phase ships independently and keeps CI green.
 

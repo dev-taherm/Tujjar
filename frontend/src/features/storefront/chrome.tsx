@@ -225,10 +225,7 @@ export function StorefrontChrome({
         <Link
           key={link.url}
           href={prefixLink(link.url)}
-          className="text-sm font-medium transition-colors"
-          style={{ color: "var(--color-text-secondary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
+          className="sf-nav-link text-sm font-medium transition-colors"
         >
           {resolveLabel(link.label)}
         </Link>
@@ -237,7 +234,7 @@ export function StorefrontChrome({
   );
 
   const logoLink = (
-    <Link href={slug ? homeHref : "#"} className="flex min-w-0 items-center gap-2 text-xl font-bold" style={{ color: "var(--color-text)" }}>
+    <Link href={slug ? homeHref : "#"} className="sf-logo flex min-w-0 items-center gap-2 text-xl font-bold">
       {store?.logo_url ? (
         <img src={store.logo_url} alt={store.name} className="w-auto object-contain" style={{ height: logoHeight }} />
       ) : null}
@@ -251,10 +248,7 @@ export function StorefrontChrome({
       {store?.theme_config?.darkMode?.enabled && store.theme_config.darkMode.toggle && (
         <button
           onClick={toggleDark}
-          className="rounded-lg p-2 transition-colors"
-          style={{ color: "var(--color-text-secondary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          className="sf-icon-btn rounded-lg p-2 transition-colors"
           aria-label="Toggle dark mode"
         >
           <Sun className="hidden h-5 w-5 dark:block" />
@@ -264,9 +258,7 @@ export function StorefrontChrome({
       {navigation.cta_button?.enabled && (
         <Link
           href={prefixLink(navigation.cta_button.url)}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-white"
-          style={{ background: "var(--color-primary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-primary-700)")}
+          className="sf-cta rounded-lg px-4 py-2 text-sm font-medium text-white"
         >
           {resolveLabel(navigation.cta_button?.label)}
         </Link>
@@ -275,10 +267,7 @@ export function StorefrontChrome({
         <button
           onClick={() => setSearchOpen(!searchOpen)}
           aria-label={searchOpen ? "Close search" : "Search products"}
-          className="rounded-lg p-2 transition-colors"
-          style={{ color: "var(--color-text-secondary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          className="sf-icon-btn rounded-lg p-2 transition-colors"
         >
           {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
         </button>
@@ -286,14 +275,10 @@ export function StorefrontChrome({
       {showCart && (
         <Link
           href={slug ? cartHref : "#"}
-          className="relative rounded-lg p-2 transition-colors"
-          style={{ color: "var(--color-text-secondary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          className="sf-icon-btn relative rounded-lg p-2 transition-colors"
         >
           <ShoppingCart className="h-5 w-5" />
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white"
-            style={{ background: "var(--color-primary)" }}>
+          <span className="sf-badge absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white">
             {cartCount}
           </span>
         </Link>
@@ -302,10 +287,7 @@ export function StorefrontChrome({
         <div className="flex items-center gap-2">
           <Link
             href={slug ? accountHref : "#"}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
-            style={{ color: "var(--color-text-secondary)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            className="sf-icon-btn flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
           >
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">{customerAuth.first_name || customerAuth.email}</span>
@@ -315,10 +297,7 @@ export function StorefrontChrome({
               useCustomerAuthStore.getState().logout();
               window.location.reload();
             }}
-            className="rounded-lg p-2 transition-colors"
-            style={{ color: "var(--color-text-secondary)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            className="sf-icon-btn rounded-lg p-2 transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </button>
@@ -326,10 +305,7 @@ export function StorefrontChrome({
       ) : (
         <Link
           href={slug ? loginHref : "#"}
-          className="rounded-lg p-2 transition-colors"
-          style={{ color: "var(--color-text-secondary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-surface)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          className="sf-icon-btn rounded-lg p-2 transition-colors"
         >
           <User className="h-5 w-5" />
         </Link>
@@ -339,10 +315,9 @@ export function StorefrontChrome({
 
   const mobileMenuButton = (
     <button
-      className="rounded-lg p-2 md:hidden"
+      className="sf-text rounded-lg p-2 md:hidden"
       onClick={() => setMobileNavOpen(!mobileNavOpen)}
       aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
-      style={{ color: "var(--color-text)" }}
     >
       {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
     </button>
@@ -359,10 +334,7 @@ export function StorefrontChrome({
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors"
-            style={{ color: "var(--color-text-secondary)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
+            className="sf-icon transition-colors"
           >
             {Icon ? <Icon className="h-5 w-5" /> : <span className="text-xs">{platform}</span>}
           </a>
@@ -372,19 +344,16 @@ export function StorefrontChrome({
   );
 
   const footerColumnsJsx = (
-    <div className={`${gridClass} grid gap-8 text-sm${footerLayout === "stacked" ? " text-center" : ""}`} style={{ color: "var(--color-text-secondary)" }}>
+    <div className={`${gridClass} sf-footer-col grid gap-8 text-sm${footerLayout === "stacked" ? " text-center" : ""}`}>
       {footerColumns.map((column) => (
         <div key={resolveLabel(column.title)}>
-          <h4 className="mb-3 font-semibold" style={{ color: "var(--color-text)" }}>{resolveLabel(column.title)}</h4>
+          <h4 className="sf-footer-h4 mb-3 font-semibold">{resolveLabel(column.title)}</h4>
           <div className="space-y-2">
              {column.links.map((link) => (
               <Link
                 key={`${resolveLabel(column.title)}-${resolveLabel(link.label)}`}
                 href={prefixLink(link.url)}
-                className="block transition-colors"
-                style={{ color: "var(--color-text-secondary)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-secondary)")}
+                className="sf-footer-link block transition-colors"
               >
                 {resolveLabel(link.label)}
               </Link>
@@ -396,20 +365,16 @@ export function StorefrontChrome({
   );
 
   const copyrightJsx = showCopyright ? (
-    <div className="mt-8 border-t pt-4 text-center text-xs" style={{ borderColor: "var(--color-border)", color: "var(--color-text-secondary)" }}>
+    <div className="sf-copyright mt-8 border-t pt-4 text-center text-xs">
       {copyrightText}
     </div>
   ) : null;
 
   return (
-    <div className="storefront min-h-screen" style={{ background: "var(--color-bg)" }}>
+    <div className="storefront sf-bg min-h-screen">
       <AnnouncementBar config={announcementConfig} storeSlug={store?.slug || ""} />
       <header
-        className={`${isSticky ? "sticky top-0" : "relative"} z-40 border-b backdrop-blur`}
-        style={{
-          borderColor: "var(--color-border)",
-          background: "color-mix(in srgb, var(--color-bg) 85%, transparent)",
-        }}
+        className={`${isSticky ? "sticky top-0" : "relative"} sf-header z-40 border-b backdrop-blur`}
       >
         {isCenteredHeader ? (
           <div className="mx-auto w-full px-4 sm:px-6 lg:px-8" style={containerStyle}>
@@ -436,8 +401,7 @@ export function StorefrontChrome({
         {searchOpen && (
           <form
             onSubmit={submitSearch}
-            className="border-t px-4 py-3 sm:px-6 lg:px-8"
-            style={{ borderColor: "var(--color-border)" }}
+            className="sf-border-t border-t px-4 py-3 sm:px-6 lg:px-8"
           >
             <div className="mx-auto flex gap-2" style={containerStyle}>
               <input
@@ -446,12 +410,7 @@ export function StorefrontChrome({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={tSearch("placeholder")}
-                className="w-full rounded-lg border px-4 py-2 text-sm focus:outline-none"
-                style={{
-                  borderColor: "var(--color-primary)",
-                  color: "var(--color-text)",
-                  background: "var(--color-surface)",
-                }}
+                className="sf-search-input w-full rounded-lg border px-4 py-2 text-sm focus:outline-none"
               />
               <Button type="submit" size="sm">
                 {tSearch("submit")}
@@ -461,16 +420,14 @@ export function StorefrontChrome({
         )}
         {mobileNavOpen && (
           <nav
-            className="border-t px-4 py-3 md:hidden"
-            style={{ borderColor: "var(--color-border)" }}
+            className="sf-border-t border-t px-4 py-3 md:hidden"
           >
             <div className="space-y-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.url}
                   href={prefixLink(link.url)}
-                  className="block rounded-lg px-3 py-2 text-sm font-medium"
-                  style={{ color: "var(--color-text)" }}
+                  className="sf-mobile-link block rounded-lg px-3 py-2 text-sm font-medium"
                   onClick={() => setMobileNavOpen(false)}
                 >
                   {resolveLabel(link.label)}
@@ -478,8 +435,7 @@ export function StorefrontChrome({
               ))}
               <Link
                 href={cartHref}
-                className="block rounded-lg px-3 py-2 text-sm font-medium"
-                style={{ color: "var(--color-text)" }}
+                className="sf-mobile-link block rounded-lg px-3 py-2 text-sm font-medium"
                 onClick={() => setMobileNavOpen(false)}
               >
                 {tNav("cart")}
@@ -487,8 +443,7 @@ export function StorefrontChrome({
               {isCustomerAuth ? (
                 <Link
                   href={accountHref}
-                  className="block rounded-lg px-3 py-2 text-sm font-medium"
-                  style={{ color: "var(--color-text)" }}
+                  className="sf-mobile-link block rounded-lg px-3 py-2 text-sm font-medium"
                   onClick={() => setMobileNavOpen(false)}
                 >
                   {tNav("account")}
@@ -496,8 +451,7 @@ export function StorefrontChrome({
               ) : (
                 <Link
                   href={loginHref}
-                  className="block rounded-lg px-3 py-2 text-sm font-medium"
-                  style={{ color: "var(--color-primary)" }}
+                  className="sf-mobile-link-primary block rounded-lg px-3 py-2 text-sm font-medium"
                   onClick={() => setMobileNavOpen(false)}
                 >
                   {tNav("signIn")}
@@ -508,7 +462,7 @@ export function StorefrontChrome({
         )}
       </header>
       <main>{children}</main>
-      <footer className="border-t" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
+      <footer className="sf-footer border-t">
         {footerLayout === "minimal" ? (
           <div className="mx-auto w-full px-4 py-8 text-center sm:px-6 lg:px-8" style={containerStyle}>
             {hasSocial && socialIconsJsx("flex items-center justify-center gap-4")}
@@ -518,7 +472,7 @@ export function StorefrontChrome({
           <div className="mx-auto w-full px-4 py-8 sm:px-6 lg:px-8" style={containerStyle}>
             {footerLayout === "stacked" && (
               <div className="mb-6 text-center">
-                <Link href={slug ? homeHref : "#"} className="inline-block text-xl font-bold" style={{ color: "var(--color-text)" }}>
+                <Link href={slug ? homeHref : "#"} className="sf-logo inline-block text-xl font-bold">
                   {logoText}
                 </Link>
               </div>

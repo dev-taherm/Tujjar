@@ -19,39 +19,39 @@ const PRESET_OVERRIDES: Array<{ name: string; label: string; override: ThemeOver
     override: {},
   },
   {
-    name: "warm",
-    label: "Warm Tones",
+    name: "mudbrick",
+    label: "Mudbrick",
     override: {
-      colors: { primary: "#EA580C", secondary: "#DC2626", accent: "#F59E0B" },
+      colors: { primary: "#96522E", secondary: "#8A6B4F", accent: "#D69229" },
     },
   },
   {
-    name: "cool",
-    label: "Cool Tones",
+    name: "cobalt",
+    label: "Cobalt",
     override: {
-      colors: { primary: "#2563EB", secondary: "#7C3AED", accent: "#06B6D4" },
+      colors: { primary: "#2D5F8C", secondary: "#173F5E", accent: "#3E7050" },
     },
   },
   {
-    name: "nature",
-    label: "Nature",
+    name: "glass-green",
+    label: "Glass Green",
     override: {
-      colors: { primary: "#16A34A", secondary: "#15803D", accent: "#84CC16" },
+      colors: { primary: "#3E7050", secondary: "#2D6A4F", accent: "#D69229" },
     },
   },
   {
     name: "elegant",
     label: "Elegant",
     override: {
-      colors: { primary: "#1F2937", secondary: "#374151", accent: "#D1D5DB" },
+      colors: { primary: "#1F2937", secondary: "#374151", accent: "#D69229" },
       typography: { headingFont: "Playfair Display", bodyFont: "Inter" },
     },
   },
   {
-    name: "playful",
-    label: "Playful",
+    name: "amber",
+    label: "Amber",
     override: {
-      colors: { primary: "#EC4899", secondary: "#8B5CF6", accent: "#FBBF24" },
+      colors: { primary: "#D69229", secondary: "#B2761D", accent: "#96522E" },
     },
   },
 ];

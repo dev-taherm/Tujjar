@@ -234,7 +234,7 @@ export function OnboardingWizard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  {(themes ?? []).slice(0, 8).map((theme) => {
+                  {(themes ?? []).map((theme) => {
                     const c = theme.config.colors;
                     const isSelected = (selectedTheme?.id ?? themes?.[0]?.id) === theme.id;
                     return (

@@ -7,7 +7,7 @@ from apps.themes.signals import HOMEPAGE_TEMPLATES, THEMES_DATA
 
 
 class Command(BaseCommand):
-    help = "Seed all 8 system themes with presets and homepage templates"
+    help = "Seed all 11 system themes (8 curated + Sana'a, Samsarah, Qamariya) with presets and homepage templates"
 
     def handle(self, *args, **options):
         created_count = 0
